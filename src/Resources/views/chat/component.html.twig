@@ -1,0 +1,222 @@
+{#
+    Synapse Chat Component
+
+    Include this template in your page:
+    {{ include('@Synapse/chat/component.html.twig') }}
+
+    Make sure Stimulus is loaded and the controller is available.
+#}
+
+<div class="synapse-chat" data-controller="synapse--chat" data-synapse--chat-history-value="{{ history|default([])|json_encode|e('html_attr') }}">
+
+    {# Messages Container #}
+    <div class="synapse-chat__messages" data-synapse--chat-target="messages">
+        <div class="synapse-chat__message synapse-chat__message--assistant">
+            <div class="synapse-chat__avatar">🤖</div>
+            <div class="synapse-chat__content">
+                <p>Hello! I'm your AI assistant. How can I help you today?</p>
+            </div>
+        </div>
+    </div>
+
+    {# Input Area #}
+    <div class="synapse-chat__input-area">
+        <form data-action="submit->synapse--chat#send">
+            <div class="synapse-chat__input-wrapper">
+                <textarea
+                    data-synapse--chat-target="input"
+                    placeholder="Type your message..."
+                    rows="1"
+                    data-action="keydown->synapse--chat#handleKeydown input->synapse--chat#autoResize"
+                ></textarea>
+                <button type="submit" data-synapse--chat-target="submitBtn">
+                    Send
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<style>
+    .synapse-chat {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        max-height: 600px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .synapse-chat__messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        background: #f9fafb;
+    }
+
+    .synapse-chat__message {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 16px;
+        max-width: 85%;
+    }
+
+    .synapse-chat__message--user {
+        margin-left: auto;
+        flex-direction: row-reverse;
+    }
+
+    .synapse-chat__avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e5e7eb;
+        flex-shrink: 0;
+    }
+
+    .synapse-chat__message--user .synapse-chat__avatar {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .synapse-chat__content {
+        background: white;
+        padding: 12px 16px;
+        border-radius: 12px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .synapse-chat__message--user .synapse-chat__content {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .synapse-chat__content p {
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .synapse-chat__content pre {
+        background: #f3f4f6;
+        padding: 8px 12px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 0.9em;
+    }
+
+    .synapse-chat__message--user .synapse-chat__content pre {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .synapse-chat__input-area {
+        padding: 16px;
+        background: white;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .synapse-chat__input-wrapper {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+    }
+
+    .synapse-chat__input-wrapper textarea {
+        flex: 1;
+        resize: none;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 14px;
+        max-height: 120px;
+        line-height: 1.4;
+    }
+
+    .synapse-chat__input-wrapper textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .synapse-chat__input-wrapper button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .synapse-chat__input-wrapper button:hover {
+        background: #2563eb;
+    }
+
+    .synapse-chat__input-wrapper button:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    /* Loading indicator */
+    .synapse-chat__loading .synapse-chat__content {
+        color: #6b7280;
+    }
+
+    .synapse-chat__typing-dots::after {
+        content: '...';
+        animation: synapse-dots 1.5s infinite;
+    }
+
+    @keyframes synapse-dots {
+        0%, 20% { content: '.'; }
+        40% { content: '..'; }
+        60%, 100% { content: '...'; }
+    }
+
+    /* Thinking block */
+    .synapse-chat__thinking {
+        background: #fef3c7;
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
+
+    .synapse-chat__thinking summary {
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 0.9em;
+        color: #92400e;
+    }
+
+    .synapse-chat__thinking-content {
+        padding: 8px 12px;
+        font-size: 0.85em;
+        color: #78350f;
+        white-space: pre-wrap;
+    }
+
+    /* Debug block */
+    .synapse-chat__debug {
+        background: #1f2937;
+        color: #e5e7eb;
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
+
+    .synapse-chat__debug summary {
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 0.9em;
+    }
+
+    .synapse-chat__debug-content {
+        padding: 8px 12px;
+        font-size: 0.8em;
+        font-family: monospace;
+    }
+</style>

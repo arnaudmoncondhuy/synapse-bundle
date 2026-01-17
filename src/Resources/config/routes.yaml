@@ -1,0 +1,3 @@
+synapse_bundle:
+    resource: '@SynapseBundle/Controller/'
+    type: attribute

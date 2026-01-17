@@ -1,0 +1,34 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # Infra
+    ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient:
+        arguments:
+            $apiKey: '%synapse.gemini_api_key%'
+            $model: '%synapse.model%'
+
+    # Default implementations (can be overridden by user)
+    ArnaudMoncondhuy\SynapseBundle\Service\Impl\SessionConversationHandler: ~
+
+    ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultContextProvider: ~
+
+    # Aliases for interfaces (use default implementations)
+    ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\Impl\SessionConversationHandler
+
+    ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultContextProvider
+
+    # Main service
+    ArnaudMoncondhuy\SynapseBundle\Service\ChatService:
+        arguments:
+            $tools: !tagged_iterator synapse.tool
+
+    # Controllers
+    ArnaudMoncondhuy\SynapseBundle\Controller\Api\ChatApiController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseBundle\Controller\Api\ResetController:
+        tags: ['controller.service_arguments']
