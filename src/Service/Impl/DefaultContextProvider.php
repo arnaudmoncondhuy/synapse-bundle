@@ -18,7 +18,7 @@ class DefaultContextProvider implements ContextProviderInterface
         $now = new \DateTimeImmutable('now');
         $dateStr = $now->format('d/m/Y H:i');
 
-PROMPT;
+        return <<<PROMPT
 Tu es un assistant IA utile et compétent.
 Date et heure actuelles : {$dateStr}.
 
