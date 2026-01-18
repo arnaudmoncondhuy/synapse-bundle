@@ -8,6 +8,7 @@ use ArnaudMoncondhuy\SynapseBundle\Service\ChatService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/synapse/api')]
@@ -19,8 +20,13 @@ class ChatApiController extends AbstractController
     }
 
     #[Route('/chat', name: 'synapse_api_chat', methods: ['POST'])]
-    public function chat(Request $request): StreamedResponse
+    public function chat(Request $request, ?Profiler $profiler): StreamedResponse
     {
+
+        if ($profiler) {
+            $profiler->disable();
+        }
+
         $data = json_decode($request->getContent(), true) ?? [];
         $message = $data['message'] ?? '';
         $options = $data['options'] ?? [];
