@@ -22,10 +22,14 @@ class ChatApiController extends AbstractController
     #[Route('/chat', name: 'synapse_api_chat', methods: ['POST'])]
     public function chat(Request $request, ?Profiler $profiler): StreamedResponse
     {
+        // 1. Suppression de '_stateless' pour que l'historique de conversation fonctionne.
 
+        // 2. On désactive le profiler pour ne pas casser le flux JSON
         if ($profiler) {
             $profiler->disable();
         }
+
+        // error_log('DEBUG SYNAPSE: Chat Controller Appelé'); // Décommentez si besoin de debug
 
         $data = json_decode($request->getContent(), true) ?? [];
         $message = $data['message'] ?? '';
@@ -33,8 +37,11 @@ class ChatApiController extends AbstractController
         $options['debug'] = $data['debug'] ?? false;
 
         $response = new StreamedResponse(function () use ($message, $options, $request) {
-            // CRITICAL: Close session to prevent file locking during long stream
-            if ($request->hasSession()) {
+
+            // 3. On ferme la session immédiatement au début du flux.
+            // Cela évite de bloquer le navigateur (session locking) pendant la génération du texte,
+            // tout en ayant permis au ChatService de récupérer l'ID de session juste avant.
+            if ($request->hasSession() && $request->getSession()->isStarted()) {
                 $request->getSession()->save();
             }
 
