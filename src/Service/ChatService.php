@@ -173,7 +173,10 @@ class ChatService
                 }
 
                 if (!empty($functionResponseParts)) {
+                    // Update sanitized contents (for Gemini)
                     $contents[] = ['role' => 'function', 'parts' => $functionResponseParts];
+                    // Also update raw history (for Session)
+                    $rawHistory[] = ['role' => 'function', 'parts' => $functionResponseParts];
                 }
 
                 // Continue loop to let model react to tool results
@@ -182,7 +185,26 @@ class ChatService
 
             // No function calls = final response
             if (!$isStateless) {
-                $this->conversationHandler->saveHistory($contents);
+                // 1. Add User Message to Raw History
+                if (!empty($message)) {
+                    // Note: sanitizing again for safety, though technically done at start
+                    $rawHistory[] = ['role' => 'user', 'parts' => [['text' => TextUtil::sanitizeUtf8($message)]]];
+                }
+
+                // 2. Add Model Response to Raw History with Metadata
+                if (!empty($modelParts)) {
+                    $debugAccumulator['total_turns'] = $i + 1;
+
+                    $rawHistory[] = [
+                        'role' => 'model',
+                        'parts' => $modelParts,
+                        'metadata' => [
+                            'debug' => ($options['debug'] ?? false) ? $debugAccumulator : null,
+                        ]
+                    ];
+                }
+
+                $this->conversationHandler->saveHistory($rawHistory);
             }
 
             $debugAccumulator['total_turns'] = $i + 1;

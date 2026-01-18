@@ -26,7 +26,12 @@ services:
         arguments:
             $tools: !tagged_iterator synapse.tool
 
-    # Controllers
+    # Twig Integration
+    ArnaudMoncondhuy\SynapseBundle\Twig\SynapseRuntime:
+        tags: ['twig.runtime']
+
+    ArnaudMoncondhuy\SynapseBundle\Twig\SynapseExtension:
+        tags: ['twig.extension']
     ArnaudMoncondhuy\SynapseBundle\Controller\Api\ChatApiController:
         tags: ['controller.service_arguments']
 

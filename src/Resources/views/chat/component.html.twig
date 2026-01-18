@@ -9,6 +9,19 @@
 
 <div class="synapse-chat" data-controller="synapse--chat" data-synapse--chat-history-value="{{ history|default([])|json_encode|e('html_attr') }}">
 
+    {# Header #}
+    <div class="synapse-chat__header">
+        <div class="synapse-chat__title">Synapse AI</div>
+        <div class="synapse-chat__actions">
+            <button type="button" 
+                    class="synapse-chat__reset-btn" 
+                    data-action="click->synapse--chat#newConversation"
+                    title="Nouvelle conversation">
+                🗑️
+            </button>
+        </div>
+    </div>
+
     {# Messages Container #}
     <div class="synapse-chat__messages" data-synapse--chat-target="messages">
         <div class="synapse-chat__message synapse-chat__message--assistant">
@@ -57,6 +70,32 @@
         background: #f9fafb;
     }
 
+    /* Header Styles */
+    .synapse-chat__header {
+        background: #fff;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e5e7eb;
+        font-weight: 600;
+        color: #111827;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .synapse-chat__reset-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 1.2rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: background 0.2s;
+    }
+    
+    .synapse-chat__reset-btn:hover {
+        background: #f3f4f6;
+    }
+
     .synapse-chat__message {
         display: flex;
         gap: 12px;
@@ -85,24 +124,39 @@
         color: white;
     }
 
+    /* Old content wrapper, now transparent container for bubble + footer */
     .synapse-chat__content {
+        max-width: 85%;
+        display: flex;
+        flex-direction: column;
+        position: relative; /* CRITICAL FIX: Anchor for absolute footer */
+    }
+
+    .synapse-chat__message--user .synapse-chat__content {
+        align-items: flex-end; /* Align bubble and footer to right */
+    }
+
+    /* The colored bubble itself */
+    .synapse-chat__bubble {
         background: white;
         padding: 12px 16px;
         border-radius: 12px;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        color: #111827;
+        width: fit-content;
     }
 
-    .synapse-chat__message--user .synapse-chat__content {
+    .synapse-chat__message--user .synapse-chat__bubble {
         background: #3b82f6;
         color: white;
     }
 
-    .synapse-chat__content p {
+    .synapse-chat__bubble p {
         margin: 0;
         line-height: 1.5;
     }
 
-    .synapse-chat__content pre {
+    .synapse-chat__bubble pre {
         background: #f3f4f6;
         padding: 8px 12px;
         border-radius: 6px;
@@ -110,10 +164,10 @@
         font-size: 0.9em;
     }
 
-    .synapse-chat__message--user .synapse-chat__content pre {
+    .synapse-chat__message--user .synapse-chat__bubble pre {
         background: rgba(255, 255, 255, 0.1);
     }
-
+    
     .synapse-chat__input-area {
         padding: 16px;
         background: white;
@@ -193,30 +247,126 @@
         color: #92400e;
     }
 
-    .synapse-chat__thinking-content {
-        padding: 8px 12px;
-        font-size: 0.85em;
-        color: #78350f;
-        white-space: pre-wrap;
+    /* Footer & Meta Icons */
+    .synapse-chat__footer {
+        display: flex;
+        flex-direction: row;
+        gap: 4px;
+        
+        /* Absolute Positioning System */
+        position: absolute;
+        right: -50px; /* Push outside to the right */
+        bottom: 0;    /* Align with bottom of bubble */
+        
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+        pointer-events: none; /* Prevent accidental clicks when invisible */
     }
 
-    /* Debug block */
+    /* Show footer on hover OR if any details inside are open */
+    .synapse-chat__message:hover .synapse-chat__footer,
+    .synapse-chat__footer:has(details[open]) {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* State: OPEN (Reasoning/Debug text visible) */
+    /* When open, we MUST bring it back into flow to show the big text, otherwise it's a tiny column on the right. */
+    .synapse-chat__footer:has(details[open]) {
+        position: static; /* Back to flow */
+        margin-top: 8px;
+        right: auto;
+        bottom: auto;
+         width: 100%; /* Full width */
+    }
+    
+    .synapse-chat__footer:has(details[open]) .synapse-chat__thinking,
+    .synapse-chat__footer:has(details[open]) .synapse-chat__debug {
+        width: 100%;
+    }
+
+    .synapse-chat__thinking,
     .synapse-chat__debug {
-        background: #1f2937;
-        color: #e5e7eb;
-        border-radius: 8px;
-        margin-bottom: 12px;
+        background: transparent;
+        border-radius: 6px;
+        border: 1px solid transparent; 
+        overflow: hidden;
+        margin: 0;
+        backdrop-filter: blur(4px); /* Nice touch for floating icons */
     }
 
+    /* Show border only when open */
+    .synapse-chat__thinking[open],
+    .synapse-chat__debug[open] {
+        border-color: #e5e7eb;
+        width: 100%;
+        margin-top: 8px; /* Give space when expanded */
+    }
+
+    /* Fix summary marker */
+    .synapse-chat__thinking summary,
     .synapse-chat__debug summary {
-        padding: 8px 12px;
+        padding: 6px; /* Square touch target */
         cursor: pointer;
-        font-size: 0.9em;
+        color: #9ca3af; /* Lighter grey */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s, transform 0.2s;
+        list-style: none;
+    }
+
+    /* Remove default triangle for Chrome/Safari */
+    .synapse-chat__thinking summary::-webkit-details-marker,
+    .synapse-chat__debug summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .synapse-chat__thinking summary:hover,
+    .synapse-chat__debug summary:hover {
+        color: #4b5563;
+        transform: scale(1.1);
+        background: rgba(0,0,0,0.05);
+        border-radius: 50%;
+    }
+
+    /* When open, change summary style to be a header */
+    .synapse-chat__thinking[open] summary,
+    .synapse-chat__debug[open] summary {
+        background: #f3f4f6;
+        border-radius: 6px 6px 0 0;
+        width: 100%;
+        justify-content: flex-start;
+        padding: 8px 12px;
+        color: #374151;
+        font-weight: 500;
+        font-size: 0.85em;
+        gap: 8px;
+    }
+    
+    /* Reveal text label when open */
+    .synapse-chat__thinking[open] summary::after {
+        content: 'Raisonnement';
+    }
+    .synapse-chat__debug[open] summary::after {
+        content: 'Debug info';
+    }
+
+    /* Content Styling */
+    .synapse-chat__thinking-content {
+        padding: 10px;
+        font-size: 0.85em;
+        color: #4b5563;
+        background: #fff;
+        line-height: 1.5;
+        border-top: 1px solid #f3f4f6;
     }
 
     .synapse-chat__debug-content {
-        padding: 8px 12px;
+        padding: 10px;
         font-size: 0.8em;
+        background: #1f2937;
+        color: #e5e7eb;
         font-family: monospace;
     }
 </style>
