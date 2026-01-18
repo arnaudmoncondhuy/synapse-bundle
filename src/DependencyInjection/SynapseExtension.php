@@ -33,11 +33,6 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
                 'paths' => [
                     realpath(dirname(__DIR__, 2) . '/assets') => 'synapse',
                 ],
-                'importmap' => [
-                    'synapse/controllers/chat_controller.js' => [
-                        'path' => 'synapse/controllers/chat_controller.js',
-                    ],
-                ],
             ],
         ]);
     }
