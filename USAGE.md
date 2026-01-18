@@ -165,6 +165,13 @@ Vous pouvez vérifier que les assets sont bien chargés :
 php bin/console debug:asset-map
 ```
 
+> [!NOTE]
+> Si vous utilisez le bundle en tant que **dépôt local** (path repository) et que vous rencontrez l'erreur "Failed to resolve module specifier" dans la console du navigateur, assurez-vous que `importmap:require` a bien fonctionné ou ajoutez manuellement l'entrée dans votre `importmap.php` :
+> ```php
+> 'synapse/controllers/chat_controller.js' => ['path' => 'synapse/controllers/chat_controller.js'],
+> ```
+> (Normalement, le bundle tente de le faire automatiquement via son Extension).
+
 Puis surchargez l'alias dans `services.yaml` :
 
 ```yaml
