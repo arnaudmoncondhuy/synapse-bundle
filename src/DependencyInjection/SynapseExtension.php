@@ -46,6 +46,9 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $container->setParameter('synapse.gemini_api_key', $config['gemini_api_key']);
         $container->setParameter('synapse.model', $config['model']);
 
+        $personasPath = $config['personas_path'] ?? (dirname(__DIR__, 1) . '/Resources/config/personas.json');
+        $container->setParameter('synapse.personas_path', $personasPath);
+
         // Load services.yaml
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yaml');

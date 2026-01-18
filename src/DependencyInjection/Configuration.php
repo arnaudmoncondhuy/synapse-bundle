@@ -15,15 +15,19 @@ class Configuration implements ConfigurationInterface
 
         $treeBuilder->getRootNode()
             ->children()
-                ->scalarNode('gemini_api_key')
-                    ->isRequired()
-                    ->cannotBeEmpty()
-                    ->info('Your Google Gemini API key.')
-                ->end()
-                ->scalarNode('model')
-                    ->defaultValue('gemini-2.0-flash')
-                    ->info('The Gemini model to use for generation.')
-                ->end()
+            ->scalarNode('gemini_api_key')
+            ->isRequired()
+            ->cannotBeEmpty()
+            ->info('Your Google Gemini API key.')
+            ->end()
+            ->scalarNode('model')
+            ->defaultValue('gemini-2.0-flash')
+            ->info('The Gemini model to use for generation.')
+            ->end()
+            ->scalarNode('personas_path')
+            ->defaultNull()
+            ->info('Path to your custom personas.json file. If null, it will use the bundle default.')
+            ->end()
             ->end();
 
         return $treeBuilder;

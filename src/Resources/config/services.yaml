@@ -24,7 +24,7 @@ services:
     # Logic
     ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry:
         arguments:
-            $configPath: '%kernel.project_dir%/vendor/arnaud-moncondhuy/synapse-bundle/src/Resources/config/personas.json'
+            $configPath: '%synapse.personas_path%'
 
     ArnaudMoncondhuy\SynapseBundle\Service\PromptBuilder:
         arguments:
