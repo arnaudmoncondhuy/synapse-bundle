@@ -10,10 +10,33 @@ use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
-class SynapseExtension extends Extension
+class SynapseExtension extends Extension implements PrependExtensionInterface
 {
+    /**
+     * Configure Twig namespace and AssetMapper paths.
+     */
+    public function prepend(ContainerBuilder $container): void
+    {
+        // Register Twig namespace @Synapse
+        $container->prependExtensionConfig('twig', [
+            'paths' => [
+                __DIR__ . '/../Resources/views' => 'Synapse',
+            ],
+        ]);
+
+        // Register assets for AssetMapper (Stimulus controllers)
+        $container->prependExtensionConfig('framework', [
+            'asset_mapper' => [
+                'paths' => [
+                    dirname(__DIR__, 2) . '/assets' => '@synapse',
+                ],
+            ],
+        ]);
+    }
+
     public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();

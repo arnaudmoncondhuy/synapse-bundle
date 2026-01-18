@@ -102,7 +102,7 @@ export default class extends Controller {
 
         } catch (error) {
             this.setLoading(false);
-            this.addMessage('Sorry, an error occurred: ' + error.message, 'assistant');
+            this.addMessage('Désolé, une erreur est survenue : ' + error.message, 'assistant');
         } finally {
             this.setLoading(false);
             this.inputTarget.focus();
@@ -141,7 +141,7 @@ export default class extends Controller {
                     <div class="synapse-chat__message synapse-chat__message--assistant">
                         <div class="synapse-chat__avatar">🤖</div>
                         <div class="synapse-chat__content">
-                            <p>New conversation started! How can I help you?</p>
+                            <p>Nouvelle conversation démarrée ! Comment puis-je vous aider ?</p>
                         </div>
                     </div>
                 `;
@@ -168,7 +168,7 @@ export default class extends Controller {
 
                 thinkingHtml += `
                     <details class="synapse-chat__thinking">
-                        <summary>🧠 Analysis & Reasoning</summary>
+                        <summary>🧠 Analyse & Raisonnement</summary>
                         <div class="synapse-chat__thinking-content">${this.escapeHtml(thinkingContent.trim())}</div>
                     </details>
                 `;
@@ -191,17 +191,17 @@ export default class extends Controller {
             const turnsInfo = debugData.turns.map((turn, index) => {
                 let badge = '';
                 if (turn.function_calls_count > 0) {
-                    badge = `<span style="background:#3b82f6;color:white;padding:2px 6px;border-radius:4px;font-size:0.75em;">Tool Call</span>`;
+                    badge = `<span style="background:#3b82f6;color:white;padding:2px 6px;border-radius:4px;font-size:0.75em;">Appel Outil</span>`;
                 } else if (index === debugData.turns.length - 1) {
-                    badge = `<span style="background:#22c55e;color:white;padding:2px 6px;border-radius:4px;font-size:0.75em;">Final Response</span>`;
+                    badge = `<span style="background:#22c55e;color:white;padding:2px 6px;border-radius:4px;font-size:0.75em;">Réponse Finale</span>`;
                 }
 
                 return `
                     <div style="margin-bottom:8px;padding-left:8px;border-left:2px solid #4b5563;">
-                        <strong>Turn ${turn.turn}</strong> ${badge}
+                        <strong>Tour ${turn.turn}</strong> ${badge}
                         <div style="color:#9ca3af;font-size:0.85em;">
-                            ${turn.has_text ? `Text: ${turn.text_length} chars` : 'No text'}
-                            ${turn.function_calls_count > 0 ? ` | Tools: ${turn.function_names.join(', ')}` : ''}
+                            ${turn.has_text ? `Texte : ${turn.text_length} car` : 'Aucun texte'}
+                            ${turn.function_calls_count > 0 ? ` | Outils : ${turn.function_names.join(', ')}` : ''}
                         </div>
                     </div>
                 `;
@@ -209,7 +209,7 @@ export default class extends Controller {
 
             debugHtml = `
                 <details class="synapse-chat__debug">
-                    <summary>🛠️ Debug Info (${debugData.total_turns} turns)</summary>
+                    <summary>🛠️ Info Debug (${debugData.total_turns} tours)</summary>
                     <div class="synapse-chat__debug-content">${turnsInfo}</div>
                 </details>
             `;
@@ -261,7 +261,7 @@ export default class extends Controller {
                 <div class="synapse-chat__message synapse-chat__message--assistant synapse-chat__loading" id="synapse-loading">
                     <div class="synapse-chat__avatar">🤖</div>
                     <div class="synapse-chat__content">
-                        <span class="synapse-chat__typing-dots">Thinking</span>
+                        <span class="synapse-chat__typing-dots">Réflexion</span>
                     </div>
                 </div>
             `);
