@@ -131,6 +131,40 @@ class DatabaseConversationHandler implements ConversationHandlerInterface
 }
 ```
 
+---
+
+## 🎨 Assets & Stimulus
+
+Le bundle utilise **AssetMapper** et **Stimulus**.
+
+### 1. Installation des dépendances JS
+
+Si vous utilisez Symfony Flex, les contrôleurs devraient être détectés. Sinon, ou pour forcer la mise à jour :
+
+```bash
+php bin/console importmap:require @arnaudmoncondhuy/synapse-bundle
+```
+
+### 2. Import dans votre application
+
+Assurez-vous d'importer le CSS (si pas déjà fait via le composant Twig) et d'enregistrer le contrôleur dans votre `assets/app.js` ou `assets/bootstrap.js` :
+
+```javascript
+// assets/bootstrap.js
+import { startStimulusApp } from '@symfony/stimulus-bundle';
+
+const app = startStimulusApp();
+// Les contrôleurs du bundle sont chargés automatiquement via controllers.json
+```
+
+### 3. Vérification
+
+Vous pouvez vérifier que les assets sont bien chargés :
+
+```bash
+php bin/console debug:asset-map
+```
+
 Puis surchargez l'alias dans `services.yaml` :
 
 ```yaml

@@ -10,30 +10,11 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use ArnaudMoncondhuy\SynapseBundle\DependencyInjection\SynapseExtension;
 
-class SynapseBundle extends Bundle implements PrependExtensionInterface
+class SynapseBundle extends Bundle
 {
     public function getContainerExtension(): ?ExtensionInterface
     {
         return new SynapseExtension();
-    }
-
-    /**
-     * Prepend configuration to expose assets via AssetMapper.
-     */
-    public function prepend(ContainerBuilder $container): void
-    {
-        // Add the bundle's assets directory to AssetMapper paths
-        $bundleAssetsPath = __DIR__ . '/../assets';
-
-        if (is_dir($bundleAssetsPath)) {
-            $container->prependExtensionConfig('framework', [
-                'asset_mapper' => [
-                    'paths' => [
-                        $bundleAssetsPath => 'synapse',
-                    ],
-                ],
-            ]);
-        }
     }
 
     public function getPath(): string

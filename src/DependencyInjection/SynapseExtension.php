@@ -31,7 +31,7 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $container->prependExtensionConfig('framework', [
             'asset_mapper' => [
                 'paths' => [
-                    dirname(__DIR__, 2) . '/assets' => '@synapse',
+                    realpath(dirname(__DIR__, 2) . '/assets') => 'synapse',
                 ],
             ],
         ]);

@@ -8,7 +8,7 @@
 #}
 
 {# Link the CSS (AssetMapper) #}
-<link rel="stylesheet" href="{{ asset('@synapse/styles/synapse.css') }}">
+<link rel="stylesheet" href="{{ asset('synapse/styles/synapse.css') }}">
 
 <div class="synapse-chat" data-controller="synapse--chat" data-synapse--chat-history-value="{{ history|default([])|json_encode|e('html_attr') }}">
 
