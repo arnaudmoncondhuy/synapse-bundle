@@ -17,14 +17,10 @@
     "symfony": {
         "controllers": {
             "chat": {
-                "name": "synapse--chat",
                 "main": "assets/controllers/chat_controller.js",
                 "fetch": "eager",
                 "enabled": true
             }
-        },
-        "importmap": {
-            "@hotwired/stimulus": "^3.0.0"
         }
     },
     "peerDependencies": {
