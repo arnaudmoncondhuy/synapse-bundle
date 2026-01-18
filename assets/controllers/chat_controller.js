@@ -7,8 +7,11 @@ import { Controller } from '@hotwired/stimulus';
  * rendering markdown, and displaying thinking/debug blocks.
  */
 export default class extends Controller {
-    static targets = ['messages', 'input', 'submitBtn'];
-    static values = { history: Array };
+    static targets = ['messages', 'input', 'submitBtn', 'debug'];
+    static values = { 
+        history: Array,
+        debug: { type: Boolean, default: false }
+    };
 
     connect() {
         this.scrollToBottom();
@@ -58,13 +61,19 @@ export default class extends Controller {
         this.inputTarget.style.height = 'auto';
         this.setLoading(true);
 
+        // Determine debug mode
+        let debugMode = this.debugValue;
+        if (this.hasDebugTarget) {
+            debugMode = this.debugTarget.type === 'checkbox' ? this.debugTarget.checked : !!this.debugTarget.value;
+        }
+
         try {
             const response = await fetch('/synapse/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: message,
-                    debug: true
+                    debug: debugMode
                 })
             });
 
