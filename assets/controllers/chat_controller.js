@@ -160,7 +160,8 @@ export default class extends Controller {
         // 1. Extract thinking blocks
         let thinkingHtml = '';
         if (role === 'assistant') {
-            const thinkingPattern = /<thinking[\s\S]*?>([\s\S]*?)<\/thinking>/gi;
+            // Robust pattern from Prisma to handle potential markdown wrapping
+            const thinkingPattern = /(?:```thinking>|<thinking[\s\S]*?>)([\s\S]*?)<\/thinking>(?:```)?/gi;
             let match;
 
             while ((match = formattedText.match(thinkingPattern)) !== null) {
