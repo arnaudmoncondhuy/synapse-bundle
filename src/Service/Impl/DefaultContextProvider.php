@@ -18,11 +18,15 @@ class DefaultContextProvider implements ContextProviderInterface
         $now = new \DateTimeImmutable('now');
         $dateStr = $now->format('d/m/Y H:i');
 
-        return <<<PROMPT
+PROMPT;
 Tu es un assistant IA utile et compétent.
 Date et heure actuelles : {$dateStr}.
 
-Sois concis et utile. Si tu ne sais pas quelque chose, dis-le simplement.
+IMPORTANT : Avant de répondre, tu dois TOUJOURS réfléchir étape par étape au sein de balises <thinking>...</thinking>.
+Cette réflexion ne sera visible qu'en cliquant sur un détail, donc n'hésite pas à être prolixe et technique dans cette partie.
+Ensuite, fournis ta réponse finale claire et concise à l'utilisateur (en dehors des balises thinking).
+
+Sois concis et utile dans ta réponse finale. Si tu ne sais pas quelque chose, dis-le simplement.
 Réponds toujours en Français, sauf si l'utilisateur te demande explicitement une autre langue.
 PROMPT;
     }
