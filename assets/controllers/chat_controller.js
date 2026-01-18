@@ -160,25 +160,13 @@ export default class extends Controller {
         // 1. Extract thinking blocks
         let thinkingHtml = '';
         if (role === 'assistant') {
-            // Robust pattern from Prisma to handle potential markdown wrapping
-            const thinkingPattern = /(?:```thinking>|<thinking[\s\S]*?>)([\s\S]*?)<\/thinking>(?:```)?/gi;
-            let match;
-
-            while ((match = formattedText.match(thinkingPattern)) !== null) {
-                const thinkingContent = match[1] || '';
-
-                thinkingHtml += `
-                    <details class="synapse-chat__thinking">
-                        <summary>🧠 Analyse & Raisonnement</summary>
-                        <div class="synapse-chat__thinking-content">${this.escapeHtml(thinkingContent.trim())}</div>
-                    </details>
-                `;
-
-                formattedText = formattedText.replace(match[0], '');
-            }
+            // Extraction plus robuste via parsing manuel pour éviter les pièges des Regex
+            const result = this.extractThinking(formattedText);
+            thinkingHtml = result.html;
+            formattedText = result.remainingText;
         }
 
-        // 2. Clean residual tags
+        // 2. Clean residual tags (sécurité)
         formattedText = formattedText
             .replace(/<\/?thinking>/gi, '')
             .trim();
@@ -231,6 +219,69 @@ export default class extends Controller {
 
         this.messagesTarget.insertAdjacentHTML('beforeend', html);
         this.scrollToBottom();
+    }
+
+    extractThinking(text) {
+        let html = '';
+        let remainingText = text;
+        const markers = [
+            { start: '<thinking>', end: '</thinking>' },
+            { start: '```thinking', end: '```' } // Ordre important : checking plus spécifique d'abord si besoin
+        ];
+
+        // On boucle tant qu'on trouve des marqueurs
+        let found = true;
+        while (found) {
+            found = false;
+            let bestMatch = null;
+
+            // Trouver le premier marqueur
+            for (const marker of markers) {
+                const startIndex = remainingText.indexOf(marker.start);
+                if (startIndex !== -1) {
+                    if (!bestMatch || startIndex < bestMatch.index) {
+                        bestMatch = { index: startIndex, marker: marker };
+                    }
+                }
+            }
+
+            if (bestMatch) {
+                found = true;
+                const { index, marker } = bestMatch;
+                const contentStart = index + marker.start.length;
+                let contentEnd = remainingText.indexOf(marker.end, contentStart);
+
+                // Cas spécifique Markdown : on ne veut pas s'arrêter sur un ``` imbriqué si possible, 
+                // mais c'est dur à deviner. Pour l'instant, on prend le premier ``` fermant trouvé
+                // SAUF si c'est immédiatement collé (cas vide)
+
+                let extractedContent = '';
+                let fullMatchLength = 0;
+
+                if (contentEnd === -1) {
+                    // Pas de fin trouvée : on prend tout le reste (cas de flux coupé ou oubli IA)
+                    extractedContent = remainingText.substring(contentStart);
+                    remainingText = remainingText.substring(0, index); // On enlève le bloc du texte principal
+                } else {
+                    extractedContent = remainingText.substring(contentStart, contentEnd);
+                    const matchEnd = contentEnd + marker.end.length;
+
+                    // Reconstruction du texte sans le bloc de pensée
+                    remainingText = remainingText.substring(0, index) + remainingText.substring(matchEnd);
+                }
+
+                if (extractedContent.trim().length > 0) {
+                    html += `
+                        <details class="synapse-chat__thinking">
+                            <summary>🧠 Analyse & Raisonnement</summary>
+                            <div class="synapse-chat__thinking-content">${this.escapeHtml(extractedContent.trim())}</div>
+                        </details>
+                    `;
+                }
+            }
+        }
+
+        return { html, remainingText };
     }
 
     parseMarkdown(text) {
