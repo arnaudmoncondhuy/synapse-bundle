@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Service;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
-use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient;
 use ArnaudMoncondhuy\SynapseBundle\Util\TextUtil;
@@ -28,7 +27,7 @@ class ChatService
      */
     public function __construct(
         private GeminiClient $geminiClient,
-        private ContextProviderInterface $contextProvider,
+        private PromptBuilder $promptBuilder,
         private ConversationHandlerInterface $conversationHandler,
         private iterable $tools,
     ) {
@@ -57,7 +56,7 @@ class ChatService
         }
 
         // Build context
-        $systemInstruction = $this->contextProvider->getSystemPrompt();
+        $systemInstruction = $this->promptBuilder->buildSystemInstruction();
         $toolDefinitions = $this->buildToolDefinitions();
 
         // Load history

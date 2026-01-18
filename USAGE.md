@@ -1,0 +1,140 @@
+# SynapseBundle - Guide d'Utilisation
+
+Ce document détaille comment intégrer et étendre `SynapseBundle` dans votre application Symfony.
+
+## 🧠 Architecture des Prompts (3 Couches)
+
+Le bundle utilise une architecture en 3 couches pour construire le contexte de l'IA :
+
+1.  **Prompt Technique (Interne)** : Géré par le Bundle. Injecte les règles strictes de formatage (blocs `<thinking>`) et de sécurité. Vous n'avez pas à vous en soucier, mais sachez qu'il est toujours présent en premier.
+2.  **Prompt Système (Applicatif)** : C'est ici que vous définissez **votre** contexte. Qui est l'IA ? Quelle est la date ? Quelles sont les règles métier ?
+3.  **Prompt Utilisateur** : La demande de l'utilisateur final.
+
+---
+
+## 🛠️ Personnaliser le Contexte (Prompt Système)
+
+Par défaut, le bundle utilise un contexte minimal (Date + "Tu es un assistant utile").
+Pour définir votre propre contexte (ex: "Tu es un expert en Symfony"), vous devez implémenter `ContextProviderInterface`.
+
+### 1. Créer votre Provider
+
+```php
+// src/Service/MyAppContextProvider.php
+namespace App\Service;
+
+use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
+
+class MyAppContextProvider implements ContextProviderInterface
+{
+    public function getSystemPrompt(): string
+    {
+        // Vous pouvez injecter d'autres services ici (ex: UserContext, Config...)
+        $date = (new \DateTime())->format('d/m/Y H:i');
+        
+        return <<<PROMPT
+Tu es l'assistant virtuel de l'application "MonSiteWeb".
+Nous sommes le {$date}.
+
+Tes objectifs :
+1. Aider les utilisateurs à naviguer.
+2. Répondre de manière courtoise.
+PROMPT;
+    }
+
+    public function getInitialContext(): array
+    {
+        return [];
+    }
+}
+```
+
+### 2. Surcharger le service par défaut
+
+Dans votre `services.yaml` :
+
+```yaml
+services:
+    # ...
+
+    # Dire au bundle d'utiliser VOTRE provider à la place de celui par défaut
+    ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface:
+        alias: App\Service\MyAppContextProvider
+```
+
+---
+
+## 🔧 Créer des Outils (Tools)
+
+Les outils permettent à l'IA d'interagir avec votre code (ex: chercher en base de données, envoyer un mail).
+
+Il suffit d'implémenter `AiToolInterface`. Le bundle détectera automatiquement tous les services implémentant cette interface.
+
+```php
+// src/Service/Tool/ProductSearchTool.php
+namespace App\Service\Tool;
+
+use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
+
+class ProductSearchTool implements AiToolInterface
+{
+    public function getName(): string 
+    { 
+        return 'search_products'; // Nom unique pour l'IA
+    }
+
+    public function getDescription(): string 
+    { 
+        return 'Recherche des produits par mot-clé.'; 
+    }
+
+    public function getInputSchema(): array 
+    { 
+        // Schéma JSON Schema pour les paramètres
+        return [
+            'type' => 'object',
+            'properties' => [
+                'query' => ['type' => 'string', 'description' => 'Le mot clé de recherche'],
+                'limit' => ['type' => 'integer', 'description' => 'Nombre max de résultats'],
+            ],
+            'required' => ['query']
+        ];
+    }
+
+    public function execute(array $parameters): mixed 
+    {
+        $query = $parameters['query'];
+        // ... Logique de recherche ...
+        return ['result 1', 'result 2'];
+    }
+}
+```
+
+---
+
+## 💾 Gestion de l'Historique
+
+Par défaut, l'historique est stocké en **Session**.
+Si vous voulez stocker les conversations en **Base de Données**, implémentez `ConversationHandlerInterface`.
+
+```php
+// src/Service/DatabaseConversationHandler.php
+namespace App\Service;
+
+use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
+
+class DatabaseConversationHandler implements ConversationHandlerInterface
+{
+    public function loadHistory(): array { /* ... SELECT ... */ }
+    public function saveHistory(array $history): void { /* ... INSERT/UPDATE ... */ }
+    public function clearHistory(): void { /* ... DELETE ... */ }
+}
+```
+
+Puis surchargez l'alias dans `services.yaml` :
+
+```yaml
+services:
+    ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface:
+        alias: App\Service\DatabaseConversationHandler
+```

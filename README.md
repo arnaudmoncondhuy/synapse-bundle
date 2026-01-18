@@ -33,27 +33,30 @@ synapse:
 
 ## Usage
 
-### Include the chat component in your Twig template:
+> 📖 **Documentation Complète** : Voir [USAGE.md](USAGE.md) pour les détails d'implémentation avancée.
+
+### Architecture des Prompts
+Le bundle gère les prompts en 3 couches :
+1. **Technical Prompt** (Interne) : Règles de formatage et de pensée (`<thinking>`).
+2. **System Prompt** (Applicatif) : Votre contexte métier (Date, Rôle...).
+3. **User Prompt** : La demande de l'utilisateur.
+
+### Integration Rapide
+
+Ajoutez le composant chat dans votre template Twig :
 
 ```twig
 {{ include('@Synapse/chat/component.html.twig') }}
 ```
 
-### Create custom AI tools:
+### Créer des Outils
+Implémentez simplement `AiToolInterface`. Vos services seront automatiquement détectés.
 
 ```php
-use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
-
-class DateTool implements AiToolInterface
-{
-    public function getName(): string { return 'get_current_date'; }
-    public function getDescription(): string { return 'Returns the current date.'; }
-    public function getInputSchema(): array { return ['type' => 'object', 'properties' => []]; }
-    public function execute(array $parameters): string { return (new \DateTime())->format('Y-m-d H:i:s'); }
-}
+class DateTool implements AiToolInterface { ... }
 ```
 
-Tools are auto-discovered via Symfony's autoconfiguration.
+Voir [USAGE.md](USAGE.md#-%EF%B8%8F-cr%C3%A9er-des-outils-tools) pour un exemple complet.
 
 ## License
 
