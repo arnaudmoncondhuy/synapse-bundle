@@ -17,6 +17,18 @@
         <div class="synapse-chat__header">
             <div class="synapse-chat__title">Synapse AI</div>
             <div class="synapse-chat__actions">
+                {% set personas = synapse_get_personas() %}
+                {% if personas is not empty %}
+                    <select class="synapse-chat__persona-selector" 
+                            data-synapse--chat-target="personaSelect"
+                            title="Choisir une personnalité">
+                        <option value="">L'Assistant (Défaut)</option>
+                        {% for p in personas %}
+                            <option value="{{ p.key }}">{{ p.emoji }} {{ p.name }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+
                 <button type="button" 
                         class="synapse-chat__reset-btn" 
                         data-action="click->synapse--chat#newConversation"

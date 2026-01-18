@@ -56,7 +56,8 @@ class ChatService
         }
 
         // Build context
-        $systemInstruction = $this->promptBuilder->buildSystemInstruction();
+        $personaKey = $options['persona'] ?? null;
+        $systemInstruction = $this->promptBuilder->buildSystemInstruction($personaKey);
         $toolDefinitions = $this->buildToolDefinitions();
 
         // Load history

@@ -83,6 +83,28 @@
     transition: background 0.2s;
 }
 
+.synapse-chat__persona-selector {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--synapse-border-color-light);
+    background-color: var(--synapse-bg-primary);
+    color: var(--synapse-text-primary);
+    font-family: inherit;
+    font-size: 0.9em;
+    cursor: pointer;
+    margin-right: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.synapse-chat__persona-selector:hover {
+    border-color: var(--synapse-border-color);
+}
+
+.synapse-chat__persona-selector:focus {
+    border-color: var(--synapse-accent-color);
+}
+
 .synapse-chat__reset-btn:hover {
     background: var(--synapse-bg-secondary);
 }

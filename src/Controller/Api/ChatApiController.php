@@ -26,7 +26,12 @@ class ChatApiController extends AbstractController
         $options = $data['options'] ?? [];
         $options['debug'] = $data['debug'] ?? false;
 
-        $response = new StreamedResponse(function () use ($message, $options) {
+        $response = new StreamedResponse(function () use ($message, $options, $request) {
+            // CRITICAL: Close session to prevent file locking during long stream
+            if ($request->hasSession()) {
+                $request->getSession()->save();
+            }
+
             // Helper to send NDJSON event
             $sendEvent = function (string $type, mixed $payload): void {
                 echo json_encode(['type' => $type, 'payload' => $payload], JSON_INVALID_UTF8_IGNORE) . "\n";
