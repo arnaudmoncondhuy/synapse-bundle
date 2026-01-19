@@ -50,7 +50,7 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $container->setParameter('synapse.personas_path', $personasPath);
 
         // Load services.yaml
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('services.yaml');
 
         // Autoconfiguration: Tag classes implementing our interfaces
