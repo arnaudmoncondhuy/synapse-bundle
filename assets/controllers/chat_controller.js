@@ -160,7 +160,9 @@ export default class extends Controller {
             if (data.success) {
                 this.messagesTarget.innerHTML = `
                     <div class="synapse-chat__message synapse-chat__message--assistant">
-                        <div class="synapse-chat__avatar">🤖</div>
+                        <div class="synapse-chat__avatar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="synapse-chat__icon-ai"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                        </div>
                         <div class="synapse-chat__content">
                             <div class="synapse-chat__bubble">
                                 <p>Nouvelle conversation démarrée ! Comment puis-je vous aider ?</p>
@@ -215,7 +217,8 @@ export default class extends Controller {
         }
 
         // 5. Build HTML (Footer structure)
-        const avatarContent = role === 'user' ? '👤' : '🤖';
+        const aiIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="synapse-chat__icon-ai"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>`;
+        const avatarContent = role === 'user' ? '👤' : aiIcon;
 
         let footerHtml = '';
         if (thinkingHtml || debugHtml) {
@@ -286,7 +289,10 @@ export default class extends Controller {
         if (isLoading) {
             this.messagesTarget.insertAdjacentHTML('beforeend', `
                 <div class="synapse-chat__message synapse-chat__message--assistant synapse-chat__loading" id="synapse-loading">
-                    <div class="synapse-chat__avatar">🤖</div>
+                    <div class="synapse-chat__avatar synapse-chat__avatar--loading">
+                        <div class="synapse-chat__spinner"></div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="synapse-chat__icon-ai"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                    </div>
                     <div class="synapse-chat__content">
                         <span class="synapse-chat__typing-dots">Réflexion</span>
                     </div>

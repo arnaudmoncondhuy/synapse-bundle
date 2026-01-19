@@ -130,6 +130,7 @@
     justify-content: center;
     background: var(--synapse-border-color-light);
     flex-shrink: 0;
+    position: relative;
 }
 
 .synapse-chat__message--user .synapse-chat__avatar {
@@ -265,6 +266,36 @@
     100% {
         content: '...';
     }
+}
+
+/* AI Spinner */
+.synapse-chat__spinner {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    width: calc(100% + 8px);
+    height: calc(100% + 8px);
+    border-radius: 50%;
+    border: 2px solid transparent;
+    border-top-color: var(--synapse-accent-color);
+    animation: synapse-spin 1s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes synapse-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Fix vertical alignment for loading state */
+.synapse-chat__loading {
+    align-items: center !important;
+}
+
+.synapse-chat__loading .synapse-chat__content {
+    margin-top: 0;
+    /* Clear any default margins */
 }
 
 /* Thinking & Debug (Copied and variable-ized) */
