@@ -92,11 +92,18 @@ class ChatService
                 $onStatusUpdate('Réflexion supplémentaire...', 'thinking');
             }
 
+            $debugAccumulator['system_prompt'] = $systemInstruction;
+            $debugAccumulator['history'] = $contents;
+
             $response = $this->geminiClient->generateContent(
                 $systemInstruction,
                 $contents,
                 $toolDefinitions
             );
+
+            if ($options['debug'] ?? false) {
+                $debugAccumulator['raw_response'] = $response;
+            }
 
             $parts = $response['parts'] ?? [];
             $currentTurnText = '';

@@ -258,6 +258,11 @@
     background: var(--synapse-thinking-bg);
     border-radius: 8px;
     margin-bottom: 12px;
+    display: none; /* Hidden by default */
+}
+
+.synapse-chat--debug-mode .synapse-chat__thinking {
+    display: block; /* Visible in debug mode */
 }
 
 .synapse-chat__thinking summary {

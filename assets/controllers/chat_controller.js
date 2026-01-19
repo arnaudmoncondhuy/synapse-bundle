@@ -17,6 +17,14 @@ export default class extends Controller {
         this.scrollToBottom();
         this.inputTarget.focus();
 
+        // Check for debug mode in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        this.isDebugMode = urlParams.has('debug') || this.debugValue; // Keep value support just in case
+
+        if (this.isDebugMode) {
+            this.element.classList.add('synapse-chat--debug-mode');
+        }
+
         // Restore history if present
         if (this.historyValue && this.historyValue.length > 0) {
             this.loadHistory(this.historyValue);
@@ -62,10 +70,7 @@ export default class extends Controller {
         this.setLoading(true);
 
         // Determine debug mode
-        let debugMode = this.debugValue;
-        if (this.hasDebugTarget) {
-            debugMode = this.debugTarget.type === 'checkbox' ? this.debugTarget.checked : !!this.debugTarget.value;
-        }
+        const debugMode = this.isDebugMode;
 
         // Get Persona
         let persona = null;
@@ -191,36 +196,23 @@ export default class extends Controller {
         formattedText = this.parseMarkdown(formattedText);
 
         // 4. Debug info
+        // 4. Debug info (Popup Button)
         let debugHtml = '';
-        if (debugData && debugData.turns) {
-            const turnsInfo = debugData.turns.map((turn, index) => {
-                let badge = '';
-                if (turn.function_calls_count > 0) {
-                    badge = `<span style="background:#3b82f6;color:white;padding:2px 6px;border-radius:4px;font-size:0.75em;">Appel Outil</span>`;
-                } else if (index === debugData.turns.length - 1) {
-                    badge = `<span style="background:#22c55e;color:white;padding:2px 6px;border-radius:4px;font-size:0.75em;">Réponse Finale</span>`;
-                }
+        if (this.isDebugMode && debugData) {
+            // Store debug data in a way accessible to the click handler
+            // Since we're delivering HTML string, we'll use a data attribute with encoded JSON
+            // BEWARE: Large JSON in data attributes can be heavy, but functional for this scale.
+            const debugJson = JSON.stringify(debugData).replace(/"/g, '&quot;');
 
-                return `
-                    <div style="margin-bottom:8px;padding-left:8px;border-left:2px solid #4b5563;">
-                        <strong>Tour ${turn.turn}</strong> ${badge}
-                        <div style="color:#d1d5db;font-size:0.85em;">
-                            ${turn.has_text ? `Texte : ${turn.text_length} car` : 'Aucun texte'}
-                            ${turn.function_calls_count > 0 ? ` | Outils : ${turn.function_names.join(', ')}` : ''}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // SVGs for monochrome icons
-            const svgSparkles = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>`;
             const svgWrench = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`;
 
             debugHtml = `
-                <details class="synapse-chat__debug">
-                    <summary title="Debug (${debugData.total_turns} tours)">${svgWrench}</summary>
-                    <div class="synapse-chat__debug-content">${turnsInfo}</div>
-                </details>
+                <button type="button" class="synapse-chat__debug-trigger" 
+                        onclick="window.synapseOpenDebug(this)" 
+                        data-debug="${debugJson}"
+                        title="Ouvrir Debug">
+                    ${svgWrench}
+                </button>
             `;
         }
 
@@ -355,3 +347,65 @@ export default class extends Controller {
         this.messagesTarget.scrollTop = this.messagesTarget.scrollHeight;
     }
 }
+
+// Global helper for opening debug popup (to avoid rigorous event binding on dynamic HTML)
+window.synapseOpenDebug = function (btn) {
+    const data = JSON.parse(btn.getAttribute('data-debug'));
+
+    const win = window.open('', 'SynapseDebug', 'width=800,height=900');
+    if (!win) return;
+
+    const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Synapse Debug Details</title>
+            <style>
+                body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; background: #f9fafb; color: #111827; }
+                h1 { border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+                h2 { margin-top: 30px; color: #374151; display: flex; align-items: center; gap: 8px; }
+                pre { background: #1f2937; color: #f3f4f6; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 14px; }
+                .badge { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+                .turn { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+                .turn-header { font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; }
+                .thinking { background: #fffbeb; border-left: 4px solid #fcd34d; padding: 10px; margin: 10px 0; color: #92400e; font-style: italic; }
+            </style>
+        </head>
+        <body>
+            <h1>🤖 Synapse Debug Infos</h1>
+            
+            <section>
+                <h2>📜 Prompt Système</h2>
+                <pre>${data.system_prompt || 'Non disponible'}</pre>
+            </section>
+
+            <section>
+                <h2>🔄 Historique de conversation</h2>
+                <pre>${JSON.stringify(data.history || [], null, 2)}</pre>
+            </section>
+
+            <section>
+                <h2>⚡ Cycles de réflexion (Turns)</h2>
+                ${(data.turns || []).map(t => `
+                    <div class="turn">
+                        <div class="turn-header">
+                            <span>Tour ${t.turn}</span>
+                            <span>${t.function_calls_count > 0 ? '<span class="badge">Outils</span>' : ''}</span>
+                        </div>
+                        <div>Arguments: <pre>${JSON.stringify(t.args || {}, null, 2)}</pre></div>
+                        <div>Résultat partiel: ${t.text_content ? t.text_content.substring(0, 100) + '...' : '(vide)'}</div>
+                    </div>
+                `).join('')}
+            </section>
+
+            <section>
+                <h2>📡 Réponse API Brute</h2>
+                <pre>${JSON.stringify(data.raw_response || {}, null, 2)}</pre>
+            </section>
+        </body>
+        </html>
+    `;
+
+    win.document.write(html);
+    win.document.close();
+};
