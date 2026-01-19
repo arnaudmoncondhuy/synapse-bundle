@@ -10,12 +10,16 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Cache\CacheInterface;
+use Twig\Environment;
 
 #[Route('/synapse/api')]
 class ChatApiController extends AbstractController
 {
     public function __construct(
         private ChatService $chatService,
+        private Environment $twig,
+        private CacheInterface $cache
     ) {
     }
 
@@ -29,8 +33,6 @@ class ChatApiController extends AbstractController
             $profiler->disable();
         }
 
-        // error_log('DEBUG SYNAPSE: Chat Controller Appelé'); // Décommentez si besoin de debug
-
         $data = json_decode($request->getContent(), true) ?? [];
         $message = $data['message'] ?? '';
         $options = $data['options'] ?? [];
@@ -39,8 +41,6 @@ class ChatApiController extends AbstractController
         $response = new StreamedResponse(function () use ($message, $options, $request) {
 
             // 3. On ferme la session immédiatement au début du flux.
-            // Cela évite de bloquer le navigateur (session locking) pendant la génération du texte,
-            // tout en ayant permis au ChatService de récupérer l'ID de session juste avant.
             if ($request->hasSession() && $request->getSession()->isStarted()) {
                 $request->getSession()->save();
             }
@@ -64,6 +64,22 @@ class ChatApiController extends AbstractController
 
                 // Execute chat
                 $result = $this->chatService->ask($message, $options, $onStatusUpdate);
+
+                // Server-Side Rendering of Debug View (to avoid needing a dedicated route)
+                if (($options['debug'] ?? false) && isset($result['debug_id'])) {
+                    $debugData = $this->cache->get("synapse_debug_{$result['debug_id']}", fn() => null);
+
+                    if ($debugData) {
+                        try {
+                            $result['debug_html'] = $this->twig->render('@Synapse/debug/show.html.twig', [
+                                'id' => $result['debug_id'],
+                                'debug' => $debugData,
+                            ]);
+                        } catch (\Exception $e) {
+                            $result['debug_error'] = 'Could not render debug view: ' . $e->getMessage();
+                        }
+                    }
+                }
 
                 // Send final result
                 $sendEvent('result', $result);
