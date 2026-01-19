@@ -242,12 +242,17 @@ export default class extends Controller {
 
         let remainingText = text;
 
-        // Regex simple pour supprimer les blocs thinking complets
-        // On gère le greedy matching pour supprimer tout le bloc
+        // 1. Supprimer les blocs <thinking> standard
         remainingText = remainingText.replace(/<thinking>[\s\S]*?<\/thinking>/g, '');
+
+        // 2. Supprimer les blocs markdown ```thinking
         remainingText = remainingText.replace(/```thinking[\s\S]*?```/g, '');
 
-        // Nettoyage résiduel éventuel
+        // 3. Supprimer d'éventuels backticks orphelins (souvent laissés par un parsing partiel)
+        // On supprime les lignes qui ne contiennent que des backticks ```
+        remainingText = remainingText.replace(/^\s*```\s*$/gm, '');
+
+        // 4. Nettoyage final des espaces multiples
         remainingText = remainingText.trim();
 
         return { html: '', remainingText }; // HTML vide = pas d'étincelle

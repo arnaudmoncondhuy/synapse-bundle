@@ -1,0 +1,13 @@
+{
+    "bundles": {
+        "ArnaudMoncondhuy\\SynapseBundle\\SynapseBundle": [
+            "all"
+        ]
+    },
+    "copy-from-recipe": {
+        "config/": "%CONFIG_DIR%/"
+    },
+    "env": {
+        "GEMINI_API_KEY": "change_me"
+    }
+}

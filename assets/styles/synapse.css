@@ -289,35 +289,25 @@
 }
 
 /* Footer & Meta Icons */
+/* Footer & Meta Icons - Simplified (Always Visible) */
 .synapse-chat__footer {
     display: flex;
     flex-direction: row;
-    gap: 4px;
-    position: absolute;
-    right: -50px;
-    bottom: 0;
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
-    pointer-events: none;
-}
-
-.synapse-chat__message:hover .synapse-chat__footer,
-.synapse-chat__footer:has(details[open]) {
+    gap: 8px;
+    margin-top: 6px;
     opacity: 1;
+    /* Always visible */
     pointer-events: auto;
 }
 
-.synapse-chat__footer:has(details[open]) {
-    position: static;
-    margin-top: 8px;
-    right: auto;
-    bottom: auto;
-    width: 100%;
-}
-
-.synapse-chat__footer:has(details[open]) .synapse-chat__thinking,
-.synapse-chat__footer:has(details[open]) .synapse-chat__debug {
-    width: 100%;
+/* Remove complex hover/has logic */
+.synapse-chat__thinking,
+.synapse-chat__debug {
+    background: transparent;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    overflow: hidden;
+    margin: 0;
 }
 
 .synapse-chat__thinking,
