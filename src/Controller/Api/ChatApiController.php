@@ -10,16 +10,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Contracts\Cache\CacheInterface;
-use Twig\Environment;
 
 #[Route('/synapse/api')]
 class ChatApiController extends AbstractController
 {
     public function __construct(
         private ChatService $chatService,
-        private Environment $twig,
-        private CacheInterface $cache
     ) {
     }
 
@@ -64,22 +60,6 @@ class ChatApiController extends AbstractController
 
                 // Execute chat
                 $result = $this->chatService->ask($message, $options, $onStatusUpdate);
-
-                // Server-Side Rendering of Debug View (to avoid needing a dedicated route)
-                if (($options['debug'] ?? false) && isset($result['debug_id'])) {
-                    $debugData = $this->cache->get("synapse_debug_{$result['debug_id']}", fn() => null);
-
-                    if ($debugData) {
-                        try {
-                            $result['debug_html'] = $this->twig->render('@Synapse/debug/show.html.twig', [
-                                'id' => $result['debug_id'],
-                                'debug' => $debugData,
-                            ]);
-                        } catch (\Exception $e) {
-                            $result['debug_error'] = 'Could not render debug view: ' . $e->getMessage();
-                        }
-                    }
-                }
 
                 // Send final result
                 $sendEvent('result', $result);

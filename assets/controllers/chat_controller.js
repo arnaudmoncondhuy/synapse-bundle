@@ -196,35 +196,17 @@ export default class extends Controller {
         formattedText = this.parseMarkdown(formattedText);
 
         // 4. Debug info
-        // 4. Debug info (Popup Button)
-        let debugHtml = '';
         // 4. Debug info (Server-Side Link)
-        // 4. Debug info (Server-Side Rendered Payload)
         let debugHtml = '';
-        if (this.isDebugMode && debugData && debugData.debug_html) {
+        if (this.isDebugMode && debugData && debugData.debug_id) {
             const svgWrench = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`;
 
-            // On encode le HTML en Base64 pour le passer proprement dans l'attribut onclick sans casser les quotes
-            // Ou mieux : on le stocke dans un dataset sur le bouton et on le lit au clic
-            // ATTENTION : Le HTML peut être gros. Le mettre dans le DOM peut être lourd mais c'est le plus simple.
-
-            // Pour éviter les problèmes d'échappement, on va utiliser encodeURIComponent pour le stockage
-            const encodedHtml = encodeURIComponent(debugData.debug_html);
-
-            const onClickAction = `
-                const win = window.open('', 'SynapseDebug', 'width=1000,height=900');
-                if(win) {
-                    win.document.open();
-                    win.document.write(decodeURIComponent(this.getAttribute('data-html')));
-                    win.document.close();
-                }
-            `;
+            const debugUrl = `/synapse/_debug/${debugData.debug_id}`;
 
             debugHtml = `
                 <button type="button" class="synapse-chat__debug-trigger" 
-                        data-html="${encodedHtml}"
-                        onclick="${onClickAction.replace(/\n/g, ' ')}" 
-                        title="Ouvrir Debug">
+                        onclick="window.open('${debugUrl}', 'SynapseDebug', 'width=1000,height=900')" 
+                        title="Ouvrir Debug Serveur">
                     ${svgWrench}
                 </button>
             `;
