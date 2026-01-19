@@ -46,6 +46,11 @@ services:
 
 
 
+
     ArnaudMoncondhuy\SynapseBundle\Controller\Api\ResetController:
         tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseBundle\Controller\Api\DebugController:
+        tags: ['controller.service_arguments']
+
 
