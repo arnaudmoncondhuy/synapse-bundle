@@ -111,7 +111,7 @@ export default class extends Controller {
                             this.updateLoadingStatus(event.payload.message);
                         } else if (event.type === 'result') {
                             this.setLoading(false);
-                            this.addMessage(event.payload.answer, 'assistant', event.payload.debug);
+                            this.addMessage(event.payload.answer, 'assistant', event.payload);
                         } else if (event.type === 'error') {
                             throw new Error(event.payload);
                         }
