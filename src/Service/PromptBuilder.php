@@ -35,7 +35,8 @@ PROMPT;
         if ($personaKey) {
             $personaPrompt = $this->personaRegistry->getSystemPrompt($personaKey);
             if ($personaPrompt) {
-                return $finalPrompt . "\n\n" . $personaPrompt;
+                // On ajoute une section claire pour la personnalité pour éviter les conflits de ROLE
+                $finalPrompt .= "\n\n### 🎭 PERSONALITY INSTRUCTIONS\n" . $personaPrompt;
             }
         }
 
