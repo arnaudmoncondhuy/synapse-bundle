@@ -8,7 +8,9 @@ use ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultContextProvider;
 try {
     echo "Initializing services...\n";
     $provider = new DefaultContextProvider();
-    $builder = new PromptBuilder($provider);
+    // Use a mock or dummy path for PersonaRegistry in this test
+    $registry = new ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry(__DIR__ . '/../../src/Resources/config/personas.json');
+    $builder = new PromptBuilder($provider, $registry);
 
     echo "Building system instruction...\n";
     $result = $builder->buildSystemInstruction();
