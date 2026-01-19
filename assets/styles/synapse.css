@@ -399,3 +399,25 @@
     color: var(--synapse-debug-text);
     font-family: monospace;
 }
+
+/* Debug Trigger Button (Wrench Icon) */
+.synapse-chat__debug-trigger {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    color: var(--synapse-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    opacity: 0.6;
+}
+
+.synapse-chat__debug-trigger:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--synapse-text-primary);
+    opacity: 1;
+    transform: scale(1.1);
+}

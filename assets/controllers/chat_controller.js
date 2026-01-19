@@ -236,68 +236,21 @@ export default class extends Controller {
     }
 
     extractThinking(text) {
-        let html = '';
+        // En mode Server-Side Debug, on ne veut plus afficher l'étincelle dans le chat.
+        // On se contente de supprimer les balises <thinking> du texte affiché.
+        // Le contenu de la pensée est préservé côté serveur et visible via le bouton debug.
+
         let remainingText = text;
-        const markers = [
-            { start: '<thinking>', end: '</thinking>' },
-            { start: '```thinking', end: '```' } // Ordre important : checking plus spécifique d'abord si besoin
-        ];
 
-        // On boucle tant qu'on trouve des marqueurs
-        let found = true;
-        while (found) {
-            found = false;
-            let bestMatch = null;
+        // Regex simple pour supprimer les blocs thinking complets
+        // On gère le greedy matching pour supprimer tout le bloc
+        remainingText = remainingText.replace(/<thinking>[\s\S]*?<\/thinking>/g, '');
+        remainingText = remainingText.replace(/```thinking[\s\S]*?```/g, '');
 
-            // Trouver le premier marqueur
-            for (const marker of markers) {
-                const startIndex = remainingText.indexOf(marker.start);
-                if (startIndex !== -1) {
-                    if (!bestMatch || startIndex < bestMatch.index) {
-                        bestMatch = { index: startIndex, marker: marker };
-                    }
-                }
-            }
+        // Nettoyage résiduel éventuel
+        remainingText = remainingText.trim();
 
-            if (bestMatch) {
-                found = true;
-                const { index, marker } = bestMatch;
-                const contentStart = index + marker.start.length;
-                let contentEnd = remainingText.indexOf(marker.end, contentStart);
-
-                // Cas spécifique Markdown : on ne veut pas s'arrêter sur un ``` imbriqué si possible, 
-                // mais c'est dur à deviner. Pour l'instant, on prend le premier ``` fermant trouvé
-                // SAUF si c'est immédiatement collé (cas vide)
-
-                let extractedContent = '';
-                let fullMatchLength = 0;
-
-                if (contentEnd === -1) {
-                    // Pas de fin trouvée : on prend tout le reste (cas de flux coupé ou oubli IA)
-                    extractedContent = remainingText.substring(contentStart);
-                    remainingText = remainingText.substring(0, index); // On enlève le bloc du texte principal
-                } else {
-                    extractedContent = remainingText.substring(contentStart, contentEnd);
-                    const matchEnd = contentEnd + marker.end.length;
-
-                    // Reconstruction du texte sans le bloc de pensée
-                    remainingText = remainingText.substring(0, index) + remainingText.substring(matchEnd);
-                }
-
-                if (extractedContent.trim().length > 0) {
-                    const svgSparkles = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/></svg>`;
-
-                    html += `
-                        <details class="synapse-chat__thinking">
-                            <summary title="Raisonnement">${svgSparkles}</summary>
-                            <div class="synapse-chat__thinking-content">${this.escapeHtml(extractedContent.trim())}</div>
-                        </details>
-                    `;
-                }
-            }
-        }
-
-        return { html, remainingText };
+        return { html: '', remainingText }; // HTML vide = pas d'étincelle
     }
 
     parseMarkdown(text) {
@@ -344,123 +297,3 @@ export default class extends Controller {
         this.messagesTarget.scrollTop = this.messagesTarget.scrollHeight;
     }
 }
-
-
-window.synapseOpenDebug = function (btn) {
-    const data = JSON.parse(btn.getAttribute('data-debug'));
-
-    const win = window.open('', 'SynapseDebug', 'width=900,height=900');
-    if (!win) return;
-
-    // Helpers
-    const escapeHtml = (unsafe) => {
-        return (unsafe || '')
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    };
-
-    const extractThinking = (text) => {
-        if (!text) return { thinking: null, response: null };
-        const thinkingMatch = text.match(/<thinking>([\s\S]*?)<\/thinking>/);
-        if (thinkingMatch) {
-            return {
-                thinking: thinkingMatch[1].trim(),
-                response: text.replace(thinkingMatch[0], '').trim()
-            };
-        }
-        return { thinking: null, response: text };
-    };
-
-    const renderTurn = (t) => {
-        const { thinking, response } = extractThinking(t.text_content);
-        const argsJson = JSON.stringify(t.args || {}, null, 2);
-
-        // Only show args block if args are not empty
-        const hasArgs = t.args && Object.keys(t.args).length > 0;
-
-        return `
-            <div class="turn">
-                <div class="turn-header">
-                    <span>Tour ${t.turn}</span>
-                    <span>${t.function_calls_count > 0 ? '<span class="badge">Outils</span>' : ''}</span>
-                </div>
-                
-                ${hasArgs ? `
-                    <div class="section-block">
-                        <div class="label">🛠️ Arguments Tool</div>
-                        <pre>${escapeHtml(argsJson)}</pre>
-                    </div>
-                ` : ''}
-
-                ${thinking ? `
-                    <div class="section-block thinking">
-                        <div class="label">🧠 Réflexion (CoT)</div>
-                        <div class="content">${escapeHtml(thinking)}</div>
-                    </div>
-                ` : ''}
-
-                ${response ? `
-                    <div class="section-block response">
-                        <div class="label">🗣️ Réponse IA</div>
-                        <div class="content">${escapeHtml(response)}</div>
-                    </div>
-                ` : ''}
-
-                ${(!hasArgs && !thinking && !response) ? '<div class="content text-gray-500">(Tour vide ou technique)</div>' : ''}
-            </div>
-        `;
-    };
-
-    const html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Synapse Debug Details</title>
-            <style>
-                body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; background: #f9fafb; color: #111827; }
-                h1 { border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
-                h2 { margin-top: 30px; color: #374151; display: flex; align-items: center; gap: 8px; font-size: 1.25rem; }
-                pre { background: #1f2937; color: #f3f4f6; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 13px; margin: 0; }
-                .badge { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
-                
-                .turn { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-                .turn-header { font-weight: 600; margin-bottom: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid #f3f4f6; padding-bottom: 10px; }
-                
-                .section-block { margin-top: 10px; margin-bottom: 15px; }
-                .section-block .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 4px; font-weight: 600; }
-                .section-block.thinking .content { background: #fffbeb; border-left: 4px solid #fcd34d; padding: 10px; color: #92400e; white-space: pre-wrap; font-family: monospace; font-size: 0.9em; }
-                .section-block.response .content { white-space: pre-wrap; }
-            </style>
-        </head>
-        <body>
-            <h1>🤖 Synapse Debug Infos</h1>
-            
-            <section>
-                <h2>📜 Prompt Système</h2>
-                <pre>${escapeHtml(data.system_prompt || 'Non disponible')}</pre>
-            </section>
-
-            <section>
-                <h2>🔄 Historique envoyé</h2>
-                <pre>${escapeHtml(JSON.stringify(data.history || [], null, 2))}</pre>
-            </section>
-
-            <section>
-                <h2>⚡ Cycles de réflexion</h2>
-                ${(data.turns || []).map(renderTurn).join('')}
-            </section>
-
-            <section>
-                <h2>📡 Réponse API Brute</h2>
-                <pre>${escapeHtml(JSON.stringify(data.raw_response || {}, null, 2))}</pre>
-            </section>
-        </body>
-        </html>
-    `;
-
-    win.document.write(html);
-    win.document.close();
-};
