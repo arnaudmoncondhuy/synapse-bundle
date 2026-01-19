@@ -44,5 +44,10 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Controller\Api\ChatApiController:
         tags: ['controller.service_arguments']
 
+
     ArnaudMoncondhuy\SynapseBundle\Controller\Api\ResetController:
         tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseBundle\Command\InstallCommand:
+        tags: ['console.command']
+

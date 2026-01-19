@@ -1,2 +1,0 @@
-synapse_bundle:
-    resource: '@SynapseBundle/config/routes.yaml'

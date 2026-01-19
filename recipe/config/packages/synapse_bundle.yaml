@@ -1,7 +1,0 @@
-synapse:
-    # Your Google Gemini API Key
-    # It's recommended to use an environment variable
-    api_key: '%env(GEMINI_API_KEY)%'
-    
-    # Model configuration
-    model: 'gemini-pro'
