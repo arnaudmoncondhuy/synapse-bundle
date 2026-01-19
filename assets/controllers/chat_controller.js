@@ -349,11 +349,74 @@ export default class extends Controller {
 }
 
 // Global helper for opening debug popup (to avoid rigorous event binding on dynamic HTML)
+// Global helper for opening debug popup (to avoid rigorous event binding on dynamic HTML)
 window.synapseOpenDebug = function (btn) {
     const data = JSON.parse(btn.getAttribute('data-debug'));
 
-    const win = window.open('', 'SynapseDebug', 'width=800,height=900');
+    const win = window.open('', 'SynapseDebug', 'width=900,height=900');
     if (!win) return;
+
+    // Helpers
+    const escapeHtml = (unsafe) => {
+        return (unsafe || '')
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    };
+
+    const extractThinking = (text) => {
+        if (!text) return { thinking: null, response: null };
+        const thinkingMatch = text.match(/<thinking>([\s\S]*?)<\/thinking>/);
+        if (thinkingMatch) {
+            return {
+                thinking: thinkingMatch[1].trim(),
+                response: text.replace(thinkingMatch[0], '').trim()
+            };
+        }
+        return { thinking: null, response: text };
+    };
+
+    const renderTurn = (t) => {
+        const { thinking, response } = extractThinking(t.text_content);
+        const argsJson = JSON.stringify(t.args || {}, null, 2);
+
+        // Only show args block if args are not empty
+        const hasArgs = t.args && Object.keys(t.args).length > 0;
+
+        return `
+            <div class="turn">
+                <div class="turn-header">
+                    <span>Tour ${t.turn}</span>
+                    <span>${t.function_calls_count > 0 ? '<span class="badge">Outils</span>' : ''}</span>
+                </div>
+                
+                ${hasArgs ? `
+                    <div class="section-block">
+                        <div class="label">🛠️ Arguments Tool</div>
+                        <pre>${escapeHtml(argsJson)}</pre>
+                    </div>
+                ` : ''}
+
+                ${thinking ? `
+                    <div class="section-block thinking">
+                        <div class="label">🧠 Réflexion (CoT)</div>
+                        <div class="content">${escapeHtml(thinking)}</div>
+                    </div>
+                ` : ''}
+
+                ${response ? `
+                    <div class="section-block response">
+                        <div class="label">🗣️ Réponse IA</div>
+                        <div class="content">${escapeHtml(response)}</div>
+                    </div>
+                ` : ''}
+
+                ${(!hasArgs && !thinking && !response) ? '<div class="content text-gray-500">(Tour vide ou technique)</div>' : ''}
+            </div>
+        `;
+    };
 
     const html = `
         <!DOCTYPE html>
@@ -363,12 +426,17 @@ window.synapseOpenDebug = function (btn) {
             <style>
                 body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; background: #f9fafb; color: #111827; }
                 h1 { border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
-                h2 { margin-top: 30px; color: #374151; display: flex; align-items: center; gap: 8px; }
-                pre { background: #1f2937; color: #f3f4f6; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 14px; }
+                h2 { margin-top: 30px; color: #374151; display: flex; align-items: center; gap: 8px; font-size: 1.25rem; }
+                pre { background: #1f2937; color: #f3f4f6; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 13px; margin: 0; }
                 .badge { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
-                .turn { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-                .turn-header { font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; }
-                .thinking { background: #fffbeb; border-left: 4px solid #fcd34d; padding: 10px; margin: 10px 0; color: #92400e; font-style: italic; }
+                
+                .turn { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+                .turn-header { font-weight: 600; margin-bottom: 15px; display: flex; justify-content: space-between; border-bottom: 1px solid #f3f4f6; padding-bottom: 10px; }
+                
+                .section-block { margin-top: 10px; margin-bottom: 15px; }
+                .section-block .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 4px; font-weight: 600; }
+                .section-block.thinking .content { background: #fffbeb; border-left: 4px solid #fcd34d; padding: 10px; color: #92400e; white-space: pre-wrap; font-family: monospace; font-size: 0.9em; }
+                .section-block.response .content { white-space: pre-wrap; }
             </style>
         </head>
         <body>
@@ -376,31 +444,22 @@ window.synapseOpenDebug = function (btn) {
             
             <section>
                 <h2>📜 Prompt Système</h2>
-                <pre>${data.system_prompt || 'Non disponible'}</pre>
+                <pre>${escapeHtml(data.system_prompt || 'Non disponible')}</pre>
             </section>
 
             <section>
-                <h2>🔄 Historique de conversation</h2>
-                <pre>${JSON.stringify(data.history || [], null, 2)}</pre>
+                <h2>🔄 Historique envoyé</h2>
+                <pre>${escapeHtml(JSON.stringify(data.history || [], null, 2))}</pre>
             </section>
 
             <section>
-                <h2>⚡ Cycles de réflexion (Turns)</h2>
-                ${(data.turns || []).map(t => `
-                    <div class="turn">
-                        <div class="turn-header">
-                            <span>Tour ${t.turn}</span>
-                            <span>${t.function_calls_count > 0 ? '<span class="badge">Outils</span>' : ''}</span>
-                        </div>
-                        <div>Arguments: <pre>${JSON.stringify(t.args || {}, null, 2)}</pre></div>
-                        <div>Résultat partiel: ${t.text_content ? t.text_content.substring(0, 100) + '...' : '(vide)'}</div>
-                    </div>
-                `).join('')}
+                <h2>⚡ Cycles de réflexion</h2>
+                ${(data.turns || []).map(renderTurn).join('')}
             </section>
 
             <section>
                 <h2>📡 Réponse API Brute</h2>
-                <pre>${JSON.stringify(data.raw_response || {}, null, 2)}</pre>
+                <pre>${escapeHtml(JSON.stringify(data.raw_response || {}, null, 2))}</pre>
             </section>
         </body>
         </html>

@@ -4,40 +4,40 @@
     --synapse-max-height: 600px;
     --synapse-radius: 8px;
     --synapse-radius-bubble: 12px;
-    
+
     /* Font */
     --synapse-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    
+
     /* Colors - Backgrounds */
     --synapse-bg-primary: #ffffff;
     --synapse-bg-secondary: #f9fafb;
     --synapse-bg-input: #ffffff;
     --synapse-bg-header: #ffffff;
-    
+
     /* Colors - Text */
     --synapse-text-primary: #111827;
     --synapse-text-secondary: #6b7280;
-    
+
     /* Colors - Borders */
     --synapse-border-color: #e0e0e0;
     --synapse-border-color-light: #e5e7eb;
-    
+
     /* Colors - Accents */
     --synapse-accent-color: #3b82f6;
     --synapse-accent-hover: #2563eb;
     --synapse-accent-text: #ffffff;
-    
+
     /* Messages */
     --synapse-msg-bg-user: #3b82f6;
     --synapse-msg-text-user: #ffffff;
     --synapse-msg-bg-assistant: #ffffff;
     --synapse-msg-text-assistant: #111827;
-    
+
     /* Thinking & Debug */
     --synapse-thinking-bg: #fef3c7;
     --synapse-thinking-border: #fcd34d;
     --synapse-thinking-text: #92400e;
-    
+
     --synapse-debug-bg: #1f2937;
     --synapse-debug-text: #e5e7eb;
 }
@@ -143,7 +143,8 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    min-width: 0; /* Fix flex overflow */
+    min-width: 0;
+    /* Fix flex overflow */
 }
 
 .synapse-chat__message--user .synapse-chat__content {
@@ -201,7 +202,8 @@
 .synapse-chat__input-wrapper textarea {
     flex: 1;
     resize: none;
-    border: 1px solid #d1d5db; /* Keep generic grey for border */
+    border: 1px solid #d1d5db;
+    /* Keep generic grey for border */
     border-radius: var(--synapse-radius);
     padding: 12px;
     font-size: 14px;
@@ -213,7 +215,8 @@
 .synapse-chat__input-wrapper textarea:focus {
     outline: none;
     border-color: var(--synapse-accent-color);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); /* Could be a var but keeping simple */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    /* Could be a var but keeping simple */
 }
 
 .synapse-chat__input-wrapper button {
@@ -248,9 +251,20 @@
 }
 
 @keyframes synapse-dots {
-    0%, 20% { content: '.'; }
-    40% { content: '..'; }
-    60%, 100% { content: '...'; }
+
+    0%,
+    20% {
+        content: '.';
+    }
+
+    40% {
+        content: '..';
+    }
+
+    60%,
+    100% {
+        content: '...';
+    }
 }
 
 /* Thinking & Debug (Copied and variable-ized) */
@@ -258,11 +272,13 @@
     background: var(--synapse-thinking-bg);
     border-radius: 8px;
     margin-bottom: 12px;
-    display: none; /* Hidden by default */
+    display: none !important;
+    /* Forces hidden by default */
 }
 
 .synapse-chat--debug-mode .synapse-chat__thinking {
-    display: block; /* Visible in debug mode */
+    display: block !important;
+    /* Visible in debug mode */
 }
 
 .synapse-chat__thinking summary {
@@ -278,8 +294,8 @@
     flex-direction: row;
     gap: 4px;
     position: absolute;
-    right: -50px; 
-    bottom: 0;    
+    right: -50px;
+    bottom: 0;
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
     pointer-events: none;
@@ -292,11 +308,11 @@
 }
 
 .synapse-chat__footer:has(details[open]) {
-    position: static; 
+    position: static;
     margin-top: 8px;
     right: auto;
     bottom: auto;
-    width: 100%; 
+    width: 100%;
 }
 
 .synapse-chat__footer:has(details[open]) .synapse-chat__thinking,
@@ -308,17 +324,17 @@
 .synapse-chat__debug {
     background: transparent;
     border-radius: 6px;
-    border: 1px solid transparent; 
+    border: 1px solid transparent;
     overflow: hidden;
     margin: 0;
-    backdrop-filter: blur(4px); 
+    backdrop-filter: blur(4px);
 }
 
 .synapse-chat__thinking[open],
 .synapse-chat__debug[open] {
     border-color: var(--synapse-border-color-light);
     width: 100%;
-    margin-top: 8px; 
+    margin-top: 8px;
 }
 
 .synapse-chat__thinking summary,
@@ -342,7 +358,7 @@
 .synapse-chat__debug summary:hover {
     color: var(--synapse-text-primary);
     transform: scale(1.1);
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.05);
     border-radius: 50%;
 }
 
@@ -362,6 +378,7 @@
 .synapse-chat__thinking[open] summary::after {
     content: 'Raisonnement';
 }
+
 .synapse-chat__debug[open] summary::after {
     content: 'Debug info';
 }

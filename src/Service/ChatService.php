@@ -9,6 +9,9 @@ use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient;
 use ArnaudMoncondhuy\SynapseBundle\Util\TextUtil;
 
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+
 /**
  * Main orchestrator for the AI chat.
  *
@@ -30,6 +33,7 @@ class ChatService
         private PromptBuilder $promptBuilder,
         private ConversationHandlerInterface $conversationHandler,
         private iterable $tools,
+        private CacheInterface $cache,
     ) {
     }
 
@@ -227,16 +231,38 @@ class ChatService
 
             $debugAccumulator['total_turns'] = $i + 1;
 
+            $debugId = null;
+            if ($options['debug'] ?? false) {
+                // Generate a unique ID for this debug session
+                $debugId = uniqid('dbg_', true);
+
+                // Save to cache (TTL 1 hour)
+                $this->cache->get("synapse_debug_{$debugId}", function (ItemInterface $item) use ($debugAccumulator) {
+                    $item->expiresAfter(3600);
+                    return $debugAccumulator;
+                });
+            }
+
             return [
                 'answer' => $fullTextAccumulator,
-                'debug' => ($options['debug'] ?? false) ? $debugAccumulator : null,
+                'debug_id' => $debugId,
+                // 'debug' => ... removed, replaced by ID
             ];
         }
 
         // Max turns exceeded
+        $debugId = null;
+        if ($options['debug'] ?? false) {
+            $debugId = uniqid('dbg_err_', true);
+            $this->cache->get("synapse_debug_{$debugId}", function (ItemInterface $item) use ($debugAccumulator) {
+                $item->expiresAfter(3600);
+                return $debugAccumulator;
+            });
+        }
+
         return [
             'answer' => "Désolé, je n'ai pas pu traiter votre demande après plusieurs tentatives.",
-            'debug' => ($options['debug'] ?? false) ? $debugAccumulator : null,
+            'debug_id' => $debugId,
         ];
     }
 
