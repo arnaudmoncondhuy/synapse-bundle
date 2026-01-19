@@ -162,7 +162,9 @@ export default class extends Controller {
                     <div class="synapse-chat__message synapse-chat__message--assistant">
                         <div class="synapse-chat__avatar">🤖</div>
                         <div class="synapse-chat__content">
-                            <p>Nouvelle conversation démarrée ! Comment puis-je vous aider ?</p>
+                            <div class="synapse-chat__bubble">
+                                <p>Nouvelle conversation démarrée ! Comment puis-je vous aider ?</p>
+                            </div>
                         </div>
                     </div>
                 `;
