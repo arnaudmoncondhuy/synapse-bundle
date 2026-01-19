@@ -198,19 +198,16 @@ export default class extends Controller {
         // 4. Debug info
         // 4. Debug info (Popup Button)
         let debugHtml = '';
-        if (this.isDebugMode && debugData) {
-            // Store debug data in a way accessible to the click handler
-            // Since we're delivering HTML string, we'll use a data attribute with encoded JSON
-            // BEWARE: Large JSON in data attributes can be heavy, but functional for this scale.
-            const debugJson = JSON.stringify(debugData).replace(/"/g, '&quot;');
-
+        // 4. Debug info (Server-Side Link)
+        if (this.isDebugMode && debugData && debugData.debug_id) {
             const svgWrench = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`;
+
+            const debugUrl = `/synapse/_debug/${debugData.debug_id}`;
 
             debugHtml = `
                 <button type="button" class="synapse-chat__debug-trigger" 
-                        onclick="window.synapseOpenDebug(this)" 
-                        data-debug="${debugJson}"
-                        title="Ouvrir Debug">
+                        onclick="window.open('${debugUrl}', 'SynapseDebug', 'width=1000,height=900')" 
+                        title="Ouvrir Debug Serveur">
                     ${svgWrench}
                 </button>
             `;
@@ -348,8 +345,7 @@ export default class extends Controller {
     }
 }
 
-// Global helper for opening debug popup (to avoid rigorous event binding on dynamic HTML)
-// Global helper for opening debug popup (to avoid rigorous event binding on dynamic HTML)
+
 window.synapseOpenDebug = function (btn) {
     const data = JSON.parse(btn.getAttribute('data-debug'));
 
