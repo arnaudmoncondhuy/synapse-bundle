@@ -51,10 +51,10 @@ Retourne un tableau brut de tous les messages de la session actuelle.
 Gère les personnalités chargées depuis le fichier JSON.
 
 #### Méthode : `getAll()`
-Retourne un tableau associatif de toutes les personas disponibles `['key' => PersonaObject]`.
+Retourne un tableau associatif de toutes les personas disponibles `['key' => array]`.
 
 #### Méthode : `get(string $key)`
-Retourne l'objet `Persona` correspondant à la clé ou null.
+Retourne le tableau de configuration du `Persona` correspondant à la clé ou null.
 
 ---
 

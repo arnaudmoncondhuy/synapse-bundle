@@ -4,7 +4,7 @@ A reusable Symfony bundle for AI chatbot integration with Google Gemini.
 
 ## Features
 
-- 🤖 Google Gemini API integration (gemini-2.0-flash)
+- 🤖 Google Gemini API integration (gemini-2.5-flash-lite)
 - 🔧 Function Calling / Tools support
 - 📡 Streaming responses (NDJSON)
 - 💾 Conversation history (Session-based, extensible)
@@ -24,12 +24,10 @@ composer require arnaudmoncondhuy/synapse-bundle
 
 ## Configuration
 
-```yaml
 # config/packages/synapse.yaml
 synapse:
-    gemini_api_key: '%env(GEMINI_API_KEY)%'
-    model: 'gemini-2.0-flash'  # Optional, this is the default
-```
+    # La clé API NE DOIT PAS être configurée ici. Elle doit être envoyée par le client (Frontend).
+    model: 'gemini-2.5-flash-lite'  # Optional, this is the default
 
 ## Usage
 
