@@ -58,7 +58,7 @@ class PromptBuilderTest extends TestCase
         $this->assertStringContainsString('BASE', $result);
         $this->assertStringContainsString('Tu es un expert Symfony.', $result);
         $this->assertStringContainsString('PERSONALITY INSTRUCTIONS', $result);
-        $this->assertStringContainsString('IMPORTANT: The following personality only applies to your TONE', $result);
+        $this->assertStringContainsString('IMPORTANT : La personnalité suivante s\'applique UNIQUEMENT', $result);
     }
 
     public function testBuildSystemInstructionIgnoresUnknownPersona(): void

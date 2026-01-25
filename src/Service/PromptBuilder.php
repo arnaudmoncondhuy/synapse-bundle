@@ -58,8 +58,8 @@ PROMPT;
             if ($personaPrompt) {
                 // On ajoute une section claire pour la personnalité pour éviter les conflits de ROLE
                 $finalPrompt .= "\n\n### 🎭 PERSONALITY INSTRUCTIONS\n";
-                $finalPrompt .= "IMPORTANT: The following personality only applies to your TONE and STYLE of expression.\n";
-                $finalPrompt .= "It does NOT affect your reasoning capabilities, logic, or strict adherence to technical constraints.\n\n";
+                $finalPrompt .= "IMPORTANT : La personnalité suivante s'applique UNIQUEMENT à ton TON et ton STYLE d'expression.\n";
+                $finalPrompt .= "Elle n'affecte PAS tes capacités de raisonnement, ta logique ou le respect strict des contraintes techniques.\n\n";
                 $finalPrompt .= $personaPrompt;
             }
         }
