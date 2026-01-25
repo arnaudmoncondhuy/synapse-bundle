@@ -5,24 +5,29 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 
 /**
- * Interface for providing context to the AI.
+ * Interface pour la fourniture de contexte au modèle IA.
  *
- * Implement this interface to inject custom system prompts and initial context
- * into the Gemini conversation.
+ * Implémentez cette interface pour injecter dynamiquement des "System Prompts"
+ * et des données contextuelles (date, utilisateur connecté, environnement)
+ * au début de chaque conversation Gemini.
  */
 interface ContextProviderInterface
 {
     /**
-     * Returns the system prompt (identity, rules, instructions for the AI).
+     * Retourne le prompt système principal (identité, règles, instructions de sécurité).
+     *
+     * C'est ici que l'on définit "qui" est l'IA et comment elle doit se comporter globalement.
+     *
+     * @return string le texte du prompt système
      */
     public function getSystemPrompt(): string;
 
     /**
-     * Returns initial context to inject into the conversation.
+     * Retourne le contexte initial à injecter dans la conversation.
      *
-     * This can be used to provide user-specific data, current date, etc.
+     * Utile pour fournir des données d'environnement immédiates (ex: "Nous sommes le 25/01/2026").
      *
-     * @return array<string, mixed>
+     * @return array<string, mixed> tableau clé-valeur de données contextuelles
      */
     public function getInitialContext(): array;
 }

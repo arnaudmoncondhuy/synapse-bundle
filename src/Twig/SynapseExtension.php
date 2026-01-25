@@ -7,6 +7,11 @@ namespace ArnaudMoncondhuy\SynapseBundle\Twig;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
+/**
+ * Extension Twig définissant les fonctions personnalisées du bundle.
+ *
+ * Expose les fonctions utilisables directement dans les templates `.html.twig`.
+ */
 class SynapseExtension extends AbstractExtension
 {
     public function __construct(
@@ -17,7 +22,10 @@ class SynapseExtension extends AbstractExtension
     public function getFunctions(): array
     {
         return [
+            // Affiche le widget de chat complet (HTML + JS auto-connecté)
             new TwigFunction('synapse_chat_widget', [SynapseRuntime::class, 'renderWidget'], ['is_safe' => ['html']]),
+
+            // Retourne la liste des personas disponibles (pour créer un sélecteur par exemple)
             new TwigFunction('synapse_get_personas', [$this->personaRegistry, 'getAll']),
         ];
     }

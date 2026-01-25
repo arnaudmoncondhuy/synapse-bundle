@@ -5,13 +5,22 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Util;
 
 /**
- * Text utilities for sanitizing and processing strings.
+ * Utilitaires pour le traitement et l'assainissement de texte.
+ *
+ * Cette classe finale fournit des méthodes statiques pour garantir l'intégrité des donnés
+ * échangées avec l'API, notamment l'encodage UTF-8 qui est critique pour le JSON.
  */
 final class TextUtil
 {
     /**
-     * Ensures the string is valid UTF-8.
-     * Critical for JSON encoding and API communication.
+     * Garantit que la chaîne est en UTF-8 valide.
+     *
+     * Si la chaîne contient des caractères invalides (ex: latin1 mixé),
+     * elle est convertie pour éviter que `json_encode` ne retourne une erreur ou `false`.
+     *
+     * @param string $input la chaîne brute
+     *
+     * @return string la chaîne assainie en UTF-8
      */
     public static function sanitizeUtf8(string $input): string
     {
@@ -23,7 +32,11 @@ final class TextUtil
     }
 
     /**
-     * Recursively sanitizes all strings in an array.
+     * Assainit récursivement toutes les chaînes d'un tableau (multidimensionnel).
+     *
+     * @param array $data le tableau à nettoyer
+     *
+     * @return array le tableau propre
      */
     public static function sanitizeArrayUtf8(array $data): array
     {
@@ -38,6 +51,7 @@ final class TextUtil
                 $cleaned[$cleanKey] = $value;
             }
         }
+
         return $cleaned;
     }
 }

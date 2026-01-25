@@ -5,10 +5,20 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Service\Infra;
 
 use ArnaudMoncondhuy\SynapseBundle\Util\TextUtil;
+use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
- * Low-level client for the Google Gemini API.
+ * Client HTTP de bas niveau pour l'API Google Gemini.
+ *
+ * Cette classe gère :
+ * - L'authentification par clé API.
+ * - La communication HTTP (POST).
+ * - La sérialisation des requêtes (Payload).
+ * - La gestion sécurisée des erreurs (masquage de l'API Key dans les logs).
+ *
+ * Elle n'a PAS de logique métier "Synapse" (pas d'historique, pas de persona),
+ * elle ne fait que passer les plats à Google.
  */
 class GeminiClient
 {
@@ -16,29 +26,40 @@ class GeminiClient
 
     public function __construct(
         private HttpClientInterface $httpClient,
-        private string $apiKey,
-        private string $model = 'gemini-2.0-flash',
+        private string $model = 'gemini-2.5-flash-lite',
     ) {
     }
 
     /**
-     * Generates content using Gemini.
+     * Génère du contenu via l'API Gemini.
      *
-     * @param string $systemInstruction The system prompt.
-     * @param array $contents The conversation history (messages).
-     * @param array $tools The tool definitions for function calling.
-     * @return array The response content from Gemini.
+     * @param string      $systemInstruction instructions systèmes (System Prompt)
+     * @param array       $contents          Historique de la conversation au format Gemini API.
+     *                                       Chaque item doit être un tableau `['role' => 'user|model', 'parts' => [...]]`.
+     * @param string      $apiKey            clé API OBLIGATOIRE pour cette requête
+     * @param array       $tools             Définitions des outils (Function Declarations).
+     *                                       Optionnel, permet au modèle de demander l'exécution de fonctions.
+     * @param string|null $model             modèle spécifique pour cette requête (prioritaire sur la config)
+     *
+     * @return array La réponse brute de l'API (le premier candidat).
+     *               Généralement un tableau contenant ['parts' => ...].
+     *
+     * @throws \RuntimeException Si l'appel API échoue (timeout, quota, 500, etc.).
      */
     public function generateContent(
         string $systemInstruction,
         array $contents,
+        string $apiKey,
         array $tools = [],
+        ?string $model = null,
     ): array {
+        $effectiveModel = $model ?? $this->model;
+
         $payload = [
             'system_instruction' => [
                 'parts' => [
-                    ['text' => $systemInstruction]
-                ]
+                    ['text' => $systemInstruction],
+                ],
             ],
             'contents' => $contents,
         ];
@@ -52,18 +73,18 @@ class GeminiClient
 
             if ($isFlatFunctionList) {
                 $payload['tools'] = [
-                    ['function_declarations' => $tools]
+                    ['function_declarations' => $tools],
                 ];
             } else {
                 $payload['tools'] = $tools;
             }
         }
 
-        $url = sprintf(self::API_URL_TEMPLATE, $this->model);
+        $url = sprintf(self::API_URL_TEMPLATE, $effectiveModel);
 
         try {
             $response = $this->httpClient->request('POST', $url, [
-                'query' => ['key' => $this->apiKey],
+                'query' => ['key' => $apiKey],
                 'json' => TextUtil::sanitizeArrayUtf8($payload),
             ]);
 
@@ -73,21 +94,21 @@ class GeminiClient
         } catch (\Throwable $e) {
             // SECURITY: Never expose the API key in error messages
             $message = $e->getMessage();
-            if (str_contains($message, $this->apiKey)) {
-                $message = str_replace($this->apiKey, '***API_KEY_HIDDEN***', $message);
+            if (str_contains($message, $apiKey)) {
+                $message = str_replace($apiKey, '***API_KEY_HIDDEN***', $message);
             }
 
             // Try to extract detailed error from Google
-            if ($e instanceof \Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface) {
+            if ($e instanceof HttpExceptionInterface) {
                 try {
                     $errorBody = $e->getResponse()->getContent(false);
-                    $message .= ' || Google Error: ' . $errorBody;
+                    $message .= ' || Google Error: '.$errorBody;
                 } catch (\Throwable) {
                     // Ignore if can't read body
                 }
             }
 
-            throw new \RuntimeException('Gemini API Error: ' . $message, 0, $e);
+            throw new \RuntimeException('Gemini API Error: '.$message, 0, $e);
         }
     }
 }

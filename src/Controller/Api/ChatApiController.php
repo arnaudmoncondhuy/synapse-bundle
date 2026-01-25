@@ -11,6 +11,12 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\Routing\Attribute\Route;
 
+/**
+ * Contrôleur API principal pour le flux de conversation.
+ *
+ * Ce contrôleur expose le endpoint `/synapse/api/chat` qui gère les échanges
+ * en temps réel avec le frontend via un flux NDJSON (Streamed Response).
+ */
 #[Route('/synapse/api')]
 class ChatApiController extends AbstractController
 {
@@ -19,6 +25,21 @@ class ChatApiController extends AbstractController
     ) {
     }
 
+    /**
+     * Traite une nouvelle requête de chat et retourne un flux d'événements.
+     *
+     * IMPORTANT : Ce endpoint utilise 'Content-Type: application/x-ndjson' pour supporter
+     * le streaming progressif des étapes (analyse, outils, réponse).
+     *
+     * Mécanismes clés :
+     * 1. Désactivation du Symfony Profiler pour éviter la pollution du JSON.
+     * 2. Clôture immédiate de la session (session_write_close) pour éviter le verrouillage (Session Blocking) pendant les longs appels API.
+     *
+     * @param Request       $request  la requête HTTP contenant le message JSON
+     * @param Profiler|null $profiler le profiler Symfony (injecté si disponible)
+     *
+     * @return StreamedResponse une réponse HTTP dont le contenu est envoyé chunk par chunk
+     */
     #[Route('/chat', name: 'synapse_api_chat', methods: ['POST'])]
     public function chat(Request $request, ?Profiler $profiler): StreamedResponse
     {
@@ -32,10 +53,22 @@ class ChatApiController extends AbstractController
         $data = json_decode($request->getContent(), true) ?? [];
         $message = $data['message'] ?? '';
         $options = $data['options'] ?? [];
-        $options['debug'] = $data['debug'] ?? false;
+        $options['debug'] = $data['debug'] ?? ($options['debug'] ?? false);
+
+        // Security: API Key MUST be provided in the request payload
+        if (empty($data['api_key'])) {
+            // On utilise un StreamedResponse pour consistency, mais un JsonResponse simple serait plus propre ici.
+            // Pour garder la signature StreamedResponse:
+            return new StreamedResponse(function () {
+                echo json_encode(['type' => 'error', 'payload' => 'API Key is missing in request payload.']);
+            }, 400, ['Content-Type' => 'application/x-ndjson']);
+        }
+        $options['api_key'] = (string) $data['api_key'];
+        if (!empty($data['model'])) {
+            $options['model'] = (string) $data['model'];
+        }
 
         $response = new StreamedResponse(function () use ($message, $options, $request) {
-
             // 3. On ferme la session immédiatement au début du flux.
             if ($request->hasSession() && $request->getSession()->isStarted()) {
                 $request->getSession()->save();
@@ -43,12 +76,13 @@ class ChatApiController extends AbstractController
 
             // Helper to send NDJSON event
             $sendEvent = function (string $type, mixed $payload): void {
-                echo json_encode(['type' => $type, 'payload' => $payload], JSON_INVALID_UTF8_IGNORE) . "\n";
+                echo json_encode(['type' => $type, 'payload' => $payload], JSON_INVALID_UTF8_IGNORE)."\n";
                 flush();
             };
 
             if (empty($message) && !($options['reset_conversation'] ?? false)) {
                 $sendEvent('error', 'Message is required.');
+
                 return;
             }
 
@@ -63,7 +97,6 @@ class ChatApiController extends AbstractController
 
                 // Send final result
                 $sendEvent('result', $result);
-
             } catch (\Exception $e) {
                 $sendEvent('error', $e->getMessage());
             }

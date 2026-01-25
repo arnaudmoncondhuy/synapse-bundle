@@ -8,7 +8,10 @@ use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
- * Default implementation: stores conversation history in PHP session.
+ * Implémentation par défaut du stockage de conversation : Session PHP.
+ *
+ * Stocke l'historique des échanges directement dans la session utilisateur Symfony.
+ * Idéal pour des discussions éphémères qui ne nécessitent pas de persistance long terme.
  */
 class SessionConversationHandler implements ConversationHandlerInterface
 {
@@ -23,9 +26,14 @@ class SessionConversationHandler implements ConversationHandlerInterface
     public function loadHistory(): array
     {
         $session = $this->requestStack->getSession();
+
         return $session->get(self::SESSION_KEY, []);
     }
 
+    /**
+     * {@inheritDoc}
+     * Implémente une limite glissante (Rolling Window) pour ne pas saturer la session.
+     */
     public function saveHistory(array $history): void
     {
         $session = $this->requestStack->getSession();

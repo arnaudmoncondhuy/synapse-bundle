@@ -5,29 +5,33 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 
 /**
- * Interface for handling conversation history.
+ * Interface pour la gestion de la persistance de l'historique de conversation.
  *
- * Implement this interface to customize how the conversation history is stored
- * (e.g., in session, database, Redis, etc.).
+ * Cette interface permet d'abstraire le stockage des échanges.
+ * Les implémentations peuvent stocker l'historique en Session (par défaut), en base de données,
+ * dans Redis, ou tout autre système de persistance.
  */
 interface ConversationHandlerInterface
 {
     /**
-     * Loads the conversation history.
+     * Charge l'historique complet de la conversation courante.
      *
-     * @return array<int, array{role: string, parts: array<int, array<string, mixed>>}>
+     * @return array<int, array{role: string, parts: array<int, array<string, mixed>>}> liste des messages au format attendu par Gemini
      */
     public function loadHistory(): array;
 
     /**
-     * Saves the conversation history.
+     * Sauvegarde le nouvel état de l'historique de conversation.
      *
-     * @param array<int, array{role: string, parts: array<int, array<string, mixed>>}> $history
+     * Cette méthode est appelée après chaque échange (requête utilisateur + réponse IA)
+     * pour mettre à jour la persistance.
+     *
+     * @param array<int, array{role: string, parts: array<int, array<string, mixed>>}> $history L'historique complet à sauvegarder
      */
     public function saveHistory(array $history): void;
 
     /**
-     * Clears the conversation history (starts a new conversation).
+     * Purge l'historique pour démarrer une nouvelle conversation vierge.
      */
     public function clearHistory(): void;
 }

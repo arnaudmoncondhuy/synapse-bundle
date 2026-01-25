@@ -8,25 +8,31 @@ use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient;
 use ArnaudMoncondhuy\SynapseBundle\Util\TextUtil;
-
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
- * Main orchestrator for the AI chat.
+ * Orchestrateur principal des échanges conversationnels avec l'IA.
  *
- * Coordinates:
- * - Context Provider (system prompt)
- * - Conversation Handler (history)
- * - Gemini Client (API)
- * - Tools (function calling)
+ * Cette classe est le point central du bundle. Elle coordonne :
+ * 1. La construction du contexte (Prompt Builder).
+ * 2. La communication avec l'API externe (GeminiClient).
+ * 3. La persistance de l'historique (ConversationHandler).
+ * 4. L'exécution dynamique des outils (Function Calling).
+ *
+ * Elle gère également la boucle de réflexion multi-tours nécessaire lorsque l'IA
+ * décide d'utiliser un ou plusieurs outils avant de formuler une réponse.
  */
 class ChatService
 {
     private const MAX_TURNS = 5;
 
     /**
-     * @param iterable<AiToolInterface> $tools
+     * @param GeminiClient                 $geminiClient        client HTTP bas niveau pour l'API Gemini
+     * @param PromptBuilder                $promptBuilder       service de construction du Prompt Système
+     * @param ConversationHandlerInterface $conversationHandler gestionnaire de persistance des messages
+     * @param iterable<AiToolInterface>    $tools               collection des outils disponibles pour l'IA (injectés via DI)
+     * @param CacheInterface               $cache               cache Symfony pour stocker temporairement les données de débogage
      */
     public function __construct(
         private GeminiClient $geminiClient,
@@ -38,12 +44,40 @@ class ChatService
     }
 
     /**
-     * Processes a user message and returns the AI response.
+     * Traite un message utilisateur et retourne la réponse de l'IA (après exécution d'outils si nécessaire).
      *
-     * @param string $message The user's message.
-     * @param array $options Options: 'reset_conversation', 'debug', 'stateless'.
-     * @param callable|null $onStatusUpdate Callback for streaming updates: function(string $message, string $step): void
-     * @return array{answer: string, debug: ?array}
+     * Cette méthode gère le cycle de vie complet d'un tour de parole :
+     * 1. Chargement de l'historique.
+     * 2. Injection du contexte (System Prompt + Persona).
+     * 3. Boucle d'interaction (Requête -> IA -> Outil -> Requête -> IA...).
+     * 4. Sauvegarde du nouvel historique.
+     *
+     * @param string $message le message texte envoyé par l'utilisateur
+     * @param array{
+     *    stateless?: bool,
+     *    reset_conversation?: bool,
+     *    debug?: bool,
+     *    persona?: string,
+     *    api_key: string,
+     *    model?: string,
+     *    tools?: array
+     * } $options Options de configuration de la requête :
+     *  - 'stateless' (bool) : Ne pas charger ni sauvegarder l'historique (mode "one-shot").
+     *  - 'reset_conversation' (bool) : Effacer l'historique AVANT de traiter ce message.
+     *  - 'debug' (bool) : Activer la collecte d'informations détaillées pour le débogage.
+     *  - 'persona' (string) : Clé de la personnalité à utiliser (écrase le défaut).
+     *  - 'api_key' (string) : Clé API spécifique (OBLIGATOIRE).
+     *  - 'model' (string) : Modèle spécifique (Optionnel).
+     *  - 'tools' (array) : Définitions d'outils spécifiques pour cette requête (Optionnel, écrase les défauts).
+     * @param callable|null $onStatusUpdate Callback optionnel pour le streaming d'état (feedback UI).
+     *                                      Signature: function(string $message, string $step): void
+     *
+     * @return array{
+     *    answer: string,
+     *    debug_id: ?string
+     * } Tableau contenant :
+     *  - 'answer' (string) : La réponse finale en Markdown.
+     *  - 'debug_id' (string|null) : ID unique pour récupérer les logs de debug (si options['debug'] = true).
      */
     public function ask(string $message, array $options = [], ?callable $onStatusUpdate = null): array
     {
@@ -61,13 +95,27 @@ class ChatService
 
         // Build context
         $personaKey = $options['persona'] ?? null;
+        $apiKey = $options['api_key'] ?? throw new \InvalidArgumentException('Option "api_key" is required in ChatService::ask().');
+        $modelOverride = $options['model'] ?? null;
+
         $systemInstruction = $this->promptBuilder->buildSystemInstruction($personaKey);
-        $toolDefinitions = $this->buildToolDefinitions();
+
+        // Tools Handling: Dynamic override or default injection
+        if (isset($options['tools']) && is_array($options['tools'])) {
+            // If manual tools are provided in options (raw array format usually)
+            // We use them directly.
+            $toolDefinitions = $options['tools'];
+        // Note: If using tools from options, execution logic might fail if they are not in $this->tools registry.
+        // This assumes the Caller handles tool execution or only passes definintions for model awareness.
+        // For now, let's assume standard behavior: we use injected tools unless overridden.
+        } else {
+            $toolDefinitions = $this->buildToolDefinitions();
+        }
 
         // Load history
         if ($isStateless) {
             $contents = [
-                ['role' => 'user', 'parts' => [['text' => $message]]]
+                ['role' => 'user', 'parts' => [['text' => $message]]],
             ];
             $rawHistory = [];
         } else {
@@ -83,7 +131,7 @@ class ChatService
         }
 
         $debugAccumulator = [
-            'history_loaded' => count($rawHistory) . ' messages',
+            'history_loaded' => count($rawHistory).' messages',
             'turns' => [],
             'tool_executions' => [],
         ];
@@ -91,7 +139,7 @@ class ChatService
         $fullTextAccumulator = '';
 
         // Multi-turn loop (handle function calls)
-        for ($i = 0; $i < self::MAX_TURNS; $i++) {
+        for ($i = 0; $i < self::MAX_TURNS; ++$i) {
             if ($onStatusUpdate && $i > 0) {
                 $onStatusUpdate('Réflexion supplémentaire...', 'thinking');
             }
@@ -102,7 +150,9 @@ class ChatService
             $response = $this->geminiClient->generateContent(
                 $systemInstruction,
                 $contents,
-                $toolDefinitions
+                $apiKey,
+                $toolDefinitions,
+                $modelOverride
             );
 
             if ($options['debug'] ?? false) {
@@ -116,12 +166,12 @@ class ChatService
             // Extract text and function calls
             foreach ($parts as $part) {
                 // Handle native Gemini 2.0+ thinking field
-                if (isset($part['thought']) && $part['thought'] === true) {
+                if (isset($part['thought']) && true === $part['thought']) {
                     // Note: 'thought' flag might be on a text part, or separate.
                     // If the API evolution separates them, we might need adjustments.
                     // Currently assuming text content IS the thought if thought=true.
                     if (isset($part['text'])) {
-                        $currentTurnText .= "<thinking>" . $part['text'] . "</thinking>\n";
+                        $currentTurnText .= '<thinking>'.$part['text']."</thinking>\n";
                     }
                     continue; // Skip standard text append
                 }
@@ -139,7 +189,7 @@ class ChatService
 
             // Add model response to history
             $modelParts = [];
-            if ($currentTurnText !== '') {
+            if ('' !== $currentTurnText) {
                 $modelParts[] = ['text' => $currentTurnText];
             }
             foreach ($functionCalls as $fc) {
@@ -156,9 +206,9 @@ class ChatService
                     'turn' => $i + 1,
                     'text_content' => $currentTurnText,
                     'text_length' => strlen($currentTurnText),
-                    'has_text' => $currentTurnText !== '',
+                    'has_text' => '' !== $currentTurnText,
                     'function_calls_count' => count($functionCalls),
-                    'function_names' => array_map(fn($fc) => $fc['name'], $functionCalls),
+                    'function_names' => array_map(fn ($fc) => $fc['name'], $functionCalls),
                 ];
             }
 
@@ -171,24 +221,24 @@ class ChatService
                     $args = $fc['args'] ?? [];
 
                     if ($onStatusUpdate) {
-                        $onStatusUpdate("Exécution de l'outil: {$functionName}...", 'tool:' . $functionName);
+                        $onStatusUpdate("Exécution de l'outil: {$functionName}...", 'tool:'.$functionName);
                     }
 
                     $functionResponse = $this->executeTool($functionName, $args);
 
-                    if ($functionResponse !== null) {
+                    if (null !== $functionResponse) {
                         $functionResponseParts[] = [
                             'functionResponse' => [
                                 'name' => $functionName,
-                                'response' => ['content' => $functionResponse]
-                            ]
+                                'response' => ['content' => $functionResponse],
+                            ],
                         ];
 
                         if ($options['debug'] ?? false) {
                             $debugAccumulator['tool_executions'][] = [
                                 'tool' => $functionName,
                                 'params' => $args,
-                                'result_preview' => substr((string) $functionResponse, 0, 100) . '...',
+                                'result_preview' => substr((string) $functionResponse, 0, 100).'...',
                             ];
                         }
                     }
@@ -222,7 +272,7 @@ class ChatService
                         'parts' => $modelParts,
                         'metadata' => [
                             'debug' => ($options['debug'] ?? false) ? $debugAccumulator : null,
-                        ]
+                        ],
                     ];
                 }
 
@@ -239,6 +289,7 @@ class ChatService
                 // Save to cache (TTL 1 hour)
                 $this->cache->get("synapse_debug_{$debugId}", function (ItemInterface $item) use ($debugAccumulator) {
                     $item->expiresAfter(3600);
+
                     return $debugAccumulator;
                 });
             }
@@ -256,6 +307,7 @@ class ChatService
             $debugId = uniqid('dbg_err_', true);
             $this->cache->get("synapse_debug_{$debugId}", function (ItemInterface $item) use ($debugAccumulator) {
                 $item->expiresAfter(3600);
+
                 return $debugAccumulator;
             });
         }
@@ -267,7 +319,9 @@ class ChatService
     }
 
     /**
-     * Clears the conversation history.
+     * Efface complètement l'historique de la conversation en cours.
+     *
+     * Permet de réinitialiser le contexte pour un nouveau sujet.
      */
     public function resetConversation(): void
     {
@@ -275,13 +329,20 @@ class ChatService
     }
 
     /**
-     * Returns the current conversation history.
+     * Retourne l'historique brut de la conversation courante.
+     *
+     * @return array<int, array>
      */
     public function getConversationHistory(): array
     {
         return $this->conversationHandler->loadHistory();
     }
 
+    /**
+     * Convertit la collection d'objets Tool en définitions conformes à l'API Gemini.
+     *
+     * @return array<int, array> tableau de définitions JSON Schema
+     */
     private function buildToolDefinitions(): array
     {
         $definitions = [];
@@ -297,6 +358,14 @@ class ChatService
         return $definitions;
     }
 
+    /**
+     * Exécute un outil spécifique par son nom.
+     *
+     * @param string $name le nom technique de l'outil
+     * @param array  $args les arguments fournis par l'IA
+     *
+     * @return string|null la réponse de l'outil (JSON ou string) ou null si introuvable
+     */
     private function executeTool(string $name, array $args): ?string
     {
         foreach ($this->tools as $tool) {
@@ -307,6 +376,7 @@ class ChatService
                     return $result;
                 }
 
+                // Force JSON for complex objects
                 return json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
             }
         }
@@ -314,6 +384,15 @@ class ChatService
         return null;
     }
 
+    /**
+     * Prépare l'historique brut pour l'envoi à l'API Gemini.
+     *
+     * Nettoie les données inutiles et s'assure que le format est strictement respecté.
+     *
+     * @param array $history L'historique brut (provenant du Handler)
+     *
+     * @return array L'historique assaini pour l'API
+     */
     private function sanitizeHistoryForNewTurn(array $history): array
     {
         $sanitized = [];

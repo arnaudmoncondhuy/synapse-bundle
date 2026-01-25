@@ -6,7 +6,6 @@ services:
     # Infra
     ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient:
         arguments:
-            $apiKey: '%synapse.gemini_api_key%'
             $model: '%synapse.model%'
 
     # Default implementations (can be overridden by user)

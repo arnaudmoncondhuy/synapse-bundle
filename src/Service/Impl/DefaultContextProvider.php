@@ -7,9 +7,10 @@ namespace ArnaudMoncondhuy\SynapseBundle\Service\Impl;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
 
 /**
- * Default (minimal) context provider.
+ * Fournisseur de contexte par défaut (Minimaliste).
  *
- * Override this in your application to provide custom system prompts.
+ * Cette classe est utilisée si l'application hôte ne fournit pas sa propre implémentation.
+ * Elle injecte un prompt système basique et la date courante.
  */
 class DefaultContextProvider implements ContextProviderInterface
 {
