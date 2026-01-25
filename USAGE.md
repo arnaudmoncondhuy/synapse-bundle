@@ -131,6 +131,56 @@ class DatabaseConversationHandler implements ConversationHandlerInterface
 }
 ```
 
+Puis surchargez l'alias dans votre `services.yaml` :
+
+```yaml
+services:
+    ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface:
+        alias: App\Service\DatabaseConversationHandler
+```
+
+---
+
+## 🔑 Sécurisation de la clé API (Multi-tenant)
+
+C'est l'aspect le plus critique pour la sécurité. Ne passez **JAMAIS** la clé API via le frontend. 
+Le bundle utilise `ApiKeyProviderInterface` pour récupérer la clé côté serveur.
+
+### 1. Mode Global (Fichier .env)
+
+Si vous utilisez la même clé pour tout le projet, configurez-la simplement dans `config/packages/synapse.yaml` :
+
+```yaml
+synapse:
+    api_key: '%env(GEMINI_API_KEY)%'
+```
+
+### 2. Mode Dynamique (Par utilisateur)
+
+Si chaque utilisateur a sa propre clé, implémentez le provider :
+
+```php
+// src/Service/UserApiKeyProvider.php
+namespace App\Service;
+
+use ArnaudMoncondhuy\SynapseBundle\Contract\ApiKeyProviderInterface;
+use Symfony\Bundle\SecurityBundle\Security;
+
+class UserApiKeyProvider implements ApiKeyProviderInterface
+{
+    public function __construct(private Security $security) {}
+
+    public function provideApiKey(): ?string
+    {
+        $user = $this->security->getUser();
+        // Récupérer la clé de l'utilisateur (ex: en BDD)
+        return $user?->getGeminiApiKey();
+    }
+}
+```
+
+Symfony détectera automatiquement votre service et l'utilisera.
+
 ---
 
 ## 🎨 Assets & Stimulus
@@ -171,11 +221,3 @@ php bin/console debug:asset-map
 > 'synapse/controllers/chat_controller.js' => ['path' => 'synapse/controllers/chat_controller.js'],
 > ```
 > (Normalement, le bundle tente de le faire automatiquement via son Extension).
-
-Puis surchargez l'alias dans `services.yaml` :
-
-```yaml
-services:
-    ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface:
-        alias: App\Service\DatabaseConversationHandler
-```

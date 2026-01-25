@@ -26,8 +26,9 @@ composer require arnaudmoncondhuy/synapse-bundle
 
 # config/packages/synapse.yaml
 synapse:
-    # La clé API NE DOIT PAS être configurée ici. Elle doit être envoyée par le client (Frontend).
-    model: 'gemini-2.5-flash-lite'  # Optional, this is the default
+    # Optionnel si vous utilisez un provider dynamique
+    api_key: '%env(GEMINI_API_KEY)%'
+    model: 'gemini-2.5-flash-lite'
 
 ## Usage
 

@@ -55,15 +55,9 @@ class ChatApiController extends AbstractController
         $options = $data['options'] ?? [];
         $options['debug'] = $data['debug'] ?? ($options['debug'] ?? false);
 
-        // Security: API Key MUST be provided in the request payload
-        if (empty($data['api_key'])) {
-            // On utilise un StreamedResponse pour consistency, mais un JsonResponse simple serait plus propre ici.
-            // Pour garder la signature StreamedResponse:
-            return new StreamedResponse(function () {
-                echo json_encode(['type' => 'error', 'payload' => 'API Key is missing in request payload.']);
-            }, 400, ['Content-Type' => 'application/x-ndjson']);
+        if (!empty($data['api_key'])) {
+            $options['api_key'] = (string) $data['api_key'];
         }
-        $options['api_key'] = (string) $data['api_key'];
         if (!empty($data['model'])) {
             $options['model'] = (string) $data['model'];
         }
@@ -76,7 +70,7 @@ class ChatApiController extends AbstractController
 
             // Helper to send NDJSON event
             $sendEvent = function (string $type, mixed $payload): void {
-                echo json_encode(['type' => $type, 'payload' => $payload], JSON_INVALID_UTF8_IGNORE)."\n";
+                echo json_encode(['type' => $type, 'payload' => $payload], JSON_INVALID_UTF8_IGNORE) . "\n";
                 flush();
             };
 

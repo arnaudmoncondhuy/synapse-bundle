@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
+use ArnaudMoncondhuy\SynapseBundle\Contract\ApiKeyProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Service\ChatService;
 use ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient;
@@ -18,6 +19,7 @@ class ChatServiceTest extends TestCase
     private $promptBuilder;
     private $conversationHandler;
     private $cache;
+    private $apiKeyProvider;
     private $chatService;
     private $tool;
 
@@ -27,6 +29,7 @@ class ChatServiceTest extends TestCase
         $this->promptBuilder = $this->createMock(PromptBuilder::class);
         $this->conversationHandler = $this->createMock(ConversationHandlerInterface::class);
         $this->cache = $this->createMock(CacheInterface::class);
+        $this->apiKeyProvider = $this->createMock(ApiKeyProviderInterface::class);
 
         // Mock Tool
         $this->tool = $this->createMock(AiToolInterface::class);
@@ -38,7 +41,8 @@ class ChatServiceTest extends TestCase
             $this->promptBuilder,
             $this->conversationHandler,
             [$this->tool],
-            $this->cache
+            $this->cache,
+            $this->apiKeyProvider
         );
     }
 
@@ -108,5 +112,21 @@ class ChatServiceTest extends TestCase
 
         // Assert
         $this->assertEquals('The tool says: SUCCESS', $result['answer']);
+    }
+
+    public function testAskUsesInjectedApiKeyByDefault(): void
+    {
+        $this->promptBuilder->method('buildSystemInstruction')->willReturn('SYSTEM');
+        $this->conversationHandler->method('loadHistory')->willReturn([]);
+        $this->apiKeyProvider->method('provideApiKey')->willReturn('DYNAMIC_KEY');
+
+        $this->geminiClient->expects($this->once())
+            ->method('generateContent')
+            ->with('SYSTEM', $this->anything(), 'DYNAMIC_KEY') // Verification of the dynamic key
+            ->willReturn([
+                'parts' => [['text' => 'Hello']],
+            ]);
+
+        $this->chatService->ask('Hi'); // No api_key in options
     }
 }

@@ -26,6 +26,10 @@ class Configuration implements ConfigurationInterface
 
         $treeBuilder->getRootNode()
             ->children()
+            ->scalarNode('api_key')
+            ->defaultNull()
+            ->info('La clé API Gemini. Si nulle, elle devra être fournie par d\'autres moyens ou via l\'application.')
+            ->end()
             ->scalarNode('model')
             ->defaultValue('gemini-2.5-flash-lite')
             ->info('Le modèle Gemini à utiliser pour la génération (défaut: gemini-2.5-flash-lite).')

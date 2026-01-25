@@ -14,10 +14,14 @@ Le bundle se configure via le fichier `config/packages/synapse.yaml`.
 | `model` | string | `gemini-2.5-flash-lite` | Identifiant du modèle Google Gemini à utiliser pour la génération. |
 | `personas_path` | string | `null` | Chemin absolu vers un fichier JSON contenant les définitions de personnalités. Si null, utilise le fichier interne du bundle. |
 
-**Note CRITIQUE sur la Clé API :**
-Le Bundle **ne stocke pas** et **ne lit pas** la clé API depuis vos variables d'environnement (`.env`) pour les requêtes HTTP.
-Pour chaque appel au endpoint `/synapse/api/chat`, le client (Frontend/App) **DOIT OBLIGATOIREMENT** fournir la clé dans le payload JSON (`api_key`).
-Le service PHP `ChatService`, s'il est utilisé manuellement, doit aussi recevoir cette clé via `$options['api_key']`.
+| `api_key` | string | `null` | (Fallback) Clé API globale utilisée par le `DefaultApiKeyProvider`. |
+
+**Note sur la Sécurité (CRITIQUE) :**
+Le Bundle privilégie la sécurisation côté serveur. La clé API ne doit **JAMAIS** être transmise par le frontend (JS/HTML). 
+La récupération de la clé est déléguée à l'**`ApiKeyProviderInterface`**.
+
+- **Cas simple :** Configurez `api_key` dans `synapse.yaml`.
+- **Cas Multi-tenant :** Implémentez votre propre `ApiKeyProviderInterface` pour fournir la clé de l'utilisateur connecté.
 
 ---
 
@@ -32,8 +36,8 @@ Envoie un message à l'IA et récupère la réponse.
 
 *   **$message** `string`: Le message de l'utilisateur.
 *   **$options** `array`:
-    *   `api_key` (string, **Requis**): La clé API Gemini.
-    *   `model` (string, Optional): Surcharge le modèle configuré globalement.
+    *   `api_key` (string, Optionnel): Surcharge la clé fournie par le provider.
+    *   `model` (string, Optionnel): Surcharge le modèle configuré globalement.
     *   `stateless` (bool, Défaut: `false`): Si `true`, ne charge ni ne sauvegarde l'historique (mode "one-shot").
     *   `reset_conversation` (bool, Défaut: `false`): Efface l'historique AVANT de traiter ce message.
     *   `persona` (string, Optional): Clé de la personnalité à utiliser pour cet échange.
@@ -94,6 +98,11 @@ Implémentez cette interface pour changer le mode de stockage de l'historique (e
 *   **Méthodes clés :** `loadHistory()`, `saveHistory()`, `clearHistory()`.
 *   **Tag auto :** `synapse.conversation_handler`
 
+### `ArnaudMoncondhuy\SynapseBundle\Contract\ApiKeyProviderInterface`
+Implémentez cette interface pour fournir dynamiquement la clé API (ex: clé par utilisateur).
+*   **Méthodes clés :** `provideApiKey()`.
+*   **Tag auto :** `synapse.api_key_provider`
+
 ---
 
 ## 🌐 5. API HTTP
@@ -106,8 +115,6 @@ Endpoint principal de conversation.
     ```json
     {
       "message": "Bonjour",
-      "api_key": "votre-cle-api-si-necessaire",
-      "model": "gemini-pro-vision",
       "options": {
         "persona": "expert_tech",
         "debug": true

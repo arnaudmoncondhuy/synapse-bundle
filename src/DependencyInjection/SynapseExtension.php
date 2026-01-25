@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\DependencyInjection;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
+use ArnaudMoncondhuy\SynapseBundle\Contract\ApiKeyProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
 use Symfony\Component\Config\FileLocator;
@@ -35,7 +36,7 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         // 1. Enregistrement du namespace Twig @Synapse
         $container->prependExtensionConfig('twig', [
             'paths' => [
-                __DIR__.'/../Resources/views' => 'Synapse',
+                __DIR__ . '/../Resources/views' => 'Synapse',
             ],
         ]);
 
@@ -44,7 +45,7 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $container->prependExtensionConfig('framework', [
             'asset_mapper' => [
                 'paths' => [
-                    realpath(dirname(__DIR__, 2).'/assets') => 'synapse',
+                    realpath(dirname(__DIR__, 2) . '/assets') => 'synapse',
                 ],
             ],
         ]);
@@ -61,14 +62,15 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $config = $this->processConfiguration($configuration, $configs);
 
         // Injection des paramètres dans le conteneur
+        $container->setParameter('synapse.api_key', $config['api_key']);
         $container->setParameter('synapse.model', $config['model']);
 
         // Définition du chemin par défaut si non spécifié
-        $personasPath = $config['personas_path'] ?? (dirname(__DIR__, 1).'/Resources/config/personas.json');
+        $personasPath = $config['personas_path'] ?? (dirname(__DIR__, 1) . '/Resources/config/personas.json');
         $container->setParameter('synapse.personas_path', $personasPath);
 
         // Chargement des services
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('services.yaml');
 
         // Auto-configuration : Ajout automatique de Tags pour les classes implémentant nos interfaces
@@ -80,6 +82,9 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
 
         $container->registerForAutoconfiguration(ConversationHandlerInterface::class)
             ->addTag('synapse.conversation_handler');
+
+        $container->registerForAutoconfiguration(ApiKeyProviderInterface::class)
+            ->addTag('synapse.api_key_provider');
     }
 
     public function getAlias(): string
