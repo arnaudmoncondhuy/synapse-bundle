@@ -51,13 +51,16 @@ PROMPT;
     public function buildSystemInstruction(?string $personaKey = null): string
     {
         $basePrompt = $this->contextProvider->getSystemPrompt();
-        $finalPrompt = self::TECHNICAL_PROMPT."\n\n".$basePrompt;
+        $finalPrompt = self::TECHNICAL_PROMPT . "\n\n" . $basePrompt;
 
         if ($personaKey) {
             $personaPrompt = $this->personaRegistry->getSystemPrompt($personaKey);
             if ($personaPrompt) {
                 // On ajoute une section claire pour la personnalité pour éviter les conflits de ROLE
-                $finalPrompt .= "\n\n### 🎭 PERSONALITY INSTRUCTIONS\n".$personaPrompt;
+                $finalPrompt .= "\n\n### 🎭 PERSONALITY INSTRUCTIONS\n";
+                $finalPrompt .= "IMPORTANT: The following personality only applies to your TONE and STYLE of expression.\n";
+                $finalPrompt .= "It does NOT affect your reasoning capabilities, logic, or strict adherence to technical constraints.\n\n";
+                $finalPrompt .= $personaPrompt;
             }
         }
 
