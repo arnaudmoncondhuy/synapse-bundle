@@ -3,3 +3,4 @@
 /.vscode/
 *.cache
 .phpunit.result.cache
+/node_modules/

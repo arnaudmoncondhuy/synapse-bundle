@@ -1,79 +1,121 @@
 {#
-    Synapse Chat Component
-
-    Include this template in your page:
-    {{ include('@Synapse/chat/component.html.twig') }}
-
-    Make sure Stimulus is loaded and the controller is available.
+    Synapse Chat Component (Redesigned)
+    
+    Variables:
+    - history: Array of messages
 #}
 
 {# Link the CSS (AssetMapper) #}
 <link rel="stylesheet" href="{{ asset('synapse/styles/synapse.css') }}">
 
-<div class="synapse-chat" data-controller="synapse--chat" data-synapse--chat-history-value="{{ history|default([])|json_encode|e('html_attr') }}">
+{# Global SVG Definitions (Gemini Gradients) #}
+<svg style="width:0;height:0;position:absolute;overflow:hidden;" aria-hidden="true" focusable="false">
+    <defs>
+        <linearGradient id="gemini-gradient" gradientunits="objectBoundingBox" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="rgb(52,107,241)"></stop>
+            <stop offset="22%" stop-color="rgb(50,121,248)"></stop>
+            <stop offset="45%" stop-color="rgb(49,134,255)"></stop>
+            <stop offset="72%" stop-color="rgb(64,147,255)"></stop>
+            <stop offset="99%" stop-color="rgb(79,160,255)"></stop>
+        </linearGradient>
+        <symbol id="gemini-icon" viewbox="0 0 32 32">
+            <path d="M-3.9000000953674316,-84.94999694824219 C-5.28000020980835,-79.47000122070312 -7.079999923706055,-74.13999938964844 -9.319999694824219,-68.93000030517578 C-15.15999984741211,-55.369998931884766 -23.15999984741211,-43.5 -33.33000183105469,-33.33000183105469 C-43.5,-23.170000076293945 -55.369998931884766,-15.15999984741211 -68.93000030517578,-9.319999694824219 C-74.12999725341797,-7.079999923706055 -79.47000122070312,-5.28000020980835 -84.94999694824219,-3.9000000953674316 C-86.73999786376953,-3.450000047683716 -88,-1.850000023841858 -88,0 C-88,1.850000023841858 -86.73999786376953,3.450000047683716 -84.94999694824219,3.9000000953674316 C-79.47000122070312,5.28000020980835 -74.13999938964844,7.079999923706055 -68.93000030517578,9.319999694824219 C-55.369998931884766,15.15999984741211 -43.5099983215332,23.15999984741211 -33.33000183105469,33.33000183105469 C-23.15999984741211,43.5 -15.149999618530273,55.369998931884766 -9.319999694824219,68.93000030517578 C-7.079999923706055,74.12999725341797 -5.28000020980835,79.47000122070312 -3.9000000953674316,84.94999694824219 C-3.450000047683716,86.73999786376953 -1.840000033378601,88 0,88 C1.850000023841858,88 3.450000047683716,86.73999786376953 3.9000000953674316,84.94999694824219 C5.28000020980835,79.47000122070312 7.079999923706055,74.13999938964844 9.319999694824219,68.93000030517578 C15.15999984741211,55.369998931884766 23.15999984741211,43.5099983215332 33.33000183105469,33.33000183105469 C43.5,23.15999984741211 55.369998931884766,15.149999618530273 68.93000030517578,9.319999694824219 C74.12999725341797,7.079999923706055 79.47000122070312,5.28000020980835 84.94999694824219,3.9000000953674316 C86.73999786376953,3.450000047683716 88,1.840000033378601 88,0 C88,-1.850000023841858 86.73999786376953,-3.450000047683716 84.94999694824219,-3.9000000953674316 C79.47000122070312,-5.28000020980835 74.13999938964844,-7.079999923706055 68.93000030517578,-9.319999694824219 C55.369998931884766,-15.15999984741211 43.5099983215332,-23.15999984741211 33.33000183105469,-33.33000183105469 C23.15999984741211,-43.5 15.149999618530273,-55.369998931884766 9.319999694824219,-68.93000030517578 C7.079999923706055,-74.12999725341797 5.28000020980835,-79.47000122070312 3.9000000953674316,-84.94999694824219 C3.450000047683716,-86.73999786376953 1.850000023841858,-88 0,-88 C-1.850000023841858,-88 -3.450000047683716,-86.73999786376953 -3.9000000953674316,-84.94999694824219z" transform="matrix(0.1248,0,0,0.1248,4.98,4.98) translate(88.25,88.25)"></path>
+        </symbol>
+    </defs>
+</svg>
 
-    {# Header #}
-    {% block synapse_header %}
-        <div class="synapse-chat__header">
-            <div class="synapse-chat__title">Synapse IA</div>
-            <div class="synapse-chat__actions">
-                {% set personas = synapse_get_personas() %}
-                {% if personas is not empty %}
-                    <select class="synapse-chat__persona-selector" 
-                            data-synapse--chat-target="personaSelect"
-                            title="Choisir une personnalité">
-                        <option value="">L'Assistant (Défaut)</option>
-                        {% for p in personas %}
-                            <option value="{{ p.key }}">{{ p.emoji }} {{ p.name }}</option>
-                        {% endfor %}
-                    </select>
-                {% endif %}
+{% set history = history|default([]) %}
+{% set mode_class = history is empty ? 'mode-welcome' : 'mode-chat' %}
 
-                <button type="button" 
-                        class="synapse-chat__reset-btn" 
-                        data-action="click->synapse--chat#newConversation"
-                        title="Nouvelle discussion">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                </button>
+<div id="synapse-chat-container" 
+     class="synapse-fullscreen-container {{ mode_class }}" 
+     data-controller="synapse--chat" 
+     data-synapse--chat-target="container">
+
+    <div class="synapse-chat">
+
+        {# 1. Header (Optional Override) #}
+        {% block synapse_header %}{% endblock %}
+
+        {# 2. Messages Area #}
+        <div class="synapse-chat__messages" data-synapse--chat-target="messages">
+            
+            {# 2a. Welcome/Empty State #}
+            <div id="welcome-greeting" class="assistant-empty-state {{ history is not empty ? 'hidden' : '' }}" data-synapse--chat-target="greeting">
+                {% block synapse_greeting_content %}
+                    <div class="greeting-title">
+                        <div class="avatar-ai">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"><use href="#gemini-icon" fill="url(#gemini-gradient)"></use></svg>
+                        </div>
+                        <span>Bonjour</span>
+                    </div>
+                    <h1 class="greeting-subtitle">Comment puis-je vous aider ?</h1>
+                {% endblock %}
             </div>
-        </div>
-    {% endblock %}
 
-    {# Messages Container #}
-    <div class="synapse-chat__messages" data-synapse--chat-target="messages">
-        {% block synapse_messages_content %}
-            <div class="synapse-chat__message synapse-chat__message--assistant">
-                <div class="synapse-chat__avatar">
-                    {% block synapse_avatar_assistant %}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="synapse-chat__icon-ai"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-                    {% endblock %}
-                </div>
-                <div class="synapse-chat__content">
-                    <div class="synapse-chat__bubble">
-                        <p>Bonjour ! Je suis votre assistant IA. Comment puis-je vous aider aujourd'hui ?</p>
+            {# 2b. History Loop #}
+            {% for msg in history %}
+                <div class="synapse-chat__message synapse-chat__message--{{ msg.role == 'user' ? 'user' : 'assistant' }}">
+                    {% if msg.role == 'assistant' %}
+                        <div class="synapse-chat__avatar">
+                            <div class="avatar-ai">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"><use href="#gemini-icon" fill="url(#gemini-gradient)"></use></svg>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div class="synapse-chat__content">
+                        <div class="synapse-chat__bubble">
+                            {{ msg.content|nl2br }}
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% endblock %}
-    </div>
+            {% endfor %}
+        </div>
 
-    {# Input Area #}
-    {% block synapse_input_area %}
+        {# 3. Input Area #}
         <div class="synapse-chat__input-area">
-            <form data-action="submit->synapse--chat#send">
+            <form data-action="submit->synapse--chat#send" id="chat-form">
                 <div class="synapse-chat__input-wrapper">
-                    <textarea
-                        data-synapse--chat-target="input"
-                        placeholder="Posez votre question..."
-                        rows="1"
-                        data-action="keydown->synapse--chat#handleKeydown input->synapse--chat#autoResize"
-                    ></textarea>
-                    <button type="submit" data-synapse--chat-target="submitBtn">
-                        Envoyer
-                    </button>
+                    <!-- Textarea -->
+                    <textarea 
+                        data-synapse--chat-target="input" 
+                        placeholder="Saisissez un prompt..." 
+                        rows="1" 
+                        data-action="keydown->synapse--chat#handleKeydown input->synapse--chat#autoResize">
+                    </textarea>
+
+                    <!-- Toolbar -->
+                    <div class="input-toolbar">
+                        <div class="input-toolbar-left">
+                            {# Reset Button #}
+                            <button type="button" class="action-round-btn" data-action="click->synapse--chat#newConversation" title="Nouvelle discussion">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M13 8H7"></path><path d="M17 12H7"></path></svg>
+                            </button>
+
+                            {# Persona Selector (if available) #}
+                            {% set personas = synapse_get_personas() %}
+                            {% if personas is not empty %}
+                                <select class="persona-input-selector" data-synapse--chat-target="personaSelect">
+                                    <option value="">L'assistant (par défaut)</option>
+                                    {% for p in personas %}
+                                        <option value="{{ p.key }}">{{ p.emoji }} {{ p.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                        </div>
+
+                        <div class="input-toolbar-right">
+                            <button type="submit" class="btn-send-main" data-synapse--chat-target="submitBtn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="input-footer" class="input-footer-text {{ history is empty ? 'hidden' : '' }}">
+                   L'IA peut commettre des erreurs.
                 </div>
             </form>
         </div>
-    {% endblock %}
-
+    </div>
 </div>
