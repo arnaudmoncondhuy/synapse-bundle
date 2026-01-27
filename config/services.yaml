@@ -4,9 +4,16 @@ services:
         autoconfigure: true
 
     # Infra
+    ArnaudMoncondhuy\SynapseBundle\Service\Infra\GoogleAuthService:
+        arguments:
+            $serviceAccountJsonPath: '%synapse.vertex.service_account_json%'
+
     ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient:
         arguments:
             $model: '%synapse.model%'
+            $vertexEnabled: '%synapse.vertex.enabled%'
+            $vertexProjectId: '%synapse.vertex.project_id%'
+            $vertexRegion: '%synapse.vertex.region%'
             $thinkingEnabled: '%synapse.thinking.enabled%'
             $thinkingBudget: '%synapse.thinking.budget%'
 

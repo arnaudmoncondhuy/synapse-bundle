@@ -73,6 +73,12 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $container->setParameter('synapse.thinking.enabled', $config['thinking']['enabled'] ?? true);
         $container->setParameter('synapse.thinking.budget', $config['thinking']['budget'] ?? 1024);
 
+        // Vertex AI configuration
+        $container->setParameter('synapse.vertex.enabled', $config['vertex']['enabled'] ?? false);
+        $container->setParameter('synapse.vertex.project_id', $config['vertex']['project_id'] ?? null);
+        $container->setParameter('synapse.vertex.region', $config['vertex']['region'] ?? 'europe-west1');
+        $container->setParameter('synapse.vertex.service_account_json', $config['vertex']['service_account_json'] ?? null);
+
         // Chargement des services
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
         $loader->load('services.yaml');

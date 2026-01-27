@@ -12,7 +12,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * Client HTTP de bas niveau pour l'API Google Gemini.
  *
  * Cette classe gère :
- * - L'authentification par clé API.
+ * - L'authentification par clé API (AI Studio) ou OAuth2 (Vertex AI).
  * - La communication HTTP (POST).
  * - La sérialisation des requêtes (Payload).
  * - La gestion sécurisée des erreurs (masquage de l'API Key dans les logs).
@@ -22,11 +22,16 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 class GeminiClient
 {
-    private const API_URL_TEMPLATE = 'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent';
+    private const AI_STUDIO_URL = 'https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent';
+    private const VERTEX_URL = 'https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/%s:generateContent';
 
     public function __construct(
         private HttpClientInterface $httpClient,
+        private ?GoogleAuthService $googleAuthService,
         private string $model = 'gemini-2.5-flash-lite',
+        private bool $vertexEnabled = false,
+        private ?string $vertexProjectId = null,
+        private string $vertexRegion = 'europe-west1',
         private bool $thinkingEnabled = true,
         private int $thinkingBudget = 1024,
     ) {
@@ -38,7 +43,7 @@ class GeminiClient
      * @param string      $systemInstruction      instructions systèmes (System Prompt)
      * @param array       $contents               Historique de la conversation au format Gemini API.
      *                                            Chaque item doit être un tableau `['role' => 'user|model', 'parts' => [...]]`.
-     * @param string      $apiKey                 clé API OBLIGATOIRE pour cette requête
+     * @param string      $apiKey                 clé API OBLIGATOIRE pour cette requête (AI Studio uniquement)
      * @param array       $tools                  Définitions des outils (Function Declarations).
      *                                            Optionnel, permet au modèle de demander l'exécution de fonctions.
      * @param string|null $model                  modèle spécifique pour cette requête (prioritaire sur la config)
@@ -76,8 +81,8 @@ class GeminiClient
             ];
         }
 
+        // Tools
         if (!empty($tools)) {
-            // Auto-detect: If flat list of functions, wrap them
             $firstTool = reset($tools);
             $isFlatFunctionList = is_array($firstTool)
                 && isset($firstTool['name'])
@@ -92,36 +97,78 @@ class GeminiClient
             }
         }
 
-        $url = sprintf(self::API_URL_TEMPLATE, $effectiveModel);
+        // Build URL and headers based on mode
+        if ($this->vertexEnabled) {
+            $url = $this->buildVertexUrl($effectiveModel);
+            $headers = $this->buildVertexHeaders();
+            $queryParams = [];
+        } else {
+            $url = sprintf(self::AI_STUDIO_URL, $effectiveModel);
+            $headers = [];
+            $queryParams = ['key' => $apiKey];
+        }
 
         try {
-            $response = $this->httpClient->request('POST', $url, [
-                'query' => ['key' => $apiKey],
+            $options = [
                 'json' => TextUtil::sanitizeArrayUtf8($payload),
-            ]);
+                'headers' => $headers,
+            ];
 
+            if (!empty($queryParams)) {
+                $options['query'] = $queryParams;
+            }
+
+            $response = $this->httpClient->request('POST', $url, $options);
             $data = $response->toArray();
 
             return $data['candidates'][0]['content'] ?? [];
         } catch (\Throwable $e) {
-            // SECURITY: Never expose the API key in error messages
             $message = $e->getMessage();
-            if (str_contains($message, $apiKey)) {
+
+            // Security: Hide sensitive data
+            if (!$this->vertexEnabled && str_contains($message, $apiKey)) {
                 $message = str_replace($apiKey, '***API_KEY_HIDDEN***', $message);
             }
 
-            // Try to extract detailed error from Google
             if ($e instanceof HttpExceptionInterface) {
                 try {
                     $errorBody = $e->getResponse()->getContent(false);
-                    $message .= ' || Google Error: '.$errorBody;
+                    $message .= ' || Google Error: ' . $errorBody;
                 } catch (\Throwable) {
-                    // Ignore if can't read body
                 }
             }
 
-            throw new \RuntimeException('Gemini API Error: '.$message, 0, $e);
+            throw new \RuntimeException('Gemini API Error: ' . $message, 0, $e);
         }
+    }
+
+    private function buildVertexUrl(string $model): string
+    {
+        if (!$this->vertexProjectId) {
+            throw new \RuntimeException('Vertex AI requires a project_id');
+        }
+
+        return sprintf(
+            self::VERTEX_URL,
+            $this->vertexRegion,
+            $this->vertexProjectId,
+            $this->vertexRegion,
+            $model
+        );
+    }
+
+    private function buildVertexHeaders(): array
+    {
+        if (!$this->googleAuthService) {
+            throw new \RuntimeException('GoogleAuthService is required for Vertex AI');
+        }
+
+        $accessToken = $this->googleAuthService->getAccessToken();
+
+        return [
+            'Authorization' => 'Bearer ' . $accessToken,
+            'Content-Type' => 'application/json',
+        ];
     }
 
     /**
