@@ -306,6 +306,12 @@ body:has(.assistant-layout) main {
     height: 40px;
 }
 
+/* Fix specific size for chat messages (prevent resizing the greeting) */
+.synapse-chat__message .avatar-ai svg {
+    width: 28px;
+    height: 28px;
+}
+
 /* Utils */
 .hidden {
     display: none !important;
@@ -367,8 +373,8 @@ body:has(.assistant-layout) main {
 .synapse-chat__avatar {
     position: relative;
     /* Anchor for spinner */
-    width: 40px;
-    height: 40px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -377,10 +383,10 @@ body:has(.assistant-layout) main {
 /* SPINNER - Updated Positioning */
 .synapse-chat__spinner {
     position: absolute;
-    top: -5px;
-    left: -5px;
-    width: 50px;
-    height: 50px;
+    top: -4px;
+    left: -4px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: 2px solid transparent;
     border-top-color: var(--synapse-primary-color);
