@@ -110,8 +110,6 @@ class ChatService
             }
         }
 
-        $modelOverride = $options['model'] ?? null;
-
         $systemInstruction = $this->promptBuilder->buildSystemInstruction($personaKey);
 
         // Tools Handling: Dynamic override or default injection
@@ -144,8 +142,8 @@ class ChatService
             $onStatusUpdate('Analyse de la demande...', 'thinking');
         }
 
-        // Get the effective model being used (override or from config)
-        $effectiveModel = $modelOverride ?? $this->configuredModel;
+        // Model always comes from configuration (no override allowed)
+        $effectiveModel = $this->configuredModel;
 
         $debugAccumulator = [
             'model' => $effectiveModel,

@@ -58,9 +58,6 @@ class ChatApiController extends AbstractController
         if (!empty($data['api_key'])) {
             $options['api_key'] = (string) $data['api_key'];
         }
-        if (!empty($data['model'])) {
-            $options['model'] = (string) $data['model'];
-        }
 
         $response = new StreamedResponse(function () use ($message, $options, $request) {
             // 3. On ferme la session immédiatement au début du flux.

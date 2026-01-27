@@ -11,7 +11,6 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     static targets = ['messages', 'input', 'submitBtn', 'personaSelect', 'container', 'greeting'];
     static values = {
-        model: { type: String, default: 'gemini-2.5-flash-lite' },
         history: Array,
         debug: { type: Boolean, default: false },
         welcomeMessage: { type: String, default: '' } // Allow overriding "New Conversation" toast
@@ -99,7 +98,6 @@ export default class extends Controller {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: message,
-                    model: this.modelValue,
                     options: { persona: persona },
                     debug: this.isDebugMode
                 })
