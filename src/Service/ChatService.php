@@ -42,6 +42,7 @@ class ChatService
         private iterable $tools,
         private CacheInterface $cache,
         private ApiKeyProviderInterface $apiKeyProvider,
+        private bool $vertexEnabled = false,
     ) {
     }
 
@@ -97,10 +98,15 @@ class ChatService
 
         // Build context
         $personaKey = $options['persona'] ?? null;
-        $apiKey = $options['api_key'] ?? $this->apiKeyProvider->provideApiKey();
 
-        if (null === $apiKey) {
-            throw new \InvalidArgumentException('Option "api_key" is required and was not found in provider or options.');
+        // API Key is only required if NOT using Vertex AI
+        if ($this->vertexEnabled) {
+            $apiKey = ''; // Not used for Vertex AI (uses OAuth2 instead)
+        } else {
+            $apiKey = $options['api_key'] ?? $this->apiKeyProvider->provideApiKey();
+            if (null === $apiKey) {
+                throw new \InvalidArgumentException('Option "api_key" is required and was not found in provider or options.');
+            }
         }
 
         $modelOverride = $options['model'] ?? null;
