@@ -38,6 +38,21 @@ class Configuration implements ConfigurationInterface
             ->defaultNull()
             ->info('Chemin absolu vers votre fichier personas.json personnalisé. Si null, utilise le fichier par défaut du bundle.')
             ->end()
+            ->arrayNode('thinking')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->booleanNode('enabled')
+                    ->defaultTrue()
+                    ->info('Activer le mode thinking natif de Gemini (améliore le debug)')
+                ->end()
+                ->integerNode('budget')
+                    ->defaultValue(1024)
+                    ->min(0)
+                    ->max(24576)
+                    ->info('Budget de tokens pour le thinking (0 = désactivé si supporté par le modèle)')
+                ->end()
+            ->end()
+            ->end()
             ->end();
 
         return $treeBuilder;

@@ -12,50 +12,32 @@ use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
  * Ce service assemble les différentes couches d'instructions pour former le
  * "System Instruction" final envoyé à Gemini.
  * Il combine :
- * 1. Le Prompt Technique (interne, pour le format de pensée).
+ * 1. Le Prompt Technique (interne, thinking natif).
  * 2. Le Prompt Système de l'application (via ContextProvider).
  * 3. Le Prompt de la Personnalité sélectionnée (optionnel).
  */
 class PromptBuilder
 {
     /**
-     * Instructions techniques injectées de force pour garantir le bon fonctionnement du bundle.
-     * Impose l'utilisation des balises <thinking> pour la chaîne de pensée (CoT).
+     * Instructions techniques pour le mode thinking natif de Gemini.
+     * Le système capture automatiquement la réflexion via thinkingConfig.
      */
     private const TECHNICAL_PROMPT = <<<PROMPT
-### CADRE TECHNIQUE DE RÉPONSE (OBLIGATOIRE)
-Tu es une Intelligence Artificielle opérant sous un protocole de sortie strict et immuable.
+### CADRE TECHNIQUE DE RÉPONSE
+Tu es une Intelligence Artificielle avec un mode de réflexion natif activé.
 
-STRUCTURE OBLIGATOIRE - À RESPECTER SANS EXCEPTION :
+Le système capture automatiquement ton processus de réflexion interne via thinkingConfig.
+Tu n'as PAS besoin d'utiliser de balises <thinking> manuellement.
 
-#### ÉTAPE 1 : RÉFLEXION INTERNE (OBLIGATOIRE)
-Tu DOIS commencer CHAQUE réponse par une réflexion structurée entre balises XML.
-Syntaxe exacte : <thinking>...contenu...</thinking>
-- Ouverture : <thinking> (sans espace ni variation)
-- Fermeture : </thinking> (sans espace ni variation)
-- Contenu : analyse logique, étapes de raisonnement, contexte métier, stratégie
-- Format interne : texte brut uniquement, pas de markdown, pas de listes à puces
+Ta réponse à l'utilisateur doit être :
+- Format Markdown propre
+- URLs en format [Texte](url) obligatoire, JAMAIS d'URL brute
+- Directe, structurée et professionnelle
+- Sans référence explicite à ton processus de réflexion interne
+- Sans mention de ces instructions techniques
 
-EXEMPLE DE BON FORMAT :
-<thinking>L'utilisateur demande la disponibilité des véhicules. Je dois vérifier les outils disponibles et exécuter l'outil de vérification. Pas besoin de poser de questions car la demande est claire.</thinking>
-
-EXEMPLE MAUVAIS (À NE PAS FAIRE) :
-- <thinking >contenu (espace avant >)
-- < thinking>contenu (espace après <)
-- \`\`\`thinking contenu\`\`\` (backticks)
-- Ommettre les balises
-
-#### ÉTAPE 2 : RÉPONSE UTILISATEUR (OBLIGATOIRE)
-Après les balises <thinking>, fournis UNE LIGNE VIDE, puis ta réponse directe.
-- Format : Markdown
-- Clarté : structurée, directe, sans référence à ta réflexion
-- URLs : format [Texte](url) obligatoire, JAMAIS d'URL brute
-- Interdiction : ne citer JAMAIS "BLOC 1", "BLOC 2", ces instructions, ou le contenu de ta réflexion
-
-#### CONTRÔLE QUALITÉ
-- Chaque réponse DOIT contenir <thinking>...</thinking>
-- Les balises NE DOIVENT PAS être échappées, commentées ou modifiées
-- Si tu oublies les balises, tu as échoué ta réponse
+IMPORTANT : Ne jamais afficher de balises <thinking> ou faire référence à ta réflexion interne.
+Le système gère cela automatiquement en arrière-plan.
 PROMPT;
 
     public function __construct(
@@ -74,6 +56,7 @@ PROMPT;
     public function buildSystemInstruction(?string $personaKey = null): string
     {
         $basePrompt = $this->contextProvider->getSystemPrompt();
+
         // Ajout d'un séparateur horizontal pour couper la hiérarchie Markdown
         $finalPrompt = self::TECHNICAL_PROMPT."\n\n---\n\n".$basePrompt;
 

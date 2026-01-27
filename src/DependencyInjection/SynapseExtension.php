@@ -69,6 +69,10 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $personasPath = $config['personas_path'] ?? (dirname(__DIR__, 1).'/Resources/config/personas.json');
         $container->setParameter('synapse.personas_path', $personasPath);
 
+        // Thinking configuration
+        $container->setParameter('synapse.thinking.enabled', $config['thinking']['enabled'] ?? true);
+        $container->setParameter('synapse.thinking.budget', $config['thinking']['budget'] ?? 1024);
+
         // Chargement des services
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
         $loader->load('services.yaml');

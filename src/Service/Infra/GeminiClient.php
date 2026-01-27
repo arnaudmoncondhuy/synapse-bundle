@@ -27,19 +27,22 @@ class GeminiClient
     public function __construct(
         private HttpClientInterface $httpClient,
         private string $model = 'gemini-2.5-flash-lite',
+        private bool $thinkingEnabled = true,
+        private int $thinkingBudget = 1024,
     ) {
     }
 
     /**
      * Génère du contenu via l'API Gemini.
      *
-     * @param string      $systemInstruction instructions systèmes (System Prompt)
-     * @param array       $contents          Historique de la conversation au format Gemini API.
-     *                                       Chaque item doit être un tableau `['role' => 'user|model', 'parts' => [...]]`.
-     * @param string      $apiKey            clé API OBLIGATOIRE pour cette requête
-     * @param array       $tools             Définitions des outils (Function Declarations).
-     *                                       Optionnel, permet au modèle de demander l'exécution de fonctions.
-     * @param string|null $model             modèle spécifique pour cette requête (prioritaire sur la config)
+     * @param string      $systemInstruction      instructions systèmes (System Prompt)
+     * @param array       $contents               Historique de la conversation au format Gemini API.
+     *                                            Chaque item doit être un tableau `['role' => 'user|model', 'parts' => [...]]`.
+     * @param string      $apiKey                 clé API OBLIGATOIRE pour cette requête
+     * @param array       $tools                  Définitions des outils (Function Declarations).
+     *                                            Optionnel, permet au modèle de demander l'exécution de fonctions.
+     * @param string|null $model                  modèle spécifique pour cette requête (prioritaire sur la config)
+     * @param array|null  $thinkingConfigOverride Configuration thinking personnalisée (override la config par défaut)
      *
      * @return array La réponse brute de l'API (le premier candidat).
      *               Généralement un tableau contenant ['parts' => ...].
@@ -52,6 +55,7 @@ class GeminiClient
         string $apiKey,
         array $tools = [],
         ?string $model = null,
+        ?array $thinkingConfigOverride = null,
     ): array {
         $effectiveModel = $model ?? $this->model;
 
@@ -63,6 +67,14 @@ class GeminiClient
             ],
             'contents' => $contents,
         ];
+
+        // Thinking Config
+        $thinkingConfig = $thinkingConfigOverride ?? $this->buildThinkingConfig();
+        if ($thinkingConfig) {
+            $payload['generationConfig'] = [
+                'thinkingConfig' => $thinkingConfig,
+            ];
+        }
 
         if (!empty($tools)) {
             // Auto-detect: If flat list of functions, wrap them
@@ -110,5 +122,21 @@ class GeminiClient
 
             throw new \RuntimeException('Gemini API Error: '.$message, 0, $e);
         }
+    }
+
+    /**
+     * Construit la configuration de thinking natif.
+     *
+     * @return array|null Configuration ou null si désactivé
+     */
+    private function buildThinkingConfig(): ?array
+    {
+        if (!$this->thinkingEnabled) {
+            return null;
+        }
+
+        return [
+            'thinkingBudget' => $this->thinkingBudget,
+        ];
     }
 }

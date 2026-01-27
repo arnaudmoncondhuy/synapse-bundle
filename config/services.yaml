@@ -7,6 +7,8 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient:
         arguments:
             $model: '%synapse.model%'
+            $thinkingEnabled: '%synapse.thinking.enabled%'
+            $thinkingBudget: '%synapse.thinking.budget%'
 
     # Default implementations (can be overridden by user)
     ArnaudMoncondhuy\SynapseBundle\Service\Impl\SessionConversationHandler: ~
