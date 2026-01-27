@@ -11,7 +11,7 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     static targets = ['messages', 'input', 'submitBtn', 'personaSelect', 'container', 'greeting'];
     static values = {
-        model: { type: String, default: 'gemini-2.0-flash-exp' },
+        model: { type: String, default: 'gemini-2.5-flash-lite' },
         history: Array,
         debug: { type: Boolean, default: false },
         welcomeMessage: { type: String, default: '' } // Allow overriding "New Conversation" toast
@@ -190,9 +190,9 @@ export default class extends Controller {
 
                 // Optional: Toast or message if no greeting target
                 if (!this.hasGreetingTarget) {
-                     const aiIcon = `<div class="synapse-chat__avatar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"><use href="#gemini-icon" fill="url(#gemini-gradient)"></use></svg></div>`;
-                     const msg = this.welcomeMessageValue || "Nouvelle conversation démarrée !";
-                     this.messagesTarget.innerHTML = `
+                    const aiIcon = `<div class="synapse-chat__avatar"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"><use href="#gemini-icon" fill="url(#gemini-gradient)"></use></svg></div>`;
+                    const msg = this.welcomeMessageValue || "Nouvelle conversation démarrée !";
+                    this.messagesTarget.innerHTML = `
                         <div class="synapse-chat__message synapse-chat__message--assistant">
                              ${aiIcon}
                             <div class="synapse-chat__content">
@@ -245,7 +245,7 @@ export default class extends Controller {
         // Using generic classes so CSS/Theme handles the icon (SVG Symbol expected in DOM)
         const aiIcon = `<div class="synapse-chat__avatar"><div class="avatar-ai"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"><use href="#gemini-icon" fill="url(#gemini-gradient)"></use></svg></div></div>`;
         const userAvatar = `<div class="synapse-chat__avatar">👤</div>`;
-        
+
         const avatarContent = role === 'user' ? userAvatar : aiIcon;
 
         let footerHtml = '';
@@ -280,7 +280,7 @@ export default class extends Controller {
         this.submitBtnTarget.disabled = isLoading;
 
         if (isLoading) {
-             const aiIcon = `<div class="synapse-chat__avatar synapse-chat__avatar--loading"><div class="synapse-chat__spinner"></div><div class="avatar-ai"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"><use href="#gemini-icon" fill="url(#gemini-gradient)"></use></svg></div></div>`;
+            const aiIcon = `<div class="synapse-chat__avatar synapse-chat__avatar--loading"><div class="synapse-chat__spinner"></div><div class="avatar-ai"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"><use href="#gemini-icon" fill="url(#gemini-gradient)"></use></svg></div></div>`;
 
             this.messagesTarget.insertAdjacentHTML('beforeend', `
                 <div class="synapse-chat__message synapse-chat__message--assistant synapse-chat__loading" id="synapse-loading">
