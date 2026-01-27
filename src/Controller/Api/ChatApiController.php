@@ -56,10 +56,9 @@ class ChatApiController extends AbstractController
         $options['debug'] = $data['debug'] ?? ($options['debug'] ?? false);
 
         $response = new StreamedResponse(function () use ($message, $options, $request) {
-            // 3. On ferme la session immédiatement au début du flux.
-            if ($request->hasSession() && $request->getSession()->isStarted()) {
-                $request->getSession()->save();
-            }
+            // 3. On ne ferme PAS la session ici pour permettre la sauvegarde de l'historique.
+            // La session sera gérée par Symfony à la fin de la requête.
+
 
             // Helper to send NDJSON event
             $sendEvent = function (string $type, mixed $payload): void {
