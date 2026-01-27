@@ -169,7 +169,7 @@ class ChatService
                 $contents,
                 $apiKey,
                 $toolDefinitions,
-                $modelOverride
+                null // Model comes from GeminiClient configuration
             );
 
             if ($options['debug'] ?? false) {
