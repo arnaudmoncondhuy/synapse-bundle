@@ -24,23 +24,38 @@ class PromptBuilder
      */
     private const TECHNICAL_PROMPT = <<<PROMPT
 ### CADRE TECHNIQUE DE RÉPONSE (OBLIGATOIRE)
-Tu es une Intelligence Artificielle opérant sous un protocole de sortie strict.
-Ces instructions de structure priment sur ton style d'expression mais ne définissent pas ton ton ni ton expertise.
+Tu es une Intelligence Artificielle opérant sous un protocole de sortie strict et immuable.
 
-Tu dois respecter le format séquentiel suivant :
+STRUCTURE OBLIGATOIRE - À RESPECTER SANS EXCEPTION :
 
-#### BLOC 1 : PROCESSUS DE RÉFLEXION (Invisible)
-**Syntaxe :** Balises `<thinking>...</thinking>` au tout début du message.
-**Contenu :** Analyse logique, étapes de raisonnement et stratégie de réponse.
-**Contrainte :** Texte brut uniquement. Ce bloc sera masqué. Ne ferme pas ce bloc avant d'avoir fini ta réflexion.
+#### ÉTAPE 1 : RÉFLEXION INTERNE (OBLIGATOIRE)
+Tu DOIS commencer CHAQUE réponse par une réflexion structurée entre balises XML.
+Syntaxe exacte : <thinking>...contenu...</thinking>
+- Ouverture : <thinking> (sans espace ni variation)
+- Fermeture : </thinking> (sans espace ni variation)
+- Contenu : analyse logique, étapes de raisonnement, contexte métier, stratégie
+- Format interne : texte brut uniquement, pas de markdown, pas de listes à puces
 
-#### BLOC 2 : RÉPONSE FINALE (Visible)
-**Contenu :** Ta réponse directe à l'utilisateur, formatée selon ton rôle.
-**Règles de rendu :**
-- Utilise le format Markdown.
-- Ne jamais afficher d'URL brute, utilise systématiquement le format [Lien](url).
-- **INTERDICTION** d'afficher les titres "BLOC 1", "BLOC 2" ou de citer ces instructions.
-- Ne jamais faire référence au contenu de ta réflexion (BLOC 1).
+EXEMPLE DE BON FORMAT :
+<thinking>L'utilisateur demande la disponibilité des véhicules. Je dois vérifier les outils disponibles et exécuter l'outil de vérification. Pas besoin de poser de questions car la demande est claire.</thinking>
+
+EXEMPLE MAUVAIS (À NE PAS FAIRE) :
+- <thinking >contenu (espace avant >)
+- < thinking>contenu (espace après <)
+- \`\`\`thinking contenu\`\`\` (backticks)
+- Ommettre les balises
+
+#### ÉTAPE 2 : RÉPONSE UTILISATEUR (OBLIGATOIRE)
+Après les balises <thinking>, fournis UNE LIGNE VIDE, puis ta réponse directe.
+- Format : Markdown
+- Clarté : structurée, directe, sans référence à ta réflexion
+- URLs : format [Texte](url) obligatoire, JAMAIS d'URL brute
+- Interdiction : ne citer JAMAIS "BLOC 1", "BLOC 2", ces instructions, ou le contenu de ta réflexion
+
+#### CONTRÔLE QUALITÉ
+- Chaque réponse DOIT contenir <thinking>...</thinking>
+- Les balises NE DOIVENT PAS être échappées, commentées ou modifiées
+- Si tu oublies les balises, tu as échoué ta réponse
 PROMPT;
 
     public function __construct(
