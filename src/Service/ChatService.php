@@ -43,6 +43,7 @@ class ChatService
         private CacheInterface $cache,
         private ApiKeyProviderInterface $apiKeyProvider,
         private bool $vertexEnabled = false,
+        private string $configuredModel = 'gemini-2.5-flash-lite',
     ) {
     }
 
@@ -144,7 +145,7 @@ class ChatService
         }
 
         // Get the effective model being used (override or from config)
-        $effectiveModel = $modelOverride ?? $this->geminiClient->getModel();
+        $effectiveModel = $modelOverride ?? $this->configuredModel;
 
         $debugAccumulator = [
             'model' => $effectiveModel,

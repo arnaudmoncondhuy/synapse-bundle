@@ -229,7 +229,8 @@ body:has(.assistant-layout) main {
     width: 100%;
     display: flex;
     margin-bottom: 0;
-    /* Gap handled by parent */
+    /* Gap handles spacing between avatar and content */
+    gap: 16px;
 }
 
 .synapse-chat__message--user {
@@ -352,6 +353,17 @@ body:has(.assistant-layout) main {
     animation: synapse-dots 1.5s infinite;
 }
 
+/* Loading State Specifics */
+.synapse-chat__loading {
+    align-items: center;
+    /* Center text vertically with spinner */
+}
+
+.synapse-chat__loading .synapse-chat__avatar {
+    margin-top: 0 !important;
+    /* Reset margin for pure centering */
+}
+
 @keyframes synapse-dots {
 
     0%,
@@ -378,6 +390,8 @@ body:has(.assistant-layout) main {
     display: flex;
     align-items: center;
     justify-content: center;
+    /* Optical alignment with text first line */
+    margin-top: 4px;
 }
 
 /* SPINNER - Updated Positioning */

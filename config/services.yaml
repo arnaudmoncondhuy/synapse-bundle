@@ -52,6 +52,7 @@ services:
             $apiKeyProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ApiKeyProviderInterface'
             $tools: !tagged_iterator synapse.tool
             $vertexEnabled: '%synapse.vertex.enabled%'
+            $configuredModel: '%synapse.model%'
 
     # Twig Integration
     ArnaudMoncondhuy\SynapseBundle\Twig\SynapseRuntime:
