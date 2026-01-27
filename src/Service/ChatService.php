@@ -143,8 +143,12 @@ class ChatService
             $onStatusUpdate('Analyse de la demande...', 'thinking');
         }
 
+        // Get the effective model being used (override or from config)
+        $effectiveModel = $modelOverride ?? $this->geminiClient->getModel();
+
         $debugAccumulator = [
-            'model' => $modelOverride ?? 'default (via config)',
+            'model' => $effectiveModel,
+            'endpoint' => $this->vertexEnabled ? 'Vertex AI' : 'AI Studio',
             'history_loaded' => count($rawHistory).' messages',
             'turns' => [],
             'tool_executions' => [],

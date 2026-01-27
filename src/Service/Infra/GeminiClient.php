@@ -37,6 +37,11 @@ class GeminiClient
     ) {
     }
 
+    public function getModel(): string
+    {
+        return $this->model;
+    }
+
     /**
      * Génère du contenu via l'API Gemini.
      *

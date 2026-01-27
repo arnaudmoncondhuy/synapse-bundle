@@ -57,6 +57,16 @@
                 <div style="font-weight: 600; color: #1f2937; font-size: 1.1em;">{{ debug.model|default('Non spécifié') }}</div>
             </div>
             <div>
+                <div class="label">Endpoint</div>
+                <div style="font-weight: 600; color: #1f2937; font-size: 1.1em;">
+                    {% if debug.endpoint == 'Vertex AI' %}
+                        <span style="color: #059669;">{{ debug.endpoint }}</span>
+                    {% else %}
+                        <span style="color: #dc2626;">{{ debug.endpoint|default('AI Studio') }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div>
                 <div class="label">Nombre de tours</div>
                 <div style="font-weight: 600; color: #1f2937; font-size: 1.1em;">{{ debug.turns|length }}</div>
             </div>
