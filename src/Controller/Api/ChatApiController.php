@@ -55,10 +55,6 @@ class ChatApiController extends AbstractController
         $options = $data['options'] ?? [];
         $options['debug'] = $data['debug'] ?? ($options['debug'] ?? false);
 
-        if (!empty($data['api_key'])) {
-            $options['api_key'] = (string) $data['api_key'];
-        }
-
         $response = new StreamedResponse(function () use ($message, $options, $request) {
             // 3. On ferme la session immédiatement au début du flux.
             if ($request->hasSession() && $request->getSession()->isStarted()) {

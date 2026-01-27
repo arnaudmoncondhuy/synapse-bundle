@@ -12,7 +12,6 @@ services:
         arguments:
             $googleAuthService: '@ArnaudMoncondhuy\SynapseBundle\Service\Infra\GoogleAuthService'
             $model: '%synapse.model%'
-            $vertexEnabled: '%synapse.vertex.enabled%'
             $vertexProjectId: '%synapse.vertex.project_id%'
             $vertexRegion: '%synapse.vertex.region%'
             $thinkingEnabled: '%synapse.thinking.enabled%'
@@ -23,19 +22,12 @@ services:
 
     ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultContextProvider: ~
 
-    ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultApiKeyProvider:
-        arguments:
-            $defaultApiKey: '%synapse.api_key%'
-
     # Aliases for interfaces (use default implementations)
     ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface:
         alias: ArnaudMoncondhuy\SynapseBundle\Service\Impl\SessionConversationHandler
 
     ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface:
         alias: ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultContextProvider
-
-    ArnaudMoncondhuy\SynapseBundle\Contract\ApiKeyProviderInterface:
-        alias: ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultApiKeyProvider
 
     # Logic
     ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry:
@@ -49,9 +41,7 @@ services:
     # Main service
     ArnaudMoncondhuy\SynapseBundle\Service\ChatService:
         arguments:
-            $apiKeyProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ApiKeyProviderInterface'
             $tools: !tagged_iterator synapse.tool
-            $vertexEnabled: '%synapse.vertex.enabled%'
             $configuredModel: '%synapse.model%'
 
     # Twig Integration

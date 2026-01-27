@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Service;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
-use ArnaudMoncondhuy\SynapseBundle\Contract\ApiKeyProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient;
 use ArnaudMoncondhuy\SynapseBundle\Util\TextUtil;
@@ -29,11 +28,12 @@ class ChatService
     private const MAX_TURNS = 5;
 
     /**
-     * @param GeminiClient                 $geminiClient        client HTTP bas niveau pour l'API Gemini
+     * @param GeminiClient                 $geminiClient        client HTTP bas niveau pour l'API Gemini (Vertex AI)
      * @param PromptBuilder                $promptBuilder       service de construction du Prompt Système
      * @param ConversationHandlerInterface $conversationHandler gestionnaire de persistance des messages
      * @param iterable<AiToolInterface>    $tools               collection des outils disponibles pour l'IA (injectés via DI)
      * @param CacheInterface               $cache               cache Symfony pour stocker temporairement les données de débogage
+     * @param string                       $configuredModel     modèle Gemini configuré
      */
     public function __construct(
         private GeminiClient $geminiClient,
@@ -41,9 +41,7 @@ class ChatService
         private ConversationHandlerInterface $conversationHandler,
         private iterable $tools,
         private CacheInterface $cache,
-        private ApiKeyProviderInterface $apiKeyProvider,
-        private bool $vertexEnabled = false,
-        private string $configuredModel = 'gemini-2.5-flash-lite',
+        private string $configuredModel = 'gemini-2.5-flash',
     ) {
     }
 
@@ -62,16 +60,12 @@ class ChatService
      *    reset_conversation?: bool,
      *    debug?: bool,
      *    persona?: string,
-     *    api_key: string,
-     *    model?: string,
      *    tools?: array
      * } $options Options de configuration de la requête :
      *  - 'stateless' (bool) : Ne pas charger ni sauvegarder l'historique (mode "one-shot").
      *  - 'reset_conversation' (bool) : Effacer l'historique AVANT de traiter ce message.
      *  - 'debug' (bool) : Activer la collecte d'informations détaillées pour le débogage.
      *  - 'persona' (string) : Clé de la personnalité à utiliser (écrase le défaut).
-     *  - 'api_key' (string) : Clé API spécifique (OBLIGATOIRE).
-     *  - 'model' (string) : Modèle spécifique (Optionnel).
      *  - 'tools' (array) : Définitions d'outils spécifiques pour cette requête (Optionnel, écrase les défauts).
      * @param callable|null $onStatusUpdate Callback optionnel pour le streaming d'état (feedback UI).
      *                                      Signature: function(string $message, string $step): void
@@ -99,17 +93,6 @@ class ChatService
 
         // Build context
         $personaKey = $options['persona'] ?? null;
-
-        // API Key is only required if NOT using Vertex AI
-        if ($this->vertexEnabled) {
-            $apiKey = ''; // Not used for Vertex AI (uses OAuth2 instead)
-        } else {
-            $apiKey = $options['api_key'] ?? $this->apiKeyProvider->provideApiKey();
-            if (null === $apiKey) {
-                throw new \InvalidArgumentException('Option "api_key" is required and was not found in provider or options.');
-            }
-        }
-
         $systemInstruction = $this->promptBuilder->buildSystemInstruction($personaKey);
 
         // Tools Handling: Dynamic override or default injection
@@ -147,7 +130,7 @@ class ChatService
 
         $debugAccumulator = [
             'model' => $effectiveModel,
-            'endpoint' => $this->vertexEnabled ? 'Vertex AI' : 'AI Studio',
+            'endpoint' => 'Vertex AI',
             'history_loaded' => count($rawHistory).' messages',
             'turns' => [],
             'tool_executions' => [],
@@ -167,7 +150,6 @@ class ChatService
             $response = $this->geminiClient->generateContent(
                 $systemInstruction,
                 $contents,
-                $apiKey,
                 $toolDefinitions,
                 null // Model comes from GeminiClient configuration
             );

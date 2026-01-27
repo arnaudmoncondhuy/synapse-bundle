@@ -13,10 +13,15 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  * Ce fichier valide et documente les options disponibles dans le fichier `config/packages/synapse.yaml`.
  *
  * Exemple de configuration attendue :
- * synpase:
- *    gemini_api_key: '%env(GEMINI_API_KEY)%'
- *    model: 'gemini-2.5-flash-lite'
- *    personas_path: '%kernel.project_dir%/config/personas.json'
+ * synapse:
+ *    model: 'gemini-2.5-flash'
+ *    vertex:
+ *        project_id: 'your-gcp-project-id'
+ *        region: 'europe-west1'
+ *        service_account_json: '%kernel.project_dir%/config/secrets/gcp-service-account.json'
+ *    thinking:
+ *        enabled: true
+ *        budget: 2048
  */
 class Configuration implements ConfigurationInterface
 {
@@ -26,13 +31,9 @@ class Configuration implements ConfigurationInterface
 
         $treeBuilder->getRootNode()
             ->children()
-            ->scalarNode('api_key')
-            ->defaultNull()
-            ->info('La clé API Gemini. Si nulle, elle devra être fournie par d\'autres moyens ou via l\'application.')
-            ->end()
             ->scalarNode('model')
-            ->defaultValue('gemini-2.5-flash-lite')
-            ->info('Le modèle Gemini à utiliser pour la génération (défaut: gemini-2.5-flash-lite).')
+            ->defaultValue('gemini-2.5-flash')
+            ->info('Le modèle Gemini à utiliser via Vertex AI (défaut: gemini-2.5-flash).')
             ->end()
             ->scalarNode('personas_path')
             ->defaultNull()
@@ -56,21 +57,19 @@ class Configuration implements ConfigurationInterface
             ->arrayNode('vertex')
             ->addDefaultsIfNotSet()
             ->children()
-                ->booleanNode('enabled')
-                    ->defaultFalse()
-                    ->info('Activer Vertex AI au lieu de AI Studio (requis pour thinking natif)')
-                ->end()
                 ->scalarNode('project_id')
-                    ->defaultNull()
-                    ->info('Google Cloud Project ID (requis si vertex.enabled=true)')
+                    ->isRequired()
+                    ->cannotBeEmpty()
+                    ->info('Google Cloud Project ID (obligatoire)')
                 ->end()
                 ->scalarNode('region')
                     ->defaultValue('europe-west1')
                     ->info('Région Vertex AI (europe-west1, us-central1, etc.)')
                 ->end()
                 ->scalarNode('service_account_json')
-                    ->defaultNull()
-                    ->info('Chemin vers le fichier JSON du service account Google Cloud')
+                    ->isRequired()
+                    ->cannotBeEmpty()
+                    ->info('Chemin vers le fichier JSON du service account Google Cloud (obligatoire)')
                 ->end()
             ->end()
             ->end()

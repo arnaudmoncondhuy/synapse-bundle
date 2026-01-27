@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\DependencyInjection;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
-use ArnaudMoncondhuy\SynapseBundle\Contract\ApiKeyProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
 use Symfony\Component\Config\FileLocator;
@@ -62,7 +61,6 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $config = $this->processConfiguration($configuration, $configs);
 
         // Injection des paramètres dans le conteneur
-        $container->setParameter('synapse.api_key', $config['api_key']);
         $container->setParameter('synapse.model', $config['model']);
 
         // Définition du chemin par défaut si non spécifié
@@ -73,11 +71,10 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $container->setParameter('synapse.thinking.enabled', $config['thinking']['enabled'] ?? true);
         $container->setParameter('synapse.thinking.budget', $config['thinking']['budget'] ?? 1024);
 
-        // Vertex AI configuration
-        $container->setParameter('synapse.vertex.enabled', $config['vertex']['enabled'] ?? false);
-        $container->setParameter('synapse.vertex.project_id', $config['vertex']['project_id'] ?? null);
+        // Vertex AI configuration (always enabled)
+        $container->setParameter('synapse.vertex.project_id', $config['vertex']['project_id']);
         $container->setParameter('synapse.vertex.region', $config['vertex']['region'] ?? 'europe-west1');
-        $container->setParameter('synapse.vertex.service_account_json', $config['vertex']['service_account_json'] ?? null);
+        $container->setParameter('synapse.vertex.service_account_json', $config['vertex']['service_account_json']);
 
         // Chargement des services
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
@@ -92,9 +89,6 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
 
         $container->registerForAutoconfiguration(ConversationHandlerInterface::class)
             ->addTag('synapse.conversation_handler');
-
-        $container->registerForAutoconfiguration(ApiKeyProviderInterface::class)
-            ->addTag('synapse.api_key_provider');
     }
 
     public function getAlias(): string
