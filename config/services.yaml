@@ -16,6 +16,16 @@ services:
             $vertexRegion: '%synapse.vertex.region%'
             $thinkingEnabled: '%synapse.thinking.enabled%'
             $thinkingBudget: '%synapse.thinking.budget%'
+            $safetySettingsEnabled: '%synapse.safety_settings.enabled%'
+            $safetyDefaultThreshold: '%synapse.safety_settings.default_threshold%'
+            $safetyThresholds: '%synapse.safety_settings.thresholds%'
+            $generationTemperature: '%synapse.generation_config.temperature%'
+            $generationTopP: '%synapse.generation_config.top_p%'
+            $generationTopK: '%synapse.generation_config.top_k%'
+            $generationMaxOutputTokens: '%synapse.generation_config.max_output_tokens%'
+            $generationStopSequences: '%synapse.generation_config.stop_sequences%'
+            $contextCachingEnabled: '%synapse.context_caching.enabled%'
+            $contextCachingId: '%synapse.context_caching.cached_content_id%'
 
     # Default implementations (can be overridden by user)
     ArnaudMoncondhuy\SynapseBundle\Service\Impl\SessionConversationHandler: ~

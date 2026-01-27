@@ -76,6 +76,27 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $container->setParameter('synapse.vertex.region', $config['vertex']['region'] ?? 'europe-west1');
         $container->setParameter('synapse.vertex.service_account_json', $config['vertex']['service_account_json']);
 
+        // Safety Settings configuration
+        $container->setParameter('synapse.safety_settings.enabled', $config['safety_settings']['enabled'] ?? false);
+        $container->setParameter('synapse.safety_settings.default_threshold', $config['safety_settings']['default_threshold'] ?? 'BLOCK_MEDIUM_AND_ABOVE');
+        $container->setParameter('synapse.safety_settings.thresholds', $config['safety_settings']['thresholds'] ?? [
+            'hate_speech' => 'BLOCK_MEDIUM_AND_ABOVE',
+            'dangerous_content' => 'BLOCK_MEDIUM_AND_ABOVE',
+            'harassment' => 'BLOCK_MEDIUM_AND_ABOVE',
+            'sexually_explicit' => 'BLOCK_MEDIUM_AND_ABOVE',
+        ]);
+
+        // Generation Config
+        $container->setParameter('synapse.generation_config.temperature', $config['generation_config']['temperature'] ?? 1.0);
+        $container->setParameter('synapse.generation_config.top_p', $config['generation_config']['top_p'] ?? 0.95);
+        $container->setParameter('synapse.generation_config.top_k', $config['generation_config']['top_k'] ?? 40);
+        $container->setParameter('synapse.generation_config.max_output_tokens', $config['generation_config']['max_output_tokens'] ?? null);
+        $container->setParameter('synapse.generation_config.stop_sequences', $config['generation_config']['stop_sequences'] ?? []);
+
+        // Context Caching configuration
+        $container->setParameter('synapse.context_caching.enabled', $config['context_caching']['enabled'] ?? false);
+        $container->setParameter('synapse.context_caching.cached_content_id', $config['context_caching']['cached_content_id'] ?? null);
+
         // Chargement des services
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
         $loader->load('services.yaml');

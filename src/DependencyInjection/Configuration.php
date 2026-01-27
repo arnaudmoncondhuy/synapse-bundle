@@ -22,6 +22,23 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  *    thinking:
  *        enabled: true
  *        budget: 2048
+ *    safety_settings:
+ *        enabled: false
+ *        default_threshold: 'BLOCK_MEDIUM_AND_ABOVE'
+ *        thresholds:
+ *            hate_speech: 'BLOCK_MEDIUM_AND_ABOVE'
+ *            dangerous_content: 'BLOCK_MEDIUM_AND_ABOVE'
+ *            harassment: 'BLOCK_MEDIUM_AND_ABOVE'
+ *            sexually_explicit: 'BLOCK_MEDIUM_AND_ABOVE'
+ *    generation_config:
+ *        temperature: 1.0
+ *        top_p: 0.95
+ *        top_k: 40
+ *        max_output_tokens: null
+ *        stop_sequences: []
+ *    context_caching:
+ *        enabled: false
+ *        cached_content_id: null
  */
 class Configuration implements ConfigurationInterface
 {
@@ -70,6 +87,84 @@ class Configuration implements ConfigurationInterface
                     ->isRequired()
                     ->cannotBeEmpty()
                     ->info('Chemin vers le fichier JSON du service account Google Cloud (obligatoire)')
+                ->end()
+            ->end()
+            ->end()
+            ->arrayNode('safety_settings')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->booleanNode('enabled')
+                    ->defaultFalse()
+                    ->info('Activer le filtrage de sécurité du contenu (safety filters)')
+                ->end()
+                ->scalarNode('default_threshold')
+                    ->defaultValue('BLOCK_MEDIUM_AND_ABOVE')
+                    ->info('Seuil par défaut : BLOCK_LOW_AND_ABOVE, BLOCK_MEDIUM_AND_ABOVE, BLOCK_ONLY_HIGH, BLOCK_NONE')
+                ->end()
+                ->arrayNode('thresholds')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('hate_speech')
+                            ->defaultValue('BLOCK_MEDIUM_AND_ABOVE')
+                            ->info('Seuil pour hate_speech (discours haineux)')
+                        ->end()
+                        ->scalarNode('dangerous_content')
+                            ->defaultValue('BLOCK_MEDIUM_AND_ABOVE')
+                            ->info('Seuil pour dangerous_content (contenu dangereux)')
+                        ->end()
+                        ->scalarNode('harassment')
+                            ->defaultValue('BLOCK_MEDIUM_AND_ABOVE')
+                            ->info('Seuil pour harassment (harcèlement)')
+                        ->end()
+                        ->scalarNode('sexually_explicit')
+                            ->defaultValue('BLOCK_MEDIUM_AND_ABOVE')
+                            ->info('Seuil pour sexually_explicit (contenu sexuel explicite)')
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+            ->end()
+            ->arrayNode('generation_config')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->floatNode('temperature')
+                    ->defaultValue(1.0)
+                    ->min(0.0)
+                    ->max(2.0)
+                    ->info('Température (0.0 = déterministe, 2.0 = créatif)')
+                ->end()
+                ->floatNode('top_p')
+                    ->defaultValue(0.95)
+                    ->min(0.0)
+                    ->max(1.0)
+                    ->info('Top-P pour nucleus sampling (0.0 à 1.0)')
+                ->end()
+                ->integerNode('top_k')
+                    ->defaultValue(40)
+                    ->min(1)
+                    ->info('Top-K (nombre de tokens à considérer)')
+                ->end()
+                ->integerNode('max_output_tokens')
+                    ->defaultNull()
+                    ->info('Nombre maximum de tokens de sortie (null = par défaut du modèle)')
+                ->end()
+                ->arrayNode('stop_sequences')
+                    ->prototype('scalar')->end()
+                    ->defaultValue([])
+                    ->info('Séquences d\'arrêt personnalisées')
+                ->end()
+            ->end()
+            ->end()
+            ->arrayNode('context_caching')
+            ->addDefaultsIfNotSet()
+            ->children()
+                ->booleanNode('enabled')
+                    ->defaultFalse()
+                    ->info('Activer le context caching pour réduire les tokens et les coûts')
+                ->end()
+                ->scalarNode('cached_content_id')
+                    ->defaultNull()
+                    ->info('ID du contenu en cache créé via l\'API Vertex AI')
                 ->end()
             ->end()
             ->end()
