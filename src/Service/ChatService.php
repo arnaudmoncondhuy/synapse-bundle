@@ -138,6 +138,7 @@ class ChatService
         }
 
         $debugAccumulator = [
+            'model' => $modelOverride ?? 'default (via config)',
             'history_loaded' => count($rawHistory).' messages',
             'turns' => [],
             'tool_executions' => [],
