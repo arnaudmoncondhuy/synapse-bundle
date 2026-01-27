@@ -112,9 +112,9 @@ class ChatService
             // If manual tools are provided in options (raw array format usually)
             // We use them directly.
             $toolDefinitions = $options['tools'];
-            // Note: If using tools from options, execution logic might fail if they are not in $this->tools registry.
-            // This assumes the Caller handles tool execution or only passes definintions for model awareness.
-            // For now, let's assume standard behavior: we use injected tools unless overridden.
+        // Note: If using tools from options, execution logic might fail if they are not in $this->tools registry.
+        // This assumes the Caller handles tool execution or only passes definintions for model awareness.
+        // For now, let's assume standard behavior: we use injected tools unless overridden.
         } else {
             $toolDefinitions = $this->buildToolDefinitions();
         }
@@ -138,7 +138,7 @@ class ChatService
         }
 
         $debugAccumulator = [
-            'history_loaded' => count($rawHistory) . ' messages',
+            'history_loaded' => count($rawHistory).' messages',
             'turns' => [],
             'tool_executions' => [],
         ];
@@ -178,7 +178,7 @@ class ChatService
                     // If the API evolution separates them, we might need adjustments.
                     // Currently assuming text content IS the thought if thought=true.
                     if (isset($part['text'])) {
-                        $currentTurnText .= '<thinking>' . $part['text'] . "</thinking>\n";
+                        $currentTurnText .= '<thinking>'.$part['text']."</thinking>\n";
                     }
                     continue; // Skip standard text append
                 }
@@ -215,7 +215,7 @@ class ChatService
                     'text_length' => strlen($currentTurnText),
                     'has_text' => '' !== $currentTurnText,
                     'function_calls_count' => count($functionCalls),
-                    'function_names' => array_map(fn($fc) => $fc['name'], $functionCalls),
+                    'function_names' => array_map(fn ($fc) => $fc['name'], $functionCalls),
                 ];
             }
 
@@ -228,7 +228,7 @@ class ChatService
                     $args = $fc['args'] ?? [];
 
                     if ($onStatusUpdate) {
-                        $onStatusUpdate("Exécution de l'outil: {$functionName}...", 'tool:' . $functionName);
+                        $onStatusUpdate("Exécution de l'outil: {$functionName}...", 'tool:'.$functionName);
                     }
 
                     $functionResponse = $this->executeTool($functionName, $args);
@@ -245,7 +245,7 @@ class ChatService
                             $debugAccumulator['tool_executions'][] = [
                                 'tool' => $functionName,
                                 'params' => $args,
-                                'result_preview' => substr((string) $functionResponse, 0, 100) . '...',
+                                'result_preview' => substr((string) $functionResponse, 0, 100).'...',
                             ];
                         }
                     }

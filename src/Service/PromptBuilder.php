@@ -59,13 +59,14 @@ PROMPT;
     public function buildSystemInstruction(?string $personaKey = null): string
     {
         $basePrompt = $this->contextProvider->getSystemPrompt();
-        $finalPrompt = self::TECHNICAL_PROMPT."\n\n".$basePrompt;
+        // Ajout d'un séparateur horizontal pour couper la hiérarchie Markdown
+        $finalPrompt = self::TECHNICAL_PROMPT."\n\n---\n\n".$basePrompt;
 
         if ($personaKey) {
             $personaPrompt = $this->personaRegistry->getSystemPrompt($personaKey);
             if ($personaPrompt) {
                 // On ajoute une section claire pour la personnalité pour éviter les conflits de ROLE
-                $finalPrompt .= "\n\n### 🎭 PERSONALITY INSTRUCTIONS\n";
+                $finalPrompt .= "\n\n---\n\n### 🎭 PERSONALITY INSTRUCTIONS\n";
                 $finalPrompt .= "IMPORTANT : La personnalité suivante s'applique UNIQUEMENT à ton TON et ton STYLE d'expression.\n";
                 $finalPrompt .= "Elle n'affecte PAS tes capacités de raisonnement, ta logique ou le respect strict des contraintes techniques.\n\n";
                 $finalPrompt .= $personaPrompt;

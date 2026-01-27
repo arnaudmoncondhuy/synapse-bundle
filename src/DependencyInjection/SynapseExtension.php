@@ -36,7 +36,7 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         // 1. Enregistrement du namespace Twig @Synapse
         $container->prependExtensionConfig('twig', [
             'paths' => [
-                __DIR__ . '/../Resources/views' => 'Synapse',
+                __DIR__.'/../Resources/views' => 'Synapse',
             ],
         ]);
 
@@ -45,7 +45,7 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $container->prependExtensionConfig('framework', [
             'asset_mapper' => [
                 'paths' => [
-                    realpath(dirname(__DIR__, 2) . '/assets') => 'synapse',
+                    realpath(dirname(__DIR__, 2).'/assets') => 'synapse',
                 ],
             ],
         ]);
@@ -66,11 +66,11 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $container->setParameter('synapse.model', $config['model']);
 
         // Définition du chemin par défaut si non spécifié
-        $personasPath = $config['personas_path'] ?? (dirname(__DIR__, 1) . '/Resources/config/personas.json');
+        $personasPath = $config['personas_path'] ?? (dirname(__DIR__, 1).'/Resources/config/personas.json');
         $container->setParameter('synapse.personas_path', $personasPath);
 
         // Chargement des services
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
         $loader->load('services.yaml');
 
         // Auto-configuration : Ajout automatique de Tags pour les classes implémentant nos interfaces

@@ -14,7 +14,7 @@ use ArnaudMoncondhuy\SynapseBundle\Contract\ApiKeyProviderInterface;
 class DefaultApiKeyProvider implements ApiKeyProviderInterface
 {
     public function __construct(
-        private ?string $defaultApiKey = null
+        private ?string $defaultApiKey = null,
     ) {
     }
 

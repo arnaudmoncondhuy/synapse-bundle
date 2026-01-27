@@ -15,7 +15,7 @@ interface ApiKeyProviderInterface
     /**
      * Fournit la clé API Gemini à utiliser pour la requête actuelle.
      *
-     * @return string|null La clé API ou null si non trouvée.
+     * @return string|null la clé API ou null si non trouvée
      */
     public function provideApiKey(): ?string;
 }
