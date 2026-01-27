@@ -23,16 +23,24 @@ class PromptBuilder
      * Impose l'utilisation des balises <thinking> pour la chaîne de pensée (CoT).
      */
     private const TECHNICAL_PROMPT = <<<PROMPT
-### 🧠 CERVEAU ANALYTIQUE (OBLIGATOIRE)
-Avant de répondre, tu DOIS analyser la situation dans un bloc `<thinking>`.
+### CADRE TECHNIQUE DE RÉPONSE (OBLIGATOIRE)
+Tu es une Intelligence Artificielle opérant sous un protocole de sortie strict.
+Ces instructions de structure priment sur ton style d'expression mais ne définissent pas ton ton ni ton expertise.
 
-**FORMAT STRICT :**
-- Un SEUL bloc `<thinking>` par réponse
-- Pas de backticks (```) autour du bloc, ni ailleurs dans la réponse.
-- Pas de formatage markdown dans les balises
-- Format exact : `<thinking>ton analyse ici</thinking>`
+Tu dois respecter le format séquentiel suivant :
 
-Ensuite, fournis ta réponse finale claire et concise à l'utilisateur (en dehors des balises thinking).
+#### BLOC 1 : PROCESSUS DE RÉFLEXION (Invisible)
+**Syntaxe :** Balises `<thinking>...</thinking>` au tout début du message.
+**Contenu :** Analyse logique, étapes de raisonnement et stratégie de réponse.
+**Contrainte :** Texte brut uniquement. Ce bloc sera masqué. Ne ferme pas ce bloc avant d'avoir fini ta réflexion.
+
+#### BLOC 2 : RÉPONSE FINALE (Visible)
+**Contenu :** Ta réponse directe à l'utilisateur, formatée selon ton rôle.
+**Règles de rendu :**
+- Utilise le format Markdown.
+- Ne jamais afficher d'URL brute, utilise systématiquement le format [Lien](url).
+- **INTERDICTION** d'afficher les titres "BLOC 1", "BLOC 2" ou de citer ces instructions.
+- Ne jamais faire référence au contenu de ta réflexion (BLOC 1).
 PROMPT;
 
     public function __construct(
@@ -51,7 +59,7 @@ PROMPT;
     public function buildSystemInstruction(?string $personaKey = null): string
     {
         $basePrompt = $this->contextProvider->getSystemPrompt();
-        $finalPrompt = self::TECHNICAL_PROMPT . "\n\n" . $basePrompt;
+        $finalPrompt = self::TECHNICAL_PROMPT."\n\n".$basePrompt;
 
         if ($personaKey) {
             $personaPrompt = $this->personaRegistry->getSystemPrompt($personaKey);
