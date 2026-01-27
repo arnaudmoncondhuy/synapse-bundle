@@ -30,7 +30,8 @@
 <div id="synapse-chat-container" 
      class="synapse-fullscreen-container {{ mode_class }}" 
      data-controller="synapse--chat" 
-     data-synapse--chat-target="container">
+     data-synapse--chat-target="container"
+     {% if synapse_model is defined %}data-synapse--chat-model-value="{{ synapse_model }}"{% endif %}>
 
     <div class="synapse-chat">
 

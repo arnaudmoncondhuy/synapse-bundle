@@ -6,17 +6,15 @@ synapse:
     api_key: '%env(GEMINI_API_KEY)%'
 
     # Modèle Gemini à utiliser
-    # Modèles compatibles thinking natif : gemini-2.5-flash, gemini-2.5-flash-lite, gemini-2.5-pro
+    # Modèles compatibles : gemini-2.5-flash, gemini-2.5-flash-lite, gemini-2.5-pro
     model: 'gemini-2.5-flash'
 
-    # Configuration du mode Thinking Natif (nouveau)
+    # Configuration du mode Thinking Natif
     thinking:
-        # Activer le thinking natif (améliore le debug et simplifie le prompt)
-        # Par défaut: true
+        # Activer le thinking natif (défaut: true)
         enabled: true
 
-        # Budget de tokens pour le thinking
-        # Par défaut: 1024
+        # Budget de tokens pour le thinking (défaut: 1024)
         # Plage selon modèle:
         #   - gemini-2.5-flash: 0 à 24576 tokens
         #   - gemini-2.5-flash-lite: 512 à 24576 tokens
@@ -24,43 +22,37 @@ synapse:
         budget: 2048
 
     # Chemin vers le fichier de personas personnalisé (optionnel)
-    # Si non spécifié, utilise le fichier par défaut du bundle
     # personas_path: '%kernel.project_dir%/config/personas.json'
 
 ---
 
 # Exemples de Configurations
 
+## Configuration Minimale
+# synapse:
+#     api_key: '%env(GEMINI_API_KEY)%'
+#     model: 'gemini-2.5-flash-lite'
+
 ## Configuration Production (Optimisée Coût)
 # synapse:
 #     api_key: '%env(GEMINI_API_KEY)%'
 #     model: 'gemini-2.5-flash-lite'
 #     thinking:
-#         enabled: true
-#         budget: 1024  # Budget minimal pour réduire les coûts
+#         budget: 1024  # Budget minimal
 
 ## Configuration Développement (Debug Maximal)
 # synapse:
 #     api_key: '%env(GEMINI_API_KEY)%'
 #     model: 'gemini-2.5-flash'
 #     thinking:
-#         enabled: true
-#         budget: 4096  # Budget élevé pour mieux comprendre le raisonnement
+#         budget: 8192  # Budget élevé pour debug
 
-## Configuration Legacy (Sans Thinking Natif)
+## Configuration Performance (Sans Thinking)
 # synapse:
 #     api_key: '%env(GEMINI_API_KEY)%'
 #     model: 'gemini-2.5-flash'
 #     thinking:
-#         enabled: false  # Revenir au mode prompt manuel
-
-## Configuration Performance (Thinking Désactivé)
-# synapse:
-#     api_key: '%env(GEMINI_API_KEY)%'
-#     model: 'gemini-2.5-flash'
-#     thinking:
-#         enabled: true
-#         budget: 0  # Désactiver complètement le thinking (si supporté par le modèle)
+#         enabled: false  # Latence minimale
 
 ---
 
