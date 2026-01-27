@@ -10,6 +10,7 @@ services:
 
     ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient:
         arguments:
+            $googleAuthService: '@ArnaudMoncondhuy\SynapseBundle\Service\Infra\GoogleAuthService'
             $model: '%synapse.model%'
             $vertexEnabled: '%synapse.vertex.enabled%'
             $vertexProjectId: '%synapse.vertex.project_id%'
