@@ -31,7 +31,7 @@
      class="synapse-fullscreen-container {{ mode_class }}"
      data-controller="{{ controller_override|default('synapse--chat') }}"
      data-{{ controller_override|default('synapse--chat') }}-target="container"
-     {% for k, v in attr|default({}) %} {{ k }}="{{ v }}"{% endfor %}>
+     {% for k, v in attr|default({}) %} {{ k }}="{{ v|e('html_attr') }}"{% endfor %}>
 
     <div class="synapse-chat">
 
