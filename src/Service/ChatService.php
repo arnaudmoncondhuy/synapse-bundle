@@ -287,7 +287,7 @@ class ChatService
 
                 // Save to cache (TTL 1 hour)
                 $this->cache->get("synapse_debug_{$debugId}", function (ItemInterface $item) use ($debugAccumulator) {
-                    $item->expiresAfter(3600);
+                    $item->expiresAfter(86400);
 
                     return $debugAccumulator;
                 });
@@ -305,7 +305,7 @@ class ChatService
         if ($options['debug'] ?? false) {
             $debugId = uniqid('dbg_err_', true);
             $this->cache->get("synapse_debug_{$debugId}", function (ItemInterface $item) use ($debugAccumulator) {
-                $item->expiresAfter(3600);
+                $item->expiresAfter(86400);
 
                 return $debugAccumulator;
             });
