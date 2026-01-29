@@ -142,7 +142,7 @@
 		<section style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 30px;">
 			<h2 style="margin-top: 0;">💰 Usage (Tokens)</h2>
 			{% if debug.usage is defined and debug.usage is not empty %}
-				<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+				<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
 					<div>
 						<div class="label">Prompt Tokens (Input)</div>
 						<div style="font-weight: 600; font-size: 1.1em; color: #4b5563;">{{ debug.usage.promptTokenCount|default(0) }}</div>
@@ -150,6 +150,10 @@
 					<div>
 						<div class="label">Candidates Tokens (Output)</div>
 						<div style="font-weight: 600; font-size: 1.1em; color: #4b5563;">{{ debug.usage.candidatesTokenCount|default(0) }}</div>
+					</div>
+					<div>
+						<div class="label">Thoughts Tokens (CoT)</div>
+						<div style="font-weight: 600; font-size: 1.1em; color: #d97706;">{{ debug.usage.thoughtsTokenCount|default(0) }}</div>
 					</div>
 					<div>
 						<div class="label">Total Tokens</div>
