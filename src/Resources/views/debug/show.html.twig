@@ -213,10 +213,12 @@
 					</div>
 
 					{% if turn.function_calls_count > 0 %}
-						<div class="section-block">
-							<div class="label">🛠️ Arguments Tool</div>
-							<pre>Arguments non capturés dans version actuelle (TODO)</pre>
-						</div>
+						{% for fc in turn.function_calls_data|default([]) %}
+							<div class="section-block">
+								<div class="label">🛠️ Arguments Tool ({{ fc.name }})</div>
+								<pre>{{ fc.args|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+							</div>
+						{% endfor %}
 					{% endif %}
 
 					{% if turn.has_text %}

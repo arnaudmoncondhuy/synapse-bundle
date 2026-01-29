@@ -219,6 +219,7 @@ class ChatService
                     'has_text' => '' !== $currentTurnText,
                     'function_calls_count' => count($functionCalls),
                     'function_names' => array_map(fn ($fc) => $fc['name'], $functionCalls),
+                    'function_calls_data' => $functionCalls,
                 ];
                 
                 // Add usage/safety to debug accumulator (last turn wins, or accumulate?) 
