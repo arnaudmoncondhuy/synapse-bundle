@@ -167,7 +167,8 @@ class ChatService
 
             // Extraction des métadonnées (Usage & Safety)
             $usageMetadata = $response['usageMetadata'] ?? [];
-            $safetyRatings = $candidate['safetyRatings'] ?? []; // safetyRatings est souvent au niveau du candidat
+            $safetyRatings = $candidate['safetyRatings'] ?? []; // safetyRatings est souvent au niveau du candidat 
+
 
             $currentTurnText = '';
             $functionCalls = [];
