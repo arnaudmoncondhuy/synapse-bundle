@@ -167,7 +167,7 @@ class GeminiClient
             $response = $this->httpClient->request('POST', $url, $options);
             $data = $response->toArray();
 
-            return $data['candidates'][0]['content'] ?? [];
+            return $data;
         } catch (\Throwable $e) {
             $message = $e->getMessage();
 

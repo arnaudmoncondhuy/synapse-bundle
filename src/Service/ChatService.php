@@ -157,8 +157,18 @@ class ChatService
             if ($options['debug'] ?? false) {
                 $debugAccumulator['raw_response'] = $response;
             }
+            
+            // Adapter pour la nouvelle structure (Return complet de GeminiClient)
+            // Avant : $response['parts']
+            // Après : $response['candidates'][0]['content']['parts']
+            $candidate = $response['candidates'][0] ?? [];
+            $content = $candidate['content'] ?? [];
+            $parts = $content['parts'] ?? [];
 
-            $parts = $response['parts'] ?? [];
+            // Extraction des métadonnées (Usage & Safety)
+            $usageMetadata = $response['usageMetadata'] ?? [];
+            $safetyRatings = $candidate['safetyRatings'] ?? []; // safetyRatings est souvent au niveau du candidat
+
             $currentTurnText = '';
             $functionCalls = [];
 
@@ -203,12 +213,18 @@ class ChatService
             if ($options['debug'] ?? false) {
                 $debugAccumulator['turns'][] = [
                     'turn' => $i + 1,
+                    // ... existing debug info ...
                     'text_content' => $currentTurnText,
                     'text_length' => strlen($currentTurnText),
                     'has_text' => '' !== $currentTurnText,
                     'function_calls_count' => count($functionCalls),
                     'function_names' => array_map(fn ($fc) => $fc['name'], $functionCalls),
                 ];
+                
+                // Add usage/safety to debug accumulator (last turn wins, or accumulate?) 
+                // Let's store the latest usage
+                $debugAccumulator['usage'] = $usageMetadata;
+                $debugAccumulator['safety'] = $safetyRatings;
             }
 
             // Process function calls
@@ -296,7 +312,9 @@ class ChatService
             return [
                 'answer' => $fullTextAccumulator,
                 'debug_id' => $debugId,
-                // 'debug' => ... removed, replaced by ID
+                'usage' => $usageMetadata,   // [NEW]
+                'safety' => $safetyRatings,  // [NEW]
+                'raw' => $response,          // [NEW] Full raw response
             ];
         }
 
@@ -314,6 +332,9 @@ class ChatService
         return [
             'answer' => "Désolé, je n'ai pas pu traiter votre demande après plusieurs tentatives.",
             'debug_id' => $debugId,
+            'usage' => [],
+            'safety' => [],
+            'raw' => [],
         ];
     }
 
