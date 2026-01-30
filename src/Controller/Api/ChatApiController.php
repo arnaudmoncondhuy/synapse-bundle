@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Controller\Api;
 
+use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface;
+use ArnaudMoncondhuy\SynapseBundle\Enum\MessageRole;
 use ArnaudMoncondhuy\SynapseBundle\Service\ChatService;
+use ArnaudMoncondhuy\SynapseBundle\Service\Manager\ConversationManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -22,6 +25,7 @@ class ChatApiController extends AbstractController
 {
     public function __construct(
         private ChatService $chatService,
+        private ?ConversationManager $conversationManager = null,
     ) {
     }
 
@@ -54,8 +58,21 @@ class ChatApiController extends AbstractController
         $message = $data['message'] ?? '';
         $options = $data['options'] ?? [];
         $options['debug'] = $data['debug'] ?? ($options['debug'] ?? false);
+        $conversationId = $data['conversation_id'] ?? null;
 
-        $response = new StreamedResponse(function () use ($message, $options, $request) {
+        // Load conversation if ID provided and persistence enabled
+        $conversation = null;
+        if ($conversationId && $this->conversationManager) {
+            $user = $this->getUser();
+            if ($user instanceof ConversationOwnerInterface) {
+                $conversation = $this->conversationManager->getConversation($conversationId, $user);
+                if ($conversation) {
+                    $this->conversationManager->setCurrentConversation($conversation);
+                }
+            }
+        }
+
+        $response = new StreamedResponse(function () use ($message, $options, $request, $conversation) {
             // 3. On ne ferme PAS la session ici pour permettre la sauvegarde de l'historique.
             // La session sera gérée par Symfony à la fin de la requête.
 
@@ -73,6 +90,20 @@ class ChatApiController extends AbstractController
             }
 
             try {
+                // Create or get conversation if persistence enabled
+                if ($this->conversationManager && !$conversation && !empty($message)) {
+                    $user = $this->getUser();
+                    if ($user instanceof ConversationOwnerInterface) {
+                        $conversation = $this->conversationManager->createConversation($user);
+                        $this->conversationManager->setCurrentConversation($conversation);
+                    }
+                }
+
+                // Save user message if persistence enabled
+                if ($conversation && $this->conversationManager && !empty($message)) {
+                    $this->conversationManager->saveMessage($conversation, MessageRole::USER, $message);
+                }
+
                 // Status update callback for streaming
                 $onStatusUpdate = function (string $statusMessage, string $step) use ($sendEvent): void {
                     $sendEvent('status', ['message' => $statusMessage, 'step' => $step]);
@@ -80,6 +111,23 @@ class ChatApiController extends AbstractController
 
                 // Execute chat
                 $result = $this->chatService->ask($message, $options, $onStatusUpdate);
+
+                // Save assistant message if persistence enabled
+                if ($conversation && $this->conversationManager && isset($result['response'])) {
+                    $metadata = [
+                        'prompt_tokens' => $result['usage']['prompt_tokens'] ?? 0,
+                        'completion_tokens' => $result['usage']['completion_tokens'] ?? 0,
+                        'thinking_tokens' => $result['usage']['thinking_tokens'] ?? 0,
+                        'safety_ratings' => $result['safety_ratings'] ?? null,
+                        'metadata' => ['debug_id' => $result['debug_id'] ?? null],
+                    ];
+                    $this->conversationManager->saveMessage($conversation, MessageRole::MODEL, $result['response'], $metadata);
+                }
+
+                // Add conversation_id to result
+                if ($conversation) {
+                    $result['conversation_id'] = $conversation->getId();
+                }
 
                 // Send final result
                 $sendEvent('result', $result);
