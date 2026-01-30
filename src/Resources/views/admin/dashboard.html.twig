@@ -1,0 +1,116 @@
+{% extends '@Synapse/admin/layout.html.twig' %}
+
+{% block title %}Dashboard - Synapse Admin{% endblock %}
+
+{% block admin_content %}
+<div class="admin-dashboard">
+    <h1>Dashboard Synapse</h1>
+
+    {# KPIs Cards #}
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon">💬</div>
+            <div class="kpi-content">
+                <div class="kpi-label">Conversations 24h</div>
+                <div class="kpi-value">{{ kpis.conversations_24h }}</div>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon">👥</div>
+            <div class="kpi-content">
+                <div class="kpi-label">Utilisateurs actifs 24h</div>
+                <div class="kpi-value">{{ kpis.active_users_24h }}</div>
+            </div>
+        </div>
+
+        <div class="kpi-card {% if kpis.pending_risks > 0 %}kpi-warning{% endif %}">
+            <div class="kpi-icon">{% if kpis.pending_risks > 0 %}🚨{% else %}✅{% endif %}</div>
+            <div class="kpi-content">
+                <div class="kpi-label">Risques en attente</div>
+                <div class="kpi-value">{{ kpis.pending_risks }}</div>
+                {% if kpis.pending_risks > 0 %}
+                    <a href="{{ path('synapse_admin_risks') }}" class="kpi-link">Voir les risques →</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon">🪙</div>
+            <div class="kpi-content">
+                <div class="kpi-label">Tokens 7 jours</div>
+                <div class="kpi-value">{{ (kpis.tokens_7d.total_tokens / 1000000)|number_format(2) }}M</div>
+                {% if kpis.tokens_7d.cost is defined %}
+                    <div class="kpi-meta">≈ ${{ kpis.tokens_7d.cost|number_format(4) }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# Daily Usage Chart #}
+    <div class="admin-section">
+        <h2>Usage quotidien (30 derniers jours)</h2>
+        <div class="chart-container">
+            <canvas id="dailyUsageChart"></canvas>
+        </div>
+    </div>
+
+    {# Quick Actions #}
+    <div class="admin-section">
+        <h2>Actions rapides</h2>
+        <div class="actions-grid">
+            <a href="{{ path('synapse_admin_analytics') }}" class="action-card">
+                <div class="action-icon">📊</div>
+                <div class="action-title">Analytics</div>
+                <div class="action-desc">Statistiques détaillées</div>
+            </a>
+
+            <a href="{{ path('synapse_admin_config') }}" class="action-card">
+                <div class="action-icon">⚙️</div>
+                <div class="action-title">Configuration</div>
+                <div class="action-desc">Modifier les paramètres</div>
+            </a>
+
+            <a href="{{ path('synapse_admin_risks') }}" class="action-card {% if kpis.pending_risks > 0 %}action-warning{% endif %}">
+                <div class="action-icon">🛡️</div>
+                <div class="action-title">Ange Gardien</div>
+                <div class="action-desc">Conversations à risque</div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Chart.js - Daily usage
+const ctx = document.getElementById('dailyUsageChart');
+if (ctx) {
+    const dailyData = {{ daily_usage|json_encode|raw }};
+    const labels = Object.keys(dailyData);
+    const values = Object.values(dailyData).map(d => d.total_tokens / 1000000); // En millions
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Tokens (millions)',
+                data: values,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}
