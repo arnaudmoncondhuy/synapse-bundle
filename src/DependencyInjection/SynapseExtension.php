@@ -97,6 +97,34 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $container->setParameter('synapse.context_caching.enabled', $config['context_caching']['enabled'] ?? false);
         $container->setParameter('synapse.context_caching.cached_content_id', $config['context_caching']['cached_content_id'] ?? null);
 
+        // ========== NOUVELLES CONFIGURATIONS (Refonte) ==========
+
+        // Persistence configuration
+        $container->setParameter('synapse.persistence.enabled', $config['persistence']['enabled'] ?? false);
+        $container->setParameter('synapse.persistence.handler', $config['persistence']['handler'] ?? 'session');
+
+        // Encryption configuration
+        $container->setParameter('synapse.encryption.enabled', $config['encryption']['enabled'] ?? false);
+        $container->setParameter('synapse.encryption.key', $config['encryption']['key'] ?? null);
+
+        // Token tracking configuration
+        $container->setParameter('synapse.token_tracking.enabled', $config['token_tracking']['enabled'] ?? false);
+        $container->setParameter('synapse.token_tracking.pricing', $config['token_tracking']['pricing'] ?? []);
+
+        // Risk detection configuration
+        $container->setParameter('synapse.risk_detection.enabled', $config['risk_detection']['enabled'] ?? false);
+        $container->setParameter('synapse.risk_detection.auto_register_tool', $config['risk_detection']['auto_register_tool'] ?? true);
+
+        // Retention configuration
+        $container->setParameter('synapse.retention.days', $config['retention']['days'] ?? 30);
+
+        // Admin configuration
+        $container->setParameter('synapse.admin.enabled', $config['admin']['enabled'] ?? false);
+        $container->setParameter('synapse.admin.route_prefix', $config['admin']['route_prefix'] ?? '/synapse/admin');
+
+        // UI configuration
+        $container->setParameter('synapse.ui.sidebar_enabled', $config['ui']['sidebar_enabled'] ?? true);
+
         // Chargement des services
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
         $loader->load('services.yaml');
