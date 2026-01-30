@@ -1,0 +1,351 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ArnaudMoncondhuy\SynapseBundle\Service\Manager;
+
+use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface;
+use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
+use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
+use ArnaudMoncondhuy\SynapseBundle\Entity\Conversation;
+use ArnaudMoncondhuy\SynapseBundle\Entity\Message;
+use ArnaudMoncondhuy\SynapseBundle\Enum\ConversationStatus;
+use ArnaudMoncondhuy\SynapseBundle\Enum\MessageRole;
+use ArnaudMoncondhuy\SynapseBundle\Enum\RiskCategory;
+use ArnaudMoncondhuy\SynapseBundle\Enum\RiskLevel;
+use ArnaudMoncondhuy\SynapseBundle\Repository\ConversationRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+
+/**
+ * Gestionnaire centralisé des conversations
+ *
+ * Responsabilités :
+ * - CRUD conversations avec chiffrement transparent
+ * - Gestion des messages
+ * - Gestion des risques (Ange Gardien)
+ * - Vérification des permissions
+ * - Contexte thread-local (conversation courante)
+ */
+class ConversationManager
+{
+    private ?Conversation $currentConversation = null;
+
+    public function __construct(
+        private EntityManagerInterface $em,
+        private ConversationRepository $conversationRepo,
+        private ?EncryptionServiceInterface $encryptionService = null,
+        private ?PermissionCheckerInterface $permissionChecker = null
+    ) {
+    }
+
+    /**
+     * Crée une nouvelle conversation
+     *
+     * @param ConversationOwnerInterface $owner Propriétaire
+     * @param string|null $title Titre (sera chiffré si encryption activée)
+     * @return Conversation Nouvelle conversation
+     */
+    public function createConversation(
+        ConversationOwnerInterface $owner,
+        ?string $title = null
+    ): Conversation {
+        $conversation = $this->instantiateConversation();
+        $conversation->setOwner($owner);
+
+        if ($title !== null) {
+            $this->setTitle($conversation, $title);
+        }
+
+        $this->em->persist($conversation);
+        $this->em->flush();
+
+        return $conversation;
+    }
+
+    /**
+     * Met à jour le titre d'une conversation
+     *
+     * @param Conversation $conversation Conversation
+     * @param string $title Nouveau titre (sera chiffré si encryption activée)
+     */
+    public function updateTitle(Conversation $conversation, string $title): void
+    {
+        $this->checkPermission($conversation, 'edit');
+        $this->setTitle($conversation, $title);
+        $this->em->flush();
+    }
+
+    /**
+     * Sauvegarde un message dans une conversation
+     *
+     * @param Conversation $conversation Conversation
+     * @param MessageRole $role Rôle du message
+     * @param string $content Contenu (sera chiffré si encryption activée)
+     * @param array $metadata Métadonnées (tokens, safety_ratings, etc.)
+     * @return Message Message créé
+     */
+    public function saveMessage(
+        Conversation $conversation,
+        MessageRole $role,
+        string $content,
+        array $metadata = []
+    ): Message {
+        $message = $this->instantiateMessage();
+        $message->setConversation($conversation);
+        $message->setRole($role);
+        $this->setMessageContent($message, $content);
+
+        // Métadonnées
+        if (isset($metadata['prompt_tokens'])) {
+            $message->setPromptTokens($metadata['prompt_tokens']);
+        }
+        if (isset($metadata['completion_tokens'])) {
+            $message->setCompletionTokens($metadata['completion_tokens']);
+        }
+        if (isset($metadata['thinking_tokens'])) {
+            $message->setThinkingTokens($metadata['thinking_tokens']);
+        }
+        if (isset($metadata['safety_ratings'])) {
+            $message->setSafetyRatings($metadata['safety_ratings']);
+        }
+        if (isset($metadata['blocked'])) {
+            $message->setBlocked($metadata['blocked']);
+        }
+        if (isset($metadata['metadata'])) {
+            $message->setMetadata($metadata['metadata']);
+        }
+
+        // Calculer total tokens
+        $message->calculateTotalTokens();
+
+        $conversation->addMessage($message);
+        $this->em->persist($message);
+        $this->em->flush();
+
+        return $message;
+    }
+
+    /**
+     * Récupère une conversation avec vérification des permissions
+     *
+     * @param string $id ID de la conversation
+     * @param ConversationOwnerInterface|null $owner Propriétaire (optionnel, pour filtrer)
+     * @return Conversation|null Conversation ou null si non trouvée
+     * @throws AccessDeniedException Si pas de permission
+     */
+    public function getConversation(string $id, ?ConversationOwnerInterface $owner = null): ?Conversation
+    {
+        $conversation = $this->conversationRepo->find($id);
+
+        if ($conversation === null) {
+            return null;
+        }
+
+        // Vérifier ownership si fourni
+        if ($owner !== null && $conversation->getOwner()->getId() !== $owner->getId()) {
+            throw new AccessDeniedException('Access denied to this conversation');
+        }
+
+        // Vérifier permission
+        $this->checkPermission($conversation, 'view');
+
+        return $conversation;
+    }
+
+    /**
+     * Récupère les conversations d'un utilisateur avec déchiffrement des titres
+     *
+     * @param ConversationOwnerInterface $owner Propriétaire
+     * @param ConversationStatus|null $status Filtrer par statut
+     * @param int $limit Nombre maximum de résultats
+     * @return Conversation[] Conversations avec titres déchiffrés
+     */
+    public function getUserConversations(
+        ConversationOwnerInterface $owner,
+        ?ConversationStatus $status = null,
+        int $limit = 50
+    ): array {
+        if ($status !== null) {
+            $conversations = $this->conversationRepo->findBy(
+                ['owner' => $owner, 'status' => $status],
+                ['updatedAt' => 'DESC'],
+                $limit
+            );
+        } else {
+            $conversations = $this->conversationRepo->findActiveByOwner($owner, $limit);
+        }
+
+        // Déchiffrer les titres
+        foreach ($conversations as $conversation) {
+            if ($conversation->getTitle() !== null && $this->encryptionService !== null) {
+                if ($this->encryptionService->isEncrypted($conversation->getTitle())) {
+                    $decrypted = $this->encryptionService->decrypt($conversation->getTitle());
+                    $conversation->setTitle($decrypted);
+                }
+            }
+        }
+
+        return $conversations;
+    }
+
+    /**
+     * Récupère les messages d'une conversation avec déchiffrement
+     *
+     * @param Conversation $conversation Conversation
+     * @param int $limit Nombre maximum de messages (0 = tous)
+     * @return Message[] Messages déchiffrés
+     */
+    public function getMessages(Conversation $conversation, int $limit = 0): array
+    {
+        $this->checkPermission($conversation, 'view');
+
+        $messageRepo = $this->em->getRepository($this->getMessageClass());
+        $messages = $messageRepo->findByConversation($conversation, $limit);
+
+        // Déchiffrer les contenus
+        foreach ($messages as $message) {
+            if ($this->encryptionService !== null && $this->encryptionService->isEncrypted($message->getContent())) {
+                $decrypted = $this->encryptionService->decrypt($message->getContent());
+                $message->setContent($decrypted);
+            }
+        }
+
+        return $messages;
+    }
+
+    /**
+     * Supprime une conversation (soft delete)
+     *
+     * @param Conversation $conversation Conversation à supprimer
+     */
+    public function deleteConversation(Conversation $conversation): void
+    {
+        $this->checkPermission($conversation, 'delete');
+        $conversation->softDelete();
+        $this->em->flush();
+    }
+
+    /**
+     * Marque une conversation comme présentant un risque
+     *
+     * @param Conversation $conversation Conversation
+     * @param RiskLevel $level Niveau de risque
+     * @param RiskCategory $category Catégorie de risque
+     */
+    public function markRisk(Conversation $conversation, RiskLevel $level, RiskCategory $category): void
+    {
+        $conversation->setRiskLevel($level);
+        $conversation->setRiskCategory($category);
+        $this->em->flush();
+    }
+
+    /**
+     * Définit la conversation courante (contexte thread-local)
+     *
+     * @param Conversation|null $conversation Conversation courante
+     */
+    public function setCurrentConversation(?Conversation $conversation): void
+    {
+        $this->currentConversation = $conversation;
+    }
+
+    /**
+     * Récupère la conversation courante
+     *
+     * @return Conversation|null Conversation courante ou null
+     */
+    public function getCurrentConversation(): ?Conversation
+    {
+        return $this->currentConversation;
+    }
+
+    // Méthodes privées
+
+    /**
+     * Définit le titre d'une conversation avec chiffrement transparent
+     */
+    private function setTitle(Conversation $conversation, string $title): void
+    {
+        if ($this->encryptionService !== null) {
+            $title = $this->encryptionService->encrypt($title);
+        }
+        $conversation->setTitle($title);
+    }
+
+    /**
+     * Définit le contenu d'un message avec chiffrement transparent
+     */
+    private function setMessageContent(Message $message, string $content): void
+    {
+        if ($this->encryptionService !== null) {
+            $content = $this->encryptionService->encrypt($content);
+        }
+        $message->setContent($content);
+    }
+
+    /**
+     * Vérifie les permissions sur une conversation
+     *
+     * @throws AccessDeniedException Si pas de permission
+     */
+    private function checkPermission(Conversation $conversation, string $action): void
+    {
+        if ($this->permissionChecker === null) {
+            return; // Pas de vérification si pas de checker
+        }
+
+        $allowed = match ($action) {
+            'view' => $this->permissionChecker->canView($conversation),
+            'edit' => $this->permissionChecker->canEdit($conversation),
+            'delete' => $this->permissionChecker->canDelete($conversation),
+            default => false,
+        };
+
+        if (!$allowed) {
+            throw new AccessDeniedException("Access denied: cannot {$action} this conversation");
+        }
+    }
+
+    /**
+     * Instancie une nouvelle conversation
+     *
+     * À override dans les projets si classe custom
+     */
+    protected function instantiateConversation(): Conversation
+    {
+        $class = $this->getConversationClass();
+        return new $class();
+    }
+
+    /**
+     * Instancie un nouveau message
+     *
+     * À override dans les projets si classe custom
+     */
+    protected function instantiateMessage(): Message
+    {
+        $class = $this->getMessageClass();
+        return new $class();
+    }
+
+    /**
+     * Retourne la classe Conversation à utiliser
+     *
+     * À override dans les projets
+     */
+    protected function getConversationClass(): string
+    {
+        return Conversation::class;
+    }
+
+    /**
+     * Retourne la classe Message à utiliser
+     *
+     * À override dans les projets
+     */
+    protected function getMessageClass(): string
+    {
+        return Message::class;
+    }
+}
