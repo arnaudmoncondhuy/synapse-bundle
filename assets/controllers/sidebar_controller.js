@@ -193,10 +193,15 @@ export default class extends Controller {
             // Dispatch event
             this.dispatch('conversation-deleted', { detail: { conversationId } });
 
-            // Si c'était la conversation active, dispatch event pour reset
+            // Si c'était la conversation active, rediriger vers nouvelle conversation
             if (conversationId === this.currentConversationIdValue) {
                 this.currentConversationIdValue = '';
                 this.dispatch('conversation-reset');
+
+                // Rediriger vers la page sans paramètre de conversation
+                const url = new URL(window.location.href);
+                url.searchParams.delete('conversation');
+                window.location.href = url.toString();
             }
         } catch (error) {
             console.error('Error deleting conversation:', error);
