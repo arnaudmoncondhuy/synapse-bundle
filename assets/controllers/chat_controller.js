@@ -234,6 +234,12 @@ export default class extends Controller {
     addMessage(text, role, debugData = null) {
         let formattedText = text;
 
+        // DEBUG: Log original text
+        if (role === 'assistant') {
+            console.log('🔍 [DEBUG] Original text:', text);
+            console.log('🔍 [DEBUG] Has <thinking>?', text.includes('<thinking>'));
+        }
+
         // Extract and remove thinking blocks (for old data in database)
         if (role === 'assistant') {
             // Remove complete thinking blocks (with or without newlines)
@@ -247,6 +253,10 @@ export default class extends Controller {
             // Clean up multiple consecutive newlines
             formattedText = formattedText.replace(/\n{3,}/g, '\n\n');
             formattedText = formattedText.trim();
+
+            // DEBUG: Log cleaned text
+            console.log('🔍 [DEBUG] After cleaning:', formattedText);
+            console.log('🔍 [DEBUG] Still has <thinking>?', formattedText.includes('<thinking>'));
         }
 
         // Simple markdown parsing
