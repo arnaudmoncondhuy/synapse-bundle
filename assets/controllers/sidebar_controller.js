@@ -364,4 +364,16 @@ export default class extends Controller {
         div.textContent = text;
         return div.innerHTML;
     }
+
+    /**
+     * Crée une nouvelle conversation (recharge la page sans conversation ID)
+     */
+    newConversation(event) {
+        event.preventDefault();
+
+        // Supprimer le paramètre conversation de l'URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('conversation');
+        window.location.href = url.toString();
+    }
 }
