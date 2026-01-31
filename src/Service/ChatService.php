@@ -60,13 +60,15 @@ class ChatService
      *    reset_conversation?: bool,
      *    debug?: bool,
      *    persona?: string,
-     *    tools?: array
+     *    tools?: array,
+     *    history?: array
      * } $options Options de configuration de la requête :
      *  - 'stateless' (bool) : Ne pas charger ni sauvegarder l'historique (mode "one-shot").
      *  - 'reset_conversation' (bool) : Effacer l'historique AVANT de traiter ce message.
      *  - 'debug' (bool) : Activer la collecte d'informations détaillées pour le débogage.
      *  - 'persona' (string) : Clé de la personnalité à utiliser (écrase le défaut).
      *  - 'tools' (array) : Définitions d'outils spécifiques pour cette requête (Optionnel, écrase les défauts).
+     *  - 'history' (array) : Historique de conversation externe à utiliser (ex: depuis BDD) au lieu de charger depuis session.
      * @param callable|null $onStatusUpdate Callback optionnel pour le streaming d'état (feedback UI).
      *                                      Signature: function(string $message, string $step): void
      *
@@ -114,7 +116,9 @@ class ChatService
             ];
             $rawHistory = [];
         } else {
-            $rawHistory = $this->conversationHandler->loadHistory();
+            // Use external history if provided (from DB via ConversationManager),
+            // otherwise fall back to session-based history (legacy)
+            $rawHistory = $options['history'] ?? $this->conversationHandler->loadHistory();
             $contents = $this->sanitizeHistoryForNewTurn($rawHistory);
             if (!empty($message)) {
                 $contents[] = ['role' => 'user', 'parts' => [['text' => TextUtil::sanitizeUtf8($message)]]];
