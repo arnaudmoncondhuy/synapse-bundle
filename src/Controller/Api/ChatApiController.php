@@ -131,6 +131,41 @@ class ChatApiController extends AbstractController
 
                 // Send final result
                 $sendEvent('result', $result);
+
+                // Auto-generate title for new conversations (first exchange)
+                if ($conversation && $this->conversationManager && !empty($message)) {
+                    try {
+                        $messages = $this->conversationManager->getMessages($conversation);
+
+                        // Check if this is the first exchange (exactly 2 messages: 1 user + 1 model)
+                        if (2 === count($messages)) {
+                            $titlePrompt = "Génère un titre très court (max 6 mots) sans guillemets pour : '$message'";
+
+                            // Generate title in stateless mode (don't pollute conversation history)
+                            $titleResult = $this->chatService->ask($titlePrompt, ['stateless' => true, 'debug' => false]);
+
+                            if (!empty($titleResult['answer'])) {
+                                // Clean the result (remove <thinking> tags, quotes, etc.)
+                                $rawTitle = $titleResult['answer'];
+                                if (preg_match('/<thinking>.*?<\/thinking>/s', $rawTitle, $matches)) {
+                                    $rawTitle = str_replace($matches[0], '', $rawTitle);
+                                }
+
+                                $newTitle = trim(str_replace(['"', 'Titre:', 'Title:'], '', $rawTitle));
+
+                                if (!empty($newTitle)) {
+                                    $this->conversationManager->updateTitle($conversation, $newTitle);
+
+                                    // Send title update event to frontend
+                                    $sendEvent('title', ['title' => $newTitle]);
+                                }
+                            }
+                        }
+                    } catch (\Throwable $e) {
+                        // Silent fail: title generation is not critical
+                        // Could log with a logger if available
+                    }
+                }
             } catch (\Exception $e) {
                 $sendEvent('error', $e->getMessage());
             }
