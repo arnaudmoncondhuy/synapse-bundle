@@ -58,7 +58,7 @@ export default class extends Controller {
             >
                 <div class="conversation-header">
                     <span class="conversation-title" data-sidebar-target="title">${this.escapeHtml(conv.title || 'Nouvelle conversation')}</span>
-                    ${conv.risk_level !== 'NONE' ? `<span class="risk-badge risk-${conv.risk_level.toLowerCase()}">${this.getRiskEmoji(conv.risk_level)}</span>` : ''}
+                    <!-- Risk badge removed - should only be visible in admin interface -->
                 </div>
                 <div class="conversation-meta">
                     <span class="conversation-date">${this.formatDate(conv.updated_at)}</span>
@@ -348,7 +348,7 @@ export default class extends Controller {
             >
                 <div class="conversation-header">
                     <span class="conversation-title" data-sidebar-target="title">${this.escapeHtml(conversation.title)}</span>
-                    ${conversation.risk_level !== 'NONE' ? `<span class="risk-badge risk-${conversation.risk_level.toLowerCase()}">${this.getRiskEmoji(conversation.risk_level)}</span>` : ''}
+                    <!-- Risk badge removed - should only be visible in admin interface -->
                 </div>
                 <div class="conversation-meta">
                     <span class="conversation-date">${this.formatDate(conversation.updated_at)}</span>
