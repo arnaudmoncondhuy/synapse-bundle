@@ -369,11 +369,15 @@ export default class extends Controller {
      * Crée une nouvelle conversation (recharge la page sans conversation ID)
      */
     newConversation(event) {
+        console.log('newConversation() appelée');
         event.preventDefault();
 
         // Supprimer le paramètre conversation de l'URL
         const url = new URL(window.location.href);
+        console.log('URL actuelle:', url.toString());
         url.searchParams.delete('conversation');
-        window.location.href = url.toString();
+        const newUrl = url.toString();
+        console.log('Nouvelle URL:', newUrl);
+        window.location.href = newUrl;
     }
 }

@@ -126,6 +126,11 @@ export default class extends Controller {
                         } else if (evt.type === 'result') {
                             this.setLoading(false);
                             this.addMessage(evt.payload.answer, 'assistant', evt.payload);
+
+                            // Update URL with conversation ID if present
+                            if (evt.payload.conversation_id) {
+                                this.updateUrlWithConversationId(evt.payload.conversation_id);
+                            }
                         } else if (evt.type === 'error') {
                             throw new Error(evt.payload);
                         }
@@ -297,5 +302,18 @@ export default class extends Controller {
 
     scrollToBottom() {
         this.messagesTarget.scrollTop = this.messagesTarget.scrollHeight;
+    }
+
+    updateUrlWithConversationId(conversationId) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('conversation', conversationId);
+
+        // Update URL without reloading page
+        window.history.pushState({}, '', url.toString());
+
+        // Dispatch event for sidebar to refresh
+        document.dispatchEvent(new CustomEvent('assistant:conversation-created', {
+            detail: { conversationId, title: 'Nouvelle conversation' }
+        }));
     }
 }
