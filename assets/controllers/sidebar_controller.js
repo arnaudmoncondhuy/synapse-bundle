@@ -298,9 +298,59 @@ export default class extends Controller {
      * Gère la création d'une nouvelle conversation
      */
     handleConversationCreated({ conversationId, title }) {
+        console.log('Sidebar: conversation créée', conversationId, title);
         this.currentConversationIdValue = conversationId;
-        this.loadConversations(); // Recharger la liste
+
+        // Ajouter la conversation en tête de liste (optimistic UI)
+        this.prependConversation({
+            id: conversationId,
+            title: title || 'Nouvelle conversation',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            status: 'ACTIVE',
+            risk_level: 'NONE',
+            message_count: 1
+        });
+
         this.open(); // Ouvrir la sidebar
+    }
+
+    /**
+     * Ajoute une conversation en tête de liste
+     */
+    prependConversation(conversation) {
+        this.hideEmpty();
+
+        // Désélectionner les autres conversations
+        this.listTarget.querySelectorAll('.conversation-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        const html = `
+            <div
+                class="conversation-item active"
+                data-conversation-id="${conversation.id}"
+                data-action="click->sidebar#selectConversation dblclick->sidebar#startRename"
+            >
+                <div class="conversation-header">
+                    <span class="conversation-title" data-sidebar-target="title">${this.escapeHtml(conversation.title)}</span>
+                    ${conversation.risk_level !== 'NONE' ? `<span class="risk-badge risk-${conversation.risk_level.toLowerCase()}">${this.getRiskEmoji(conversation.risk_level)}</span>` : ''}
+                </div>
+                <div class="conversation-meta">
+                    <span class="conversation-date">${this.formatDate(conversation.updated_at)}</span>
+                    <span class="conversation-count">${conversation.message_count} msg</span>
+                </div>
+                <button
+                    class="conversation-delete"
+                    data-action="click->sidebar#deleteConversation:stop"
+                    title="Supprimer"
+                >
+                    ×
+                </button>
+            </div>
+        `;
+
+        this.listTarget.insertAdjacentHTML('afterbegin', html);
     }
 
     /**
