@@ -323,9 +323,8 @@ class ChatService
             return [
                 'answer' => $fullTextAccumulator,
                 'debug_id' => $debugId,
-                'usage' => $usageMetadata,   // [NEW]
-                'safety' => $safetyRatings,  // [NEW]
-                'raw' => $response,          // [NEW] Full raw response
+                'usage' => $usageMetadata,
+                'safety' => $safetyRatings,
             ];
         }
 
@@ -345,7 +344,6 @@ class ChatService
             'debug_id' => $debugId,
             'usage' => [],
             'safety' => [],
-            'raw' => [],
         ];
     }
 

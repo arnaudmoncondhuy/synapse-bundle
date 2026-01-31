@@ -72,14 +72,17 @@ class ChatApiController extends AbstractController
             }
         }
 
-        $response = new StreamedResponse(function () use ($message, $options, $request, $conversation) {
-            // 3. On ne ferme PAS la session ici pour permettre la sauvegarde de l'historique.
-            // La session sera gérée par Symfony à la fin de la requête.
-
+        $response = new StreamedResponse(function () use ($message, $options, $conversation) {
+            // CRITICAL: Disable ALL output buffering to prevent Symfony Debug Toolbar injection
+            // The toolbar tries to inject HTML into buffered output, corrupting NDJSON stream
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+            ob_implicit_flush(true);
 
             // Helper to send NDJSON event
             $sendEvent = function (string $type, mixed $payload): void {
-                echo json_encode(['type' => $type, 'payload' => $payload], JSON_INVALID_UTF8_IGNORE)."\n";
+                echo json_encode(['type' => $type, 'payload' => $payload], JSON_INVALID_UTF8_IGNORE | JSON_THROW_ON_ERROR)."\n";
                 flush();
             };
 
@@ -99,12 +102,7 @@ class ChatApiController extends AbstractController
                     }
                 }
 
-                // Save user message if persistence enabled
-                if ($conversation && $this->conversationManager && !empty($message)) {
-                    $this->conversationManager->saveMessage($conversation, MessageRole::USER, $message);
-                }
-
-                // Load conversation history from database if persistence enabled
+                // Load conversation history from database if persistence enabled (WITHOUT new message)
                 if ($conversation && $this->conversationManager) {
                     $dbMessages = $this->conversationManager->getMessages($conversation);
                     // Convert DB messages to ChatService format
@@ -116,20 +114,28 @@ class ChatApiController extends AbstractController
                     $sendEvent('status', ['message' => $statusMessage, 'step' => $step]);
                 };
 
-                // Execute chat
+                // Execute chat (ChatService will handle adding the new user message to history)
                 $result = $this->chatService->ask($message, $options, $onStatusUpdate);
 
-                // Save assistant message if persistence enabled
-                if ($conversation && $this->conversationManager && !empty($result['answer'])) {
-                    $usage = $result['usage'] ?? [];
-                    $metadata = [
-                        'prompt_tokens' => $usage['promptTokenCount'] ?? 0,
-                        'completion_tokens' => $usage['candidatesTokenCount'] ?? 0,
-                        'thinking_tokens' => $usage['thoughtsTokenCount'] ?? 0,
-                        'safety_ratings' => $result['safety'] ?? null,
-                        'metadata' => ['debug_id' => $result['debug_id'] ?? null],
-                    ];
-                    $this->conversationManager->saveMessage($conversation, MessageRole::MODEL, $result['answer'], $metadata);
+                // Save BOTH user message and assistant response to database after processing
+                if ($conversation && $this->conversationManager) {
+                    // Save user message
+                    if (!empty($message)) {
+                        $this->conversationManager->saveMessage($conversation, MessageRole::USER, $message);
+                    }
+
+                    // Save assistant message
+                    if (!empty($result['answer'])) {
+                        $usage = $result['usage'] ?? [];
+                        $metadata = [
+                            'prompt_tokens' => $usage['promptTokenCount'] ?? 0,
+                            'completion_tokens' => $usage['candidatesTokenCount'] ?? 0,
+                            'thinking_tokens' => $usage['thoughtsTokenCount'] ?? 0,
+                            'safety_ratings' => $result['safety'] ?? null,
+                            'metadata' => ['debug_id' => $result['debug_id'] ?? null],
+                        ];
+                        $this->conversationManager->saveMessage($conversation, MessageRole::MODEL, $result['answer'], $metadata);
+                    }
                 }
 
                 // Add conversation_id to result
@@ -182,6 +188,7 @@ class ChatApiController extends AbstractController
         $response->headers->set('Content-Type', 'application/x-ndjson');
         $response->headers->set('X-Accel-Buffering', 'no'); // Disable Nginx buffering
         $response->headers->set('Cache-Control', 'no-cache');
+        $response->headers->set('X-Debug-Token', 'disabled'); // Prevent Symfony debug toolbar injection
 
         return $response;
     }
