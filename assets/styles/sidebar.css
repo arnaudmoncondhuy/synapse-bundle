@@ -262,14 +262,25 @@
     line-height: 1;
 }
 
-.conversation-delete {
+/* Actions (edit + delete buttons) */
+.conversation-actions {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
     display: none;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.conversation-item:hover .conversation-actions {
+    display: flex;
+}
+
+.conversation-edit,
+.conversation-delete {
     background: none;
     border: none;
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     line-height: 1;
     cursor: pointer;
     color: var(--sidebar-text-secondary);
@@ -277,8 +288,8 @@
     transition: color 0.2s;
 }
 
-.conversation-item:hover .conversation-delete {
-    display: block;
+.conversation-edit:hover {
+    color: #3b82f6;
 }
 
 .conversation-delete:hover {
