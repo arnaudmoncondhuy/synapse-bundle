@@ -191,6 +191,13 @@ class ChatService
             }
 
             $currentTurnText = TextUtil::sanitizeUtf8($currentTurnText);
+
+            // CRITICAL: Remove any <thinking> tags that Gemini might generate in the text
+            // These should NOT exist with native thinking, but API sometimes includes them anyway
+            $currentTurnText = preg_replace('/<thinking>.*?<\/thinking>/is', '', $currentTurnText);
+            $currentTurnText = preg_replace('/<\/?thinking[^>]*>/i', '', $currentTurnText);
+            $currentTurnText = trim($currentTurnText);
+
             $fullTextAccumulator .= $currentTurnText;
 
             // Add model response to history
