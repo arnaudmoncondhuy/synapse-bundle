@@ -54,7 +54,7 @@ export default class extends Controller {
             <div
                 class="conversation-item ${conv.id === this.currentConversationIdValue ? 'active' : ''}"
                 data-conversation-id="${conv.id}"
-                data-action="click->sidebar#selectConversation dblclick->sidebar#startRename"
+                data-action="click->sidebar#selectConversation"
             >
                 <div class="conversation-header">
                     <span class="conversation-title" data-sidebar-target="title">${this.escapeHtml(conv.title || 'Nouvelle conversation')}</span>
@@ -64,13 +64,22 @@ export default class extends Controller {
                     <span class="conversation-date">${this.formatDate(conv.updated_at)}</span>
                     <span class="conversation-count">${conv.message_count} msg</span>
                 </div>
-                <button
-                    class="conversation-delete"
-                    data-action="click->sidebar#deleteConversation:stop"
-                    title="Supprimer"
-                >
-                    ×
-                </button>
+                <div class="conversation-actions">
+                    <button
+                        class="conversation-edit"
+                        data-action="click->sidebar#startRename:stop"
+                        title="Renommer"
+                    >
+                        ✎
+                    </button>
+                    <button
+                        class="conversation-delete"
+                        data-action="click->sidebar#deleteConversation:stop"
+                        title="Supprimer"
+                    >
+                        ×
+                    </button>
+                </div>
             </div>
         `).join('');
     }
@@ -330,7 +339,7 @@ export default class extends Controller {
             <div
                 class="conversation-item active"
                 data-conversation-id="${conversation.id}"
-                data-action="click->sidebar#selectConversation dblclick->sidebar#startRename"
+                data-action="click->sidebar#selectConversation"
             >
                 <div class="conversation-header">
                     <span class="conversation-title" data-sidebar-target="title">${this.escapeHtml(conversation.title)}</span>
@@ -340,13 +349,22 @@ export default class extends Controller {
                     <span class="conversation-date">${this.formatDate(conversation.updated_at)}</span>
                     <span class="conversation-count">${conversation.message_count} msg</span>
                 </div>
-                <button
-                    class="conversation-delete"
-                    data-action="click->sidebar#deleteConversation:stop"
-                    title="Supprimer"
-                >
-                    ×
-                </button>
+                <div class="conversation-actions">
+                    <button
+                        class="conversation-edit"
+                        data-action="click->sidebar#startRename:stop"
+                        title="Renommer"
+                    >
+                        ✎
+                    </button>
+                    <button
+                        class="conversation-delete"
+                        data-action="click->sidebar#deleteConversation:stop"
+                        title="Supprimer"
+                    >
+                        ×
+                    </button>
+                </div>
             </div>
         `;
 
