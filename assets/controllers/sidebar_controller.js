@@ -210,10 +210,10 @@ export default class extends Controller {
     }
 
     /**
-     * Démarre le renommage inline (double-clic)
+     * Démarre le renommage inline (clic sur bouton edit)
      */
     startRename(event) {
-        const item = event.currentTarget;
+        const item = event.currentTarget.closest('.conversation-item');
         const titleSpan = item.querySelector('.conversation-title');
         const currentTitle = titleSpan.textContent;
 
