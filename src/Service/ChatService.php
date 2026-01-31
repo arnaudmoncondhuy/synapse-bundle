@@ -109,16 +109,16 @@ class ChatService
             $toolDefinitions = $this->buildToolDefinitions();
         }
 
-        // Load history
+        // Load history from database (passed via options) or start fresh
         if ($isStateless) {
             $contents = [
                 ['role' => 'user', 'parts' => [['text' => $message]]],
             ];
             $rawHistory = [];
         } else {
-            // Use external history if provided (from DB via ConversationManager),
-            // otherwise fall back to session-based history (legacy)
-            $rawHistory = $options['history'] ?? $this->conversationHandler->loadHistory();
+            // Use history from database (passed via 'history' option from ConversationManager)
+            // No fallback to session - session-based history is DEPRECATED
+            $rawHistory = $options['history'] ?? [];
             $contents = $this->sanitizeHistoryForNewTurn($rawHistory);
             if (!empty($message)) {
                 $contents[] = ['role' => 'user', 'parts' => [['text' => TextUtil::sanitizeUtf8($message)]]];
@@ -300,7 +300,9 @@ class ChatService
                     ];
                 }
 
-                $this->conversationHandler->saveHistory($rawHistory);
+                // History saving is now handled by ConversationManager in ChatApiController
+                // Session-based persistence via conversationHandler is DEPRECATED
+                // $this->conversationHandler->saveHistory($rawHistory);
             }
 
             $debugAccumulator['total_turns'] = $i + 1;
