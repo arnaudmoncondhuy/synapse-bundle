@@ -326,7 +326,7 @@ export default class extends Controller {
             message_count: 1
         });
 
-        this.open(); // Ouvrir la sidebar
+        // Ne pas ouvrir automatiquement la sidebar - l'utilisateur peut le faire manuellement
     }
 
     /**
