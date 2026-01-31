@@ -104,6 +104,13 @@ class ChatApiController extends AbstractController
                     $this->conversationManager->saveMessage($conversation, MessageRole::USER, $message);
                 }
 
+                // Load conversation history from database if persistence enabled
+                if ($conversation && $this->conversationManager) {
+                    $dbMessages = $this->conversationManager->getMessages($conversation);
+                    // Convert DB messages to ChatService format
+                    $options['history'] = $dbMessages;
+                }
+
                 // Status update callback for streaming
                 $onStatusUpdate = function (string $statusMessage, string $step) use ($sendEvent): void {
                     $sendEvent('status', ['message' => $statusMessage, 'step' => $step]);
