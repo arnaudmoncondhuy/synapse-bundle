@@ -16,8 +16,8 @@ use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
  */
 class LibsodiumEncryptionService implements EncryptionServiceInterface
 {
-    private const NONCE_LENGTH = SODIUM_CRYPTO_SECRETBOX_NONCEBYTES; // 24 bytes
-    private const KEY_LENGTH = SODIUM_CRYPTO_SECRETBOX_KEYBYTES; // 32 bytes
+    private const NONCE_LENGTH = \SODIUM_CRYPTO_SECRETBOX_NONCEBYTES; // 24 bytes
+    private const KEY_LENGTH = \SODIUM_CRYPTO_SECRETBOX_KEYBYTES; // 32 bytes
 
     private string $key;
 
@@ -48,13 +48,13 @@ class LibsodiumEncryptionService implements EncryptionServiceInterface
             $nonce = random_bytes(self::NONCE_LENGTH);
 
             // Chiffrer
-            $ciphertext = sodium_crypto_secretbox($plaintext, $nonce, $this->key);
+            $ciphertext = \sodium_crypto_secretbox($plaintext, $nonce, $this->key);
 
             // Format : base64(nonce + ciphertext)
             $encrypted = base64_encode($nonce . $ciphertext);
 
             // Nettoyer la mémoire
-            sodium_memzero($plaintext);
+            \sodium_memzero($plaintext);
 
             return $encrypted;
         } catch (\Exception $e) {
@@ -80,7 +80,7 @@ class LibsodiumEncryptionService implements EncryptionServiceInterface
             $encrypted = mb_substr($decoded, self::NONCE_LENGTH, null, '8bit');
 
             // Déchiffrer
-            $plaintext = sodium_crypto_secretbox_open($encrypted, $nonce, $this->key);
+            $plaintext = \sodium_crypto_secretbox_open($encrypted, $nonce, $this->key);
 
             if ($plaintext === false) {
                 throw new \RuntimeException('Decryption failed (invalid key or corrupted data)');
@@ -103,7 +103,7 @@ class LibsodiumEncryptionService implements EncryptionServiceInterface
 
         // Vérifier la longueur minimale (nonce + au moins 1 byte + MAC)
         // sodium_crypto_secretbox ajoute un MAC de 16 bytes
-        $minLength = self::NONCE_LENGTH + 1 + SODIUM_CRYPTO_SECRETBOX_MACBYTES;
+        $minLength = self::NONCE_LENGTH + 1 + \SODIUM_CRYPTO_SECRETBOX_MACBYTES;
 
         return mb_strlen($decoded, '8bit') >= $minLength;
     }
