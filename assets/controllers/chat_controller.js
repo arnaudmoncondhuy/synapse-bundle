@@ -131,6 +131,18 @@ export default class extends Controller {
                             if (evt.payload.conversation_id) {
                                 this.updateUrlWithConversationId(evt.payload.conversation_id);
                             }
+                        } else if (evt.type === 'title') {
+                            // Auto-generated title received
+                            const conversationId = new URLSearchParams(window.location.search).get('conversation');
+                            if (conversationId && evt.payload.title) {
+                                // Dispatch event for sidebar to update title
+                                document.dispatchEvent(new CustomEvent('assistant:title-updated', {
+                                    detail: {
+                                        conversationId: conversationId,
+                                        title: evt.payload.title
+                                    }
+                                }));
+                            }
                         } else if (evt.type === 'error') {
                             throw new Error(evt.payload);
                         }
