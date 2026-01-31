@@ -234,16 +234,20 @@ export default class extends Controller {
     addMessage(text, role, debugData = null) {
         let formattedText = text;
 
-        // Extract and remove thinking blocks
+        // Extract and remove thinking blocks (for old data in database)
         if (role === 'assistant') {
-            formattedText = formattedText.replace(/<thinking>[\s\S]*?<\/thinking>/g, '');
+            // Remove complete thinking blocks (with or without newlines)
+            formattedText = formattedText.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
             formattedText = formattedText.replace(/```thinking[\s\S]*?```/g, '');
             formattedText = formattedText.replace(/^\s*```\s*$/gm, '');
+
+            // Remove orphan thinking tags (unclosed or malformed)
+            formattedText = formattedText.replace(/<\/?thinking[^>]*>/gi, '');
+
+            // Clean up multiple consecutive newlines
+            formattedText = formattedText.replace(/\n{3,}/g, '\n\n');
             formattedText = formattedText.trim();
         }
-
-        // Clean residual tags
-        formattedText = formattedText.replace(/<\/?thinking>/gi, '').trim();
 
         // Simple markdown parsing
         formattedText = this.parseMarkdown(formattedText);
@@ -323,14 +327,21 @@ export default class extends Controller {
 
     updateUrlWithConversationId(conversationId) {
         const url = new URL(window.location.href);
+        const currentConversationId = url.searchParams.get('conversation');
+
+        // Only dispatch event if this is a NEW conversation (not already in URL)
+        const isNewConversation = currentConversationId !== conversationId;
+
         url.searchParams.set('conversation', conversationId);
 
         // Update URL without reloading page
         window.history.pushState({}, '', url.toString());
 
-        // Dispatch event for sidebar to refresh
-        document.dispatchEvent(new CustomEvent('assistant:conversation-created', {
-            detail: { conversationId, title: 'Nouvelle conversation' }
-        }));
+        // Dispatch event for sidebar to refresh ONLY for new conversations
+        if (isNewConversation) {
+            document.dispatchEvent(new CustomEvent('assistant:conversation-created', {
+                detail: { conversationId, title: 'Nouvelle conversation' }
+            }));
+        }
     }
 }
