@@ -114,10 +114,6 @@ class ChatApiController extends AbstractController
 
                 // Save assistant message if persistence enabled
                 if ($conversation && $this->conversationManager && !empty($result['answer'])) {
-                    // Clean thinking tags before saving to database
-                    $cleanAnswer = preg_replace('/<thinking>.*?<\/thinking>/s', '', $result['answer']);
-                    $cleanAnswer = trim($cleanAnswer);
-
                     $usage = $result['usage'] ?? [];
                     $metadata = [
                         'prompt_tokens' => $usage['promptTokenCount'] ?? 0,
@@ -126,7 +122,7 @@ class ChatApiController extends AbstractController
                         'safety_ratings' => $result['safety'] ?? null,
                         'metadata' => ['debug_id' => $result['debug_id'] ?? null],
                     ];
-                    $this->conversationManager->saveMessage($conversation, MessageRole::MODEL, $cleanAnswer, $metadata);
+                    $this->conversationManager->saveMessage($conversation, MessageRole::MODEL, $result['answer'], $metadata);
                 }
 
                 // Add conversation_id to result

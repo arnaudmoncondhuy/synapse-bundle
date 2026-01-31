@@ -175,15 +175,11 @@ class ChatService
 
             // Extract text and function calls
             foreach ($parts as $part) {
-                // Handle native Gemini 2.0+ thinking field
+                // Handle native Gemini 2.5+ thinking field
+                // Skip thinking parts - they should NOT be included in the answer text
+                // Thinking data is already available in raw response for debug purposes
                 if (isset($part['thought']) && true === $part['thought']) {
-                    // Note: 'thought' flag might be on a text part, or separate.
-                    // If the API evolution separates them, we might need adjustments.
-                    // Currently assuming text content IS the thought if thought=true.
-                    if (isset($part['text'])) {
-                        $currentTurnText .= '<thinking>'.$part['text']."</thinking>\n";
-                    }
-                    continue; // Skip standard text append
+                    continue;
                 }
 
                 if (isset($part['text'])) {
