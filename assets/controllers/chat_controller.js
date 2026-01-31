@@ -92,12 +92,17 @@ export default class extends Controller {
             persona = this.personaSelectTarget.value;
         }
 
+        // Get current conversation ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const conversationId = urlParams.get('conversation');
+
         try {
             const response = await fetch('/synapse/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: message,
+                    conversation_id: conversationId,
                     options: { persona: persona },
                     debug: this.isDebugMode
                 })
