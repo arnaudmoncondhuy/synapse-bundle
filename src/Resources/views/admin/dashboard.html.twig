@@ -1,180 +1,98 @@
 {% extends '@Synapse/admin/_layout.html.twig' %}
 
 {% block admin_content %}
-	{# THEME SWITCHER LOGIC #}
-	{% set theme = app.request.query.get('theme') %}
-
-	{# ========================================== #}
-	{# VISION 1: NEURAL COMMAND (Cyberpunk HUD)   #}
-	{# ========================================== #}
-		{% if theme == 'neural' %}
-			<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; border-bottom: 1px solid var(--syn-color-primary); padding-bottom: 0.5rem;"> <div>
-				<h1 class="syn-title" style="font-size: 2rem; color: var(--syn-color-primary); text-shadow: 0 0 10px var(--syn-color-primary);">COMMAND CORE</h1>
-				<div style="font-family: var(--syn-font-sans); color: var(--syn-color-primary-dark); letter-spacing: 0.2em; font-size: 0.8rem;">SYSTEM STATUS: ONLINE</div>
-			</div>
-			<div style="font-family: var(--syn-font-sans); color: var(--syn-color-primary); font-size: 1.5rem;">
-				{{ "now"|date("H:i:s") }}
-			</div>
+	<header class="syn-header">
+		<div>
+			<h1 class="syn-title">Tableau de Bord</h1>
+			<p class="syn-subtitle">Vue d'ensemble de l'activité de l'assistant</p>
 		</div>
+	</header>
 
-		<div
-			class="syn-grid-3">
-			<!-- Neural Modules -->
-			<div class="syn-card p-4" style="border: 1px solid var(--syn-color-primary); box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.1);">
-				<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-					<i data-lucide="activity" style="color: var(--syn-color-primary);"></i>
-					<div style="color: var(--syn-color-primary); font-weight: 700; letter-spacing: 0.1em;">ACTIVE THREADS</div>
-				</div>
-				<div class="syn-kpi-value" style="font-size: 3rem; text-align: right;">{{ kpis.active_conversations }}</div>
+	<!-- KPIs -->
+	<div
+		class="syn-grid-3" style="margin-bottom: 2rem;">
+		<!-- Conversations -->
+		<div class="syn-card syn-card-hover p-4" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
+			<div class="syn-kpi-icon success">
+				<i data-lucide="message-circle"></i>
 			</div>
-
-			<div class="syn-card p-4" style="border: 1px solid var(--syn-color-error); box-shadow: inset 0 0 20px rgba(255, 0, 85, 0.1);">
-				<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-					<i data-lucide="alert-octagon" style="color: var(--syn-color-error);"></i>
-					<div style="color: var(--syn-color-error); font-weight: 700; letter-spacing: 0.1em;">SECURITY ALERT</div>
-				</div>
-				<div class="syn-kpi-value" style="font-size: 3rem; text-align: right; color: var(--syn-color-error); text-shadow: 0 0 10px var(--syn-color-error);">{{ kpis.risks_pending }}</div>
-			</div>
-
-			<div class="syn-card p-4" style="border: 1px solid var(--syn-color-warning);">
-				<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-					<i data-lucide="cpu" style="color: var(--syn-color-warning);"></i>
-					<div style="color: var(--syn-color-warning); font-weight: 700; letter-spacing: 0.1em;">RESOURCE COST</div>
-				</div>
-				<div class="syn-kpi-value" style="font-size: 2rem; text-align: right; color: var(--syn-color-warning);">€{{ kpis.tokens_cost|number_format(4) }}</div>
-			</div>
-		</div>
-
-		{# ========================================== #}
-		{# VISION 2: ZENITH SPATIAL (Minimalist)      #}
-		{# ========================================== #}
-	{% elseif theme == 'zenith' %}
-		<div style="text-align: center; margin-bottom: 4rem; padding-top: 2rem;">
-			<h1 class="syn-title" style="font-size: 3rem; margin-bottom: 1rem;">Zenith.</h1>
-			<p class="syn-subtitle" style="font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
-				Overview of your artificial intelligence infrastructure.
-			</p>
-		</div>
-
-		<div class="syn-grid-3" style="gap: 3rem;">
-			<div class="syn-card syn-card-hover" style="padding: 2rem; border-radius: 32px; background: white;">
-				<div style="color: var(--syn-text-muted); font-size: 0.9rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em;">Conversations</div>
-				<div style="font-size: 4rem; font-weight: 200; color: var(--syn-text-main); line-height: 1;">{{ kpis.active_conversations }}</div>
-				<div style="margin-top: 1rem; color: var(--syn-color-success);">● Active now</div>
-			</div>
-
-			<div class="syn-card syn-card-hover" style="padding: 2rem; border-radius: 32px; background: white;">
-				<div style="color: var(--syn-text-muted); font-size: 0.9rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em;">Security</div>
-				<div style="font-size: 4rem; font-weight: 200; color: var(--syn-text-main); line-height: 1;">{{ kpis.risks_pending }}</div>
-				<div style="margin-top: 1rem; color: var(--syn-color-error);">Requires attention</div>
-			</div>
-
-			<div class="syn-card syn-card-hover" style="padding: 2rem; border-radius: 32px; background: white;">
-				<div style="color: var(--syn-text-muted); font-size: 0.9rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.1em;">Est. Cost</div>
-				<div style="font-size: 4rem; font-weight: 200; color: var(--syn-text-main); line-height: 1;">
-					<span style="font-size: 2rem; vertical-align: super;">€</span>
-					{{ kpis.tokens_cost|number_format(2) }}</div>
-				<div style="margin-top: 1rem; color: var(--syn-text-muted);">Current billing cycle</div>
-			</div>
-		</div>
-
-		{# ========================================== #}
-		{# VISION 0: DEFAULT (Agnostic Modern)        #}
-		{# ========================================== #}
-	{% else %}
-		<header class="syn-header">
 			<div>
-				<h1 class="syn-title">Tableau de Bord</h1>
-				<p class="syn-subtitle">Vue d'ensemble de l'activité de l'assistant</p>
-			</div>
-		</header>
-
-		<!-- KPIs -->
-		<div
-			class="syn-grid-3" style="margin-bottom: 2rem;">
-			<!-- Conversations -->
-			<div class="syn-card syn-card-hover p-4" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
-				<div class="syn-kpi-icon success">
-					<i data-lucide="message-circle"></i>
-				</div>
-				<div>
-					<div class="syn-kpi-label">Conversations (24h)</div>
-					<div class="syn-kpi-value">{{ kpis.active_conversations }}</div>
-					{% if kpis.active_conversations > 0 %}
-						<div class="syn-kpi-sub" style="color: var(--syn-color-success); display: flex; align-items: center; gap: 0.25rem;">
-							<i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
-							En activité
-						</div>
-					{% else %}
-						<div class="syn-kpi-sub">Aucune activité récente</div>
-					{% endif %}
-				</div>
-			</div>
-
-			<!-- Risques -->
-			<div class="syn-card syn-card-hover" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
-				<div class="syn-kpi-icon error">
-					<i data-lucide="shield-alert"></i>
-				</div>
-				<div>
-					<div class="syn-kpi-label">Risques en attente</div>
-					<div class="syn-kpi-value" style="color: var(--syn-color-error);">{{ kpis.risks_pending }}</div>
-					<div class="syn-kpi-sub">Nécessitent une action</div>
-				</div>
-			</div>
-
-			<!-- Tokens -->
-			<div class="syn-card syn-card-hover" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
-				<div class="syn-kpi-icon warning">
-					<i data-lucide="coins"></i>
-				</div>
-				<div>
-					<div class="syn-kpi-label">Coût Estimé</div>
-					<div class="syn-kpi-value">€{{ kpis.tokens_cost|number_format(5, '.', ' ') }}</div>
-					<div class="syn-kpi-sub">Usage depuis le début du mois</div>
-				</div>
+				<div class="syn-kpi-label">Conversations (24h)</div>
+				<div class="syn-kpi-value">{{ kpis.active_conversations }}</div>
+				{% if kpis.active_conversations > 0 %}
+					<div class="syn-kpi-sub" style="color: var(--syn-color-success); display: flex; align-items: center; gap: 0.25rem;">
+						<i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
+						En activité
+					</div>
+				{% else %}
+					<div class="syn-kpi-sub">Aucune activité récente</div>
+				{% endif %}
 			</div>
 		</div>
 
-		<!-- System Status -->
-		<div class="syn-card">
-			<div class="syn-card-header">
-				<h3 style="font-size: 1.1rem;">État du Système</h3>
+		<!-- Risques -->
+		<div class="syn-card syn-card-hover" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
+			<div class="syn-kpi-icon error">
+				<i data-lucide="shield-alert"></i>
 			</div>
-			<div class="syn-table-container">
-				<table class="syn-table">
-					<tbody>
-						<tr>
-							<td style="display: flex; align-items: center; gap: 1rem;">
-								<div class="syn-kpi-icon primary" style="width: 40px; height: 40px; font-size: 1.2rem;">
-									<i data-lucide="lock"></i>
-								</div>
-								<div>
-									<div style="font-weight: 600;">Chiffrement Server-Side</div>
-									<div style="font-size: 0.85rem; color: var(--syn-text-muted);">Sodium Library</div>
-								</div>
-							</td>
-							<td style="text-align: right;">
-								<span class="syn-badge syn-badge-success">Actif</span>
-							</td>
-						</tr>
-						<tr>
-							<td style="display: flex; align-items: center; gap: 1rem;">
-								<div class="syn-kpi-icon primary" style="width: 40px; height: 40px; font-size: 1.2rem;">
-									<i data-lucide="sparkles"></i>
-								</div>
-								<div>
-									<div style="font-weight: 600;">API Vertex AI</div>
-									<div style="font-size: 0.85rem; color: var(--syn-text-muted);">Google Gemini 2.5</div>
-								</div>
-							</td>
-							<td style="text-align: right;">
-								<span class="syn-badge syn-badge-success">Connecté</span>
-							</td>
-						</tr>
-					</tbody>
-				</table>
+			<div>
+				<div class="syn-kpi-label">Risques en attente</div>
+				<div class="syn-kpi-value" style="color: var(--syn-color-error);">{{ kpis.risks_pending }}</div>
+				<div class="syn-kpi-sub">Nécessitent une action</div>
 			</div>
 		</div>
-	{% endif %}
+
+		<!-- Tokens -->
+		<div class="syn-card syn-card-hover" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
+			<div class="syn-kpi-icon warning">
+				<i data-lucide="coins"></i>
+			</div>
+			<div>
+				<div class="syn-kpi-label">Coût Estimé</div>
+				<div class="syn-kpi-value">€{{ kpis.tokens_cost|number_format(5, '.', ' ') }}</div>
+				<div class="syn-kpi-sub">Usage depuis le début du mois</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- System Status -->
+	<div class="syn-card">
+		<div class="syn-card-header">
+			<h3 style="font-size: 1.1rem;">État du Système</h3>
+		</div>
+		<div class="syn-table-container">
+			<table class="syn-table">
+				<tbody>
+					<tr>
+						<td style="display: flex; align-items: center; gap: 1rem;">
+							<div class="syn-kpi-icon primary" style="width: 40px; height: 40px; font-size: 1.2rem;">
+								<i data-lucide="lock"></i>
+							</div>
+							<div>
+								<div style="font-weight: 600;">Chiffrement Server-Side</div>
+								<div style="font-size: 0.85rem; color: var(--syn-text-muted);">Sodium Library</div>
+							</div>
+						</td>
+						<td style="text-align: right;">
+							<span class="syn-badge syn-badge-success">Actif</span>
+						</td>
+					</tr>
+					<tr>
+						<td style="display: flex; align-items: center; gap: 1rem;">
+							<div class="syn-kpi-icon primary" style="width: 40px; height: 40px; font-size: 1.2rem;">
+								<i data-lucide="sparkles"></i>
+							</div>
+							<div>
+								<div style="font-weight: 600;">API Vertex AI</div>
+								<div style="font-size: 0.85rem; color: var(--syn-text-muted);">Google Gemini 2.5</div>
+							</div>
+						</td>
+						<td style="text-align: right;">
+							<span class="syn-badge syn-badge-success">Connecté</span>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
 {% endblock %}

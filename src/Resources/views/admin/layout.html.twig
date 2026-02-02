@@ -8,19 +8,9 @@
 			{% endblock %}
 		</title>
 
-		{# Dynamic Theme Loading #}
-		{% set theme = app.request.query.get('theme') %}
-
+		{# Default Styles #}
 		{% block stylesheets %}
-			{% if theme == 'neural' %}
-				{% include '@Synapse/admin/_styles.html.twig' %}
-				{% include '@Synapse/admin/themes/_theme_neural.html.twig' %}
-			{% elseif theme == 'zenith' %}
-				{% include '@Synapse/admin/_styles.html.twig' %}
-				{% include '@Synapse/admin/themes/_theme_zenith.html.twig' %}
-			{% else %}
-				{% include '@Synapse/admin/_styles.html.twig' %}
-			{% endif %}
+			{% include '@Synapse/admin/_styles.html.twig' %}
 		{% endblock %}
 
 		<script src="https://unpkg.com/lucide@latest"></script>
@@ -29,72 +19,52 @@
 	<body
 		class="syn-layout">
 
-		{# SIDEBAR (Hidden in Neural Mode) #}
-		{% if theme != 'neural' %}
-			<aside class="syn-sidebar">
-				<div class="syn-brand">
-					<div class="syn-brand-icon">
-						<i data-lucide="brain-circuit"></i>
-					</div>
-					Synapse
+		{# SIDEBAR #}
+		<aside class="syn-sidebar">
+			<div class="syn-brand">
+				<div class="syn-brand-icon">
+					<i data-lucide="brain-circuit"></i>
 				</div>
-
-				<nav>
-					<ul class="syn-nav">
-						<li class="syn-nav-item">
-							<a href="{{ path('synapse_admin_dashboard') }}" class="{% if app.request.get('_route') == 'synapse_admin_dashboard' %}active{% endif %}">
-								<i data-lucide="layout-dashboard"></i>
-								Dashboard
-							</a>
-						</li>
-						<li class="syn-nav-item">
-							<a href="{{ path('synapse_admin_analytics') }}" class="{% if app.request.get('_route') == 'synapse_admin_analytics' %}active{% endif %}">
-								<i data-lucide="bar-chart-2"></i>
-								Analytics
-							</a>
-						</li>
-						<li class="syn-nav-item">
-							<a href="{{ path('synapse_admin_risks') }}" class="{% if app.request.get('_route') starts with 'synapse_admin_risks' %}active{% endif %}">
-								<i data-lucide="shield-alert"></i>
-								Ange Gardien
-								{% if kpis.risks_pending|default(0) > 0 %}
-									<span class="syn-badge syn-badge-warning syn-badge-nav">{{ kpis.risks_pending }}</span>
-								{% endif %}
-							</a>
-						</li>
-						<li class="syn-nav-item">
-							<a href="{{ path('synapse_admin_config') }}" class="{% if app.request.get('_route') == 'synapse_admin_config' %}active{% endif %}">
-								<i data-lucide="settings"></i>
-								Configuration
-							</a>
-						</li>
-					</ul>
-				</nav>
-
-				<div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; color: var(--syn-text-muted);">
-					Synapse Bundle v2.0
-					<br>Made with ❤️ by MakerLab
-				</div>
-			</aside>
-		{% endif %}
-
-		{# NEURAL DOCK (Visible only in Neural Mode) #}
-		{% if theme == 'neural' %}
-			<div style="position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); backdrop-filter: blur(20px); border: 1px solid var(--syn-color-primary); border-radius: 99px; padding: 0.5rem 1rem; display: flex; gap: 0.5rem; z-index: 100; box-shadow: 0 0 20px var(--syn-color-primary-light);">
-				<a href="{{ path('synapse_admin_dashboard', {'theme': 'neural'}) }}" class="syn-btn syn-btn-primary" style="border: none; box-shadow: none;">
-					<i data-lucide="layout-dashboard"></i>
-				</a>
-				<a href="{{ path('synapse_admin_analytics', {'theme': 'neural'}) }}" class="syn-btn syn-btn-primary" style="border: none; box-shadow: none; opacity: 0.7;">
-					<i data-lucide="bar-chart-2"></i>
-				</a>
-				<a href="{{ path('synapse_admin_risks', {'theme': 'neural'}) }}" class="syn-btn syn-btn-primary" style="border: none; box-shadow: none; opacity: 0.7;">
-					<i data-lucide="shield-alert"></i>
-				</a>
-				<a href="{{ path('synapse_admin_config', {'theme': 'neural'}) }}" class="syn-btn syn-btn-primary" style="border: none; box-shadow: none; opacity: 0.7;">
-					<i data-lucide="settings"></i>
-				</a>
+				Synapse
 			</div>
-		{% endif %}
+
+			<nav>
+				<ul class="syn-nav">
+					<li class="syn-nav-item">
+						<a href="{{ path('synapse_admin_dashboard') }}" class="{% if app.request.get('_route') == 'synapse_admin_dashboard' %}active{% endif %}">
+							<i data-lucide="layout-dashboard"></i>
+							Dashboard
+						</a>
+					</li>
+					<li class="syn-nav-item">
+						<a href="{{ path('synapse_admin_analytics') }}" class="{% if app.request.get('_route') == 'synapse_admin_analytics' %}active{% endif %}">
+							<i data-lucide="bar-chart-2"></i>
+							Analytics
+						</a>
+					</li>
+					<li class="syn-nav-item">
+						<a href="{{ path('synapse_admin_risks') }}" class="{% if app.request.get('_route') starts with 'synapse_admin_risks' %}active{% endif %}">
+							<i data-lucide="shield-alert"></i>
+							Ange Gardien
+							{% if kpis.risks_pending|default(0) > 0 %}
+								<span class="syn-badge syn-badge-warning syn-badge-nav">{{ kpis.risks_pending }}</span>
+							{% endif %}
+						</a>
+					</li>
+					<li class="syn-nav-item">
+						<a href="{{ path('synapse_admin_config') }}" class="{% if app.request.get('_route') == 'synapse_admin_config' %}active{% endif %}">
+							<i data-lucide="settings"></i>
+							Configuration
+						</a>
+					</li>
+				</ul>
+			</nav>
+
+			<div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem; color: var(--syn-text-muted);">
+				Synapse Bundle v2.0
+				<br>Made with ❤️ by MakerLab
+			</div>
+		</aside>
 
 		{# MAIN CONTENT #}
 		<main
