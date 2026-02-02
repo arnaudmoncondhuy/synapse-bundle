@@ -388,15 +388,11 @@
     }
 
     .sidebar-toggle {
-        /* Bouton visible */
-        position: fixed;
-        top: 1rem;
-        left: 1rem;
-        z-index: 999;
+        /* Visible sur desktop - position héritée de .sidebar-toggle (bottom: 1rem) */
     }
 
     .sidebar-close {
-        /* Bouton visible dans la sidebar */
+        /* Visible sur desktop */
     }
 }
 
