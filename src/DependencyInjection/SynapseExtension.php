@@ -8,7 +8,7 @@ use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
-use ArnaudMoncondhuy\SynapseBundle\Service\Impl\LibsodiumEncryptionService;
+use ArnaudMoncondhuy\SynapseBundle\Service\Security\LibsodiumEncryptionService;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
