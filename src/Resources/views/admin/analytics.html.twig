@@ -1,0 +1,160 @@
+{% extends '@Synapse/admin/_layout.html.twig' %}
+
+
+{% block admin_content %}
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+		<div>
+			<h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin: 0;">Analytique</h2>
+			<p style="color: var(--text-muted); margin-top: 0.25rem;">Usage et Coûts :
+				{{ period_label }}</p>
+		</div>
+
+	</div>
+
+	<!-- KPIs -->
+	<div
+		class="grid-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+		<!-- Cost -->
+		<div class="card" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-sm); background: white;">
+			<div style="background: var(--primary-light); color: var(--primary); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+				<i data-lucide="coins"></i>
+			</div>
+			<div>
+				<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Coût Estimé</div>
+				<div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">€{{ cost|number_format(5, '.', ',') }}</div>
+			</div>
+		</div>
+
+		<!-- Total Tokens -->
+		<div class="card" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-sm); background: white;">
+			<div style="background: var(--warning-light); color: var(--warning); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+				<i data-lucide="cpu"></i>
+			</div>
+			<div>
+				<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Total Tokens</div>
+				<div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{ (stats.total_tokens|default(0) / 1000)|number_format(1) }}k</div>
+				<div style="font-size: 0.8rem; color: var(--text-muted);">
+					<span style="color: var(--success);">{{ stats.total_tokens > 0 ? ((stats.completion_tokens|default(0) / stats.total_tokens) * 100)|number_format(0) : 0 }}%</span>
+					Output
+				</div>
+			</div>
+		</div>
+
+		<!-- Requests -->
+		<div class="card" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-sm); background: white;">
+			<div style="background: var(--success-light); color: var(--success); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+				<i data-lucide="zap"></i>
+			</div>
+			<div>
+				<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Requêtes IA</div>
+				<div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{ stats.request_count|default(0) }}</div>
+			</div>
+		</div>
+	</div>
+
+	<div
+		style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+
+		<!-- Left Column: Automated Tasks -->
+		<div style="display: flex; flex-direction: column; gap: 2rem;">
+			<div class="card" style="overflow: hidden; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-sm); background: white;">
+				<div style="padding: 1.5rem; border-bottom: 1px solid var(--border-light);">
+					<h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Tâches Automatisées</h3>
+				</div>
+				<table class="table" style="width: 100%; border-collapse: collapse;">
+					<thead style="background: var(--bg-body-secondary); font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted);">
+						<tr>
+							<th style="padding: 1rem 1.5rem; text-align: left;">Module / Action</th>
+							<th style="padding: 1rem 1.5rem; text-align: right;">Exec.</th>
+							<th style="padding: 1rem 1.5rem; text-align: right;">Tokens</th>
+							<th style="padding: 1rem 1.5rem; text-align: right;">% Global</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for task in automated_stats %}
+							<tr style="border-bottom: 1px solid var(--border-light);">
+								<td style="padding: 1rem 1.5rem;">
+									<div style="font-weight: 600; text-transform:capitalize;">{{ task.module }}</div>
+									<div style="font-size: 0.8rem; color: var(--text-muted);">{{ task.action }}</div>
+								</td>
+								<td style="padding: 1rem 1.5rem; text-align: right; color: var(--text-muted);">{{ task.request_count }}</td>
+								<td style="padding: 1rem 1.5rem; text-align: right; font-family: monospace;">{{ task.total_tokens|number_format(0, ',', ' ') }}</td>
+								<td style="padding: 1rem 1.5rem; text-align: right;">
+									{% set percentage = stats.total_tokens > 0 ? (task.total_tokens / stats.total_tokens * 100) : 0 %}
+									<div style="display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem;">
+										<span style="font-size: 0.85rem; color: var(--text-muted);">{{ percentage|number_format(1) }}%</span>
+										<div style="width: 50px; height: 4px; background: var(--bg-body-secondary); border-radius: 2px; overflow: hidden;">
+											<div style="width: {{ percentage }}%; height: 100%; background: var(--primary);"></div>
+										</div>
+									</div>
+								</td>
+							</tr>
+						{% else %}
+							<tr>
+								<td colspan="4" style="padding: 2rem; text-align: center; color: var(--text-muted);">Aucune tâche automatisée</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+
+			<!-- Conversations Stats -->
+			<div class="card" style="overflow: hidden; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-sm); background: white;">
+				<div style="padding: 1.5rem; border-bottom: 1px solid var(--border-light);">
+					<h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Conversations Assistant</h3>
+				</div>
+				<div style="padding: 1.5rem; display: flex; align-items: center; justify-content: space-around;">
+					<div style="text-align: center;">
+						<div style="font-size: 2rem; font-weight: 800; color: var(--primary);">{{ conversation_stats.message_count|default(0) }}</div>
+						<div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Messages IA</div>
+					</div>
+					<div style="text-align: center;">
+						<div style="font-size: 2rem; font-weight: 800; color: var(--text-main);">{{ (conversation_stats.total_tokens|default(0) / 1000)|number_format(1) }}k</div>
+						<div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Tokens Totaux</div>
+					</div>
+					<div style="text-align: center;">
+						{% set conv_percentage = stats.total_tokens > 0 ? (conversation_stats.total_tokens|default(0) / stats.total_tokens * 100) : 0 %}
+						<div style="font-size: 2rem; font-weight: 800; color: var(--success);">{{ conv_percentage|number_format(0) }}%</div>
+						<div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Part du Budget</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Right Column: Daily Usage -->
+		<div style="display: flex; flex-direction: column;">
+			<div class="card" style="overflow: hidden; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-sm); background: white;">
+				<div style="padding: 1.5rem; border-bottom: 1px solid var(--border-light);">
+					<h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Usage Journalier</h3>
+				</div>
+				<div style="padding: 1.5rem; max-height: 400px; overflow-y: auto;">
+					{% if daily is not empty %}
+						{% set max_tokens = 0 %}
+						{% for day in daily %}
+							{% if day.tokens > max_tokens %}
+								{% set max_tokens = day.tokens %}
+							{% endif %}
+						{% endfor %}
+
+						<div style="display: flex; flex-direction: column; gap: 0.75rem;">
+							{% for day in daily %}
+								{% set bar_width = max_tokens > 0 ? (day.tokens / max_tokens * 100) : 0 %}
+								<div style="display: flex; align-items: center; gap: 1rem;">
+									<div style="width: 80px; font-size: 0.85rem; color: var(--text-muted); font-family: monospace;">{{ day.date }}</div>
+									<div style="flex: 1; height: 24px; background: var(--bg-body-secondary); border-radius: 4px; overflow: hidden; position: relative;">
+										<div style="width: {{ bar_width }}%; height: 100%; background: var(--primary-light); border-right: 2px solid var(--primary);"></div>
+									</div>
+									<div style="width: 60px; text-align: right; font-size: 0.85rem; font-weight: 600; color: var(--text-main);">
+										{{ (day.tokens / 1000)|number_format(1) }}k
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					{% else %}
+						<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Aucune donnée d'usage</div>
+					{% endif %}
+				</div>
+			</div>
+
+		</div>
+	{% endblock %}

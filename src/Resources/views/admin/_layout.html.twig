@@ -1,0 +1,127 @@
+{#
+    Layout admin du bundle Synapse.
+
+    Ce layout gère la structure de base de l'admin (navigation, flash messages).
+    Le projet peut le surcharger dans templates/bundles/SynapseBundle/admin/_layout.html.twig
+    pour utiliser son propre design system.
+
+    Variables disponibles:
+    - nav_active: Page active (dashboard, risks, analytics, config)
+    - module_color: Couleur du module
+    - module_icon: Icône du module
+    - admin_route_prefix: Préfixe des routes admin (ex: 'assistant_admin')
+#}
+{% extends '@Synapse/admin/base.html.twig' %}
+
+{% block title %}Administration Synapse{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .synapse-admin {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .synapse-admin-nav {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 2rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .synapse-admin-nav a {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: #6b7280;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .synapse-admin-nav a:hover {
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .synapse-admin-nav a.active {
+            background: {{ module_color|default('#8b5cf6') }}15;
+            color: {{ module_color|default('#8b5cf6') }};
+            font-weight: 600;
+        }
+
+        .synapse-admin-content {
+            margin-top: 2rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: {{ module_color|default('#8b5cf6') }};
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block admin_content %}
+    {# Contenu fourni par les templates enfants #}
+{% endblock %}

@@ -1,0 +1,228 @@
+{% extends '@Synapse/admin/_layout.html.twig' %}
+
+{% block admin_content %}
+
+	<div style="max-width: 1000px; margin: 0 auto; padding-bottom: 4rem;">
+		<form
+			method="post">
+
+			<!-- ============================= MODÈLE IA ============================= -->
+			<div class="card" style="margin-bottom: 2rem; overflow: hidden;">
+				<div style="padding: 1.5rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 1rem;">
+					<div style="width: 40px; height: 40px; background: var(--primary-light); color: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+						<i data-lucide="cpu"></i>
+					</div>
+					<div>
+						<h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-main);">Modèle IA</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Sélectionnez la version du modèle Gemini à utiliser.</p>
+					</div>
+				</div>
+
+				<div style="padding: 1.5rem;">
+					<div class="form-group">
+						<label class="form-label">Version du Modèle</label>
+						<input type="text" name="gemini_model" class="form-input" value="{{ config.model }}" placeholder="ex: gemini-2.5-flash" required>
+						<p class="form-help" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Référez-vous à la documentation Vertex AI pour les modèles disponibles.</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- ============================= PROMPT SYSTÈME ============================= -->
+			<div class="card" style="margin-bottom: 2rem; overflow: hidden;">
+				<div style="padding: 1.5rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 1rem;">
+					<div style="width: 40px; height: 40px; background: var(--warning-light); color: var(--warning); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+						<i data-lucide="message-square-quote"></i>
+					</div>
+					<div>
+						<h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-main);">Prompt Système</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Définissez le comportement global et le contexte de l'assistant.</p>
+					</div>
+				</div>
+
+				<div style="padding: 1.5rem;">
+					<div class="alert alert-info" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-start; background: var(--info-light); color: var(--info-dark); padding: 1rem; border-radius: 0.5rem;">
+						<i data-lucide="info" style="flex-shrink: 0; margin-top: 2px;"></i>
+						<div>
+							<strong style="display: block; margin-bottom: 0.25rem;">Variables Dynamiques</strong>
+							<p style="margin: 0; font-size: 0.9rem;">Vous pouvez utiliser :
+								<code>{DATE}</code>,
+								<code>{NOM}</code>,
+								<code>{PRENOM}</code>,
+								<code>{EMAIL}</code>,
+								<code>{ROLE}</code>.</p>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="form-label">Instructions Personnalisées</label>
+						<textarea name="system_prompt" class="form-input" rows="12" placeholder="Laissez vide pour utiliser le prompt par défaut..." style="font-family: monospace; font-size: 0.9rem; resize: vertical;">{{ config.systemPrompt }}</textarea>
+						<p class="form-help" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Ces instructions remplacent le prompt par défaut.</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- ============================= SÉCURITÉ ============================= -->
+			<div class="card" style="margin-bottom: 2rem; overflow: hidden;">
+				<div style="padding: 1.5rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 1rem;">
+					<div style="width: 40px; height: 40px; background: var(--error-light); color: var(--error); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+						<i data-lucide="shield-alert"></i>
+					</div>
+					<div>
+						<h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-main);">Filtres de Sécurité</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Contrôle du contenu généré (recommandé pour environnement scolaire).</p>
+					</div>
+				</div>
+
+				<div style="padding: 1.5rem;">
+					<div style="background: var(--bg-body); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-light); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+						<input type="checkbox" name="safety_enabled" id="safety_enabled" value="1" {{ config.isSafetyEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
+						<div>
+							<label for="safety_enabled" style="font-weight: 600; color: var(--text-main); cursor: pointer;">Activer les filtres de sécurité</label>
+							<p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Bloque automatiquement les contenus inadaptés.</p>
+						</div>
+					</div>
+
+					<div class="form-group" style="margin-bottom: 1.5rem;">
+						<label class="form-label">🛡️ Seuil par Défaut</label>
+						<select name="safety_default_threshold" class="form-input">
+							{% for value, label in safety_thresholds %}
+								<option value="{{ value }}" {{ config.safetyDefaultThreshold == value ? 'selected' : '' }}>{{ label }}</option>
+							{% endfor %}
+						</select>
+					</div>
+
+					<div class="grid-2">
+						<div class="form-group">
+							<label class="form-label">💬 Discours Haineux</label>
+							<select name="safety_hate_speech" class="form-input">
+								{% for value, label in safety_thresholds %}
+									<option value="{{ value }}" {{ config.safetyHateSpeech == value ? 'selected' : '' }}>{{ label }}</option>
+								{% endfor %}
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label class="form-label">⚠️ Contenu Dangereux</label>
+							<select name="safety_dangerous_content" class="form-input">
+								{% for value, label in safety_thresholds %}
+									<option value="{{ value }}" {{ config.safetyDangerousContent == value ? 'selected' : '' }}>{{ label }}</option>
+								{% endfor %}
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label class="form-label">😠 Harcèlement</label>
+							<select name="safety_harassment" class="form-input">
+								{% for value, label in safety_thresholds %}
+									<option value="{{ value }}" {{ config.safetyHarassment == value ? 'selected' : '' }}>{{ label }}</option>
+								{% endfor %}
+							</select>
+						</div>
+
+						<div class="form-group">
+							<label class="form-label">🔞 Contenu Sexuel</label>
+							<select name="safety_sexually_explicit" class="form-input">
+								{% for value, label in safety_thresholds %}
+									<option value="{{ value }}" {{ config.safetySexuallyExplicit == value ? 'selected' : '' }}>{{ label }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- ============================= GÉNÉRATION ============================= -->
+			<div class="card" style="margin-bottom: 2rem; overflow: hidden;">
+				<div style="padding: 1.5rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 1rem;">
+					<div style="width: 40px; height: 40px; background: var(--primary-light); color: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+						<i data-lucide="settings"></i>
+					</div>
+					<div>
+						<h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-main);">Configuration de Génération</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Contrôle créativité et longueur des réponses.</p>
+					</div>
+				</div>
+
+				<div style="padding: 1.5rem;">
+					<div class="grid-3">
+						<div class="form-group">
+							<label class="form-label">🌡️ Température</label>
+							<input type="number" name="generation_temperature" class="form-input" step="0.1" min="0" max="2" value="{{ config.generationTemperature }}">
+							<p class="form-help" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">0.0 (Strict) - 2.0 (Créatif)</p>
+						</div>
+
+						<div class="form-group">
+							<label class="form-label">🎯 Top-P (Nucleus)</label>
+							<input type="number" name="generation_top_p" class="form-input" step="0.01" min="0" max="1" value="{{ config.generationTopP }}">
+						</div>
+
+						<div class="form-group">
+							<label class="form-label">🔢 Top-K</label>
+							<input type="number" name="generation_top_k" class="form-input" min="1" value="{{ config.generationTopK }}">
+						</div>
+
+						<div class="form-group">
+							<label class="form-label">📏 Limite Tokens</label>
+							<input type="number" name="generation_max_output_tokens" class="form-input" min="1" value="{{ config.generationMaxOutputTokens }}" placeholder="Défaut">
+						</div>
+					</div>
+
+					<div class="form-group" style="margin-top: 1.5rem;">
+						<label class="form-label">🛑 Séquences d'Arrêt</label>
+						<input type="text" name="generation_stop_sequences" class="form-input" value="{{ config.generationStopSequences|join(', ') }}" placeholder="Ex: \n\n, END">
+					</div>
+				</div>
+			</div>
+
+			<!-- ============================= CONTEXT CACHING ============================= -->
+			<div class="card" style="margin-bottom: 2rem; overflow: hidden;">
+				<div style="padding: 1.5rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 1rem;">
+					<div style="width: 40px; height: 40px; background: var(--success-light); color: var(--success); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+						<i data-lucide="database"></i>
+					</div>
+					<div>
+						<h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-main);">Context Caching</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Optimisation des coûts pour les contextes volumineux.</p>
+					</div>
+				</div>
+
+				<div style="padding: 1.5rem;">
+					<div style="background: var(--bg-body); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-light); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+						<input type="checkbox" name="context_caching_enabled" id="context_caching_enabled" value="1" {{ config.isContextCachingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
+						<div>
+							<label for="context_caching_enabled" style="font-weight: 600; color: var(--text-main); cursor: pointer;">Activer le context caching</label>
+							<p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Réutilise le contexte sans le renvoyer à chaque requête.</p>
+						</div>
+					</div>
+
+					<div class="alert alert-info" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-start; background: var(--info-light); color: var(--info-dark); padding: 1rem; border-radius: 0.5rem;">
+						<i data-lucide="info" style="flex-shrink: 0; margin-top: 2px;"></i>
+						<div>
+							<strong style="display: block; margin-bottom: 0.25rem;">Information Importante</strong>
+							<p style="margin: 0; font-size: 0.9rem;">Min: 2,048 tokens. TTL: 1h. Économie ~90%.</p>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="form-label">🔑 ID du Cache Vertex AI</label>
+						<input type="text" name="context_caching_id" class="form-input" value="{{ config.contextCachingId }}" placeholder="projects/..." style="font-family: monospace;">
+					</div>
+				</div>
+			</div>
+
+			<!-- ============================= ACTIONS ============================= -->
+			<div style="position: sticky; bottom: 2rem; background: var(--bg-surface); border: 1px solid var(--border-light); padding: 1rem 2rem; border-radius: 1rem; display: flex; justify-content: flex-end; gap: 1rem; box-shadow: var(--shadow-lg); z-index: 50;">
+				<a href="{{ path('assistant_index') }}" class="btn btn-secondary">
+					<i data-lucide="x"></i>
+					Annuler
+				</a>
+				<button type="submit" class="btn btn-primary shadow-lg">
+					<i data-lucide="save"></i>
+					Enregistrer
+				</button>
+			</div>
+
+		</form>
+	</div>
+
+{% endblock %}
