@@ -61,6 +61,8 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Twig\SynapseExtension:
         tags: ['twig.extension']
     ArnaudMoncondhuy\SynapseBundle\Controller\Api\ChatApiController:
+        autowire: true
+        autoconfigure: true
         tags: ['controller.service_arguments']
 
 

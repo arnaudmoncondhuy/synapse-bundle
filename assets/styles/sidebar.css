@@ -381,18 +381,22 @@
     text-align: center;
 }
 
-/* Desktop : sidebar toujours visible */
+/* Desktop : sidebar fermée par défaut, boutons visibles */
 @media (min-width: 769px) {
     .synapse-sidebar {
-        transform: translateX(0) !important;
+        /* Laisse le Stimulus controller gérer l'état */
     }
 
     .sidebar-toggle {
-        display: none;
+        /* Bouton visible */
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 999;
     }
 
     .sidebar-close {
-        display: none;
+        /* Bouton visible dans la sidebar */
     }
 }
 
