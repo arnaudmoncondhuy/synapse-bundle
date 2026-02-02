@@ -33,12 +33,28 @@ services:
 
     ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultContextProvider: ~
 
+    ArnaudMoncondhuy\SynapseBundle\Service\Context\UserAwareContextProvider:
+        arguments:
+            $language: '%synapse.context.language%'
+
+    ArnaudMoncondhuy\SynapseBundle\Service\Security\DefaultPermissionChecker:
+        arguments:
+            $adminRole: '%synapse.security.admin_role%'
+
+    ArnaudMoncondhuy\SynapseBundle\Service\Formatter\MessageFormatter: ~
+
     # Aliases for interfaces (use default implementations)
     ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface:
         alias: ArnaudMoncondhuy\SynapseBundle\Service\Impl\SessionConversationHandler
 
     ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface:
         alias: ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultContextProvider
+
+    ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\Security\DefaultPermissionChecker
+
+    ArnaudMoncondhuy\SynapseBundle\Contract\MessageFormatterInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\Formatter\MessageFormatter
 
     # Logic
     ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry:
