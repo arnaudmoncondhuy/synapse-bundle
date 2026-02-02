@@ -1,0 +1,131 @@
+<style>
+	/* 
+     * THEME : ZENITH SPATIAL (VISION 2)
+     * Minimalist / Spatial / Typography
+     */
+
+	@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Outfit:wght@300;400;500;700&display=swap');:root {
+		/* Palette Zenith */
+		--syn-hue: 220;
+		--syn-sat: 20%;
+
+		--syn-color-primary: #1a1a1a; /* Almost Black */
+		--syn-color-primary-dark: #000000;
+		--syn-color-primary-light: #f5f5f7;
+		--syn-color-primary-fade: rgba(0, 0, 0, 0.03);
+
+		--syn-color-success: #2d6a4f;
+		--syn-color-success-bg: #eaf4f0;
+
+		--syn-color-warning: #b45309;
+		--syn-color-warning-bg: #fffbf0;
+
+		--syn-color-error: #c0392b;
+		--syn-color-error-bg: #fceceb;
+
+		/* Spatial Backgrounds */
+		--syn-bg-main: #fbfbfd; /* Apple-ish white */
+		--syn-bg-surface: #ffffff;
+		--syn-bg-sidebar: #fbfbfd;
+		--syn-bg-card: #ffffff;
+
+		--syn-text-main: #1d1d1f;
+		--syn-text-muted: #86868b;
+		--syn-text-light: #a1a1a6;
+		--syn-text-inverse: #ffffff;
+
+		--syn-border: transparent; /* No borders in Zenith, only shadows */
+		--syn-border-light: rgba(0, 0, 0, 0.05);
+
+		--syn-radius-sm: 8px;
+		--syn-radius: 20px;
+		--syn-radius-lg: 32px;
+		--syn-radius-full: 9999px;
+
+		--syn-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+		--syn-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+		--syn-shadow-lg: 0 20px 48px rgba(0, 0, 0, 0.08);
+
+		--syn-font-sans: 'Outfit', sans-serif;
+		--syn-font-display: 'Cinzel', serif; /* Elegant display font */
+	}
+
+	/* Spatial Effects */
+	.syn-card {
+		background: var(--syn-bg-card);
+		border: none;
+		box-shadow: var(--syn-shadow);
+		transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s;
+	}
+
+	.syn-card-hover:hover {
+		transform: translateY(-8px) scale(1.01);
+		box-shadow: var(--syn-shadow-lg);
+	}
+
+	.syn-card-header {
+		border-bottom: none;
+		padding-bottom: 0;
+	}
+
+	/* Typography Overrides */
+	.syn-title,
+	h1,
+	h2 {
+		font-family: var(--syn-font-display);
+		font-weight: 400;
+		letter-spacing: -0.01em;
+	}
+
+	.syn-kpi-value {
+		font-weight: 300;
+		letter-spacing: -0.05em;
+	}
+
+	/* Navbar "Floating" Style */
+	.syn-sidebar {
+		background: transparent;
+		border: none;
+		padding-top: 3rem;
+	}
+
+	.syn-nav-item a {
+		padding: 1rem 1.5rem;
+		margin-bottom: 0.5rem;
+		border-radius: var(--syn-radius-full);
+		font-weight: 400;
+		color: var(--syn-text-muted);
+	}
+
+	.syn-nav-item a:hover {
+		background: white;
+		box-shadow: var(--syn-shadow-sm);
+		color: var(--syn-text-main);
+	}
+
+	.syn-nav-item a.active {
+		background: black;
+		color: white;
+		box-shadow: var(--syn-shadow);
+	}
+
+	/* Elements */
+	.syn-btn {
+		border-radius: var(--syn-radius-full);
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		font-size: 0.75rem;
+		padding: 0.8rem 2rem;
+	}
+
+	.syn-badge {
+		border-radius: 4px; /* Contrast with rounded UI */
+		letter-spacing: 0.1em;
+	}
+
+	.syn-alert {
+		box-shadow: var(--syn-shadow-sm);
+		border: none;
+	}
+
+</style>
