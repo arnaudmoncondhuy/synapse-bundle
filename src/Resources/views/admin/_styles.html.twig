@@ -1,0 +1,451 @@
+<style>
+/* 
+     * SYNAPSE ADMIN CSS - 2026 UX
+     * Agnostic Design System
+     */:root
+{
+	/* Palette - HSL for easy theming */
+	--syn-hue: 250; /* Base Hue (Violet) */
+	--syn-sat: 80%;
+
+	--syn-color-primary: hsl(var(--syn-hue), var(--syn-sat), 60%);
+	--syn-color-primary-dark: hsl(var(--syn-hue), var(--syn-sat), 50%);
+	--syn-color-primary-light: hsl(var(--syn-hue), var(--syn-sat), 95%);
+	--syn-color-primary-fade: hsl(var(--syn-hue), var(--syn-sat), 90%);
+
+	--syn-color-success: hsl(150, 80%, 35%);
+	--syn-color-success-bg: hsl(150, 80%, 95%);
+
+	--syn-color-warning: hsl(35, 90%, 50%);
+	--syn-color-warning-bg: hsl(35, 90%, 96%);
+
+	--syn-color-error: hsl(350, 80%, 55%);
+	--syn-color-error-bg: hsl(350, 80%, 96%);
+
+	--syn-bg-main: #f8fafc;
+	--syn-bg-surface: #ffffff;
+	--syn-bg-sidebar: #0f172a;
+	--syn-bg-card: #ffffff;
+
+	--syn-text-main: #1e293b;
+	--syn-text-muted: #64748b;
+	--syn-text-light: #94a3b8;
+	--syn-text-inverse: #ffffff;
+
+	--syn-border: #e2e8f0;
+	--syn-border-light: #f1f5f9;
+
+	--syn-radius-sm: 0.375rem;
+	--syn-radius: 0.75rem;
+	--syn-radius-lg: 1rem;
+	--syn-radius-full: 9999px;
+
+	--syn-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+	--syn-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--syn-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+	--syn-font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Reset & Base */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+.syn-admin-root {
+	font-family: var(--syn-font-sans);
+	color: var(--syn-text-main);
+	background: var(--syn-bg-main);
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+}
+
+.syn-admin-root a {
+	text-decoration: none;
+	color: inherit;
+	transition: all 0.2s;
+}
+.syn-admin-root h1,
+.syn-admin-root h2,
+.syn-admin-root h3 {
+	margin: 0;
+	font-weight: 700;
+	letter-spacing: -0.025em;
+}
+
+/* Layout */
+.syn-layout {
+	display: grid;
+	grid-template-columns: 260px 1fr;
+	min-height: 100vh;
+}
+
+/* Sidebar */
+.syn-sidebar {
+	background: var(--syn-bg-sidebar);
+	color: var(--syn-text-light);
+	display: flex;
+	flex-direction: column;
+	padding: 1.5rem;
+	border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.syn-brand {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	color: var(--syn-text-inverse);
+	font-size: 1.25rem;
+	font-weight: 700;
+	margin-bottom: 2.5rem;
+	padding-left: 0.5rem;
+}
+
+.syn-brand-icon {
+	width: 32px;
+	height: 32px;
+	background: var(--syn-color-primary);
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: white;
+}
+
+.syn-nav {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.syn-nav-item a {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.75rem 1rem;
+	border-radius: var(--syn-radius-sm);
+	font-weight: 500;
+	color: var(--syn-text-light);
+}
+
+.syn-nav-item a:hover {
+	background: rgba(255, 255, 255, 0.05);
+	color: var(--syn-text-inverse);
+}
+
+.syn-nav-item a.active {
+	background: var(--syn-color-primary);
+	color: var(--syn-text-inverse);
+	box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.syn-nav-item a i {
+	width: 1.25rem;
+	height: 1.25rem;
+}
+
+/* Main Content */
+.syn-main {
+	padding: 2rem;
+	max-width: 1600px;
+	width: 100%;
+	margin: 0 auto;
+}
+
+/* Header */
+.syn-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 2rem;
+}
+
+.syn-title {
+	font-size: 1.875rem;
+	color: var(--syn-text-main);
+	margin-bottom: 0.5rem;
+}
+.syn-subtitle {
+	color: var(--syn-text-muted);
+	font-size: 0.95rem;
+}
+
+/* Cards */
+.syn-card {
+	background: var(--syn-bg-card);
+	border-radius: var(--syn-radius);
+	border: 1px solid var(--syn-border);
+	box-shadow: var(--syn-shadow-sm);
+	overflow: hidden;
+	transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.syn-card-hover:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--syn-shadow);
+}
+
+.syn-card-header {
+	padding: 1.5rem;
+	border-bottom: 1px solid var(--syn-border-light);
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.syn-card-body {
+	padding: 1.5rem;
+}
+
+/* Grid System */
+.syn-grid-2 {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+	gap: 1.5rem;
+}
+.syn-grid-3 {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 1.5rem;
+}
+.syn-grid-4 {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 1.5rem;
+}
+
+/* Components */
+.syn-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.625rem 1.25rem;
+	border-radius: var(--syn-radius-sm);
+	font-weight: 600;
+	font-size: 0.9rem;
+	cursor: pointer;
+	border: none;
+	transition: all 0.2s;
+}
+
+.syn-btn-primary {
+	background: var(--syn-color-primary);
+	color: white;
+	box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
+}
+.syn-btn-primary:hover {
+	background: var(--syn-color-primary-dark);
+	transform: translateY(-1px);
+}
+
+.syn-btn-secondary {
+	background: white;
+	border: 1px solid var(--syn-border);
+	color: var(--syn-text-main);
+}
+.syn-btn-secondary:hover {
+	background: var(--syn-bg-main);
+	border-color: var(--syn-text-muted);
+}
+
+.syn-btn-outline {
+	background: transparent;
+	border: 1px solid var(--syn-border);
+	color: var(--syn-text-muted);
+}
+.syn-btn-outline:hover {
+	border-color: var(--syn-text-main);
+	color: var(--syn-text-main);
+}
+
+.syn-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.25rem 0.625rem;
+	border-radius: var(--syn-radius-full);
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.syn-badge-success {
+	background: var(--syn-color-success-bg);
+	color: var(--syn-color-success);
+	border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.syn-badge-warning {
+	background: var(--syn-color-warning-bg);
+	color: var(--syn-color-warning);
+	border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.syn-badge-error {
+	background: var(--syn-color-error-bg);
+	color: var(--syn-color-error);
+	border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.syn-badge-nav {
+	background: rgba(255, 255, 255, 0.1);
+	color: white;
+	margin-left: auto;
+}
+
+/* Forms */
+.syn-form-group {
+	margin-bottom: 1.25rem;
+}
+.syn-label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 0.5rem;
+	color: var(--syn-text-main);
+	font-size: 0.9rem;
+}
+.syn-input,
+.syn-select,
+.syn-textarea {
+	width: 100%;
+	padding: 0.625rem 0.875rem;
+	border: 1px solid var(--syn-border);
+	border-radius: var(--syn-radius-sm);
+	background: white;
+	color: var(--syn-text-main);
+	transition: all 0.2s;
+	font-family: inherit;
+}
+
+.syn-input:focus,
+.syn-select:focus,
+.syn-textarea:focus {
+	outline: none;
+	border-color: var(--syn-color-primary);
+	box-shadow: 0 0 0 3px var(--syn-color-primary-fade);
+}
+
+.syn-help {
+	font-size: 0.8rem;
+	color: var(--syn-text-muted);
+	margin-top: 0.375rem;
+}
+
+/* Tables */
+.syn-table-container {
+	overflow-x: auto;
+}
+.syn-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+.syn-table th {
+	text-align: left;
+	padding: 1rem 1.5rem;
+	background: var(--syn-bg-main);
+	color: var(--syn-text-muted);
+	font-weight: 600;
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	border-bottom: 1px solid var(--syn-border);
+}
+.syn-table td {
+	padding: 1rem 1.5rem;
+	border-bottom: 1px solid var(--syn-border-light);
+	color: var(--syn-text-main);
+}
+.syn-table tr:last-child td {
+	border-bottom: none;
+}
+
+/* Alerts */
+.syn-alert {
+	padding: 1rem;
+	border-radius: var(--syn-radius);
+	margin-bottom: 1.5rem;
+	display: flex;
+	gap: 0.75rem;
+	align-items: flex-start;
+}
+.syn-alert-success {
+	background: var(--syn-color-success-bg);
+	color: var(--syn-color-success);
+	border: 1px solid rgba(0, 180, 0, 0.1);
+}
+.syn-alert-error {
+	background: var(--syn-color-error-bg);
+	color: var(--syn-color-error);
+	border: 1px solid rgba(255, 0, 0, 0.1);
+}
+.syn-alert-info {
+	background: var(--syn-color-primary-light);
+	color: var(--syn-color-primary-dark);
+	border: 1px solid var(--syn-color-primary-fade);
+}
+
+/* KPI Card */
+.syn-kpi {
+	display: flex;
+	align-items: center;
+	gap: 1.25rem;
+}
+.syn-kpi-icon {
+	width: 48px;
+	height: 48px;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.5rem;
+}
+.syn-kpi-icon.primary {
+	background: var(--syn-color-primary-light);
+	color: var(--syn-color-primary);
+}
+.syn-kpi-icon.warning {
+	background: var(--syn-color-warning-bg);
+	color: var(--syn-color-warning);
+}
+.syn-kpi-icon.success {
+	background: var(--syn-color-success-bg);
+	color: var(--syn-color-success);
+}
+.syn-kpi-icon.error {
+	background: var(--syn-color-error-bg);
+	color: var(--syn-color-error);
+}
+
+.syn-kpi-label {
+	font-size: 0.8rem;
+	font-weight: 600;
+	color: var(--syn-text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+.syn-kpi-value {
+	font-size: 1.75rem;
+	font-weight: 800;
+	color: var(--syn-text-main);
+	line-height: 1.2;
+}
+.syn-kpi-sub {
+	font-size: 0.8rem;
+	color: var(--syn-text-muted);
+	margin-top: 0.25rem;
+}
+
+/* Responsive */
+@media(max-width: 768px) {
+	.syn-layout {
+		grid-template-columns: 1fr;
+	}
+	.syn-sidebar {
+		display: none;
+	} /* Simplified for now, can be toggle */
+	.syn-main {
+		padding: 1rem;
+	}
+}</style>

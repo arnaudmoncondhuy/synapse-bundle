@@ -92,12 +92,17 @@ export default class extends Controller {
             persona = this.personaSelectTarget.value;
         }
 
+        // Get current conversation ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const conversationId = urlParams.get('conversation');
+
         try {
             const response = await fetch('/synapse/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: message,
+                    conversation_id: conversationId,
                     options: { persona: persona },
                     debug: this.isDebugMode
                 })
@@ -106,6 +111,8 @@ export default class extends Controller {
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let buffer = '';
+            let currentResponseText = '';
+            let currentMessageBubble = null;
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -118,19 +125,80 @@ export default class extends Controller {
                 for (const line of lines) {
                     if (!line.trim()) continue;
 
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine.startsWith('{') && !trimmedLine.startsWith('[')) {
+                        continue;
+                    }
+
                     try {
-                        const evt = JSON.parse(line);
+                        const evt = JSON.parse(trimmedLine);
 
                         if (evt.type === 'status') {
                             this.updateLoadingStatus(evt.payload.message);
+                        } else if (evt.type === 'delta') {
+                            // First token received: stop loading animation
+                            if (!currentMessageBubble) {
+                                this.setLoading(false);
+                                // Create the message bubble container manually to hold the stream
+                                this.addMessage('', 'assistant');
+                                const messages = this.messagesTarget.querySelectorAll('.synapse-chat__message--assistant');
+                                const lastMsg = messages[messages.length - 1];
+                                currentMessageBubble = lastMsg.querySelector('.synapse-chat__bubble');
+                            }
+
+                            currentResponseText += evt.payload.text;
+                            currentMessageBubble.innerHTML = this.parseMarkdown(currentResponseText);
+                            this.scrollToBottom();
+
                         } else if (evt.type === 'result') {
                             this.setLoading(false);
-                            this.addMessage(evt.payload.answer, 'assistant', evt.payload);
+                            
+                            // If we streamed text, ensure final consistency (sometimes helpful for incomplete markdown)
+                            if (currentMessageBubble) {
+                                currentMessageBubble.innerHTML = this.parseMarkdown(evt.payload.answer);
+                                // Add debug footer if needed
+                                if (evt.payload.conversation_id) {
+                                    this.updateUrlWithConversationId(evt.payload.conversation_id);
+                                }
+                                
+                                // Re-inject debug button if in debug mode
+                                if (this.isDebugMode && evt.payload.debug_id) {
+                                    const debugUrl = `/synapse/_debug/${evt.payload.debug_id}`;
+                                    const debugHtml = `
+                                        <button type="button" class="synapse-chat__debug-trigger"
+                                                onclick="window.open('${debugUrl}', 'SynapseDebug', 'width=1000,height=900')"
+                                                title="Debug">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                        </button>
+                                    `;
+                                    // wrapper footer
+                                    const footer = document.createElement('div');
+                                    footer.className = 'synapse-chat__footer';
+                                    footer.innerHTML = debugHtml;
+                                    
+                                    // Find parent .synapse-chat__content and append footer
+                                    currentMessageBubble.closest('.synapse-chat__content').appendChild(footer);
+                                }
+                            } else {
+                                // Fallback if no delta was received (e.g. empty response or error handled as result)
+                                this.addMessage(evt.payload.answer, 'assistant', evt.payload);
+                            }
+
+                        } else if (evt.type === 'title') {
+                            // Auto-generated title received
+                            const conversationId = new URLSearchParams(window.location.search).get('conversation');
+                            if (conversationId && evt.payload.title) {
+                                document.dispatchEvent(new CustomEvent('assistant:title-updated', {
+                                    detail: { conversationId, title: evt.payload.title }
+                                }));
+                            }
                         } else if (evt.type === 'error') {
                             throw new Error(evt.payload);
                         }
                     } catch (e) {
-                        console.error('Synapse Stream Error:', e);
+                         if (!(e instanceof SyntaxError)) {
+                            console.error('Synapse Stream Error:', e);
+                        }
                     }
                 }
             }
@@ -212,16 +280,30 @@ export default class extends Controller {
     addMessage(text, role, debugData = null) {
         let formattedText = text;
 
-        // Extract and remove thinking blocks
+        // DEBUG: Log original text
         if (role === 'assistant') {
-            formattedText = formattedText.replace(/<thinking>[\s\S]*?<\/thinking>/g, '');
-            formattedText = formattedText.replace(/```thinking[\s\S]*?```/g, '');
-            formattedText = formattedText.replace(/^\s*```\s*$/gm, '');
-            formattedText = formattedText.trim();
+            console.log('🔍 [DEBUG] Original text:', text);
+            console.log('🔍 [DEBUG] Has <thinking>?', text.includes('<thinking>'));
         }
 
-        // Clean residual tags
-        formattedText = formattedText.replace(/<\/?thinking>/gi, '').trim();
+        // Extract and remove thinking blocks (for old data in database)
+        if (role === 'assistant') {
+            // Remove complete thinking blocks (with or without newlines)
+            formattedText = formattedText.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
+            formattedText = formattedText.replace(/```thinking[\s\S]*?```/g, '');
+            formattedText = formattedText.replace(/^\s*```\s*$/gm, '');
+
+            // Remove orphan thinking tags (unclosed or malformed)
+            formattedText = formattedText.replace(/<\/?thinking[^>]*>/gi, '');
+
+            // Clean up multiple consecutive newlines
+            formattedText = formattedText.replace(/\n{3,}/g, '\n\n');
+            formattedText = formattedText.trim();
+
+            // DEBUG: Log cleaned text
+            console.log('🔍 [DEBUG] After cleaning:', formattedText);
+            console.log('🔍 [DEBUG] Still has <thinking>?', formattedText.includes('<thinking>'));
+        }
 
         // Simple markdown parsing
         formattedText = this.parseMarkdown(formattedText);
@@ -297,5 +379,25 @@ export default class extends Controller {
 
     scrollToBottom() {
         this.messagesTarget.scrollTop = this.messagesTarget.scrollHeight;
+    }
+
+    updateUrlWithConversationId(conversationId) {
+        const url = new URL(window.location.href);
+        const currentConversationId = url.searchParams.get('conversation');
+
+        // Only dispatch event if this is a NEW conversation (not already in URL)
+        const isNewConversation = currentConversationId !== conversationId;
+
+        url.searchParams.set('conversation', conversationId);
+
+        // Update URL without reloading page
+        window.history.pushState({}, '', url.toString());
+
+        // Dispatch event for sidebar to refresh ONLY for new conversations
+        if (isNewConversation) {
+            document.dispatchEvent(new CustomEvent('assistant:conversation-created', {
+                detail: { conversationId, title: 'Nouvelle conversation' }
+            }));
+        }
     }
 }

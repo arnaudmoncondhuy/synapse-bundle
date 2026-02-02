@@ -10,6 +10,7 @@ services:
 
     ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient:
         arguments:
+            $httpClient: '@http_client'
             $googleAuthService: '@ArnaudMoncondhuy\SynapseBundle\Service\Infra\GoogleAuthService'
             $model: '%synapse.model%'
             $vertexProjectId: '%synapse.vertex.project_id%'
@@ -32,12 +33,28 @@ services:
 
     ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultContextProvider: ~
 
+    ArnaudMoncondhuy\SynapseBundle\Service\Context\UserAwareContextProvider:
+        arguments:
+            $language: '%synapse.context.language%'
+
+    ArnaudMoncondhuy\SynapseBundle\Service\Security\DefaultPermissionChecker:
+        arguments:
+            $adminRole: '%synapse.security.admin_role%'
+
+    ArnaudMoncondhuy\SynapseBundle\Service\Formatter\MessageFormatter: ~
+
     # Aliases for interfaces (use default implementations)
     ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface:
         alias: ArnaudMoncondhuy\SynapseBundle\Service\Impl\SessionConversationHandler
 
     ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface:
         alias: ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultContextProvider
+
+    ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\Security\DefaultPermissionChecker
+
+    ArnaudMoncondhuy\SynapseBundle\Contract\MessageFormatterInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\Formatter\MessageFormatter
 
     # Logic
     ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry:
@@ -51,7 +68,10 @@ services:
     # Main service
     ArnaudMoncondhuy\SynapseBundle\Service\ChatService:
         arguments:
+            $geminiClient: '@ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient'
+            $promptBuilder: '@ArnaudMoncondhuy\SynapseBundle\Service\PromptBuilder'
             $tools: !tagged_iterator synapse.tool
+            $cache: '@cache.app'
             $configuredModel: '%synapse.model%'
 
     # Twig Integration
@@ -61,6 +81,8 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Twig\SynapseExtension:
         tags: ['twig.extension']
     ArnaudMoncondhuy\SynapseBundle\Controller\Api\ChatApiController:
+        autowire: true
+        autoconfigure: true
         tags: ['controller.service_arguments']
 
 
@@ -72,4 +94,13 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Controller\Api\DebugController:
         tags: ['controller.service_arguments']
 
+    # Repositories (entités concrètes du bundle)
+    ArnaudMoncondhuy\SynapseBundle\Repository\TokenUsageRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
 
+    ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']

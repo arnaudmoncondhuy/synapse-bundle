@@ -1,0 +1,26 @@
+{#
+    Layout admin du bundle Synapse.
+
+    Ce layout gère la structure de base de l'admin (navigation, flash messages).
+    Le projet peut le surcharger dans templates/bundles/SynapseBundle/admin/_layout.html.twig
+    pour utiliser son propre design system.
+
+    Variables disponibles:
+    - nav_active: Page active (dashboard, risks, analytics, config)
+    - module_color: Couleur du module
+    - module_icon: Icône du module
+    - admin_route_prefix: Préfixe des routes admin (ex: 'assistant_admin')
+#}
+{% extends '@Synapse/admin/base.html.twig' %}
+
+{% block title %}Administration Synapse
+{% endblock %}
+
+{% block stylesheets %}
+	{{ parent() }}
+	{% include '@Synapse/admin/_styles.html.twig' %}
+{% endblock %}
+
+{% block admin_content %}
+	{# Contenu fourni par les templates enfants #}
+{% endblock %}
