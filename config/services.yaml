@@ -78,4 +78,13 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Controller\Api\DebugController:
         tags: ['controller.service_arguments']
 
+    # Repositories (entités concrètes du bundle)
+    ArnaudMoncondhuy\SynapseBundle\Repository\TokenUsageRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
 
+    ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
