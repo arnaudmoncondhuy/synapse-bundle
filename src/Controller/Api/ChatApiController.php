@@ -83,8 +83,16 @@ class ChatApiController extends AbstractController
             // Helper to send NDJSON event
             $sendEvent = function (string $type, mixed $payload): void {
                 echo json_encode(['type' => $type, 'payload' => $payload], JSON_INVALID_UTF8_IGNORE | JSON_THROW_ON_ERROR)."\n";
+                // Force flush explicitly
+                if (ob_get_length() > 0) {
+                    ob_flush();
+                }
                 flush();
             };
+
+            // Send padding to bypass browser/proxy buffering (approx 2KB)
+            echo ":".str_repeat(' ', 2048)."\n";
+            flush();
 
             if (empty($message) && !($options['reset_conversation'] ?? false)) {
                 $sendEvent('error', 'Message is required.');
@@ -114,8 +122,13 @@ class ChatApiController extends AbstractController
                     $sendEvent('status', ['message' => $statusMessage, 'step' => $step]);
                 };
 
+                // Token streaming callback
+                $onToken = function (string $token) use ($sendEvent): void {
+                    $sendEvent('delta', ['text' => $token]);
+                };
+
                 // Execute chat (ChatService will handle adding the new user message to history)
-                $result = $this->chatService->ask($message, $options, $onStatusUpdate);
+                $result = $this->chatService->ask($message, $options, $onStatusUpdate, $onToken);
 
                 // Save BOTH user message and assistant response to database after processing
                 if ($conversation && $this->conversationManager) {
