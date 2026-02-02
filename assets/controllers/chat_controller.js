@@ -123,8 +123,14 @@ export default class extends Controller {
                 for (const line of lines) {
                     if (!line.trim()) continue;
 
+                    // Skip lines that don't look like JSON
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine.startsWith('{') && !trimmedLine.startsWith('[')) {
+                        continue;
+                    }
+
                     try {
-                        const evt = JSON.parse(line);
+                        const evt = JSON.parse(trimmedLine);
 
                         if (evt.type === 'status') {
                             this.updateLoadingStatus(evt.payload.message);
@@ -152,7 +158,11 @@ export default class extends Controller {
                             throw new Error(evt.payload);
                         }
                     } catch (e) {
-                        console.error('Synapse Stream Error:', e);
+                        // Only log non-JSON parsing errors
+                        if (!(e instanceof SyntaxError)) {
+                            console.error('Synapse Stream Error:', e);
+                        }
+                        // Silently skip invalid JSON lines (incomplete chunks, etc.)
                     }
                 }
             }
