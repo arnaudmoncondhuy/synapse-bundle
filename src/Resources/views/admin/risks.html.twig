@@ -1,0 +1,87 @@
+{% extends '@Synapse/admin/_layout.html.twig' %}
+
+{% block admin_content %}
+	<div class="page-header mb-6">
+		<div class="header-content">
+			<h1 class="text-2xl font-bold text-gray-900">Ange Gardien</h1>
+			<p class="text-gray-500">Pilotage de la sécurité et modération IA</p>
+		</div>
+	</div>
+
+	{% if alerts|length > 0 %}
+		<div class="card shadow-sm border-0">
+			<div class="table-responsive">
+				<table class="table table-hover align-middle mb-0">
+					<thead class="bg-gray-50">
+						<tr>
+							<th class="ps-4 text-uppercase text-xs font-weight-bolder text-muted opacity-7" style="width: 120px;">Niveau</th>
+							<th class="text-uppercase text-xs font-weight-bolder text-muted opacity-7">Catégorie</th>
+							<th class="text-uppercase text-xs font-weight-bolder text-muted opacity-7">Utilisateur</th>
+							<th class="text-uppercase text-xs font-weight-bolder text-muted opacity-7">Date</th>
+							<th class="text-end pe-4 text-uppercase text-xs font-weight-bolder text-muted opacity-7">Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for alert in alerts %}
+							{% set category_labels = {
+								'HARM_CATEGORY_HARASSMENT': 'Harcèlement',
+								'HARM_CATEGORY_HATE_SPEECH': 'Discours haineux',
+								'HARM_CATEGORY_SEXUALLY_EXPLICIT': 'Sexuellement explicite',
+								'HARM_CATEGORY_DANGEROUS_CONTENT': 'Contenu dangereux',
+								'BLOCKED_CONTENT': 'Contenu bloqué'
+							} %}
+							<tr class="border-bottom">
+								<td class="ps-4">
+									{% if alert.riskLevel.value == 'CRITICAL' %}
+										<span class="badge bg-red-50 text-red-600 border border-red-200 rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2">
+											<i data-lucide="alert-octagon" style="width: 14px; height: 14px;"></i>
+											CRITIQUE
+										</span>
+									{% else %}
+										<span class="badge bg-orange-50 text-orange-600 border border-orange-200 rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2">
+											<i data-lucide="alert-triangle" style="width: 14px; height: 14px;"></i>
+											AVERTISSEMENT
+										</span>
+									{% endif %}
+								</td>
+								<td>
+									<span class="fw-medium text-dark">
+										{{ category_labels[alert.riskCategory] ?? alert.riskCategory|default('Inconnu') }}
+									</span>
+								</td>
+								<td>
+									<div class="d-flex flex-column">
+										<span class="fw-bold text-dark text-sm">{{ alert.owner.fullName }}</span>
+										<span class="text-muted text-xs">{{ alert.owner.email }}</span>
+									</div>
+								</td>
+								<td class="text-muted text-sm">
+									<div class="d-flex flex-column">
+										<span class="fw-medium text-dark">{{ alert.updatedAt|date('d/m/Y') }}</span>
+										<span class="text-xs">{{ alert.updatedAt|date('H:i') }}</span>
+									</div>
+								</td>
+								<td class="text-end pe-4">
+									<a href="{{ path('assistant_admin_conversation', {id: alert.id}) }}" class="btn btn-sm btn-light border btn-hover-primary text-dark fw-medium d-inline-flex align-items-center gap-2 px-3">
+										<i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+										Examiner
+									</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	{% else %}
+		<div class="empty-state text-center py-12 card border-dashed shadow-none bg-light">
+			<div class="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border">
+				<i data-lucide="shield-check" class="text-success" style="width: 32px; height: 32px;"></i>
+			</div>
+			<h3 class="h4 fw-bold text-dark">Tout est calme</h3>
+			<p class="text-muted max-w-md mx-auto mb-0">
+				Aucune alerte de sécurité n'est en cours actuellement.
+			</p>
+		</div>
+	{% endif %}
+{% endblock %}

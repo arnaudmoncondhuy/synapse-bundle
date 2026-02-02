@@ -1,116 +1,92 @@
-{% extends '@Synapse/admin/layout.html.twig' %}
+{% extends '@Synapse/admin/_layout.html.twig' %}
 
-{% block title %}Dashboard - Synapse Admin{% endblock %}
 
 {% block admin_content %}
-<div class="admin-dashboard">
-    <h1>Dashboard Synapse</h1>
+	<!-- KPIs -->
+	<div
+		class="grid-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+		<!-- Conversations -->
+		<div class="card" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-sm);">
+			<div style="background: var(--success-light); color: var(--success); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+				<i data-lucide="message-circle"></i>
+			</div>
+			<div>
+				<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Conversations (24h)</div>
+				<div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{ kpis.active_conversations }}</div>
+				{% if kpis.active_conversations > 0 %}
+					<div style="font-size: 0.8rem; color: var(--success); margin-top: 0.25rem; display: flex; align-items: center; gap: 0.25rem;">
+						<i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
+						En activité
+					</div>
+				{% else %}
+					<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Aucune activité récente</div>
+				{% endif %}
+			</div>
+		</div>
 
-    {# KPIs Cards #}
-    <div class="kpi-grid">
-        <div class="kpi-card">
-            <div class="kpi-icon">💬</div>
-            <div class="kpi-content">
-                <div class="kpi-label">Conversations 24h</div>
-                <div class="kpi-value">{{ kpis.conversations_24h }}</div>
-            </div>
-        </div>
+		<!-- Risques -->
+		<div class="card" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-sm);">
+			<div style="background: var(--error-light); color: var(--error); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+				<i data-lucide="shield-alert"></i>
+			</div>
+			<div>
+				<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Risques en attente</div>
+				<div style="font-size: 1.5rem; font-weight: 800; color: var(--error);">{{ kpis.risks_pending }}</div>
+				<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Nécessitent une action</div>
+			</div>
+		</div>
 
-        <div class="kpi-card">
-            <div class="kpi-icon">👥</div>
-            <div class="kpi-content">
-                <div class="kpi-label">Utilisateurs actifs 24h</div>
-                <div class="kpi-value">{{ kpis.active_users_24h }}</div>
-            </div>
-        </div>
+		<!-- Tokens -->
+		<div class="card" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-sm);">
+			<div style="background: var(--warning-light); color: var(--warning); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+				<i data-lucide="coins"></i>
+			</div>
+			<div>
+				<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Coût Estimé</div>
+				<div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">€{{ kpis.tokens_cost|number_format(5, '.', ' ') }}</div>
+				<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Usage depuis le début du mois</div>
+			</div>
+		</div>
+	</div>
 
-        <div class="kpi-card {% if kpis.pending_risks > 0 %}kpi-warning{% endif %}">
-            <div class="kpi-icon">{% if kpis.pending_risks > 0 %}🚨{% else %}✅{% endif %}</div>
-            <div class="kpi-content">
-                <div class="kpi-label">Risques en attente</div>
-                <div class="kpi-value">{{ kpis.pending_risks }}</div>
-                {% if kpis.pending_risks > 0 %}
-                    <a href="{{ path('synapse_admin_risks') }}" class="kpi-link">Voir les risques →</a>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="kpi-card">
-            <div class="kpi-icon">🪙</div>
-            <div class="kpi-content">
-                <div class="kpi-label">Tokens 7 jours</div>
-                <div class="kpi-value">{{ (kpis.tokens_7d.total_tokens / 1000000)|number_format(2) }}M</div>
-                {% if kpis.tokens_7d.cost is defined %}
-                    <div class="kpi-meta">≈ ${{ kpis.tokens_7d.cost|number_format(4) }}</div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    {# Daily Usage Chart #}
-    <div class="admin-section">
-        <h2>Usage quotidien (30 derniers jours)</h2>
-        <div class="chart-container">
-            <canvas id="dailyUsageChart"></canvas>
-        </div>
-    </div>
-
-    {# Quick Actions #}
-    <div class="admin-section">
-        <h2>Actions rapides</h2>
-        <div class="actions-grid">
-            <a href="{{ path('synapse_admin_analytics') }}" class="action-card">
-                <div class="action-icon">📊</div>
-                <div class="action-title">Analytics</div>
-                <div class="action-desc">Statistiques détaillées</div>
-            </a>
-
-            <a href="{{ path('synapse_admin_config') }}" class="action-card">
-                <div class="action-icon">⚙️</div>
-                <div class="action-title">Configuration</div>
-                <div class="action-desc">Modifier les paramètres</div>
-            </a>
-
-            <a href="{{ path('synapse_admin_risks') }}" class="action-card {% if kpis.pending_risks > 0 %}action-warning{% endif %}">
-                <div class="action-icon">🛡️</div>
-                <div class="action-title">Ange Gardien</div>
-                <div class="action-desc">Conversations à risque</div>
-            </a>
-        </div>
-    </div>
-</div>
-
-<script>
-// Chart.js - Daily usage
-const ctx = document.getElementById('dailyUsageChart');
-if (ctx) {
-    const dailyData = {{ daily_usage|json_encode|raw }};
-    const labels = Object.keys(dailyData);
-    const values = Object.values(dailyData).map(d => d.total_tokens / 1000000); // En millions
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Tokens (millions)',
-                data: values,
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                tension: 0.3,
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-}
-</script>
+	<!-- System Status -->
+	<div class="card" style="overflow: hidden; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-md);">
+		<div style="padding: 1.5rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-light);">
+			<h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">État du Système</h3>
+		</div>
+		<div style="padding: 0;">
+			<table class="table" style="width: 100%; border-collapse: collapse;">
+				<tbody>
+					<tr style="border-bottom: 1px solid var(--border-light);">
+						<td style="padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
+							<div style="width: 40px; height: 40px; background: var(--bg-body-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+								<i data-lucide="lock"></i>
+							</div>
+							<div>
+								<div style="font-weight: 600; color: var(--text-main);">Chiffrement Server-Side</div>
+								<div style="font-size: 0.85rem; color: var(--text-muted);">Sodium Library</div>
+							</div>
+						</td>
+						<td style="padding: 1rem 1.5rem; text-align: right;">
+							<span class="badge" style="background: var(--success-light); color: var(--success-dark); padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.85rem; font-weight: 600;">Actif</span>
+						</td>
+					</tr>
+					<tr>
+						<td style="padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
+							<div style="width: 40px; height: 40px; background: var(--bg-body-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+								<i data-lucide="sparkles"></i>
+							</div>
+							<div>
+								<div style="font-weight: 600; color: var(--text-main);">API Vertex AI</div>
+								<div style="font-size: 0.85rem; color: var(--text-muted);">Google Gemini 2.5</div>
+							</div>
+						</td>
+						<td style="padding: 1rem 1.5rem; text-align: right;">
+							<span class="badge" style="background: var(--success-light); color: var(--success-dark); padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.85rem; font-weight: 600;">Connecté</span>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
 {% endblock %}
