@@ -1,66 +1,65 @@
 {% extends '@Synapse/admin/_layout.html.twig' %}
 
 {% block admin_content %}
-<div class="page-header mb-6">
-	<div class="header-content">
-		<div class="flex items-center gap-3">
-			<a href="{{ path('assistant_admin_risks') }}" class="btn btn-sm btn-outline">
-				<i data-lucide="arrow-left" class="w-4 h-4"></i>
-				Retour
+<header class="syn-header">
+	<div>
+		<div style="display: flex; align-items: center; gap: 1rem;">
+			<a href="{{ path('assistant_admin_risks') }}" class="syn-btn syn-btn-outline" style="padding: 0.5rem;">
+				<i data-lucide="arrow-left" style="width: 1rem; height: 1rem;"></i>
 			</a>
-			<h1 class="text-2xl font-bold text-gray-900">Examen de Sécurité</h1>
+			<h1 class="syn-title" style="font-size: 1.5rem; margin: 0;">Examen de Sécurité</h1>
 		</div>
-		<p class="text-gray-500 mt-2">
+		<p class="syn-subtitle" style="margin-left: 3.5rem;">
 			Consultation exceptionnelle de la conversation #{{ conversation.id }}
-			<span class="badge badge-warning ml-2">ACCÈS LOGUÉ</span>
+			<span class="syn-badge syn-badge-warning" style="margin-left: 0.5rem; font-size: 0.7rem;">ACCÈS LOGUÉ</span>
 		</p>
 	</div>
-</div>
+</header>
 
-{# Minimalist Context Strip - Bootstrap #}
-<div class="card shadow-sm border-0 mb-4">
+{# Minimalist Context Strip #}
+<div class="syn-card mb-6" style="margin-bottom: 2rem;">
 	<div
-		class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3 p-4">
+		class="syn-card-body" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2rem;">
 
 		{# 1. Security Status #}
-		<div class="d-flex align-items-center gap-3">
-			<div class="bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center text-danger" style="width: 48px; height: 48px;">
-				<i data-lucide="alert-triangle" style="width: 24px; height: 24px;"></i>
+		<div style="display: flex; align-items: center; gap: 1rem;">
+			<div class="syn-kpi-icon error" style="width: 48px; height: 48px; border-radius: 99px;">
+				<i data-lucide="alert-triangle"></i>
 			</div>
 			<div>
-				<div class="text-uppercase text-muted fw-bold small">Risque détecté</div>
-				<div class="d-flex align-items-center gap-2">
-					<span class="fw-bold text-dark fs-5">{{ conversation.riskCategory }}</span>
-					<span class="badge bg-danger">{{ conversation.riskLevel.value }}</span>
+				<div style="text-transform: uppercase; font-weight: 700; font-size: 0.75rem; color: var(--syn-text-muted);">Risque détecté</div>
+				<div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+					<span style="font-weight: 700; font-size: 1.1rem;">{{ conversation.riskCategory }}</span>
+					<span class="syn-badge syn-badge-error">{{ conversation.riskLevel.value }}</span>
 				</div>
-				<div class="text-muted small">{{ conversation.updatedAt|date('d/m/Y H:i') }}</div>
+				<div style="font-size: 0.85rem; color: var(--syn-text-muted); margin-top: 0.25rem;">{{ conversation.updatedAt|date('d/m/Y H:i') }}</div>
 			</div>
 		</div>
 
-		<div class="vr d-none d-md-block" style="height: 40px;"></div>
+		<div style="width: 1px; height: 40px; background: var(--syn-border-light);"></div>
 
 		{# 2. User Info #}
-		<div class="d-flex align-items-center gap-3">
+		<div style="display: flex; align-items: center; gap: 1rem;">
 			{% if conversation.owner.picture %}
-				<img src="{{ conversation.owner.picture }}" class="rounded-circle border" style="width: 42px; height: 42px; object-fit: cover;" alt="">
+				<img src="{{ conversation.owner.picture }}" style="width: 42px; height: 42px; border-radius: 99px; object-fit: cover; border: 2px solid white; box-shadow: 0 0 0 1px var(--syn-border);" alt="">
 			{% else %}
-				<div class="rounded-circle bg-light text-secondary fw-bold d-flex align-items-center justify-content-center border" style="width: 42px; height: 42px; font-size: 0.875rem;">
+				<div style="width: 42px; height: 42px; border-radius: 99px; background: var(--syn-bg-main); color: var(--syn-text-muted); font-weight: 700; display: flex; align-items: center; justify-content: center; border: 1px solid var(--syn-border);">
 					{{ conversation.owner.firstName|first }}{{ conversation.owner.lastName|first }}
 				</div>
 			{% endif %}
 			<div>
-				<div class="fw-medium text-dark">{{ conversation.owner.firstName }}
+				<div style="font-weight: 600; color: var(--syn-text-main);">{{ conversation.owner.firstName }}
 					{{ conversation.owner.lastName }}</div>
-				<div class="text-muted small">{{ conversation.owner.email }}</div>
+				<div style="font-size: 0.85rem; color: var(--syn-text-muted);">{{ conversation.owner.email }}</div>
 			</div>
 		</div>
 
-		<div class="vr d-none d-md-block" style="height: 40px;"></div>
+		<div style="width: 1px; height: 40px; background: var(--syn-border-light);"></div>
 
 		{# 3. Actions #}
 		<div>
-			<button class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2" disabled title="Bientôt disponible">
-				<i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+			<button class="syn-btn syn-btn-secondary" disabled title="Bientôt disponible" style="opacity: 0.6; cursor: not-allowed;">
+				<i data-lucide="check-circle"></i>
 				Clôturer
 			</button>
 		</div>
@@ -69,11 +68,9 @@
 </div>
 
 {# Chat History #}
-<div class="card">
-	<div class="card-header border-b border-gray-100 p-4 bg-gray-50">
-		<h2 class="text-lg font-semibold text-gray-800">
-			{{ decrypted_title }}
-		</h2>
+<div class="syn-card">
+	<div class="syn-card-header" style="background: var(--syn-bg-main);">
+		<h2 style="font-size: 1.1rem; font-weight: 600; margin: 0;">{{ decrypted_title }}</h2>
 	</div>
 
 	<style>
@@ -81,8 +78,8 @@
 			display: flex;
 			flex-direction: column;
 			gap: 1.5rem;
-			padding: 1.5rem;
-			background-color: #f8fafc; /* Slate 50 */
+			padding: 2rem;
+			background-color: var(--syn-bg-surface);
 		}
 		.chat-row {
 			display: flex;
@@ -96,35 +93,36 @@
 		}
 		.chat-bubble {
 			max-width: 75%;
-			padding: 1rem 1.25rem;
-			border-radius: 1rem;
-			box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+			padding: 1.25rem;
+			border-radius: 1.25rem;
+			box-shadow: var(--syn-shadow-sm);
 			line-height: 1.6;
 			position: relative;
 		}
 		.chat-bubble.user {
-			background-color: #7c3aed; /* Violet 600 */
+			background-color: var(--syn-color-primary);
 			color: white;
 			border-bottom-right-radius: 0.25rem;
 		}
 		.chat-bubble.user .meta {
-			color: rgba(255, 255, 255, 0.9);
+			color: rgba(255, 255, 255, 0.8);
 		}
 		.chat-bubble.model {
 			background-color: white;
-			color: #1e293b; /* Slate 800 */
-			border: 1px solid #e2e8f0;
+			color: var(--syn-text-main);
+			border: 1px solid var(--syn-border);
 			border-bottom-left-radius: 0.25rem;
 		}
 		.chat-bubble.model .meta {
-			color: #64748b; /* Slate 500 */
+			color: var(--syn-text-muted);
 		}
 		.meta {
 			font-size: 0.75rem;
-			font-weight: 600;
+			font-weight: 700;
 			margin-bottom: 0.5rem;
 			display: block;
-			text-transform: capitalize;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
 		}
 		.prose p {
 			margin-bottom: 0.75em;
@@ -147,7 +145,7 @@
 					</div>
 				</div>
 			{% else %}
-				<div class="text-center py-10 text-gray-400">
+				<div style="text-align: center; padding: 4rem; color: var(--syn-text-muted);">
 					Aucun message dans cette conversation.
 				</div>
 			{% endfor %}

@@ -1,88 +1,94 @@
 {% extends '@Synapse/admin/_layout.html.twig' %}
 
-
 {% block admin_content %}
+	<header class="syn-header">
+		<div>
+			<h1 class="syn-title">Tableau de Bord</h1>
+			<p class="syn-subtitle">Vue d'ensemble de l'activité de l'assistant</p>
+		</div>
+	</header>
+
 	<!-- KPIs -->
 	<div
-		class="grid-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+		class="syn-grid-3" style="margin-bottom: 2rem;">
 		<!-- Conversations -->
-		<div class="card" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-sm);">
-			<div style="background: var(--success-light); color: var(--success); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+		<div class="syn-card syn-card-hover p-4" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
+			<div class="syn-kpi-icon success">
 				<i data-lucide="message-circle"></i>
 			</div>
 			<div>
-				<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Conversations (24h)</div>
-				<div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">{{ kpis.active_conversations }}</div>
+				<div class="syn-kpi-label">Conversations (24h)</div>
+				<div class="syn-kpi-value">{{ kpis.active_conversations }}</div>
 				{% if kpis.active_conversations > 0 %}
-					<div style="font-size: 0.8rem; color: var(--success); margin-top: 0.25rem; display: flex; align-items: center; gap: 0.25rem;">
+					<div class="syn-kpi-sub" style="color: var(--syn-color-success); display: flex; align-items: center; gap: 0.25rem;">
 						<i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
 						En activité
 					</div>
 				{% else %}
-					<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Aucune activité récente</div>
+					<div class="syn-kpi-sub">Aucune activité récente</div>
 				{% endif %}
 			</div>
 		</div>
 
 		<!-- Risques -->
-		<div class="card" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-sm);">
-			<div style="background: var(--error-light); color: var(--error); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+		<div class="syn-card syn-card-hover" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
+			<div class="syn-kpi-icon error">
 				<i data-lucide="shield-alert"></i>
 			</div>
 			<div>
-				<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Risques en attente</div>
-				<div style="font-size: 1.5rem; font-weight: 800; color: var(--error);">{{ kpis.risks_pending }}</div>
-				<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Nécessitent une action</div>
+				<div class="syn-kpi-label">Risques en attente</div>
+				<div class="syn-kpi-value" style="color: var(--syn-color-error);">{{ kpis.risks_pending }}</div>
+				<div class="syn-kpi-sub">Nécessitent une action</div>
 			</div>
 		</div>
 
 		<!-- Tokens -->
-		<div class="card" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-sm);">
-			<div style="background: var(--warning-light); color: var(--warning); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+		<div class="syn-card syn-card-hover" style="padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
+			<div class="syn-kpi-icon warning">
 				<i data-lucide="coins"></i>
 			</div>
 			<div>
-				<div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Coût Estimé</div>
-				<div style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">€{{ kpis.tokens_cost|number_format(5, '.', ' ') }}</div>
-				<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Usage depuis le début du mois</div>
+				<div class="syn-kpi-label">Coût Estimé</div>
+				<div class="syn-kpi-value">€{{ kpis.tokens_cost|number_format(5, '.', ' ') }}</div>
+				<div class="syn-kpi-sub">Usage depuis le début du mois</div>
 			</div>
 		</div>
 	</div>
 
 	<!-- System Status -->
-	<div class="card" style="overflow: hidden; border: 1px solid var(--border-light); border-radius: 1rem; box-shadow: var(--shadow-md);">
-		<div style="padding: 1.5rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-light);">
-			<h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">État du Système</h3>
+	<div class="syn-card">
+		<div class="syn-card-header">
+			<h3 style="font-size: 1.1rem;">État du Système</h3>
 		</div>
-		<div style="padding: 0;">
-			<table class="table" style="width: 100%; border-collapse: collapse;">
+		<div class="syn-table-container">
+			<table class="syn-table">
 				<tbody>
-					<tr style="border-bottom: 1px solid var(--border-light);">
-						<td style="padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
-							<div style="width: 40px; height: 40px; background: var(--bg-body-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+					<tr>
+						<td style="display: flex; align-items: center; gap: 1rem;">
+							<div class="syn-kpi-icon primary" style="width: 40px; height: 40px; font-size: 1.2rem;">
 								<i data-lucide="lock"></i>
 							</div>
 							<div>
-								<div style="font-weight: 600; color: var(--text-main);">Chiffrement Server-Side</div>
-								<div style="font-size: 0.85rem; color: var(--text-muted);">Sodium Library</div>
+								<div style="font-weight: 600;">Chiffrement Server-Side</div>
+								<div style="font-size: 0.85rem; color: var(--syn-text-muted);">Sodium Library</div>
 							</div>
 						</td>
-						<td style="padding: 1rem 1.5rem; text-align: right;">
-							<span class="badge" style="background: var(--success-light); color: var(--success-dark); padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.85rem; font-weight: 600;">Actif</span>
+						<td style="text-align: right;">
+							<span class="syn-badge syn-badge-success">Actif</span>
 						</td>
 					</tr>
 					<tr>
-						<td style="padding: 1rem 1.5rem; display: flex; align-items: center; gap: 1rem;">
-							<div style="width: 40px; height: 40px; background: var(--bg-body-secondary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+						<td style="display: flex; align-items: center; gap: 1rem;">
+							<div class="syn-kpi-icon primary" style="width: 40px; height: 40px; font-size: 1.2rem;">
 								<i data-lucide="sparkles"></i>
 							</div>
 							<div>
-								<div style="font-weight: 600; color: var(--text-main);">API Vertex AI</div>
-								<div style="font-size: 0.85rem; color: var(--text-muted);">Google Gemini 2.5</div>
+								<div style="font-weight: 600;">API Vertex AI</div>
+								<div style="font-size: 0.85rem; color: var(--syn-text-muted);">Google Gemini 2.5</div>
 							</div>
 						</td>
-						<td style="padding: 1rem 1.5rem; text-align: right;">
-							<span class="badge" style="background: var(--success-light); color: var(--success-dark); padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.85rem; font-weight: 600;">Connecté</span>
+						<td style="text-align: right;">
+							<span class="syn-badge syn-badge-success">Connecté</span>
 						</td>
 					</tr>
 				</tbody>

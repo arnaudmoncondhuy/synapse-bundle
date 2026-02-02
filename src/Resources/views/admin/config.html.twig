@@ -1,46 +1,52 @@
 {% extends '@Synapse/admin/_layout.html.twig' %}
 
 {% block admin_content %}
+	<header class="syn-header">
+		<div>
+			<h1 class="syn-title">Configuration</h1>
+			<p class="syn-subtitle">Paramètres globaux de l'assistant et du modèle IA</p>
+		</div>
+	</header>
 
-	<div style="max-width: 1000px; margin: 0 auto; padding-bottom: 4rem;">
+	<div style="max-width: 1000px; padding-bottom: 4rem;">
 		<form
 			method="post">
 
 			<!-- ============================= MODÈLE IA ============================= -->
-			<div class="card" style="margin-bottom: 2rem; overflow: hidden;">
-				<div style="padding: 1.5rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 1rem;">
-					<div style="width: 40px; height: 40px; background: var(--primary-light); color: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
+				<div class="syn-card-header">
+					<div class="syn-kpi-icon primary" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="cpu"></i>
 					</div>
 					<div>
-						<h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-main);">Modèle IA</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Sélectionnez la version du modèle Gemini à utiliser.</p>
+						<h2 style="font-size: 1.1rem; margin: 0;">Modèle IA</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Sélectionnez la version du modèle Gemini à utiliser.</p>
 					</div>
 				</div>
 
-				<div style="padding: 1.5rem;">
-					<div class="form-group">
-						<label class="form-label">Version du Modèle</label>
-						<input type="text" name="gemini_model" class="form-input" value="{{ config.model }}" placeholder="ex: gemini-2.5-flash" required>
-						<p class="form-help" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Référez-vous à la documentation Vertex AI pour les modèles disponibles.</p>
+				<div class="syn-card-body">
+					<div class="syn-form-group">
+						<label class="syn-label">Version du Modèle</label>
+						<input type="text" name="gemini_model" class="syn-input" value="{{ config.model }}" placeholder="ex: gemini-2.5-flash" required>
+						<p class="syn-help">Référez-vous à la documentation Vertex AI pour les modèles disponibles.</p>
 					</div>
 				</div>
 			</div>
 
 			<!-- ============================= PROMPT SYSTÈME ============================= -->
-			<div class="card" style="margin-bottom: 2rem; overflow: hidden;">
-				<div style="padding: 1.5rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 1rem;">
-					<div style="width: 40px; height: 40px; background: var(--warning-light); color: var(--warning); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
+				<div class="syn-card-header">
+					<div class="syn-kpi-icon warning" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="message-square-quote"></i>
 					</div>
 					<div>
-						<h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-main);">Prompt Système</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Définissez le comportement global et le contexte de l'assistant.</p>
+						<h2 style="font-size: 1.1rem; margin: 0;">Prompt Système</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Définissez le comportement global et le contexte de l'assistant.</p>
 					</div>
 				</div>
 
-				<div style="padding: 1.5rem;">
-					<div class="alert alert-info" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-start; background: var(--info-light); color: var(--info-dark); padding: 1rem; border-radius: 0.5rem;">
+				<div class="syn-card-body">
+					<div class="syn-alert syn-alert-info">
 						<i data-lucide="info" style="flex-shrink: 0; margin-top: 2px;"></i>
 						<div>
 							<strong style="display: block; margin-bottom: 0.25rem;">Variables Dynamiques</strong>
@@ -53,75 +59,75 @@
 						</div>
 					</div>
 
-					<div class="form-group">
-						<label class="form-label">Instructions Personnalisées</label>
-						<textarea name="system_prompt" class="form-input" rows="12" placeholder="Laissez vide pour utiliser le prompt par défaut..." style="font-family: monospace; font-size: 0.9rem; resize: vertical;">{{ config.systemPrompt }}</textarea>
-						<p class="form-help" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Ces instructions remplacent le prompt par défaut.</p>
+					<div class="syn-form-group">
+						<label class="syn-label">Instructions Personnalisées</label>
+						<textarea name="system_prompt" class="syn-textarea" rows="12" placeholder="Laissez vide pour utiliser le prompt par défaut..." style="font-family: monospace;">{{ config.systemPrompt }}</textarea>
+						<p class="syn-help">Ces instructions remplacent le prompt par défaut.</p>
 					</div>
 				</div>
 			</div>
 
 			<!-- ============================= SÉCURITÉ ============================= -->
-			<div class="card" style="margin-bottom: 2rem; overflow: hidden;">
-				<div style="padding: 1.5rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 1rem;">
-					<div style="width: 40px; height: 40px; background: var(--error-light); color: var(--error); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
+				<div class="syn-card-header">
+					<div class="syn-kpi-icon error" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="shield-alert"></i>
 					</div>
 					<div>
-						<h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-main);">Filtres de Sécurité</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Contrôle du contenu généré (recommandé pour environnement scolaire).</p>
+						<h2 style="font-size: 1.1rem; margin: 0;">Filtres de Sécurité</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Contrôle du contenu généré (recommandé pour environnement scolaire).</p>
 					</div>
 				</div>
 
-				<div style="padding: 1.5rem;">
-					<div style="background: var(--bg-body); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-light); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-						<input type="checkbox" name="safety_enabled" id="safety_enabled" value="1" {{ config.isSafetyEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
+				<div class="syn-card-body">
+					<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+						<input type="checkbox" name="safety_enabled" id="safety_enabled" value="1" {{ config.isSafetyEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
 						<div>
-							<label for="safety_enabled" style="font-weight: 600; color: var(--text-main); cursor: pointer;">Activer les filtres de sécurité</label>
-							<p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Bloque automatiquement les contenus inadaptés.</p>
+							<label for="safety_enabled" style="font-weight: 600; cursor: pointer; display: block;">Activer les filtres de sécurité</label>
+							<p style="margin: 0; font-size: 0.85rem; color: var(--syn-text-muted);">Bloque automatiquement les contenus inadaptés.</p>
 						</div>
 					</div>
 
-					<div class="form-group" style="margin-bottom: 1.5rem;">
-						<label class="form-label">🛡️ Seuil par Défaut</label>
-						<select name="safety_default_threshold" class="form-input">
+					<div class="syn-form-group">
+						<label class="syn-label">🛡️ Seuil par Défaut</label>
+						<select name="safety_default_threshold" class="syn-select">
 							{% for value, label in safety_thresholds %}
 								<option value="{{ value }}" {{ config.safetyDefaultThreshold == value ? 'selected' : '' }}>{{ label }}</option>
 							{% endfor %}
 						</select>
 					</div>
 
-					<div class="grid-2">
-						<div class="form-group">
-							<label class="form-label">💬 Discours Haineux</label>
-							<select name="safety_hate_speech" class="form-input">
+					<div class="syn-grid-2">
+						<div class="syn-form-group">
+							<label class="syn-label">💬 Discours Haineux</label>
+							<select name="safety_hate_speech" class="syn-select">
 								{% for value, label in safety_thresholds %}
 									<option value="{{ value }}" {{ config.safetyHateSpeech == value ? 'selected' : '' }}>{{ label }}</option>
 								{% endfor %}
 							</select>
 						</div>
 
-						<div class="form-group">
-							<label class="form-label">⚠️ Contenu Dangereux</label>
-							<select name="safety_dangerous_content" class="form-input">
+						<div class="syn-form-group">
+							<label class="syn-label">⚠️ Contenu Dangereux</label>
+							<select name="safety_dangerous_content" class="syn-select">
 								{% for value, label in safety_thresholds %}
 									<option value="{{ value }}" {{ config.safetyDangerousContent == value ? 'selected' : '' }}>{{ label }}</option>
 								{% endfor %}
 							</select>
 						</div>
 
-						<div class="form-group">
-							<label class="form-label">😠 Harcèlement</label>
-							<select name="safety_harassment" class="form-input">
+						<div class="syn-form-group">
+							<label class="syn-label">😠 Harcèlement</label>
+							<select name="safety_harassment" class="syn-select">
 								{% for value, label in safety_thresholds %}
 									<option value="{{ value }}" {{ config.safetyHarassment == value ? 'selected' : '' }}>{{ label }}</option>
 								{% endfor %}
 							</select>
 						</div>
 
-						<div class="form-group">
-							<label class="form-label">🔞 Contenu Sexuel</label>
-							<select name="safety_sexually_explicit" class="form-input">
+						<div class="syn-form-group">
+							<label class="syn-label">🔞 Contenu Sexuel</label>
+							<select name="safety_sexually_explicit" class="syn-select">
 								{% for value, label in safety_thresholds %}
 									<option value="{{ value }}" {{ config.safetySexuallyExplicit == value ? 'selected' : '' }}>{{ label }}</option>
 								{% endfor %}
@@ -132,70 +138,70 @@
 			</div>
 
 			<!-- ============================= GÉNÉRATION ============================= -->
-			<div class="card" style="margin-bottom: 2rem; overflow: hidden;">
-				<div style="padding: 1.5rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 1rem;">
-					<div style="width: 40px; height: 40px; background: var(--primary-light); color: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
+				<div class="syn-card-header">
+					<div class="syn-kpi-icon primary" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="settings"></i>
 					</div>
 					<div>
-						<h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-main);">Configuration de Génération</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Contrôle créativité et longueur des réponses.</p>
+						<h2 style="font-size: 1.1rem; margin: 0;">Configuration de Génération</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Contrôle créativité et longueur des réponses.</p>
 					</div>
 				</div>
 
-				<div style="padding: 1.5rem;">
-					<div class="grid-3">
-						<div class="form-group">
-							<label class="form-label">🌡️ Température</label>
-							<input type="number" name="generation_temperature" class="form-input" step="0.1" min="0" max="2" value="{{ config.generationTemperature }}">
-							<p class="form-help" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">0.0 (Strict) - 2.0 (Créatif)</p>
+				<div class="syn-card-body">
+					<div class="syn-grid-3">
+						<div class="syn-form-group">
+							<label class="syn-label">🌡️ Température</label>
+							<input type="number" name="generation_temperature" class="syn-input" step="0.1" min="0" max="2" value="{{ config.generationTemperature }}">
+							<p class="syn-help">0.0 (Strict) - 2.0 (Créatif)</p>
 						</div>
 
-						<div class="form-group">
-							<label class="form-label">🎯 Top-P (Nucleus)</label>
-							<input type="number" name="generation_top_p" class="form-input" step="0.01" min="0" max="1" value="{{ config.generationTopP }}">
+						<div class="syn-form-group">
+							<label class="syn-label">🎯 Top-P (Nucleus)</label>
+							<input type="number" name="generation_top_p" class="syn-input" step="0.01" min="0" max="1" value="{{ config.generationTopP }}">
 						</div>
 
-						<div class="form-group">
-							<label class="form-label">🔢 Top-K</label>
-							<input type="number" name="generation_top_k" class="form-input" min="1" value="{{ config.generationTopK }}">
+						<div class="syn-form-group">
+							<label class="syn-label">🔢 Top-K</label>
+							<input type="number" name="generation_top_k" class="syn-input" min="1" value="{{ config.generationTopK }}">
 						</div>
 
-						<div class="form-group">
-							<label class="form-label">📏 Limite Tokens</label>
-							<input type="number" name="generation_max_output_tokens" class="form-input" min="1" value="{{ config.generationMaxOutputTokens }}" placeholder="Défaut">
+						<div class="syn-form-group">
+							<label class="syn-label">📏 Limite Tokens</label>
+							<input type="number" name="generation_max_output_tokens" class="syn-input" min="1" value="{{ config.generationMaxOutputTokens }}" placeholder="Défaut">
 						</div>
 					</div>
 
-					<div class="form-group" style="margin-top: 1.5rem;">
-						<label class="form-label">🛑 Séquences d'Arrêt</label>
-						<input type="text" name="generation_stop_sequences" class="form-input" value="{{ config.generationStopSequences|join(', ') }}" placeholder="Ex: \n\n, END">
+					<div class="syn-form-group" style="margin-top: 1.5rem;">
+						<label class="syn-label">🛑 Séquences d'Arrêt</label>
+						<input type="text" name="generation_stop_sequences" class="syn-input" value="{{ config.generationStopSequences|join(', ') }}" placeholder="Ex: \n\n, END">
 					</div>
 				</div>
 			</div>
 
 			<!-- ============================= CONTEXT CACHING ============================= -->
-			<div class="card" style="margin-bottom: 2rem; overflow: hidden;">
-				<div style="padding: 1.5rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 1rem;">
-					<div style="width: 40px; height: 40px; background: var(--success-light); color: var(--success); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
+				<div class="syn-card-header">
+					<div class="syn-kpi-icon success" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="database"></i>
 					</div>
 					<div>
-						<h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-main);">Context Caching</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Optimisation des coûts pour les contextes volumineux.</p>
+						<h2 style="font-size: 1.1rem; margin: 0;">Context Caching</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Optimisation des coûts pour les contextes volumineux.</p>
 					</div>
 				</div>
 
-				<div style="padding: 1.5rem;">
-					<div style="background: var(--bg-body); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border-light); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-						<input type="checkbox" name="context_caching_enabled" id="context_caching_enabled" value="1" {{ config.isContextCachingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--primary);">
+				<div class="syn-card-body">
+					<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+						<input type="checkbox" name="context_caching_enabled" id="context_caching_enabled" value="1" {{ config.isContextCachingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
 						<div>
-							<label for="context_caching_enabled" style="font-weight: 600; color: var(--text-main); cursor: pointer;">Activer le context caching</label>
-							<p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Réutilise le contexte sans le renvoyer à chaque requête.</p>
+							<label for="context_caching_enabled" style="font-weight: 600; cursor: pointer; display: block;">Activer le context caching</label>
+							<p style="margin: 0; font-size: 0.85rem; color: var(--syn-text-muted);">Réutilise le contexte sans le renvoyer à chaque requête.</p>
 						</div>
 					</div>
 
-					<div class="alert alert-info" style="margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-start; background: var(--info-light); color: var(--info-dark); padding: 1rem; border-radius: 0.5rem;">
+					<div class="syn-alert syn-alert-info">
 						<i data-lucide="info" style="flex-shrink: 0; margin-top: 2px;"></i>
 						<div>
 							<strong style="display: block; margin-bottom: 0.25rem;">Information Importante</strong>
@@ -203,20 +209,20 @@
 						</div>
 					</div>
 
-					<div class="form-group">
-						<label class="form-label">🔑 ID du Cache Vertex AI</label>
-						<input type="text" name="context_caching_id" class="form-input" value="{{ config.contextCachingId }}" placeholder="projects/..." style="font-family: monospace;">
+					<div class="syn-form-group">
+						<label class="syn-label">🔑 ID du Cache Vertex AI</label>
+						<input type="text" name="context_caching_id" class="syn-input" value="{{ config.contextCachingId }}" placeholder="projects/..." style="font-family: monospace;">
 					</div>
 				</div>
 			</div>
 
 			<!-- ============================= ACTIONS ============================= -->
-			<div style="position: sticky; bottom: 2rem; background: var(--bg-surface); border: 1px solid var(--border-light); padding: 1rem 2rem; border-radius: 1rem; display: flex; justify-content: flex-end; gap: 1rem; box-shadow: var(--shadow-lg); z-index: 50;">
-				<a href="{{ path('assistant_index') }}" class="btn btn-secondary">
+			<div style="position: sticky; bottom: 2rem; background: var(--syn-bg-surface); border: 1px solid var(--syn-border); padding: 1rem 2rem; border-radius: var(--syn-radius); display: flex; justify-content: flex-end; gap: 1rem; box-shadow: var(--syn-shadow-lg); z-index: 50;">
+				<a href="{{ path('assistant_index') }}" class="syn-btn syn-btn-secondary">
 					<i data-lucide="x"></i>
 					Annuler
 				</a>
-				<button type="submit" class="btn btn-primary shadow-lg">
+				<button type="submit" class="syn-btn syn-btn-primary">
 					<i data-lucide="save"></i>
 					Enregistrer
 				</button>
@@ -224,5 +230,4 @@
 
 		</form>
 	</div>
-
 {% endblock %}
