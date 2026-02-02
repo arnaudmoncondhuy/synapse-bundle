@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Service;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
-use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient;
 use ArnaudMoncondhuy\SynapseBundle\Util\TextUtil;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -17,28 +16,26 @@ use Symfony\Contracts\Cache\ItemInterface;
  * Cette classe est le point central du bundle. Elle coordonne :
  * 1. La construction du contexte (Prompt Builder).
  * 2. La communication avec l'API externe (GeminiClient).
- * 3. La persistance de l'historique (ConversationHandler).
- * 4. L'exécution dynamique des outils (Function Calling).
+ * 3. L'exécution dynamique des outils (Function Calling).
+ * 4. La boucle de réflexion multi-tours avec l'IA.
  *
- * Elle gère également la boucle de réflexion multi-tours nécessaire lorsque l'IA
- * décide d'utiliser un ou plusieurs outils avant de formuler une réponse.
+ * NOTE: La persistance de l'historique est maintenant gérée par ConversationManager
+ * dans les controllers API (ChatApiController). Le mode session legacy a été supprimé.
  */
 class ChatService
 {
     private const MAX_TURNS = 5;
 
     /**
-     * @param GeminiClient                 $geminiClient        client HTTP bas niveau pour l'API Gemini (Vertex AI)
-     * @param PromptBuilder                $promptBuilder       service de construction du Prompt Système
-     * @param ConversationHandlerInterface $conversationHandler gestionnaire de persistance des messages
-     * @param iterable<AiToolInterface>    $tools               collection des outils disponibles pour l'IA (injectés via DI)
-     * @param CacheInterface               $cache               cache Symfony pour stocker temporairement les données de débogage
-     * @param string                       $configuredModel     modèle Gemini configuré
+     * @param GeminiClient              $geminiClient    client HTTP bas niveau pour l'API Gemini (Vertex AI)
+     * @param PromptBuilder             $promptBuilder   service de construction du Prompt Système
+     * @param iterable<AiToolInterface> $tools           collection des outils disponibles pour l'IA (injectés via DI)
+     * @param CacheInterface            $cache           cache Symfony pour stocker temporairement les données de débogage
+     * @param string                    $configuredModel modèle Gemini configuré
      */
     public function __construct(
         private GeminiClient $geminiClient,
         private PromptBuilder $promptBuilder,
-        private ConversationHandlerInterface $conversationHandler,
         private iterable $tools,
         private CacheInterface $cache,
         private string $configuredModel = 'gemini-2.5-flash',
@@ -83,10 +80,8 @@ class ChatService
     {
         $isStateless = $options['stateless'] ?? false;
 
-        // Reset if requested
-        if (!$isStateless && ($options['reset_conversation'] ?? false)) {
-            $this->conversationHandler->clearHistory();
-        }
+        // Reset is handled by ConversationManager in ChatApiController
+        // Legacy session-based reset has been removed
 
         // Empty message with reset = just clear
         if (empty($message) && ($options['reset_conversation'] ?? false)) {
@@ -348,23 +343,25 @@ class ChatService
     }
 
     /**
-     * Efface complètement l'historique de la conversation en cours.
-     *
-     * Permet de réinitialiser le contexte pour un nouveau sujet.
+     * @deprecated Session-based conversation management has been removed.
+     * Use ConversationManager directly for Doctrine-based persistence.
      */
     public function resetConversation(): void
     {
-        $this->conversationHandler->clearHistory();
+        // No-op: Session-based conversation handling removed
+        // Use ConversationManager::deleteConversation() instead
     }
 
     /**
-     * Retourne l'historique brut de la conversation courante.
-     *
+     * @deprecated Session-based conversation management has been removed.
+     * Use ConversationManager directly for Doctrine-based persistence.
      * @return array<int, array>
      */
     public function getConversationHistory(): array
     {
-        return $this->conversationHandler->loadHistory();
+        // No-op: Session-based conversation handling removed
+        // Use ConversationManager::getConversationMessages() instead
+        return [];
     }
 
     /**
