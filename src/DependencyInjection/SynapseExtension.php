@@ -7,6 +7,8 @@ namespace ArnaudMoncondhuy\SynapseBundle\DependencyInjection;
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
+use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
+use ArnaudMoncondhuy\SynapseBundle\Service\Impl\LibsodiumEncryptionService;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -124,6 +126,20 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
 
         // UI configuration
         $container->setParameter('synapse.ui.sidebar_enabled', $config['ui']['sidebar_enabled'] ?? true);
+
+        // Register encryption service if enabled
+        if ($config['encryption']['enabled']) {
+            $container
+                ->register('synapse.encryption_service', LibsodiumEncryptionService::class)
+                ->setArguments([$config['encryption']['key']])
+                ->setAutowired(true)
+                ->setPublic(false);
+
+            $container->setAlias(
+                EncryptionServiceInterface::class,
+                'synapse.encryption_service'
+            );
+        }
 
         // Chargement des services
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
