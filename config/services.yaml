@@ -10,6 +10,7 @@ services:
 
     ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient:
         arguments:
+            $httpClient: '@http_client'
             $googleAuthService: '@ArnaudMoncondhuy\SynapseBundle\Service\Infra\GoogleAuthService'
             $model: '%synapse.model%'
             $vertexProjectId: '%synapse.vertex.project_id%'
@@ -51,7 +52,10 @@ services:
     # Main service
     ArnaudMoncondhuy\SynapseBundle\Service\ChatService:
         arguments:
+            $geminiClient: '@ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient'
+            $promptBuilder: '@ArnaudMoncondhuy\SynapseBundle\Service\PromptBuilder'
             $tools: !tagged_iterator synapse.tool
+            $cache: '@cache.app'
             $configuredModel: '%synapse.model%'
 
     # Twig Integration
