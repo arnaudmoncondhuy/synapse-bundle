@@ -1,0 +1,154 @@
+{% extends '@Synapse/admin/_layout.html.twig' %}
+
+{% block admin_content %}
+<header class="syn-header">
+	<div>
+		<div style="display: flex; align-items: center; gap: 1rem;">
+			<a href="{{ path('assistant_admin_risks') }}" class="syn-btn syn-btn-outline" style="padding: 0.5rem;">
+				<i data-lucide="arrow-left" style="width: 1rem; height: 1rem;"></i>
+			</a>
+			<h1 class="syn-title" style="font-size: 1.5rem; margin: 0;">Examen de Sécurité</h1>
+		</div>
+		<p class="syn-subtitle" style="margin-left: 3.5rem;">
+			Consultation exceptionnelle de la conversation #{{ conversation.id }}
+			<span class="syn-badge syn-badge-warning" style="margin-left: 0.5rem; font-size: 0.7rem;">ACCÈS LOGUÉ</span>
+		</p>
+	</div>
+</header>
+
+{# Minimalist Context Strip #}
+<div class="syn-card mb-6" style="margin-bottom: 2rem;">
+	<div
+		class="syn-card-body" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2rem;">
+
+		{# 1. Security Status #}
+		<div style="display: flex; align-items: center; gap: 1rem;">
+			<div class="syn-kpi-icon error" style="width: 48px; height: 48px; border-radius: 99px;">
+				<i data-lucide="alert-triangle"></i>
+			</div>
+			<div>
+				<div style="text-transform: uppercase; font-weight: 700; font-size: 0.75rem; color: var(--syn-text-muted);">Risque détecté</div>
+				<div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+					<span style="font-weight: 700; font-size: 1.1rem;">{{ conversation.riskCategory }}</span>
+					<span class="syn-badge syn-badge-error">{{ conversation.riskLevel.value }}</span>
+				</div>
+				<div style="font-size: 0.85rem; color: var(--syn-text-muted); margin-top: 0.25rem;">{{ conversation.updatedAt|date('d/m/Y H:i') }}</div>
+			</div>
+		</div>
+
+		<div style="width: 1px; height: 40px; background: var(--syn-border-light);"></div>
+
+		{# 2. User Info #}
+		<div style="display: flex; align-items: center; gap: 1rem;">
+			{% if conversation.owner.picture %}
+				<img src="{{ conversation.owner.picture }}" style="width: 42px; height: 42px; border-radius: 99px; object-fit: cover; border: 2px solid white; box-shadow: 0 0 0 1px var(--syn-border);" alt="">
+			{% else %}
+				<div style="width: 42px; height: 42px; border-radius: 99px; background: var(--syn-bg-main); color: var(--syn-text-muted); font-weight: 700; display: flex; align-items: center; justify-content: center; border: 1px solid var(--syn-border);">
+					{{ conversation.owner.firstName|first }}{{ conversation.owner.lastName|first }}
+				</div>
+			{% endif %}
+			<div>
+				<div style="font-weight: 600; color: var(--syn-text-main);">{{ conversation.owner.firstName }}
+					{{ conversation.owner.lastName }}</div>
+				<div style="font-size: 0.85rem; color: var(--syn-text-muted);">{{ conversation.owner.email }}</div>
+			</div>
+		</div>
+
+		<div style="width: 1px; height: 40px; background: var(--syn-border-light);"></div>
+
+		{# 3. Actions #}
+		<div>
+			<button class="syn-btn syn-btn-secondary" disabled title="Bientôt disponible" style="opacity: 0.6; cursor: not-allowed;">
+				<i data-lucide="check-circle"></i>
+				Clôturer
+			</button>
+		</div>
+
+	</div>
+</div>
+
+{# Chat History #}
+<div class="syn-card">
+	<div class="syn-card-header" style="background: var(--syn-bg-main);">
+		<h2 style="font-size: 1.1rem; font-weight: 600; margin: 0;">{{ decrypted_title }}</h2>
+	</div>
+
+	<style>
+		.chat-container {
+			display: flex;
+			flex-direction: column;
+			gap: 1.5rem;
+			padding: 2rem;
+			background-color: var(--syn-bg-surface);
+		}
+		.chat-row {
+			display: flex;
+			width: 100%;
+		}
+		.chat-row.user {
+			justify-content: flex-end;
+		}
+		.chat-row.model {
+			justify-content: flex-start;
+		}
+		.chat-bubble {
+			max-width: 75%;
+			padding: 1.25rem;
+			border-radius: 1.25rem;
+			box-shadow: var(--syn-shadow-sm);
+			line-height: 1.6;
+			position: relative;
+		}
+		.chat-bubble.user {
+			background-color: var(--syn-color-primary);
+			color: white;
+			border-bottom-right-radius: 0.25rem;
+		}
+		.chat-bubble.user .meta {
+			color: rgba(255, 255, 255, 0.8);
+		}
+		.chat-bubble.model {
+			background-color: white;
+			color: var(--syn-text-main);
+			border: 1px solid var(--syn-border);
+			border-bottom-left-radius: 0.25rem;
+		}
+		.chat-bubble.model .meta {
+			color: var(--syn-text-muted);
+		}
+		.meta {
+			font-size: 0.75rem;
+			font-weight: 700;
+			margin-bottom: 0.5rem;
+			display: block;
+			text-transform: uppercase;
+			letter-spacing: 0.05em;
+		}
+		.prose p {
+			margin-bottom: 0.75em;
+		}
+		.prose p:last-child {
+			margin-bottom: 0;
+		}
+	</style>
+
+	<div class="chat-container">
+		{% for message in messages %}
+			<div class="chat-row {{ message.role }}">
+				<div class="chat-bubble {{ message.role }}">
+					<span class="meta">
+						{{ message.role == 'model' ? 'L\'Ange Gardien' : conversation.owner.firstName }} • {{ message.createdAt|date('H:i') }}
+						</span>
+						<div class="prose">
+							{{ message.content|nl2br }}
+						</div>
+					</div>
+				</div>
+			{% else %}
+				<div style="text-align: center; padding: 4rem; color: var(--syn-text-muted);">
+					Aucun message dans cette conversation.
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+{% endblock %}

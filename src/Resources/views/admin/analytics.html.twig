@@ -1,0 +1,163 @@
+{% extends '@Synapse/admin/_layout.html.twig' %}
+
+
+{% block admin_content %}
+	<header class="syn-header">
+		<div>
+			<h1 class="syn-title">Analytique</h1>
+			<div class="syn-subtitle">
+				Usage et Coûts :
+				{{ period_label }}
+			</div>
+		</div>
+	</header>
+
+	<!-- KPIs -->
+	<div
+		class="syn-grid-3 mb-6" style="margin-bottom: 2rem;">
+		<!-- Cost -->
+		<div class="syn-card p-4" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem;">
+			<div class="syn-kpi-icon primary">
+				<i data-lucide="coins"></i>
+			</div>
+			<div>
+				<div class="syn-kpi-label">Coût Estimé</div>
+				<div class="syn-kpi-value">€{{ cost|number_format(5, '.', ',') }}</div>
+			</div>
+		</div>
+
+		<!-- Total Tokens -->
+		<div class="syn-card p-4" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem;">
+			<div class="syn-kpi-icon warning">
+				<i data-lucide="cpu"></i>
+			</div>
+			<div>
+				<div class="syn-kpi-label">Total Tokens</div>
+				<div class="syn-kpi-value">{{ (stats.total_tokens|default(0) / 1000)|number_format(1) }}k</div>
+				<div class="syn-kpi-sub">
+					<span style="color: var(--syn-color-success);">{{ stats.total_tokens > 0 ? ((stats.completion_tokens|default(0) / stats.total_tokens) * 100)|number_format(0) : 0 }}%</span>
+					Output
+				</div>
+			</div>
+		</div>
+
+		<!-- Requests -->
+		<div class="syn-card p-4" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem;">
+			<div class="syn-kpi-icon success">
+				<i data-lucide="zap"></i>
+			</div>
+			<div>
+				<div class="syn-kpi-label">Requêtes IA</div>
+				<div class="syn-kpi-value">{{ stats.request_count|default(0) }}</div>
+			</div>
+		</div>
+	</div>
+
+	<div
+		class="syn-grid-2" style="grid-template-columns: 2fr 1fr;">
+
+		<!-- Left Column: Automated Tasks -->
+		<div style="display: flex; flex-direction: column; gap: 2rem;">
+			<div class="syn-card">
+				<div class="syn-card-header">
+					<h3 style="margin: 0; font-size: 1.1rem;">Tâches Automatisées</h3>
+				</div>
+				<div class="syn-table-container">
+					<table class="syn-table">
+						<thead>
+							<tr>
+								<th>Module / Action</th>
+								<th style="text-align: right;">Exec.</th>
+								<th style="text-align: right;">Tokens</th>
+								<th style="text-align: right;">% Global</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for task in automated_stats %}
+								<tr>
+									<td>
+										<div style="font-weight: 600; text-transform:capitalize;">{{ task.module }}</div>
+										<div style="font-size: 0.8rem; color: var(--syn-text-muted);">{{ task.action }}</div>
+									</td>
+									<td style="text-align: right; color: var(--syn-text-muted);">{{ task.request_count }}</td>
+									<td style="text-align: right; font-family: monospace;">{{ task.total_tokens|number_format(0, ',', ' ') }}</td>
+									<td style="text-align: right;">
+										{% set percentage = stats.total_tokens > 0 ? (task.total_tokens / stats.total_tokens * 100) : 0 %}
+										<div style="display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem;">
+											<span style="font-size: 0.85rem; color: var(--syn-text-muted);">{{ percentage|number_format(1) }}%</span>
+											<div style="width: 50px; height: 4px; background: var(--syn-border-light); border-radius: 2px; overflow: hidden;">
+												<div style="width: {{ percentage }}%; height: 100%; background: var(--syn-color-primary);"></div>
+											</div>
+										</div>
+									</td>
+								</tr>
+							{% else %}
+								<tr>
+									<td colspan="4" style="padding: 2rem; text-align: center; color: var(--syn-text-muted);">Aucune tâche automatisée</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<!-- Conversations Stats -->
+			<div class="syn-card">
+				<div class="syn-card-header">
+					<h3 style="margin: 0; font-size: 1.1rem;">Conversations Assistant</h3>
+				</div>
+				<div style="padding: 1.5rem; display: flex; align-items: center; justify-content: space-around;">
+					<div style="text-align: center;">
+						<div class="syn-kpi-value" style="color: var(--syn-color-primary);">{{ conversation_stats.message_count|default(0) }}</div>
+						<div class="syn-kpi-label">Messages IA</div>
+					</div>
+					<div style="text-align: center;">
+						<div class="syn-kpi-value">{{ (conversation_stats.total_tokens|default(0) / 1000)|number_format(1) }}k</div>
+						<div class="syn-kpi-label">Tokens Totaux</div>
+					</div>
+					<div style="text-align: center;">
+						{% set conv_percentage = stats.total_tokens > 0 ? (conversation_stats.total_tokens|default(0) / stats.total_tokens * 100) : 0 %}
+						<div class="syn-kpi-value" style="color: var(--syn-color-success);">{{ conv_percentage|number_format(0) }}%</div>
+						<div class="syn-kpi-label">Part du Budget</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Right Column: Daily Usage -->
+		<div style="display: flex; flex-direction: column;">
+			<div class="syn-card">
+				<div class="syn-card-header">
+					<h3 style="margin: 0; font-size: 1.1rem;">Usage Journalier</h3>
+				</div>
+				<div style="padding: 1.5rem; max-height: 400px; overflow-y: auto;">
+					{% if daily is not empty %}
+						{% set max_tokens = 0 %}
+						{% for day in daily %}
+							{% if day.tokens > max_tokens %}
+								{% set max_tokens = day.tokens %}
+							{% endif %}
+						{% endfor %}
+
+						<div style="display: flex; flex-direction: column; gap: 0.75rem;">
+							{% for day in daily %}
+								{% set bar_width = max_tokens > 0 ? (day.tokens / max_tokens * 100) : 0 %}
+								<div style="display: flex; align-items: center; gap: 1rem;">
+									<div style="width: 80px; font-size: 0.85rem; color: var(--syn-text-muted); font-family: monospace;">{{ day.date }}</div>
+									<div style="flex: 1; height: 24px; background: var(--syn-border-light); border-radius: 4px; overflow: hidden; position: relative;">
+										<div style="width: {{ bar_width }}%; height: 100%; background: var(--syn-color-primary-light); border-right: 2px solid var(--syn-color-primary);"></div>
+									</div>
+									<div style="width: 60px; text-align: right; font-size: 0.85rem; font-weight: 600;">
+										{{ (day.tokens / 1000)|number_format(1) }}k
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					{% else %}
+						<div style="text-align: center; padding: 2rem; color: var(--syn-text-muted);">Aucune donnée d'usage</div>
+					{% endif %}
+				</div>
+			</div>
+
+		</div>
+	{% endblock %}

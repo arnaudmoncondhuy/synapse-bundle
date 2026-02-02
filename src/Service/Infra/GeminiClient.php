@@ -17,6 +17,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * - La communication HTTP (POST).
  * - La sérialisation des requêtes (Payload).
  * - La gestion sécurisée des erreurs.
+ * - Le Streaming (Server-Sent Events / JSON Stream).
  *
  * Elle n'a PAS de logique métier "Synapse" (pas d'historique, pas de persona),
  * elle ne fait que passer les plats à Google.
@@ -24,6 +25,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class GeminiClient
 {
     private const VERTEX_URL = 'https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/%s:generateContent';
+    private const VERTEX_STREAM_URL = 'https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/%s:streamGenerateContent';
 
     private ?ConfigProviderInterface $configProvider = null;
 
@@ -88,20 +90,17 @@ class GeminiClient
     }
 
     /**
-     * Génère du contenu via l'API Gemini sur Vertex AI.
+     * Génère du contenu via l'API Gemini sur Vertex AI (Mode Synchrone).
      *
      * @param string      $systemInstruction      instructions systèmes (System Prompt)
      * @param array       $contents               Historique de la conversation au format Gemini API.
-     *                                            Chaque item doit être un tableau `['role' => 'user|model', 'parts' => [...]]`.
      * @param array       $tools                  Définitions des outils (Function Declarations).
-     *                                            Optionnel, permet au modèle de demander l'exécution de fonctions.
-     * @param string|null $model                  modèle spécifique pour cette requête (prioritaire sur la config)
-     * @param array|null  $thinkingConfigOverride Configuration thinking personnalisée (override la config par défaut)
+     * @param string|null $model                  modèle spécifique pour cette requête.
+     * @param array|null  $thinkingConfigOverride Configuration thinking personnalisée.
      *
      * @return array La réponse brute de l'API (le premier candidat).
-     *               Généralement un tableau contenant ['parts' => ...].
      *
-     * @throws \RuntimeException Si l'appel API échoue (timeout, quota, 500, etc.).
+     * @throws \RuntimeException Si l'appel API échoue.
      */
     public function generateContent(
         string $systemInstruction,
@@ -111,7 +110,211 @@ class GeminiClient
         ?array $thinkingConfigOverride = null,
     ): array {
         $effectiveModel = $model ?? $this->model;
+        $url = $this->buildVertexUrl(self::VERTEX_URL, $effectiveModel);
+        
+        $payload = $this->buildPayload($systemInstruction, $contents, $tools, $thinkingConfigOverride);
+        $headers = $this->buildVertexHeaders();
 
+        try {
+            $response = $this->httpClient->request('POST', $url, [
+                'json' => TextUtil::sanitizeArrayUtf8($payload),
+                'headers' => $headers,
+            ]);
+
+            return $response->toArray(); // Attente bloquante
+        } catch (\Throwable $e) {
+            $this->handleException($e);
+            return []; // Unreachable with handleException throwing
+        }
+    }
+
+    /**
+     * Génère du contenu via l'API Gemini sur Vertex AI (Mode Streaming).
+     *
+     * Retourne un générateur qui yield chaque chunk de réponse JSON décodé
+     * au fur et à mesure de leur réception.
+     *
+     * @param string      $systemInstruction      instructions systèmes
+     * @param array       $contents               Historique
+     * @param array       $tools                  Outils
+     * @param string|null $model                  Modèle
+     * @param array|null  $thinkingConfigOverride Config thinking
+     *
+     * @return \Generator<array> Yield chaque chunk JSON (tableau associatif).
+     */
+    public function streamGenerateContent(
+        string $systemInstruction,
+        array $contents,
+        array $tools = [],
+        ?string $model = null,
+        ?array $thinkingConfigOverride = null,
+    ): \Generator {
+        $effectiveModel = $model ?? $this->model;
+        $url = $this->buildVertexUrl(self::VERTEX_STREAM_URL, $effectiveModel);
+
+        $payload = $this->buildPayload($systemInstruction, $contents, $tools, $thinkingConfigOverride);
+        $headers = $this->buildVertexHeaders();
+
+        try {
+            $response = $this->httpClient->request('POST', $url, [
+                'json' => TextUtil::sanitizeArrayUtf8($payload),
+                'headers' => $headers,
+            ]); // Ne bloque pas, la requête est lancée
+
+            $buffer = '';
+            $depth = 0;
+            $inString = false;
+            $escape = false;
+
+            // Lecture du flux chunk par chunk
+            foreach ($this->httpClient->stream($response) as $chunk) {
+                // Check for transport errors immediately
+                if ($chunk->isLast()) {
+                    // Check if request failed at HTTP level
+                   // $chunk->getContent() will throw if status code is error and we check it.
+                   // But stream() yields chunks.
+                   // We trust Symfony HttpClient to handle status checks if we access headers/content?
+                   // Actually stream() yields ChunkInterface.
+                   // If we call getContent() on a timeout/error chunk it throws.
+                }
+                
+                try {
+                    $content = $chunk->getContent(); // Peut bloquer un tout petit peu le temps d'avoir des paquets
+                } catch (\Throwable $e) {
+                    $this->handleException($e);
+                    return; // Unreachable
+                }
+
+                // Append content to buffer
+                $buffer .= $content;
+
+                // Parsing JSON Stream "à la main" pour extraire les objets complets du tableau
+                // Le format est : [ {obj1}, {obj2}, ... ]
+                // On cherche à extraire les objets { ... } de niveau 1.
+                
+                // Note : Faire un parser JSON complet est complexe.
+                // Simplification robuste : Vertex renvoie des objets séparés par des virgules.
+                // On va scanner le buffer pour trouver des objets complets.
+                
+                while (true) {
+                    // Nettoyage début : sauter [ et , et whitespace
+                    if (empty($buffer)) break;
+
+                    $buffer = ltrim($buffer, " \t\n\r,");
+                    
+                    if (str_starts_with($buffer, '[')) {
+                        $buffer = substr($buffer, 1);
+                        continue;
+                    }
+                    if (str_starts_with($buffer, ']')) {
+                        $buffer = substr($buffer, 1);
+                        continue;
+                    }
+
+                    // Si vide après nettoyage, on attend plus de données
+                    if (empty($buffer)) break;
+                    
+                    // On suppose qu'on est au début d'un objet '{'
+                    if (!str_starts_with($buffer, '{')) {
+                        // Si on a du "garbage" on le vire (ne devrait pas arriver avec Vertex)
+                        // ou on attend la suite si C'est incomplet ?
+                        // Vertex ne coupe pas n'importe comment en théorie, mais le réseau oui.
+                        // Si ça ne commence pas par {, on peut avoir un problème.
+                        // Mais ça peut être la fin d'un array ']'
+                         break; // Wait for more data
+                    }
+
+                    // Tenter de trouver la fin de l'objet via json_decode sur des substrings ? Trop lourd.
+                    // On compte les accolades.
+                    $objEnd = $this->findObjectEnd($buffer);
+                    
+                    if ($objEnd === null) {
+                        break; // Objet pas encore complet, attendre le prochain chunk HTTP
+                    }
+
+                    // On a un objet complet de 0 à $objEnd (inclus)
+                    $jsonStr = substr($buffer, 0, $objEnd + 1);
+                    $jsonData = json_decode($jsonStr, true);
+
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)) {
+                        yield $jsonData;
+                        
+                        // Avancer le buffer
+                        $buffer = substr($buffer, $objEnd + 1);
+                    } else {
+                        // Parse error ? On log ou on ignore ?
+                        // On suppose que c'est un glitch, on avance d'un char pour éviter boucle inf
+                         $buffer = substr($buffer, 1);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            $this->handleException($e);
+        }
+    }
+
+    /**
+     * Trouve l'index de fermeture de l'objet JSON courant (balance des accolades).
+     * Simple et naïf mais fonctionne pour les flux Vertex standards.
+     * Gère les accolades dans les chaînes de caractères.
+     */
+    private function findObjectEnd(string $buffer): ?int
+    {
+        $len = strlen($buffer);
+        $depth = 0;
+        $inString = false;
+        $escaped = false;
+
+        for ($i = 0; $i < $len; $i++) {
+            $char = $buffer[$i];
+
+            if ($escaped) {
+                $escaped = false;
+                continue;
+            }
+
+            if ($char === '\\') {
+                $escaped = true;
+                continue;
+            }
+
+            if ($char === '"') {
+                $inString = !$inString;
+                continue;
+            }
+
+            if (!$inString) {
+                if ($char === '{') {
+                    $depth++;
+                } elseif ($char === '}') {
+                    $depth--;
+                    if ($depth === 0) {
+                        return $i; // Found end of object
+                    }
+                }
+            }
+        }
+
+        return null; // Not found yet
+    }
+
+    private function buildVertexUrl(string $template, string $model): string
+    {
+        return sprintf(
+            $template,
+            $this->vertexRegion,
+            $this->vertexProjectId,
+            $this->vertexRegion,
+            $model
+        );
+    }
+
+    private function buildPayload(
+        string $systemInstruction,
+        array $contents,
+        array $tools,
+        ?array $thinkingConfigOverride
+    ): array {
         $payload = [
             'system_instruction' => [
                 'parts' => [
@@ -121,7 +324,7 @@ class GeminiClient
             'contents' => $contents,
         ];
 
-        // Build generation config (includes thinking config)
+        // Build generation config
         $generationConfig = $this->buildGenerationConfig($thinkingConfigOverride);
         if (!empty($generationConfig)) {
             $payload['generationConfig'] = $generationConfig;
@@ -154,44 +357,7 @@ class GeminiClient
             }
         }
 
-        // Build Vertex AI URL and headers
-        $url = $this->buildVertexUrl($effectiveModel);
-        $headers = $this->buildVertexHeaders();
-
-        try {
-            $options = [
-                'json' => TextUtil::sanitizeArrayUtf8($payload),
-                'headers' => $headers,
-            ];
-
-            $response = $this->httpClient->request('POST', $url, $options);
-            $data = $response->toArray();
-
-            return $data;
-        } catch (\Throwable $e) {
-            $message = $e->getMessage();
-
-            if ($e instanceof HttpExceptionInterface) {
-                try {
-                    $errorBody = $e->getResponse()->getContent(false);
-                    $message .= ' || Google Error: ' . $errorBody;
-                } catch (\Throwable) {
-                }
-            }
-
-            throw new \RuntimeException('Gemini API Error: ' . $message, 0, $e);
-        }
-    }
-
-    private function buildVertexUrl(string $model): string
-    {
-        return sprintf(
-            self::VERTEX_URL,
-            $this->vertexRegion,
-            $this->vertexProjectId,
-            $this->vertexRegion,
-            $model
-        );
+        return $payload;
     }
 
     private function buildVertexHeaders(): array
@@ -204,12 +370,6 @@ class GeminiClient
         ];
     }
 
-    /**
-     * Construit la configuration de génération complète (temperature, topP, topK, thinking, etc.).
-     *
-     * @param array|null $thinkingConfigOverride Configuration thinking personnalisée (override la config par défaut)
-     * @return array Configuration de génération
-     */
     private function buildGenerationConfig(?array $thinkingConfigOverride = null): array
     {
         $config = [
@@ -235,11 +395,6 @@ class GeminiClient
         return $config;
     }
 
-    /**
-     * Construit la configuration de thinking natif.
-     *
-     * @return array|null Configuration ou null si désactivé
-     */
     private function buildThinkingConfig(): ?array
     {
         if (!$this->thinkingEnabled) {
@@ -248,15 +403,10 @@ class GeminiClient
 
         return [
             'thinkingBudget' => $this->thinkingBudget,
-            'includeThoughts' => true, // Retrieve thought summaries in response
+            'includeThoughts' => true,
         ];
     }
 
-    /**
-     * Construit les paramètres de sécurité (safety filters).
-     *
-     * @return array Liste des safetySettings pour chaque catégorie
-     */
     private function buildSafetySettings(): array
     {
         if (!$this->safetySettingsEnabled) {
@@ -280,5 +430,20 @@ class GeminiClient
         }
 
         return $settings;
+    }
+
+    private function handleException(\Throwable $e): void
+    {
+        $message = $e->getMessage();
+
+        if ($e instanceof HttpExceptionInterface) {
+            try {
+                $errorBody = $e->getResponse()->getContent(false); // false = don't throw
+                $message .= ' || Google Error: ' . $errorBody;
+            } catch (\Throwable) {
+            }
+        }
+
+        throw new \RuntimeException('Gemini API Error: ' . $message, 0, $e);
     }
 }

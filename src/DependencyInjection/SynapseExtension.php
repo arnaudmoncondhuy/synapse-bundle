@@ -7,6 +7,8 @@ namespace ArnaudMoncondhuy\SynapseBundle\DependencyInjection;
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
+use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
+use ArnaudMoncondhuy\SynapseBundle\Service\Security\LibsodiumEncryptionService;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -96,6 +98,59 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         // Context Caching configuration
         $container->setParameter('synapse.context_caching.enabled', $config['context_caching']['enabled'] ?? false);
         $container->setParameter('synapse.context_caching.cached_content_id', $config['context_caching']['cached_content_id'] ?? null);
+
+        // ========== NOUVELLES CONFIGURATIONS (Refonte) ==========
+
+        // Persistence configuration
+        $container->setParameter('synapse.persistence.enabled', $config['persistence']['enabled'] ?? false);
+        $container->setParameter('synapse.persistence.handler', $config['persistence']['handler'] ?? 'session');
+
+        // Encryption configuration
+        $container->setParameter('synapse.encryption.enabled', $config['encryption']['enabled'] ?? false);
+        $container->setParameter('synapse.encryption.key', $config['encryption']['key'] ?? null);
+
+        // Token tracking configuration
+        $container->setParameter('synapse.token_tracking.enabled', $config['token_tracking']['enabled'] ?? false);
+        $container->setParameter('synapse.token_tracking.pricing', $config['token_tracking']['pricing'] ?? []);
+
+        // Risk detection configuration
+        $container->setParameter('synapse.risk_detection.enabled', $config['risk_detection']['enabled'] ?? false);
+        $container->setParameter('synapse.risk_detection.auto_register_tool', $config['risk_detection']['auto_register_tool'] ?? true);
+
+        // Retention configuration
+        $container->setParameter('synapse.retention.days', $config['retention']['days'] ?? 30);
+
+        // Security configuration
+        $container->setParameter('synapse.security.permission_checker', $config['security']['permission_checker'] ?? 'default');
+        $container->setParameter('synapse.security.admin_role', $config['security']['admin_role'] ?? 'ROLE_ADMIN');
+
+        // Context configuration
+        $container->setParameter('synapse.context.provider', $config['context']['provider'] ?? 'default');
+        $container->setParameter('synapse.context.language', $config['context']['language'] ?? 'fr');
+        $container->setParameter('synapse.context.base_identity', $config['context']['base_identity'] ?? null);
+
+        // Admin configuration
+        $container->setParameter('synapse.admin.enabled', $config['admin']['enabled'] ?? false);
+        $container->setParameter('synapse.admin.route_prefix', $config['admin']['route_prefix'] ?? '/synapse/admin');
+        $container->setParameter('synapse.admin.default_color', $config['admin']['default_color'] ?? '#8b5cf6');
+        $container->setParameter('synapse.admin.default_icon', $config['admin']['default_icon'] ?? 'robot');
+
+        // UI configuration
+        $container->setParameter('synapse.ui.sidebar_enabled', $config['ui']['sidebar_enabled'] ?? true);
+
+        // Register encryption service if enabled
+        if ($config['encryption']['enabled']) {
+            $container
+                ->register('synapse.encryption_service', LibsodiumEncryptionService::class)
+                ->setArguments([$config['encryption']['key']])
+                ->setAutowired(true)
+                ->setPublic(false);
+
+            $container->setAlias(
+                EncryptionServiceInterface::class,
+                'synapse.encryption_service'
+            );
+        }
 
         // Chargement des services
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
