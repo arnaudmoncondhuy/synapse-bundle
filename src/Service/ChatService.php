@@ -209,9 +209,16 @@ class ChatService
 
             // Debug Info Aggregation
             if ($options['debug'] ?? false) {
+                // Calculate derived metrics for template compatibility
+                $functionNames = array_map(fn ($fc) => $fc['name'] ?? 'unknown', $currentFunctionCalls);
+                
                 $debugAccumulator['turns'][] = [
                     'turn' => $i + 1,
                     'text_content' => $currentTurnText,
+                    'has_text' => !empty($currentTurnText),
+                    'function_calls_count' => count($currentFunctionCalls),
+                    'function_names' => $functionNames,
+                    'function_calls_data' => $currentFunctionCalls, // Alias for template compatibility
                     'function_calls' => $currentFunctionCalls,
                     'raw_chunks_count' => count($streamDebugParts),
                 ];

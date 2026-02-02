@@ -147,13 +147,19 @@ export default class extends Controller {
         event.currentTarget.classList.add('active');
         this.currentConversationIdValue = conversationId;
 
-        // Dispatch event pour le chat
+        // Dispatch event pour le chat (optionnel si reload)
         this.dispatch('conversation-selected', { detail: { conversationId } });
 
         // Fermer drawer sur mobile
         if (window.innerWidth < 768) {
             this.close();
         }
+
+        // FORCE RELOAD (SSR Compatibility)
+        // Since AssistantController loads history on page load, we must navigate.
+        const url = new URL(window.location.href);
+        url.searchParams.set('conversation', conversationId);
+        window.location.href = url.toString();
     }
 
     /**
