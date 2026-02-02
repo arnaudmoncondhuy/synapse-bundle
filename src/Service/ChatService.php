@@ -13,26 +13,16 @@ use Symfony\Contracts\Cache\ItemInterface;
 /**
  * Orchestrateur principal des échanges conversationnels avec l'IA.
  *
- * Cette classe est le point central du bundle. Elle coordonne :
+ * Cette classe coordonne :
  * 1. La construction du contexte (Prompt Builder).
- * 2. La communication avec l'API externe (GeminiClient).
+ * 2. La communication avec l'API externe (GeminiClient) en mode Streaming.
  * 3. L'exécution dynamique des outils (Function Calling).
  * 4. La boucle de réflexion multi-tours avec l'IA.
- *
- * NOTE: La persistance de l'historique est maintenant gérée par ConversationManager
- * dans les controllers API (ChatApiController). Le mode session legacy a été supprimé.
  */
 class ChatService
 {
     private const MAX_TURNS = 5;
 
-    /**
-     * @param GeminiClient              $geminiClient    client HTTP bas niveau pour l'API Gemini (Vertex AI)
-     * @param PromptBuilder             $promptBuilder   service de construction du Prompt Système
-     * @param iterable<AiToolInterface> $tools           collection des outils disponibles pour l'IA (injectés via DI)
-     * @param CacheInterface            $cache           cache Symfony pour stocker temporairement les données de débogage
-     * @param string                    $configuredModel modèle Gemini configuré
-     */
     public function __construct(
         private GeminiClient $geminiClient,
         private PromptBuilder $promptBuilder,
@@ -45,45 +35,21 @@ class ChatService
     /**
      * Traite un message utilisateur et retourne la réponse de l'IA (après exécution d'outils si nécessaire).
      *
-     * Cette méthode gère le cycle de vie complet d'un tour de parole :
-     * 1. Chargement de l'historique.
-     * 2. Injection du contexte (System Prompt + Persona).
-     * 3. Boucle d'interaction (Requête -> IA -> Outil -> Requête -> IA...).
-     * 4. Sauvegarde du nouvel historique.
+     * @param string $message
+     * @param array $options
+     * @param callable|null $onStatusUpdate Function(string $message, string $step): void
+     * @param callable|null $onToken        Function(string $token): void (Nouveau pour le streaming)
      *
-     * @param string $message le message texte envoyé par l'utilisateur
-     * @param array{
-     *    stateless?: bool,
-     *    reset_conversation?: bool,
-     *    debug?: bool,
-     *    persona?: string,
-     *    tools?: array,
-     *    history?: array
-     * } $options Options de configuration de la requête :
-     *  - 'stateless' (bool) : Ne pas charger ni sauvegarder l'historique (mode "one-shot").
-     *  - 'reset_conversation' (bool) : Effacer l'historique AVANT de traiter ce message.
-     *  - 'debug' (bool) : Activer la collecte d'informations détaillées pour le débogage.
-     *  - 'persona' (string) : Clé de la personnalité à utiliser (écrase le défaut).
-     *  - 'tools' (array) : Définitions d'outils spécifiques pour cette requête (Optionnel, écrase les défauts).
-     *  - 'history' (array) : Historique de conversation externe à utiliser (ex: depuis BDD) au lieu de charger depuis session.
-     * @param callable|null $onStatusUpdate Callback optionnel pour le streaming d'état (feedback UI).
-     *                                      Signature: function(string $message, string $step): void
-     *
-     * @return array{
-     *    answer: string,
-     *    debug_id: ?string
-     * } Tableau contenant :
-     *  - 'answer' (string) : La réponse finale en Markdown.
-     *  - 'debug_id' (string|null) : ID unique pour récupérer les logs de debug (si options['debug'] = true).
+     * @return array
      */
-    public function ask(string $message, array $options = [], ?callable $onStatusUpdate = null): array
-    {
+    public function ask(
+        string $message,
+        array $options = [],
+        ?callable $onStatusUpdate = null,
+        ?callable $onToken = null
+    ): array {
         $isStateless = $options['stateless'] ?? false;
 
-        // Reset is handled by ConversationManager in ChatApiController
-        // Legacy session-based reset has been removed
-
-        // Empty message with reset = just clear
         if (empty($message) && ($options['reset_conversation'] ?? false)) {
             return ['answer' => '', 'debug' => null];
         }
@@ -92,27 +58,20 @@ class ChatService
         $personaKey = $options['persona'] ?? null;
         $systemInstruction = $this->promptBuilder->buildSystemInstruction($personaKey);
 
-        // Tools Handling: Dynamic override or default injection
+        // Tools Handling
         if (isset($options['tools']) && is_array($options['tools'])) {
-            // If manual tools are provided in options (raw array format usually)
-            // We use them directly.
             $toolDefinitions = $options['tools'];
-        // Note: If using tools from options, execution logic might fail if they are not in $this->tools registry.
-        // This assumes the Caller handles tool execution or only passes definintions for model awareness.
-        // For now, let's assume standard behavior: we use injected tools unless overridden.
         } else {
             $toolDefinitions = $this->buildToolDefinitions();
         }
 
-        // Load history from database (passed via options) or start fresh
+        // Load History
         if ($isStateless) {
             $contents = [
                 ['role' => 'user', 'parts' => [['text' => $message]]],
             ];
             $rawHistory = [];
         } else {
-            // Use history from database (passed via 'history' option from ConversationManager)
-            // No fallback to session - session-based history is DEPRECATED
             $rawHistory = $options['history'] ?? [];
             $contents = $this->sanitizeHistoryForNewTurn($rawHistory);
             if (!empty($message)) {
@@ -124,20 +83,21 @@ class ChatService
             $onStatusUpdate('Analyse de la demande...', 'thinking');
         }
 
-        // Model always comes from configuration (no override allowed)
         $effectiveModel = $this->configuredModel;
 
         $debugAccumulator = [
             'model' => $effectiveModel,
-            'endpoint' => 'Vertex AI',
+            'endpoint' => 'Vertex AI (Stream)',
             'history_loaded' => count($rawHistory).' messages',
             'turns' => [],
             'tool_executions' => [],
         ];
 
         $fullTextAccumulator = '';
+        $finalUsageMetadata = [];
+        $finalSafetyRatings = [];
 
-        // Multi-turn loop (handle function calls)
+        // Multi-turn loop
         for ($i = 0; $i < self::MAX_TURNS; ++$i) {
             if ($onStatusUpdate && $i > 0) {
                 $onStatusUpdate('Réflexion supplémentaire...', 'thinking');
@@ -146,65 +106,100 @@ class ChatService
             $debugAccumulator['system_prompt'] = $systemInstruction;
             $debugAccumulator['history'] = $contents;
 
-            $response = $this->geminiClient->generateContent(
+            // ---- STREAMING EXECUTION ----
+            $stream = $this->geminiClient->streamGenerateContent(
                 $systemInstruction,
                 $contents,
                 $toolDefinitions,
-                null // Model comes from GeminiClient configuration
+                null
             );
 
-            if ($options['debug'] ?? false) {
-                $debugAccumulator['raw_response'] = $response;
-            }
-            
-            // Adapter pour la nouvelle structure (Return complet de GeminiClient)
-            // Avant : $response['parts']
-            // Après : $response['candidates'][0]['content']['parts']
-            $candidate = $response['candidates'][0] ?? [];
-            $content = $candidate['content'] ?? [];
-            $parts = $content['parts'] ?? [];
-
-            // Extraction des métadonnées (Usage & Safety)
-            $usageMetadata = $response['usageMetadata'] ?? [];
-            $safetyRatings = $candidate['safetyRatings'] ?? []; // safetyRatings est souvent au niveau du candidat 
-
-
             $currentTurnText = '';
-            $functionCalls = [];
+            $currentFunctionCalls = [];
+            $streamDebugParts = [];
 
-            // Extract text and function calls
-            foreach ($parts as $part) {
-                // Handle native Gemini 2.5+ thinking field
-                // Skip thinking parts - they should NOT be included in the answer text
-                // Thinking data is already available in raw response for debug purposes
-                if (isset($part['thought']) && true === $part['thought']) {
-                    continue;
+            // Consommation du flux
+            foreach ($stream as $chunk) {
+                // Debug storage
+                if ($options['debug'] ?? false) {
+                    $streamDebugParts[] = $chunk;
                 }
 
-                if (isset($part['text'])) {
-                    $currentTurnText .= $part['text'];
+                // 1. Métadonnées (souvent à la fin ou mises à jour à chaque chunk)
+                if (isset($chunk['usageMetadata'])) {
+                    $finalUsageMetadata = $chunk['usageMetadata'];
                 }
-                if (isset($part['functionCall'])) {
-                    $functionCalls[] = $part['functionCall'];
+                
+                $candidate = $chunk['candidates'][0] ?? [];
+                
+                if (isset($candidate['safetyRatings'])) {
+                    $finalSafetyRatings = $candidate['safetyRatings'];
+                }
+
+                $content = $candidate['content'] ?? [];
+                $parts = $content['parts'] ?? [];
+
+                // 2. Traitement des parts (Texte ou Fonctions)
+                foreach ($parts as $part) {
+                    // Handle native thoughts (keep stream alive)
+                    if (isset($part['thought']) && true === $part['thought']) {
+                         if ($onStatusUpdate && empty($currentTurnText)) {
+                             // Only update status if we haven't started speaking yet
+                             $onStatusUpdate('L\'IA réfléchit...', 'thinking_token');
+                         }
+                         continue;
+                    }
+
+                    // Text
+                    if (isset($part['text'])) {
+                        $textChunk = $part['text'];
+                        
+                        // Accumulation locale pour ce tour
+                        $currentTurnText .= $textChunk;
+                        
+                        // Streaming vers le frontend via callback
+                        // On n'envoie PAS si on est en train d'accumuler une fonction (rare qu'ils soient mélangés mais prudence)
+                        // Et on évite d'envoyer les tags <thinking> si possible (filtrage post-hoc difficile en stream)
+                        // Pour l'instant, on envoie tout le texte brut, le frontend affichera.
+                        if ($onToken) {
+                            $onToken($textChunk);
+                        }
+                    }
+
+                    // Function Calls (souvent un chunk distinct ou à la fin)
+                    if (isset($part['functionCall'])) {
+                        // On stocke l'appel.
+                        // Attention : en streaming, un functionCall peut-il être splitté ?
+                        // Vertex renvoie généralement l'objet functionCall complet dans un chunk.
+                        // Si ce n'est pas le cas, mon parser JSON dans GeminiClient aura reconstitué l'objet complet.
+                        $currentFunctionCalls[] = $part['functionCall'];
+                    }
                 }
             }
+            // ---- END STREAM ----
 
+            // Nettoyage du texte accumulé (comme avant)
             $currentTurnText = TextUtil::sanitizeUtf8($currentTurnText);
+            
+            // Suppression des tags thinking pour l'historique et le texte final global
+            // Note: Le frontend a reçu les tags via stream, c'est au JS de clean si besoin visuellement.
+            // Ici on clean pour la mémoire propres.
+            $cleanText = preg_replace('/<thinking>.*?<\/thinking>/is', '', $currentTurnText);
+            $cleanText = preg_replace('/<\/?thinking[^>]*>/i', '', $cleanText);
+            $cleanText = trim($cleanText);
 
-            // CRITICAL: Remove any <thinking> tags that Gemini might generate in the text
-            // These should NOT exist with native thinking, but API sometimes includes them anyway
-            $currentTurnText = preg_replace('/<thinking>.*?<\/thinking>/is', '', $currentTurnText);
-            $currentTurnText = preg_replace('/<\/?thinking[^>]*>/i', '', $currentTurnText);
-            $currentTurnText = trim($currentTurnText);
+            $fullTextAccumulator .= $cleanText;
 
-            $fullTextAccumulator .= $currentTurnText;
-
-            // Add model response to history
+            // Ajout réponse Model à l'historique (Note: On garde le texte original pour l'intégrité du tour)
+            // Mais pour éviter de polluer le contexte avec des thoughts, on peut utiliser le cleanText.
+            // Cependant, Google recommande de garder les thoughts. 
+            // Vu qu'on filtrait avant, on continue de filtrer pour l'historique. 
+            // Ainsi, la BDD reste propre.
             $modelParts = [];
-            if ('' !== $currentTurnText) {
-                $modelParts[] = ['text' => $currentTurnText];
+            if ('' !== $cleanText) {
+                $modelParts[] = ['text' => $cleanText];
             }
-            foreach ($functionCalls as $fc) {
+            foreach ($currentFunctionCalls as $fc) {
                 $modelParts[] = ['functionCall' => $fc];
             }
 
@@ -212,30 +207,23 @@ class ChatService
                 $contents[] = ['role' => 'model', 'parts' => $modelParts];
             }
 
-            // Debug info
+            // Debug Info Aggregation
             if ($options['debug'] ?? false) {
                 $debugAccumulator['turns'][] = [
                     'turn' => $i + 1,
-                    // ... existing debug info ...
                     'text_content' => $currentTurnText,
-                    'text_length' => strlen($currentTurnText),
-                    'has_text' => '' !== $currentTurnText,
-                    'function_calls_count' => count($functionCalls),
-                    'function_names' => array_map(fn ($fc) => $fc['name'], $functionCalls),
-                    'function_calls_data' => $functionCalls,
+                    'function_calls' => $currentFunctionCalls,
+                    'raw_chunks_count' => count($streamDebugParts),
                 ];
-                
-                // Add usage/safety to debug accumulator (last turn wins, or accumulate?) 
-                // Let's store the latest usage
-                $debugAccumulator['usage'] = $usageMetadata;
-                $debugAccumulator['safety'] = $safetyRatings;
+                $debugAccumulator['usage'] = $finalUsageMetadata;
+                $debugAccumulator['safety'] = $finalSafetyRatings;
             }
 
-            // Process function calls
-            if (!empty($functionCalls)) {
+            // Process Function Calls
+            if (!empty($currentFunctionCalls)) {
                 $functionResponseParts = [];
 
-                foreach ($functionCalls as $fc) {
+                foreach ($currentFunctionCalls as $fc) {
                     $functionName = $fc['name'];
                     $args = $fc['args'] ?? [];
 
@@ -248,7 +236,7 @@ class ChatService
                     if (null !== $functionResponse) {
                         $functionResponseParts[] = [
                             'functionResponse' => [
-                                'name' => $functionName,
+                                'name' => $functionName, // Vertex demande 'name' ici aussi
                                 'response' => ['content' => $functionResponse],
                             ],
                         ];
@@ -264,53 +252,38 @@ class ChatService
                 }
 
                 if (!empty($functionResponseParts)) {
-                    // Update sanitized contents (for Gemini)
                     $contents[] = ['role' => 'function', 'parts' => $functionResponseParts];
-                    // Also update raw history (for Session)
                     $rawHistory[] = ['role' => 'function', 'parts' => $functionResponseParts];
+                    // On boucle pour laisser le modèle répondre après l'outil
+                    continue; 
                 }
-
-                // Continue loop to let model react to tool results
-                continue;
             }
 
-            // No function calls = final response
+            // Pas d'appel de fonction -> Fin du tour
+            // Sauvegarde historique final
             if (!$isStateless) {
-                // 1. Add User Message to Raw History
                 if (!empty($message)) {
-                    // Note: sanitizing again for safety, though technically done at start
-                    $rawHistory[] = ['role' => 'user', 'parts' => [['text' => TextUtil::sanitizeUtf8($message)]]];
+                     $rawHistory[] = ['role' => 'user', 'parts' => [['text' => TextUtil::sanitizeUtf8($message)]]];
                 }
-
-                // 2. Add Model Response to Raw History with Metadata
                 if (!empty($modelParts)) {
-                    $debugAccumulator['total_turns'] = $i + 1;
-
-                    $rawHistory[] = [
+                     // On attache les métadonnées finales au dernier message du modèle
+                     $rawHistory[] = [
                         'role' => 'model',
                         'parts' => $modelParts,
                         'metadata' => [
                             'debug' => ($options['debug'] ?? false) ? $debugAccumulator : null,
-                        ],
+                            'usage' => $finalUsageMetadata, // IMPORTANT pour la BDD
+                        ]
                     ];
                 }
-
-                // History saving is now handled by ConversationManager in ChatApiController
-                // Session-based persistence via conversationHandler is DEPRECATED
-                // $this->conversationHandler->saveHistory($rawHistory);
             }
 
-            $debugAccumulator['total_turns'] = $i + 1;
-
+            // Save Debug Cache
             $debugId = null;
             if ($options['debug'] ?? false) {
-                // Generate a unique ID for this debug session
                 $debugId = uniqid('dbg_', true);
-
-                // Save to cache (TTL 1 hour)
                 $this->cache->get("synapse_debug_{$debugId}", function (ItemInterface $item) use ($debugAccumulator) {
                     $item->expiresAfter(86400);
-
                     return $debugAccumulator;
                 });
             }
@@ -318,57 +291,29 @@ class ChatService
             return [
                 'answer' => $fullTextAccumulator,
                 'debug_id' => $debugId,
-                'usage' => $usageMetadata,
-                'safety' => $safetyRatings,
+                'usage' => $finalUsageMetadata,
+                'safety' => $finalSafetyRatings,
             ];
         }
 
         // Max turns exceeded
-        $debugId = null;
-        if ($options['debug'] ?? false) {
-            $debugId = uniqid('dbg_err_', true);
-            $this->cache->get("synapse_debug_{$debugId}", function (ItemInterface $item) use ($debugAccumulator) {
-                $item->expiresAfter(86400);
-
-                return $debugAccumulator;
-            });
-        }
-
         return [
             'answer' => "Désolé, je n'ai pas pu traiter votre demande après plusieurs tentatives.",
-            'debug_id' => $debugId,
-            'usage' => [],
-            'safety' => [],
+            'debug_id' => null,
+            'usage' => $finalUsageMetadata,
+            'safety' => $finalSafetyRatings,
         ];
     }
 
-    /**
-     * @deprecated Session-based conversation management has been removed.
-     * Use ConversationManager directly for Doctrine-based persistence.
-     */
     public function resetConversation(): void
     {
-        // No-op: Session-based conversation handling removed
-        // Use ConversationManager::deleteConversation() instead
     }
 
-    /**
-     * @deprecated Session-based conversation management has been removed.
-     * Use ConversationManager directly for Doctrine-based persistence.
-     * @return array<int, array>
-     */
     public function getConversationHistory(): array
     {
-        // No-op: Session-based conversation handling removed
-        // Use ConversationManager::getConversationMessages() instead
         return [];
     }
 
-    /**
-     * Convertit la collection d'objets Tool en définitions conformes à l'API Gemini.
-     *
-     * @return array<int, array> tableau de définitions JSON Schema
-     */
     private function buildToolDefinitions(): array
     {
         $definitions = [];
@@ -384,14 +329,6 @@ class ChatService
         return $definitions;
     }
 
-    /**
-     * Exécute un outil spécifique par son nom.
-     *
-     * @param string $name le nom technique de l'outil
-     * @param array  $args les arguments fournis par l'IA
-     *
-     * @return string|null la réponse de l'outil (JSON ou string) ou null si introuvable
-     */
     private function executeTool(string $name, array $args): ?string
     {
         foreach ($this->tools as $tool) {
@@ -402,7 +339,6 @@ class ChatService
                     return $result;
                 }
 
-                // Force JSON for complex objects
                 return json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
             }
         }
@@ -410,15 +346,6 @@ class ChatService
         return null;
     }
 
-    /**
-     * Prépare l'historique brut pour l'envoi à l'API Gemini.
-     *
-     * Nettoie les données inutiles et s'assure que le format est strictement respecté.
-     *
-     * @param array $history L'historique brut (provenant du Handler)
-     *
-     * @return array L'historique assaini pour l'API
-     */
     private function sanitizeHistoryForNewTurn(array $history): array
     {
         $sanitized = [];
