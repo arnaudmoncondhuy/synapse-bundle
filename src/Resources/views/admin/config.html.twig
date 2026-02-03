@@ -110,7 +110,7 @@
 
 				<div class="synapse-admin__card-body">
 					<div style="background: var(--synapse-admin-bg-main); padding: 1rem; border-radius: var(--synapse-admin-radius-sm); border: 1px solid var(--synapse-admin-border); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-						<input type="checkbox" name="safety_enabled" id="safety_enabled" value="1" {{ config.isSafetyEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--synapse-admin-primary);">
+						<input type="checkbox" name="safety_enabled" id="safety_enabled" value="1" {{ config.safetyEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--synapse-admin-primary);">
 						<div>
 							<label for="safety_enabled" style="font-weight: 600; cursor: pointer; display: block;">Activer les filtres de sécurité</label>
 							<p style="margin: 0; font-size: 0.85rem; color: var(--synapse-admin-text-muted);">Bloque automatiquement les contenus inadaptés.</p>
@@ -223,7 +223,7 @@
 
 				<div class="synapse-admin__card-body">
 					<div style="background: var(--synapse-admin-bg-main); padding: 1rem; border-radius: var(--synapse-admin-radius-sm); border: 1px solid var(--synapse-admin-border); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-						<input type="checkbox" name="thinking_enabled" id="thinking_enabled" value="1" {{ config.isThinkingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--synapse-admin-primary);">
+						<input type="checkbox" name="thinking_enabled" id="thinking_enabled" value="1" {{ config.thinkingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--synapse-admin-primary);">
 						<div>
 							<label for="thinking_enabled" style="font-weight: 600; cursor: pointer; display: block;">Activer le Thinking</label>
 							<p style="margin: 0; font-size: 0.85rem; color: var(--synapse-admin-text-muted);">Permet au modèle de réfléchir avant de répondre.</p>
@@ -252,7 +252,7 @@
 
 				<div class="synapse-admin__card-body">
 					<div style="background: var(--synapse-admin-bg-main); padding: 1rem; border-radius: var(--synapse-admin-radius-sm); border: 1px solid var(--synapse-admin-border); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-						<input type="checkbox" name="context_caching_enabled" id="context_caching_enabled" value="1" {{ config.isContextCachingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--synapse-admin-primary);">
+						<input type="checkbox" name="context_caching_enabled" id="context_caching_enabled" value="1" {{ config.contextCachingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--synapse-admin-primary);">
 						<div>
 							<label for="context_caching_enabled" style="font-weight: 600; cursor: pointer; display: block;">Activer le context caching</label>
 							<p style="margin: 0; font-size: 0.85rem; color: var(--synapse-admin-text-muted);">Réutilise le contexte sans le renvoyer à chaque requête.</p>
@@ -312,7 +312,7 @@
 				<div class="synapse-admin__card-body">
 					<div class="synapse-admin__grid-2">
 						<div style="background: var(--synapse-admin-bg-main); padding: 1rem; border-radius: var(--synapse-admin-radius-sm); border: 1px solid var(--synapse-admin-border); display: flex; align-items: center; gap: 0.75rem;">
-							<input type="checkbox" name="risk_detection_enabled" id="risk_detection_enabled" value="1" {{ config.isRiskDetectionEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--synapse-admin-primary);">
+							<input type="checkbox" name="risk_detection_enabled" id="risk_detection_enabled" value="1" {{ config.riskDetectionEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--synapse-admin-primary);">
 							<div>
 								<label for="risk_detection_enabled" style="font-weight: 600; cursor: pointer; display: block;">Détection des Risques</label>
 							</div>
