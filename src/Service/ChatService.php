@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Service;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
+use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient;
 use ArnaudMoncondhuy\SynapseBundle\Util\TextUtil;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -28,7 +29,7 @@ class ChatService
         private PromptBuilder $promptBuilder,
         private iterable $tools,
         private CacheInterface $cache,
-        private string $configuredModel = 'gemini-2.5-flash',
+        private ConfigProviderInterface $configProvider,
     ) {
     }
 
@@ -83,7 +84,8 @@ class ChatService
             $onStatusUpdate('Analyse de la demande...', 'thinking');
         }
 
-        $effectiveModel = $this->configuredModel;
+        $config = $this->configProvider->getConfig();
+        $effectiveModel = $config['model'] ?? 'gemini-2.5-flash';
 
         $debugAccumulator = [
             'model' => $effectiveModel,

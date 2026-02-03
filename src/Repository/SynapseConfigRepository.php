@@ -62,6 +62,19 @@ class SynapseConfigRepository extends ServiceEntityRepository
         $config->setThinkingBudget(1024);
         $config->setContextCachingEnabled(false);
 
+        // New Defaults
+        $config->setVertexRegion('europe-west1');
+        $config->setPersistenceEnabled(false);
+        $config->setPersistenceHandler('session');
+        $config->setEncryptionEnabled(false);
+        $config->setTokenTrackingEnabled(false);
+        $config->setRiskDetectionEnabled(false);
+        $config->setRetentionDays(30);
+        $config->setUiSidebarEnabled(true);
+        $config->setAdminDefaultColor('#8b5cf6');
+        $config->setAdminDefaultIcon('robot');
+        $config->setContextLanguage('fr');
+
         return $config;
     }
 

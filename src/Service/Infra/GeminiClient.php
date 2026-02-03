@@ -27,7 +27,6 @@ class GeminiClient
     private const VERTEX_URL = 'https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/%s:generateContent';
     private const VERTEX_STREAM_URL = 'https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/%s:streamGenerateContent';
 
-    private ?ConfigProviderInterface $configProvider = null;
 
     public function __construct(
         private HttpClientInterface $httpClient,
@@ -47,9 +46,9 @@ class GeminiClient
         private array $generationStopSequences = [],
         private bool $contextCachingEnabled = false,
         private ?string $contextCachingId = null,
-        ?ConfigProviderInterface $configProvider = null,
+        private ConfigProviderInterface $configProvider,
     ) {
-        $this->configProvider = $configProvider;
+        // Initial application of dynamic config
         $this->applyDynamicConfig();
     }
 
@@ -60,11 +59,20 @@ class GeminiClient
      */
     private function applyDynamicConfig(): void
     {
-        if (null === $this->configProvider) {
-            return;
+        // On récupère la config fraîchement chargée
+        $config = $this->configProvider->getConfig();
+
+        // Vertex AI
+        if (isset($config['vertex'])) {
+            $this->vertexProjectId = $config['vertex']['project_id'] ?? $this->vertexProjectId;
+            $this->vertexRegion = $config['vertex']['region'] ?? $this->vertexRegion;
         }
 
-        $config = $this->configProvider->getConfig();
+        // Thinking
+        if (isset($config['thinking'])) {
+            $this->thinkingEnabled = $config['thinking']['enabled'] ?? $this->thinkingEnabled;
+            $this->thinkingBudget = $config['thinking']['budget'] ?? $this->thinkingBudget;
+        }
 
         // Safety Settings
         if (isset($config['safety_settings'])) {
@@ -109,6 +117,8 @@ class GeminiClient
         ?string $model = null,
         ?array $thinkingConfigOverride = null,
     ): array {
+        $this->applyDynamicConfig(); // Refresh config
+
         $effectiveModel = $model ?? $this->model;
         $url = $this->buildVertexUrl(self::VERTEX_URL, $effectiveModel);
         
@@ -149,6 +159,8 @@ class GeminiClient
         ?string $model = null,
         ?array $thinkingConfigOverride = null,
     ): \Generator {
+        $this->applyDynamicConfig(); // Refresh config
+
         $effectiveModel = $model ?? $this->model;
         $url = $this->buildVertexUrl(self::VERTEX_STREAM_URL, $effectiveModel);
 

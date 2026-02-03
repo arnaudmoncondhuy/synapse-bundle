@@ -33,6 +33,32 @@
 				</div>
 			</div>
 
+			<!-- ============================= VERTEX AI ============================= -->
+			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
+				<div class="syn-card-header">
+					<div class="syn-kpi-icon info" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+						<i data-lucide="cloud"></i>
+					</div>
+					<div>
+						<h2 style="font-size: 1.1rem; margin: 0;">Vertex AI</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Configuration du projet Google Cloud.</p>
+					</div>
+				</div>
+
+				<div class="syn-card-body">
+					<div class="syn-grid-2">
+						<div class="syn-form-group">
+							<label class="syn-label">ID Projet GCP</label>
+							<input type="text" name="vertex_project_id" class="syn-input" value="{{ config.vertexProjectId }}" placeholder="mon-projet-gcp">
+						</div>
+						<div class="syn-form-group">
+							<label class="syn-label">Région</label>
+							<input type="text" name="vertex_region" class="syn-input" value="{{ config.vertexRegion }}" placeholder="europe-west1">
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<!-- ============================= PROMPT SYSTÈME ============================= -->
 			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
 				<div class="syn-card-header">
@@ -180,6 +206,35 @@
 				</div>
 			</div>
 
+			<!-- ============================= THINKING ============================= -->
+			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
+				<div class="syn-card-header">
+					<div class="syn-kpi-icon warning" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+						<i data-lucide="brain-circuit"></i>
+					</div>
+					<div>
+						<h2 style="font-size: 1.1rem; margin: 0;">Thinking (CoT)</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Paramètres de réflexion pour les modèles compatibles (Gemini 2.0+).</p>
+					</div>
+				</div>
+
+				<div class="syn-card-body">
+					<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+						<input type="checkbox" name="thinking_enabled" id="thinking_enabled" value="1" {{ config.isThinkingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
+						<div>
+							<label for="thinking_enabled" style="font-weight: 600; cursor: pointer; display: block;">Activer le Thinking</label>
+							<p style="margin: 0; font-size: 0.85rem; color: var(--syn-text-muted);">Permet au modèle de réfléchir avant de répondre.</p>
+						</div>
+					</div>
+
+					<div class="syn-form-group">
+						<label class="syn-label">Budget Tokens Thinking</label>
+						<input type="number" name="thinking_budget" class="syn-input" min="1024" step="1024" value="{{ config.thinkingBudget }}">
+						<p class="syn-help">Minimum 1024 tokens.</p>
+					</div>
+				</div>
+			</div>
+
 			<!-- ============================= CONTEXT CACHING ============================= -->
 			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
 				<div class="syn-card-header">
@@ -212,6 +267,134 @@
 					<div class="syn-form-group">
 						<label class="syn-label">🔑 ID du Cache Vertex AI</label>
 						<input type="text" name="context_caching_id" class="syn-input" value="{{ config.contextCachingId }}" placeholder="projects/..." style="font-family: monospace;">
+					</div>
+				</div>
+			</div>
+
+			<!-- ============================= INFRA & STOCKAGE ============================= -->
+			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
+				<div class="syn-card-header">
+					<div class="syn-kpi-icon secondary" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+						<i data-lucide="database-backup"></i>
+					</div>
+					<div>
+						<h2 style="font-size: 1.1rem; margin: 0;">Infrastructure & Stockage</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Persistance, Encryption et Rétention.</p>
+					</div>
+				</div>
+
+				<div class="syn-card-body">
+					<h3 style="font-size: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--syn-border); padding-bottom: 0.5rem;">Persistance</h3>
+					<div class="syn-grid-2">
+						<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); display: flex; align-items: center; gap: 0.75rem;">
+							<input type="checkbox" name="persistence_enabled" id="persistence_enabled" value="1" {{ config.isPersistenceEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
+							<div>
+								<label for="persistence_enabled" style="font-weight: 600; cursor: pointer; display: block;">Activer la persistance</label>
+							</div>
+						</div>
+						<div class="syn-form-group">
+							<label class="syn-label">Handler</label>
+							<select name="persistence_handler" class="syn-select">
+								<option value="session" {{ config.persistenceHandler == 'session' ? 'selected' : '' }}>Session (Volatile)</option>
+								<option value="doctrine" {{ config.persistenceHandler == 'doctrine' ? 'selected' : '' }}>Base de Données</option>
+							</select>
+						</div>
+					</div>
+
+					<h3 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--syn-border); padding-bottom: 0.5rem;">Rétention & Encryption</h3>
+					<div class="syn-grid-2">
+						<div class="syn-form-group">
+							<label class="syn-label">Rétention (Jours)</label>
+							<input type="number" name="retention_days" class="syn-input" min="1" value="{{ config.retentionDays }}">
+						</div>
+						<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); display: flex; align-items: center; gap: 0.75rem;">
+							<input type="checkbox" name="encryption_enabled" id="encryption_enabled" value="1" {{ config.isEncryptionEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
+							<div>
+								<label for="encryption_enabled" style="font-weight: 600; cursor: pointer; display: block;">Chiffrement des conversations</label>
+							</div>
+						</div>
+					</div>
+					<div class="syn-form-group">
+						<label class="syn-label">Clé de chiffrement (Opaque)</label>
+						<input type="password" name="encryption_key" class="syn-input" value="{{ config.encryptionKey }}" placeholder="Laisser vide si inchangé">
+					</div>
+				</div>
+			</div>
+
+			<!-- ============================= FONCTIONNALITÉS AVANCÉES ============================= -->
+			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
+				<div class="syn-card-header">
+					<div class="syn-kpi-icon error" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+						<i data-lucide="award"></i>
+					</div>
+					<div>
+						<h2 style="font-size: 1.1rem; margin: 0;">Fonctionnalités Avancées</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Suivi des coûts et détection des risques.</p>
+					</div>
+				</div>
+
+				<div class="syn-card-body">
+					<div class="syn-grid-2">
+						<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); display: flex; align-items: center; gap: 0.75rem;">
+							<input type="checkbox" name="token_tracking_enabled" id="token_tracking_enabled" value="1" {{ config.isTokenTrackingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
+							<div>
+								<label for="token_tracking_enabled" style="font-weight: 600; cursor: pointer; display: block;">Suivi des Tokens</label>
+							</div>
+						</div>
+						<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); display: flex; align-items: center; gap: 0.75rem;">
+							<input type="checkbox" name="risk_detection_enabled" id="risk_detection_enabled" value="1" {{ config.isRiskDetectionEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
+							<div>
+								<label for="risk_detection_enabled" style="font-weight: 600; cursor: pointer; display: block;">Détection des Risques</label>
+							</div>
+						</div>
+					</div>
+
+					<div class="syn-form-group" style="margin-top: 1rem;">
+						<label class="syn-label">Pricing JSON (Tokens)</label>
+						<textarea name="token_pricing" class="syn-textarea" rows="4" style="font-family: monospace;">{{ config.tokenPricing|json_encode }}</textarea>
+					</div>
+				</div>
+			</div>
+
+			<!-- ============================= UI & ADMIN ============================= -->
+			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
+				<div class="syn-card-header">
+					<div class="syn-kpi-icon primary" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+						<i data-lucide="layout"></i>
+					</div>
+					<div>
+						<h2 style="font-size: 1.1rem; margin: 0;">Interface & Context</h2>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Personnalisation de l'interface et du contexte global.</p>
+					</div>
+				</div>
+
+				<div class="syn-card-body">
+					<div class="syn-grid-2">
+						<div class="syn-form-group">
+							<label class="syn-label">Langue</label>
+							<input type="text" name="context_language" class="syn-input" value="{{ config.contextLanguage }}">
+						</div>
+						<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); display: flex; align-items: center; gap: 0.75rem;">
+							<input type="checkbox" name="ui_sidebar_enabled" id="ui_sidebar_enabled" value="1" {{ config.isUiSidebarEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
+							<div>
+								<label for="ui_sidebar_enabled" style="font-weight: 600; cursor: pointer; display: block;">Sidebar Activée</label>
+							</div>
+						</div>
+					</div>
+					<div class="syn-grid-2">
+						<div class="syn-form-group">
+							<label class="syn-label">Couleur Admin</label>
+							<input type="color" name="admin_default_color" class="syn-input" value="{{ config.adminDefaultColor }}" style="height: 40px; padding: 0;">
+						</div>
+						<div class="syn-form-group">
+							<label class="syn-label">Icone Admin</label>
+							<input type="text" name="admin_default_icon" class="syn-input" value="{{ config.adminDefaultIcon }}">
+						</div>
+					</div>
+
+					<div class="syn-form-group">
+						<label class="syn-label">Identité de Base (Override)</label>
+						<textarea name="context_base_identity" class="syn-textarea" rows="2">{{ config.contextBaseIdentity }}</textarea>
 					</div>
 				</div>
 			</div>
