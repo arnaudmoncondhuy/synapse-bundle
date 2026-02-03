@@ -127,16 +127,14 @@
                             {% endif %}
 
                             {# Persona Selector (if available) #}
-                            {% if function('synapse_get_personas') is defined %}
-                                {% set personas = synapse_get_personas() %}
-                                {% if personas is not empty %}
-                                    <select class="persona-input-selector" data-{{ controller_override|default('synapse--chat') }}-target="personaSelect">
-                                        <option value="">L'assistant (par défaut)</option>
-                                        {% for p in personas %}
-                                            <option value="{{ p.key }}">{{ p.emoji }} {{ p.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                {% endif %}
+                            {% set personas = synapse_get_personas() %}
+                            {% if personas is not empty %}
+                                <select class="persona-input-selector" data-{{ controller_override|default('synapse--chat') }}-target="personaSelect">
+                                    <option value="">L'assistant (par défaut)</option>
+                                    {% for p in personas %}
+                                        <option value="{{ p.key }}">{{ p.emoji }} {{ p.name }}</option>
+                                    {% endfor %}
+                                </select>
                             {% endif %}
                         </div>
 
