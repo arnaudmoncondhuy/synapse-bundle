@@ -137,6 +137,7 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
 
         // UI configuration
         $container->setParameter('synapse.ui.sidebar_enabled', $config['ui']['sidebar_enabled'] ?? true);
+        $container->setParameter('synapse.ui.layout_mode', $config['ui']['layout_mode'] ?? 'standalone');
 
         // Register encryption service if enabled
         if ($config['encryption']['enabled']) {

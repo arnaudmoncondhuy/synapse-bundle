@@ -68,18 +68,12 @@ class ConfigController extends AbstractController
             $config->setVertexProjectId($data['vertex_project_id'] ?? null);
             $config->setVertexRegion($data['vertex_region'] ?? 'europe-west1');
 
-            // Persistence
-            $config->setPersistenceEnabled((bool) ($data['persistence_enabled'] ?? false));
-            $config->setPersistenceHandler($data['persistence_handler'] ?? 'session');
+            // Persistence: Enforced by Bundle (Always DB)
 
-            // Encryption
-            $config->setEncryptionEnabled((bool) ($data['encryption_enabled'] ?? false));
-            $config->setEncryptionKey($data['encryption_key'] ?? null);
+            // Encryption: Static Config Only (YAML)
 
-            // Token Tracking
-            $config->setTokenTrackingEnabled((bool) ($data['token_tracking_enabled'] ?? false));
-            $tokenPricingJson = $data['token_pricing'] ?? '[]';
-            $config->setTokenPricing(json_decode($tokenPricingJson, true) ?? []);
+            // Token Tracking: Static Config Only (YAML)
+
 
             // Risk Detection
             $config->setRiskDetectionEnabled((bool) ($data['risk_detection_enabled'] ?? false));
@@ -88,14 +82,11 @@ class ConfigController extends AbstractController
             // Retention
             $config->setRetentionDays((int) ($data['retention_days'] ?? 30));
 
-            // UI & Admin
-            $config->setUiSidebarEnabled((bool) ($data['ui_sidebar_enabled'] ?? true));
-            $config->setAdminDefaultColor($data['admin_default_color'] ?? '#8b5cf6');
-            $config->setAdminDefaultIcon($data['admin_default_icon'] ?? 'robot');
+            // UI & Admin: Static Config Only (YAML) or Enforced
+
 
             // Context
             $config->setContextLanguage($data['context_language'] ?? 'fr');
-            $config->setContextBaseIdentity($data['context_base_identity'] ?? null);
 
             $this->configRepo->getEntityManager()->flush();
 

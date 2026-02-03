@@ -53,7 +53,7 @@ services:
         alias: ArnaudMoncondhuy\SynapseBundle\Service\DatabaseConfigProvider
 
     ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface:
-        alias: ArnaudMoncondhuy\SynapseBundle\Service\Impl\SessionConversationHandler
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\Core\DatabaseConversationHandler
 
     ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface:
         alias: ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultContextProvider
@@ -72,6 +72,7 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Service\PromptBuilder:
         arguments:
             $personaRegistry: '@ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry'
+            $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
 
     # Main service
     ArnaudMoncondhuy\SynapseBundle\Service\ChatService:
@@ -81,6 +82,11 @@ services:
             $tools: !tagged_iterator synapse.tool
             $cache: '@cache.app'
             $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
+
+    # UI Layout Resolution
+    ArnaudMoncondhuy\SynapseBundle\Service\SynapseLayoutResolver:
+        arguments:
+            $layoutMode: '%synapse.ui.layout_mode%'
 
     # Twig Integration
     ArnaudMoncondhuy\SynapseBundle\Twig\SynapseRuntime:
