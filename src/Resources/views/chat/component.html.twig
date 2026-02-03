@@ -89,7 +89,7 @@
             {# 2b. History Loop #}
             {% for msg in history %}
                 <div class="synapse-chat__message synapse-chat__message--{{ msg.role == 'user' ? 'user' : 'assistant' }}">
-                    {% if msg.role == 'assistant' %}
+                    {% if msg.role == 'assistant' or msg.role == 'model' %}
                         <div class="synapse-chat__avatar">
                             <div class="avatar-ai">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"><use href="#gemini-icon" fill="url(#gemini-gradient)"></use></svg>
