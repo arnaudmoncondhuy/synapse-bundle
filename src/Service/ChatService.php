@@ -327,7 +327,15 @@ class ChatService
     {
         $definitions = [];
 
+        $config = $this->configProvider->getConfig();
+        $riskEnabled = $config['risk_detection']['enabled'] ?? false;
+
         foreach ($this->tools as $tool) {
+            // Filter ReportRiskTool if disabled
+            if ($tool->getName() === 'report_risk' && !$riskEnabled) {
+                continue;
+            }
+
             $definitions[] = [
                 'name' => $tool->getName(),
                 'description' => $tool->getDescription(),
@@ -340,8 +348,16 @@ class ChatService
 
     private function executeTool(string $name, array $args): ?string
     {
+        $config = $this->configProvider->getConfig();
+        $riskEnabled = $config['risk_detection']['enabled'] ?? false;
+
         foreach ($this->tools as $tool) {
             if ($tool->getName() === $name) {
+                // Prevent execution if risk detection is disabled and tool is report_risk
+                if ($name === 'report_risk' && !$riskEnabled) {
+                    return null;
+                }
+
                 $result = $tool->execute($args);
 
                 if (is_string($result)) {
