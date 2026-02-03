@@ -44,7 +44,7 @@ class TokenUsageRepository extends ServiceEntityRepository
      *
      * @param \DateTimeInterface $start Date de début
      * @param \DateTimeInterface $end Date de fin
-     * @return array{prompt_tokens: int, completion_tokens: int, thinking_tokens: int, total_tokens: int, cost: float}
+     * @return array{request_count: int, prompt_tokens: int, completion_tokens: int, thinking_tokens: int, total_tokens: int, cost: float}
      */
     public function getGlobalStats(\DateTimeInterface $start, \DateTimeInterface $end, array $pricing = []): array
     {
@@ -53,6 +53,7 @@ class TokenUsageRepository extends ServiceEntityRepository
         // Requête UNION ALL pour agréger TokenUsage + Message
         $sql = <<<SQL
             SELECT
+                COUNT(*) as request_count,
                 COALESCE(SUM(prompt_tokens), 0) as prompt_tokens,
                 COALESCE(SUM(completion_tokens), 0) as completion_tokens,
                 COALESCE(SUM(thinking_tokens), 0) as thinking_tokens,
@@ -84,6 +85,7 @@ class TokenUsageRepository extends ServiceEntityRepository
         ])->fetchAssociative();
 
         $stats = [
+            'request_count' => (int) $result['request_count'],
             'prompt_tokens' => (int) $result['prompt_tokens'],
             'completion_tokens' => (int) $result['completion_tokens'],
             'thinking_tokens' => (int) $result['thinking_tokens'],
