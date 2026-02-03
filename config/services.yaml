@@ -26,7 +26,6 @@ services:
             $generationMaxOutputTokens: '%synapse.generation_config.max_output_tokens%'
             $generationStopSequences: '%synapse.generation_config.stop_sequences%'
             $contextCachingEnabled: '%synapse.context_caching.enabled%'
-            $contextCachingEnabled: '%synapse.context_caching.enabled%'
             $contextCachingId: '%synapse.context_caching.cached_content_id%'
             $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
 
