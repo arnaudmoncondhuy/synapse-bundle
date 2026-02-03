@@ -1,4 +1,4 @@
-{% extends synapse_admin_layout() %}
+﻿{% extends synapse_admin_layout() %}
 
 {% block admin_title %}Analytique - Synapse Admin
 {% endblock %}
@@ -8,7 +8,7 @@
 		<div>
 			<h1 class="synapse-admin__title">Analytique</h1>
 			<div class="synapse-admin__subtitle">
-				Usage et Coûts :
+				Usage et CoÃ»ts :
 				{{ period_label }}
 			</div>
 		</div>
@@ -23,8 +23,8 @@
 				<i data-lucide="coins"></i>
 			</div>
 			<div>
-				<div class="synapse-admin__kpi-label">Coût Estimé</div>
-				<div class="synapse-admin__kpi-value">€{{ cost|number_format(5, '.', ',') }}</div>
+				<div class="synapse-admin__kpi-label">CoÃ»t EstimÃ©</div>
+				<div class="synapse-admin__kpi-value">â‚¬{{ cost|number_format(5, '.', ',') }}</div>
 			</div>
 		</div>
 
@@ -49,7 +49,7 @@
 				<i data-lucide="zap"></i>
 			</div>
 			<div>
-				<div class="synapse-admin__kpi-label">Requêtes IA</div>
+				<div class="synapse-admin__kpi-label">RequÃªtes IA</div>
 				<div class="synapse-admin__kpi-value">{{ stats.request_count|default(0) }}</div>
 			</div>
 		</div>
@@ -62,7 +62,7 @@
 		<div style="display: flex; flex-direction: column; gap: 2rem;">
 			<div class="synapse-admin__card">
 				<div class="synapse-admin__card-header">
-					<h3 style="margin: 0; font-size: 1.1rem;">Tâches Automatisées</h3>
+					<h3 style="margin: 0; font-size: 1.1rem;">TÃ¢ches AutomatisÃ©es</h3>
 				</div>
 				<div class="synapse-admin__table-container">
 					<table class="synapse-admin__table">
@@ -95,7 +95,7 @@
 								</tr>
 							{% else %}
 								<tr>
-									<td colspan="4" style="padding: 2rem; text-align: center; color: var(--synapse-admin-text-muted);">Aucune tâche automatisée</td>
+									<td colspan="4" style="padding: 2rem; text-align: center; color: var(--synapse-admin-text-muted);">Aucune tÃ¢che automatisÃ©e</td>
 								</tr>
 							{% endfor %}
 						</tbody>
@@ -136,30 +136,31 @@
 					{% if daily is not empty %}
 						{% set max_tokens = 0 %}
 						{% for day in daily %}
-							{% if day.tokens > max_tokens %}
-								{% set max_tokens = day.tokens %}
+							{% if day.total_tokens > max_tokens %}
+								{% set max_tokens = day.total_tokens %}
 							{% endif %}
 						{% endfor %}
 
 						<div style="display: flex; flex-direction: column; gap: 0.75rem;">
 							{% for day in daily %}
-								{% set bar_width = max_tokens > 0 ? (day.tokens / max_tokens * 100) : 0 %}
+								{% set bar_width = max_tokens > 0 ? (day.total_tokens / max_tokens * 100) : 0 %}
 								<div style="display: flex; align-items: center; gap: 1rem;">
 									<div style="width: 80px; font-size: 0.85rem; color: var(--synapse-admin-text-muted); font-family: monospace;">{{ day.date }}</div>
 									<div style="flex: 1; height: 24px; background: var(--synapse-admin-border-light); border-radius: 4px; overflow: hidden; position: relative;">
 										<div style="width: {{ bar_width }}%; height: 100%; background: var(--synapse-admin-primary-light); border-right: 2px solid var(--synapse-admin-primary);"></div>
 									</div>
 									<div style="width: 60px; text-align: right; font-size: 0.85rem; font-weight: 600;">
-										{{ (day.tokens / 1000)|number_format(1) }}k
+										{{ (day.total_tokens / 1000)|number_format(1) }}k
 									</div>
 								</div>
 							{% endfor %}
 						</div>
 					{% else %}
-						<div style="text-align: center; padding: 2rem; color: var(--synapse-admin-text-muted);">Aucune donnée d'usage</div>
+						<div style="text-align: center; padding: 2rem; color: var(--synapse-admin-text-muted);">Aucune donnÃ©e d'usage</div>
 					{% endif %}
 				</div>
 			</div>
 		</div>
 	</div>
 {% endblock %}
+
