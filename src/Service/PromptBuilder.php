@@ -24,31 +24,26 @@ class PromptBuilder
      */
     private const TECHNICAL_PROMPT = <<<PROMPT
 ### CADRE TECHNIQUE DE RÉPONSE
-Tu es l'assistant virtuel de l'Intranet du Lycée du Pays de Bray.
 
 Ta réponse à l'utilisateur doit impérativement respecter ce format :
 - Format Markdown propre.
 - URLs au format [Texte](url) uniquement.
-- Ton : Direct, structuré, professionnel et courtois.
-- Langue : Français uniquement.
 PROMPT;
 
     public function __construct(
         private ContextProviderInterface $contextProvider,
         private PersonaRegistry $personaRegistry,
+        private \ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface $configProvider,
     ) {
     }
 
-    /**
-     * Construit l'instruction système complète.
-     *
-     * @param string|null $personaKey clé optionnelle pour activer une personnalité spécifique
-     *
-     * @return string le prompt complet fusionné
-     */
     public function buildSystemInstruction(?string $personaKey = null): string
     {
-        $basePrompt = $this->contextProvider->getSystemPrompt();
+        $config = $this->configProvider->getConfig();
+        $systemPrompt = $config['system_prompt'] ?? null;
+
+        // Si un prompt système est défini en base de données, il remplace celui du ContextProvider
+        $basePrompt = $systemPrompt ?: $this->contextProvider->getSystemPrompt();
 
         // Ajout d'un séparateur horizontal pour couper la hiérarchie Markdown
         $finalPrompt = self::TECHNICAL_PROMPT."\n\n---\n\n".$basePrompt;

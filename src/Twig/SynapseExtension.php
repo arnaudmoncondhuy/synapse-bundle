@@ -16,6 +16,7 @@ class SynapseExtension extends AbstractExtension
 {
     public function __construct(
         private \ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry $personaRegistry,
+        private \ArnaudMoncondhuy\SynapseBundle\Service\SynapseLayoutResolver $layoutResolver,
     ) {
     }
 
@@ -27,6 +28,9 @@ class SynapseExtension extends AbstractExtension
 
             // Retourne la liste des personas disponibles (pour créer un sélecteur par exemple)
             new TwigFunction('synapse_get_personas', [$this->personaRegistry, 'getAll']),
+            
+            // Résout dynamiquement le layout admin à utiliser (standalone ou module)
+            new TwigFunction('synapse_admin_layout', [$this->layoutResolver, 'getAdminLayout']),
         ];
     }
 }

@@ -1,10 +1,13 @@
-{% extends '@Synapse/admin/_layout.html.twig' %}
+{% extends synapse_admin_layout() %}
+
+{% block admin_title %}Configuration - Synapse Admin
+{% endblock %}
 
 {% block admin_content %}
-	<header class="syn-header">
+	<header class="synapse-admin__header">
 		<div>
-			<h1 class="syn-title">Configuration</h1>
-			<p class="syn-subtitle">Paramètres globaux de l'assistant et du modèle IA</p>
+			<h1 class="synapse-admin__title">Configuration</h1>
+			<p class="synapse-admin__subtitle">Paramètres globaux de l'assistant et du modèle IA</p>
 		</div>
 	</header>
 
@@ -12,67 +15,67 @@
 		<form
 			method="post">
 
-			<!-- ============================= MODÈLE IA ============================= -->
-			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
-				<div class="syn-card-header">
-					<div class="syn-kpi-icon primary" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+			{# ============================= MODÈLE IA ============================= #}
+			<div class="synapse-admin__card" style="margin-bottom: 2rem;">
+				<div class="synapse-admin__card-header">
+					<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--primary" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="cpu"></i>
 					</div>
 					<div>
 						<h2 style="font-size: 1.1rem; margin: 0;">Modèle IA</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Sélectionnez la version du modèle Gemini à utiliser.</p>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--synapse-admin-text-muted);">Sélectionnez la version du modèle Gemini à utiliser.</p>
 					</div>
 				</div>
 
-				<div class="syn-card-body">
-					<div class="syn-form-group">
-						<label class="syn-label">Version du Modèle</label>
-						<input type="text" name="gemini_model" class="syn-input" value="{{ config.model }}" placeholder="ex: gemini-2.5-flash" required>
-						<p class="syn-help">Référez-vous à la documentation Vertex AI pour les modèles disponibles.</p>
+				<div class="synapse-admin__card-body">
+					<div class="synapse-admin__form-group">
+						<label class="synapse-admin__label">Version du Modèle</label>
+						<input type="text" name="gemini_model" class="synapse-admin__input" value="{{ config.model }}" placeholder="ex: gemini-2.5-flash" required>
+						<p class="synapse-admin__help">Référez-vous à la documentation Vertex AI pour les modèles disponibles.</p>
 					</div>
 				</div>
 			</div>
 
-			<!-- ============================= VERTEX AI ============================= -->
-			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
-				<div class="syn-card-header">
-					<div class="syn-kpi-icon info" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+			{# ============================= VERTEX AI ============================= #}
+			<div class="synapse-admin__card" style="margin-bottom: 2rem;">
+				<div class="synapse-admin__card-header">
+					<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--primary" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="cloud"></i>
 					</div>
 					<div>
 						<h2 style="font-size: 1.1rem; margin: 0;">Vertex AI</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Configuration du projet Google Cloud.</p>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--synapse-admin-text-muted);">Configuration du projet Google Cloud.</p>
 					</div>
 				</div>
 
-				<div class="syn-card-body">
-					<div class="syn-grid-2">
-						<div class="syn-form-group">
-							<label class="syn-label">ID Projet GCP</label>
-							<input type="text" name="vertex_project_id" class="syn-input" value="{{ config.vertexProjectId }}" placeholder="mon-projet-gcp">
+				<div class="synapse-admin__card-body">
+					<div class="synapse-admin__grid-2">
+						<div class="synapse-admin__form-group">
+							<label class="synapse-admin__label">ID Projet GCP</label>
+							<input type="text" name="vertex_project_id" class="synapse-admin__input" value="{{ config.vertexProjectId }}" placeholder="mon-projet-gcp">
 						</div>
-						<div class="syn-form-group">
-							<label class="syn-label">Région</label>
-							<input type="text" name="vertex_region" class="syn-input" value="{{ config.vertexRegion }}" placeholder="europe-west1">
+						<div class="synapse-admin__form-group">
+							<label class="synapse-admin__label">Région</label>
+							<input type="text" name="vertex_region" class="synapse-admin__input" value="{{ config.vertexRegion }}" placeholder="europe-west1">
 						</div>
 					</div>
 				</div>
 			</div>
 
-			<!-- ============================= PROMPT SYSTÈME ============================= -->
-			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
-				<div class="syn-card-header">
-					<div class="syn-kpi-icon warning" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+			{# ============================= PROMPT SYSTÈME ============================= #}
+			<div class="synapse-admin__card" style="margin-bottom: 2rem;">
+				<div class="synapse-admin__card-header">
+					<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--warning" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="message-square-quote"></i>
 					</div>
 					<div>
 						<h2 style="font-size: 1.1rem; margin: 0;">Prompt Système</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Définissez le comportement global et le contexte de l'assistant.</p>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--synapse-admin-text-muted);">Définissez le comportement global et le contexte de l'assistant.</p>
 					</div>
 				</div>
 
-				<div class="syn-card-body">
-					<div class="syn-alert syn-alert-info">
+				<div class="synapse-admin__card-body">
+					<div class="synapse-admin__alert synapse-admin__alert--info">
 						<i data-lucide="info" style="flex-shrink: 0; margin-top: 2px;"></i>
 						<div>
 							<strong style="display: block; margin-bottom: 0.25rem;">Variables Dynamiques</strong>
@@ -85,75 +88,75 @@
 						</div>
 					</div>
 
-					<div class="syn-form-group">
-						<label class="syn-label">Instructions Personnalisées</label>
-						<textarea name="system_prompt" class="syn-textarea" rows="12" placeholder="Laissez vide pour utiliser le prompt par défaut..." style="font-family: monospace;">{{ config.systemPrompt }}</textarea>
-						<p class="syn-help">Ces instructions remplacent le prompt par défaut.</p>
+					<div class="synapse-admin__form-group">
+						<label class="synapse-admin__label">Instructions Personnalisées</label>
+						<textarea name="system_prompt" class="synapse-admin__textarea" rows="12" placeholder="Laissez vide pour utiliser le prompt par défaut..." style="font-family: monospace;">{{ config.systemPrompt }}</textarea>
+						<p class="synapse-admin__help">Ces instructions remplacent le prompt par défaut.</p>
 					</div>
 				</div>
 			</div>
 
-			<!-- ============================= SÉCURITÉ ============================= -->
-			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
-				<div class="syn-card-header">
-					<div class="syn-kpi-icon error" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+			{# ============================= SÉCURITÉ ============================= #}
+			<div class="synapse-admin__card" style="margin-bottom: 2rem;">
+				<div class="synapse-admin__card-header">
+					<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--error" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="shield-alert"></i>
 					</div>
 					<div>
 						<h2 style="font-size: 1.1rem; margin: 0;">Filtres de Sécurité</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Contrôle du contenu généré (recommandé pour environnement scolaire).</p>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--synapse-admin-text-muted);">Contrôle du contenu généré (recommandé pour environnement scolaire).</p>
 					</div>
 				</div>
 
-				<div class="syn-card-body">
-					<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-						<input type="checkbox" name="safety_enabled" id="safety_enabled" value="1" {{ config.isSafetyEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
+				<div class="synapse-admin__card-body">
+					<div style="background: var(--synapse-admin-bg-main); padding: 1rem; border-radius: var(--synapse-admin-radius-sm); border: 1px solid var(--synapse-admin-border); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+						<input type="checkbox" name="safety_enabled" id="safety_enabled" value="1" {{ config.isSafetyEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--synapse-admin-primary);">
 						<div>
 							<label for="safety_enabled" style="font-weight: 600; cursor: pointer; display: block;">Activer les filtres de sécurité</label>
-							<p style="margin: 0; font-size: 0.85rem; color: var(--syn-text-muted);">Bloque automatiquement les contenus inadaptés.</p>
+							<p style="margin: 0; font-size: 0.85rem; color: var(--synapse-admin-text-muted);">Bloque automatiquement les contenus inadaptés.</p>
 						</div>
 					</div>
 
-					<div class="syn-form-group">
-						<label class="syn-label">🛡️ Seuil par Défaut</label>
-						<select name="safety_default_threshold" class="syn-select">
+					<div class="synapse-admin__form-group">
+						<label class="synapse-admin__label">🛡️ Seuil par Défaut</label>
+						<select name="safety_default_threshold" class="synapse-admin__select">
 							{% for value, label in safety_thresholds %}
 								<option value="{{ value }}" {{ config.safetyDefaultThreshold == value ? 'selected' : '' }}>{{ label }}</option>
 							{% endfor %}
 						</select>
 					</div>
 
-					<div class="syn-grid-2">
-						<div class="syn-form-group">
-							<label class="syn-label">💬 Discours Haineux</label>
-							<select name="safety_hate_speech" class="syn-select">
+					<div class="synapse-admin__grid-2">
+						<div class="synapse-admin__form-group">
+							<label class="synapse-admin__label">💬 Discours Haineux</label>
+							<select name="safety_hate_speech" class="synapse-admin__select">
 								{% for value, label in safety_thresholds %}
 									<option value="{{ value }}" {{ config.safetyHateSpeech == value ? 'selected' : '' }}>{{ label }}</option>
 								{% endfor %}
 							</select>
 						</div>
 
-						<div class="syn-form-group">
-							<label class="syn-label">⚠️ Contenu Dangereux</label>
-							<select name="safety_dangerous_content" class="syn-select">
+						<div class="synapse-admin__form-group">
+							<label class="synapse-admin__label">⚠️ Contenu Dangereux</label>
+							<select name="safety_dangerous_content" class="synapse-admin__select">
 								{% for value, label in safety_thresholds %}
 									<option value="{{ value }}" {{ config.safetyDangerousContent == value ? 'selected' : '' }}>{{ label }}</option>
 								{% endfor %}
 							</select>
 						</div>
 
-						<div class="syn-form-group">
-							<label class="syn-label">😠 Harcèlement</label>
-							<select name="safety_harassment" class="syn-select">
+						<div class="synapse-admin__form-group">
+							<label class="synapse-admin__label">😠 Harcèlement</label>
+							<select name="safety_harassment" class="synapse-admin__select">
 								{% for value, label in safety_thresholds %}
 									<option value="{{ value }}" {{ config.safetyHarassment == value ? 'selected' : '' }}>{{ label }}</option>
 								{% endfor %}
 							</select>
 						</div>
 
-						<div class="syn-form-group">
-							<label class="syn-label">🔞 Contenu Sexuel</label>
-							<select name="safety_sexually_explicit" class="syn-select">
+						<div class="synapse-admin__form-group">
+							<label class="synapse-admin__label">🔞 Contenu Sexuel</label>
+							<select name="safety_sexually_explicit" class="synapse-admin__select">
 								{% for value, label in safety_thresholds %}
 									<option value="{{ value }}" {{ config.safetySexuallyExplicit == value ? 'selected' : '' }}>{{ label }}</option>
 								{% endfor %}
@@ -163,100 +166,100 @@
 				</div>
 			</div>
 
-			<!-- ============================= GÉNÉRATION ============================= -->
-			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
-				<div class="syn-card-header">
-					<div class="syn-kpi-icon primary" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+			{# ============================= GÉNÉRATION ============================= #}
+			<div class="synapse-admin__card" style="margin-bottom: 2rem;">
+				<div class="synapse-admin__card-header">
+					<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--primary" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="settings"></i>
 					</div>
 					<div>
 						<h2 style="font-size: 1.1rem; margin: 0;">Configuration de Génération</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Contrôle créativité et longueur des réponses.</p>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--synapse-admin-text-muted);">Contrôle créativité et longueur des réponses.</p>
 					</div>
 				</div>
 
-				<div class="syn-card-body">
-					<div class="syn-grid-3">
-						<div class="syn-form-group">
-							<label class="syn-label">🌡️ Température</label>
-							<input type="number" name="generation_temperature" class="syn-input" step="0.1" min="0" max="2" value="{{ config.generationTemperature }}">
-							<p class="syn-help">0.0 (Strict) - 2.0 (Créatif)</p>
+				<div class="synapse-admin__card-body">
+					<div class="synapse-admin__grid-3">
+						<div class="synapse-admin__form-group">
+							<label class="synapse-admin__label">🌡️ Température</label>
+							<input type="number" name="generation_temperature" class="synapse-admin__input" step="0.1" min="0" max="2" value="{{ config.generationTemperature }}">
+							<p class="synapse-admin__help">0.0 (Strict) - 2.0 (Créatif)</p>
 						</div>
 
-						<div class="syn-form-group">
-							<label class="syn-label">🎯 Top-P (Nucleus)</label>
-							<input type="number" name="generation_top_p" class="syn-input" step="0.01" min="0" max="1" value="{{ config.generationTopP }}">
+						<div class="synapse-admin__form-group">
+							<label class="synapse-admin__label">🎯 Top-P (Nucleus)</label>
+							<input type="number" name="generation_top_p" class="synapse-admin__input" step="0.01" min="0" max="1" value="{{ config.generationTopP }}">
 						</div>
 
-						<div class="syn-form-group">
-							<label class="syn-label">🔢 Top-K</label>
-							<input type="number" name="generation_top_k" class="syn-input" min="1" value="{{ config.generationTopK }}">
+						<div class="synapse-admin__form-group">
+							<label class="synapse-admin__label">🔢 Top-K</label>
+							<input type="number" name="generation_top_k" class="synapse-admin__input" min="1" value="{{ config.generationTopK }}">
 						</div>
 
-						<div class="syn-form-group">
-							<label class="syn-label">📏 Limite Tokens</label>
-							<input type="number" name="generation_max_output_tokens" class="syn-input" min="1" value="{{ config.generationMaxOutputTokens }}" placeholder="Défaut">
+						<div class="synapse-admin__form-group">
+							<label class="synapse-admin__label">📏 Limite Tokens</label>
+							<input type="number" name="generation_max_output_tokens" class="synapse-admin__input" min="1" value="{{ config.generationMaxOutputTokens }}" placeholder="Défaut">
 						</div>
 					</div>
 
-					<div class="syn-form-group" style="margin-top: 1.5rem;">
-						<label class="syn-label">🛑 Séquences d'Arrêt</label>
-						<input type="text" name="generation_stop_sequences" class="syn-input" value="{{ config.generationStopSequences|join(', ') }}" placeholder="Ex: \n\n, END">
+					<div class="synapse-admin__form-group" style="margin-top: 1.5rem;">
+						<label class="synapse-admin__label">🛑 Séquences d'Arrêt</label>
+						<input type="text" name="generation_stop_sequences" class="synapse-admin__input" value="{{ config.generationStopSequences|join(', ') }}" placeholder="Ex: \n\n, END">
 					</div>
 				</div>
 			</div>
 
-			<!-- ============================= THINKING ============================= -->
-			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
-				<div class="syn-card-header">
-					<div class="syn-kpi-icon warning" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+			{# ============================= THINKING ============================= #}
+			<div class="synapse-admin__card" style="margin-bottom: 2rem;">
+				<div class="synapse-admin__card-header">
+					<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--warning" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="brain-circuit"></i>
 					</div>
 					<div>
 						<h2 style="font-size: 1.1rem; margin: 0;">Thinking (CoT)</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Paramètres de réflexion pour les modèles compatibles (Gemini 2.0+).</p>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--synapse-admin-text-muted);">Paramètres de réflexion pour les modèles compatibles (Gemini 2.0+).</p>
 					</div>
 				</div>
 
-				<div class="syn-card-body">
-					<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-						<input type="checkbox" name="thinking_enabled" id="thinking_enabled" value="1" {{ config.isThinkingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
+				<div class="synapse-admin__card-body">
+					<div style="background: var(--synapse-admin-bg-main); padding: 1rem; border-radius: var(--synapse-admin-radius-sm); border: 1px solid var(--synapse-admin-border); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+						<input type="checkbox" name="thinking_enabled" id="thinking_enabled" value="1" {{ config.isThinkingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--synapse-admin-primary);">
 						<div>
 							<label for="thinking_enabled" style="font-weight: 600; cursor: pointer; display: block;">Activer le Thinking</label>
-							<p style="margin: 0; font-size: 0.85rem; color: var(--syn-text-muted);">Permet au modèle de réfléchir avant de répondre.</p>
+							<p style="margin: 0; font-size: 0.85rem; color: var(--synapse-admin-text-muted);">Permet au modèle de réfléchir avant de répondre.</p>
 						</div>
 					</div>
 
-					<div class="syn-form-group">
-						<label class="syn-label">Budget Tokens Thinking</label>
-						<input type="number" name="thinking_budget" class="syn-input" min="1024" step="1024" value="{{ config.thinkingBudget }}">
-						<p class="syn-help">Minimum 1024 tokens.</p>
+					<div class="synapse-admin__form-group">
+						<label class="synapse-admin__label">Budget Tokens Thinking</label>
+						<input type="number" name="thinking_budget" class="synapse-admin__input" min="1024" step="1024" value="{{ config.thinkingBudget }}">
+						<p class="synapse-admin__help">Minimum 1024 tokens.</p>
 					</div>
 				</div>
 			</div>
 
-			<!-- ============================= CONTEXT CACHING ============================= -->
-			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
-				<div class="syn-card-header">
-					<div class="syn-kpi-icon success" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+			{# ============================= CONTEXT CACHING ============================= #}
+			<div class="synapse-admin__card" style="margin-bottom: 2rem;">
+				<div class="synapse-admin__card-header">
+					<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--success" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="database"></i>
 					</div>
 					<div>
 						<h2 style="font-size: 1.1rem; margin: 0;">Context Caching</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Optimisation des coûts pour les contextes volumineux.</p>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--synapse-admin-text-muted);">Optimisation des coûts pour les contextes volumineux.</p>
 					</div>
 				</div>
 
-				<div class="syn-card-body">
-					<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
-						<input type="checkbox" name="context_caching_enabled" id="context_caching_enabled" value="1" {{ config.isContextCachingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
+				<div class="synapse-admin__card-body">
+					<div style="background: var(--synapse-admin-bg-main); padding: 1rem; border-radius: var(--synapse-admin-radius-sm); border: 1px solid var(--synapse-admin-border); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+						<input type="checkbox" name="context_caching_enabled" id="context_caching_enabled" value="1" {{ config.isContextCachingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--synapse-admin-primary);">
 						<div>
 							<label for="context_caching_enabled" style="font-weight: 600; cursor: pointer; display: block;">Activer le context caching</label>
-							<p style="margin: 0; font-size: 0.85rem; color: var(--syn-text-muted);">Réutilise le contexte sans le renvoyer à chaque requête.</p>
+							<p style="margin: 0; font-size: 0.85rem; color: var(--synapse-admin-text-muted);">Réutilise le contexte sans le renvoyer à chaque requête.</p>
 						</div>
 					</div>
 
-					<div class="syn-alert syn-alert-info">
+					<div class="synapse-admin__alert synapse-admin__alert--info">
 						<i data-lucide="info" style="flex-shrink: 0; margin-top: 2px;"></i>
 						<div>
 							<strong style="display: block; margin-bottom: 0.25rem;">Information Importante</strong>
@@ -264,148 +267,88 @@
 						</div>
 					</div>
 
-					<div class="syn-form-group">
-						<label class="syn-label">🔑 ID du Cache Vertex AI</label>
-						<input type="text" name="context_caching_id" class="syn-input" value="{{ config.contextCachingId }}" placeholder="projects/..." style="font-family: monospace;">
+					<div class="synapse-admin__form-group">
+						<label class="synapse-admin__label">🔑 ID du Cache Vertex AI</label>
+						<input type="text" name="context_caching_id" class="synapse-admin__input" value="{{ config.contextCachingId }}" placeholder="projects/..." style="font-family: monospace;">
 					</div>
 				</div>
 			</div>
 
-			<!-- ============================= INFRA & STOCKAGE ============================= -->
-			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
-				<div class="syn-card-header">
-					<div class="syn-kpi-icon secondary" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+			{# ============================= INFRA & STOCKAGE ============================= #}
+			<div class="synapse-admin__card" style="margin-bottom: 2rem;">
+				<div class="synapse-admin__card-header">
+					<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--primary" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="database-backup"></i>
 					</div>
 					<div>
 						<h2 style="font-size: 1.1rem; margin: 0;">Infrastructure & Stockage</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Persistance, Encryption et Rétention.</p>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--synapse-admin-text-muted);">Persistance, Encryption et Rétention.</p>
 					</div>
 				</div>
 
-				<div class="syn-card-body">
-					<h3 style="font-size: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--syn-border); padding-bottom: 0.5rem;">Persistance</h3>
-					<div class="syn-grid-2">
-						<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); display: flex; align-items: center; gap: 0.75rem;">
-							<input type="checkbox" name="persistence_enabled" id="persistence_enabled" value="1" {{ config.isPersistenceEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
-							<div>
-								<label for="persistence_enabled" style="font-weight: 600; cursor: pointer; display: block;">Activer la persistance</label>
-							</div>
+				<div class="synapse-admin__card-body">
+					<h3 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--synapse-admin-border); padding-bottom: 0.5rem;">Rétention</h3>
+					<div class="synapse-admin__grid-2">
+						<div class="synapse-admin__form-group">
+							<label class="synapse-admin__label">Rétention (Jours)</label>
+							<input type="number" name="retention_days" class="synapse-admin__input" min="1" value="{{ config.retentionDays }}">
 						</div>
-						<div class="syn-form-group">
-							<label class="syn-label">Handler</label>
-							<select name="persistence_handler" class="syn-select">
-								<option value="session" {{ config.persistenceHandler == 'session' ? 'selected' : '' }}>Session (Volatile)</option>
-								<option value="doctrine" {{ config.persistenceHandler == 'doctrine' ? 'selected' : '' }}>Base de Données</option>
-							</select>
-						</div>
-					</div>
-
-					<h3 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 1rem; border-bottom: 1px solid var(--syn-border); padding-bottom: 0.5rem;">Rétention & Encryption</h3>
-					<div class="syn-grid-2">
-						<div class="syn-form-group">
-							<label class="syn-label">Rétention (Jours)</label>
-							<input type="number" name="retention_days" class="syn-input" min="1" value="{{ config.retentionDays }}">
-						</div>
-						<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); display: flex; align-items: center; gap: 0.75rem;">
-							<input type="checkbox" name="encryption_enabled" id="encryption_enabled" value="1" {{ config.isEncryptionEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
-							<div>
-								<label for="encryption_enabled" style="font-weight: 600; cursor: pointer; display: block;">Chiffrement des conversations</label>
-							</div>
-						</div>
-					</div>
-					<div class="syn-form-group">
-						<label class="syn-label">Clé de chiffrement (Opaque)</label>
-						<input type="password" name="encryption_key" class="syn-input" value="{{ config.encryptionKey }}" placeholder="Laisser vide si inchangé">
 					</div>
 				</div>
 			</div>
 
-			<!-- ============================= FONCTIONNALITÉS AVANCÉES ============================= -->
-			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
-				<div class="syn-card-header">
-					<div class="syn-kpi-icon error" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+			{# ============================= FONCTIONNALITÉS AVANCÉES ============================= #}
+			<div class="synapse-admin__card" style="margin-bottom: 2rem;">
+				<div class="synapse-admin__card-header">
+					<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--error" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="award"></i>
 					</div>
 					<div>
 						<h2 style="font-size: 1.1rem; margin: 0;">Fonctionnalités Avancées</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Suivi des coûts et détection des risques.</p>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--synapse-admin-text-muted);">Suivi des coûts et détection des risques.</p>
 					</div>
 				</div>
 
-				<div class="syn-card-body">
-					<div class="syn-grid-2">
-						<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); display: flex; align-items: center; gap: 0.75rem;">
-							<input type="checkbox" name="token_tracking_enabled" id="token_tracking_enabled" value="1" {{ config.isTokenTrackingEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
-							<div>
-								<label for="token_tracking_enabled" style="font-weight: 600; cursor: pointer; display: block;">Suivi des Tokens</label>
-							</div>
-						</div>
-						<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); display: flex; align-items: center; gap: 0.75rem;">
-							<input type="checkbox" name="risk_detection_enabled" id="risk_detection_enabled" value="1" {{ config.isRiskDetectionEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
+				<div class="synapse-admin__card-body">
+					<div class="synapse-admin__grid-2">
+						<div style="background: var(--synapse-admin-bg-main); padding: 1rem; border-radius: var(--synapse-admin-radius-sm); border: 1px solid var(--synapse-admin-border); display: flex; align-items: center; gap: 0.75rem;">
+							<input type="checkbox" name="risk_detection_enabled" id="risk_detection_enabled" value="1" {{ config.isRiskDetectionEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--synapse-admin-primary);">
 							<div>
 								<label for="risk_detection_enabled" style="font-weight: 600; cursor: pointer; display: block;">Détection des Risques</label>
 							</div>
 						</div>
 					</div>
-
-					<div class="syn-form-group" style="margin-top: 1rem;">
-						<label class="syn-label">Pricing JSON (Tokens)</label>
-						<textarea name="token_pricing" class="syn-textarea" rows="4" style="font-family: monospace;">{{ config.tokenPricing|json_encode }}</textarea>
-					</div>
 				</div>
 			</div>
 
-			<!-- ============================= UI & ADMIN ============================= -->
-			<div class="syn-card mb-6" style="margin-bottom: 2rem;">
-				<div class="syn-card-header">
-					<div class="syn-kpi-icon primary" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
+			{# ============================= UI & ADMIN ============================= #}
+			<div class="synapse-admin__card" style="margin-bottom: 2rem;">
+				<div class="synapse-admin__card-header">
+					<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--primary" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 6px;">
 						<i data-lucide="layout"></i>
 					</div>
 					<div>
 						<h2 style="font-size: 1.1rem; margin: 0;">Interface & Context</h2>
-						<p style="margin: 0; font-size: 0.9rem; color: var(--syn-text-muted);">Personnalisation de l'interface et du contexte global.</p>
+						<p style="margin: 0; font-size: 0.9rem; color: var(--synapse-admin-text-muted);">Personnalisation de l'interface et du contexte global.</p>
 					</div>
 				</div>
 
-				<div class="syn-card-body">
-					<div class="syn-grid-2">
-						<div class="syn-form-group">
-							<label class="syn-label">Langue</label>
-							<input type="text" name="context_language" class="syn-input" value="{{ config.contextLanguage }}">
-						</div>
-						<div style="background: var(--syn-bg-main); padding: 1rem; border-radius: var(--syn-radius-sm); border: 1px solid var(--syn-border); display: flex; align-items: center; gap: 0.75rem;">
-							<input type="checkbox" name="ui_sidebar_enabled" id="ui_sidebar_enabled" value="1" {{ config.isUiSidebarEnabled ? 'checked' : '' }} style="width: 1.25rem; height: 1.25rem; accent-color: var(--syn-color-primary);">
-							<div>
-								<label for="ui_sidebar_enabled" style="font-weight: 600; cursor: pointer; display: block;">Sidebar Activée</label>
-							</div>
-						</div>
-					</div>
-					<div class="syn-grid-2">
-						<div class="syn-form-group">
-							<label class="syn-label">Couleur Admin</label>
-							<input type="color" name="admin_default_color" class="syn-input" value="{{ config.adminDefaultColor }}" style="height: 40px; padding: 0;">
-						</div>
-						<div class="syn-form-group">
-							<label class="syn-label">Icone Admin</label>
-							<input type="text" name="admin_default_icon" class="syn-input" value="{{ config.adminDefaultIcon }}">
-						</div>
-					</div>
-
-					<div class="syn-form-group">
-						<label class="syn-label">Identité de Base (Override)</label>
-						<textarea name="context_base_identity" class="syn-textarea" rows="2">{{ config.contextBaseIdentity }}</textarea>
+				<div class="synapse-admin__card-body">
+					<div class="synapse-admin__form-group">
+						<label class="synapse-admin__label">Langue de l'interface (Context)</label>
+						<input type="text" name="context_language" class="synapse-admin__input" value="{{ config.contextLanguage }}" placeholder="fr">
+						<p class="synapse-admin__help">Utilisée pour le prompt système si aucune langue n'est détectée.</p>
 					</div>
 				</div>
 			</div>
 
-			<!-- ============================= ACTIONS ============================= -->
-			<div style="position: sticky; bottom: 2rem; background: var(--syn-bg-surface); border: 1px solid var(--syn-border); padding: 1rem 2rem; border-radius: var(--syn-radius); display: flex; justify-content: flex-end; gap: 1rem; box-shadow: var(--syn-shadow-lg); z-index: 50;">
-				<a href="{{ path('assistant_index') }}" class="syn-btn syn-btn-secondary">
+			{# ============================= ACTIONS ============================= #}
+			<div style="position: sticky; bottom: 2rem; background: var(--synapse-admin-bg-surface); border: 1px solid var(--synapse-admin-border); padding: 1rem 2rem; border-radius: var(--synapse-admin-radius); display: flex; justify-content: flex-end; gap: 1rem; box-shadow: var(--synapse-admin-shadow-lg); z-index: 50;">
+				<a href="{{ path('assistant_index') }}" class="synapse-admin__btn synapse-admin__btn--secondary">
 					<i data-lucide="x"></i>
 					Annuler
 				</a>
-				<button type="submit" class="syn-btn syn-btn-primary">
+				<button type="submit" class="synapse-admin__btn synapse-admin__btn--primary">
 					<i data-lucide="save"></i>
 					Enregistrer
 				</button>

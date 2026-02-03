@@ -1,0 +1,71 @@
+{#
+    Synapse Admin - Layout Module
+    
+    Mode intégration dans un système de modules existant.
+    S'intègre dans module_base.html.twig du projet parent.
+    
+    VARIABLES ATTENDUES DU PROJET:
+    - module_base.html.twig avec blocks: header_*, module_content
+    
+    BLOCKS DISPONIBLES POUR SURCHARGE:
+    - admin_header_icon: Icône du module
+    - admin_header_color: Couleur du module
+    - admin_header_title: Titre du module
+    - admin_header_subtitle: Sous-titre
+    - admin_header_breadcrumbs: Fil d'ariane
+    - admin_header_actions: Actions dans le header
+    - admin_content: Contenu principal (à surcharger)
+#}
+{% extends 'core/module_base.html.twig' %}
+
+{% block header_icon %}
+	{% block admin_header_icon %}brain-circuit
+	{% endblock %}
+{% endblock %}
+{% block header_color %}
+	{% block admin_header_color %}#8b5cf6
+	{% endblock %}
+{% endblock %}
+{% block header_title %}
+	{% block admin_header_title %}Synapse
+	{% endblock %}
+{% endblock %}
+{% block header_subtitle %}
+	{% block admin_header_subtitle %}Administration de l'assistant IA
+	{% endblock %}
+{% endblock %}
+
+{% block header_preparation %}
+	{% block admin_header_breadcrumbs %}
+		{% set header_breadcrumbs = [
+            {'label': 'Accueil', 'url': path('home')},
+            {'label': 'Synapse'}
+        ] %}
+	{% endblock %}
+{% endblock %}
+
+{% block header_actions %}
+	{% block admin_header_actions %}{% endblock %}
+{% endblock %}
+
+{% block module_content %}
+	{# Flash messages avec style Bootstrap du projet #}
+	{% for message in app.flashes('success') %}
+		<div class="alert alert-success alert-dismissible fade show" role="alert">
+			<i class="bi bi-check-circle me-2"></i>
+			{{ message }}
+			<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+		</div>
+	{% endfor %}
+
+	{% for message in app.flashes('error') %}
+		<div class="alert alert-danger alert-dismissible fade show" role="alert">
+			<i class="bi bi-exclamation-triangle me-2"></i>
+			{{ message }}
+			<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+		</div>
+	{% endfor %}
+
+	{# Contenu admin #}
+	{% block admin_content %}{% endblock %}
+{% endblock %}

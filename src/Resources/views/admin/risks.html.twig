@@ -1,17 +1,20 @@
-{% extends '@Synapse/admin/_layout.html.twig' %}
+{% extends synapse_admin_layout() %}
+
+{% block admin_title %}Ange Gardien - Synapse Admin
+{% endblock %}
 
 {% block admin_content %}
-	<header class="syn-header">
+	<header class="synapse-admin__header">
 		<div>
-			<h1 class="syn-title">Ange Gardien</h1>
-			<p class="syn-subtitle">Pilotage de la sécurité et modération IA</p>
+			<h1 class="synapse-admin__title">Ange Gardien</h1>
+			<p class="synapse-admin__subtitle">Pilotage de la sécurité et modération IA</p>
 		</div>
 	</header>
 
 	{% if alerts|length > 0 %}
-		<div class="syn-card">
-			<div class="syn-table-container">
-				<table class="syn-table">
+		<div class="synapse-admin__card">
+			<div class="synapse-admin__table-container">
+				<table class="synapse-admin__table">
 					<thead>
 						<tr>
 							<th style="width: 140px;">Niveau</th>
@@ -24,21 +27,21 @@
 					<tbody>
 						{% for alert in alerts %}
 							{% set category_labels = {
-								'HARM_CATEGORY_HARASSMENT': 'Harcèlement',
-								'HARM_CATEGORY_HATE_SPEECH': 'Discours haineux',
-								'HARM_CATEGORY_SEXUALLY_EXPLICIT': 'Sexuellement explicite',
-								'HARM_CATEGORY_DANGEROUS_CONTENT': 'Contenu dangereux',
-								'BLOCKED_CONTENT': 'Contenu bloqué'
-							} %}
+                                'HARM_CATEGORY_HARASSMENT': 'Harcèlement',
+                                'HARM_CATEGORY_HATE_SPEECH': 'Discours haineux',
+                                'HARM_CATEGORY_SEXUALLY_EXPLICIT': 'Sexuellement explicite',
+                                'HARM_CATEGORY_DANGEROUS_CONTENT': 'Contenu dangereux',
+                                'BLOCKED_CONTENT': 'Contenu bloqué'
+                            } %}
 							<tr>
 								<td>
 									{% if alert.riskLevel.value == 'CRITICAL' %}
-										<span class="syn-badge syn-badge-error">
+										<span class="synapse-admin__badge synapse-admin__badge--error">
 											<i data-lucide="alert-octagon" style="width: 14px; height: 14px; margin-right: 4px;"></i>
 											CRITIQUE
 										</span>
 									{% else %}
-										<span class="syn-badge syn-badge-warning">
+										<span class="synapse-admin__badge synapse-admin__badge--warning">
 											<i data-lucide="alert-triangle" style="width: 14px; height: 14px; margin-right: 4px;"></i>
 											RISQUE
 										</span>
@@ -52,17 +55,17 @@
 								<td>
 									<div style="display: flex; flex-direction: column;">
 										<span style="font-weight: 600; font-size: 0.9rem;">{{ alert.owner.fullName }}</span>
-										<span style="font-size: 0.8rem; color: var(--syn-text-muted);">{{ alert.owner.email }}</span>
+										<span style="font-size: 0.8rem; color: var(--synapse-admin-text-muted);">{{ alert.owner.email }}</span>
 									</div>
 								</td>
 								<td>
 									<div style="display: flex; flex-direction: column;">
 										<span style="font-weight: 500;">{{ alert.updatedAt|date('d/m/Y') }}</span>
-										<span style="font-size: 0.8rem; color: var(--syn-text-muted);">{{ alert.updatedAt|date('H:i') }}</span>
+										<span style="font-size: 0.8rem; color: var(--synapse-admin-text-muted);">{{ alert.updatedAt|date('H:i') }}</span>
 									</div>
 								</td>
 								<td style="text-align: right;">
-									<a href="{{ path('assistant_admin_conversation', {id: alert.id}) }}" class="syn-btn syn-btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+									<a href="{{ path('assistant_admin_conversation', {id: alert.id}) }}" class="synapse-admin__btn synapse-admin__btn--secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
 										<i data-lucide="eye" style="width: 14px; height: 14px;"></i>
 										Examiner
 									</a>
@@ -74,12 +77,12 @@
 			</div>
 		</div>
 	{% else %}
-		<div class="syn-card" style="padding: 4rem 2rem; text-align: center; border-style: dashed;">
-			<div style="background: var(--syn-color-success-bg); color: var(--syn-color-success); width: 64px; height: 64px; border-radius: 99px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+		<div class="synapse-admin__card" style="padding: 4rem 2rem; text-align: center; border-style: dashed;">
+			<div style="background: var(--synapse-admin-success-bg); color: var(--synapse-admin-success); width: 64px; height: 64px; border-radius: 99px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
 				<i data-lucide="shield-check" style="width: 32px; height: 32px;"></i>
 			</div>
-			<h3 style="font-size: 1.25rem; font-weight: 700; color: var(--syn-text-main); margin-bottom: 0.5rem;">Tout est calme</h3>
-			<p style="color: var(--syn-text-muted); max-width: 400px; margin: 0 auto;">
+			<h3 style="font-size: 1.25rem; font-weight: 700; color: var(--synapse-admin-text-main); margin-bottom: 0.5rem;">Tout est calme</h3>
+			<p style="color: var(--synapse-admin-text-muted); max-width: 400px; margin: 0 auto;">
 				Aucune alerte de sécurité n'est en cours actuellement.
 			</p>
 		</div>

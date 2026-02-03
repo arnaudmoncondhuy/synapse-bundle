@@ -1,8 +1,37 @@
 {#
-    Synapse Chat Component (Redesigned)
+    Synapse Chat Component (Gemini-Inspired Design)
     
-    Variables:
-    - history: Array of messages
+    ⚠️ DESIGN PRÉSERVÉ : Ce composant reproduit fidèlement l'interface de Google Gemini.
+    
+    ═══════════════════════════════════════════════════════════════════════════
+    VARIABLES DISPONIBLES
+    ═══════════════════════════════════════════════════════════════════════════
+    
+    @param array history (optionnel, défaut: [])
+        Historique des messages. Format: [{'role': 'user'|'assistant', 'content': string}]
+    
+    @param string controller_override (optionnel, défaut: 'synapse--chat')
+        Nom du controller Stimulus custom
+    
+    @param array attr (optionnel, défaut: {})
+        Attributs HTML supplémentaires pour le conteneur
+    
+    @param bool allow_new_chat (optionnel, défaut: false)
+        Afficher le bouton "Nouvelle conversation"
+    
+    ═══════════════════════════════════════════════════════════════════════════
+    EXEMPLES D'USAGE
+    ═══════════════════════════════════════════════════════════════════════════
+    
+    1. Plug-and-play : {{ include('@Synapse/chat/component.html.twig') }}
+    2. Avec historique : {{ include('@Synapse/chat/component.html.twig', {'history': messages}) }}
+    3. Controller custom : {{ include('@Synapse/chat/component.html.twig', {
+           'controller_override': 'myapp--chat',
+           'attr': {'data-room-id': '123'}
+       }) }}
+    
+    Voir VIEWS_INTEGRATION.md pour plus d'exemples.
+    ═══════════════════════════════════════════════════════════════════════════
 #}
 
 {# Link the CSS (AssetMapper) #}
@@ -25,6 +54,9 @@
 </svg>
 
 {% set history = history|default([]) %}
+{% set controller_override = controller_override|default('synapse--chat') %}
+{% set attr = attr|default({}) %}
+{% set allow_new_chat = allow_new_chat|default(false) %}
 {% set mode_class = history is empty ? 'mode-welcome' : 'mode-chat' %}
 
 <div id="synapse-chat-container"
@@ -95,14 +127,16 @@
                             {% endif %}
 
                             {# Persona Selector (if available) #}
-                            {% set personas = synapse_get_personas() %}
-                            {% if personas is not empty %}
-                                <select class="persona-input-selector" data-{{ controller_override|default('synapse--chat') }}-target="personaSelect">
-                                    <option value="">L'assistant (par défaut)</option>
-                                    {% for p in personas %}
-                                        <option value="{{ p.key }}">{{ p.emoji }} {{ p.name }}</option>
-                                    {% endfor %}
-                                </select>
+                            {% if function('synapse_get_personas') is defined %}
+                                {% set personas = synapse_get_personas() %}
+                                {% if personas is not empty %}
+                                    <select class="persona-input-selector" data-{{ controller_override|default('synapse--chat') }}-target="personaSelect">
+                                        <option value="">L'assistant (par défaut)</option>
+                                        {% for p in personas %}
+                                            <option value="{{ p.key }}">{{ p.emoji }} {{ p.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                {% endif %}
                             {% endif %}
                         </div>
 

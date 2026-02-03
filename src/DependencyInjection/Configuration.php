@@ -295,6 +295,10 @@ class Configuration implements ConfigurationInterface
                     ->defaultTrue()
                     ->info('Activer la sidebar (historique conversations)')
                 ->end()
+                ->scalarNode('layout_mode')
+                    ->defaultValue('standalone')
+                    ->info('Mode de layout admin : "standalone" (avec sidebar) ou "module" (intégration dans module_base.html.twig)')
+                ->end()
             ->end()
             ->end()
             ->end();
