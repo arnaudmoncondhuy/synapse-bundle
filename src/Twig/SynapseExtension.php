@@ -17,6 +17,7 @@ class SynapseExtension extends AbstractExtension
     public function __construct(
         private \ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry $personaRegistry,
         private \ArnaudMoncondhuy\SynapseBundle\Service\SynapseLayoutResolver $layoutResolver,
+        private \ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository $configRepository,
     ) {
     }
 
@@ -31,6 +32,9 @@ class SynapseExtension extends AbstractExtension
             
             // Résout dynamiquement le layout admin à utiliser (standalone ou module)
             new TwigFunction('synapse_admin_layout', [$this->layoutResolver, 'getAdminLayout']),
+
+            // Récupère la configuration (Entité)
+            new TwigFunction('synapse_config', [$this->configRepository, 'getConfig']),
         ];
     }
 }

@@ -71,15 +71,17 @@
 									Analytics
 								</a>
 							</li>
-							<li class="synapse-admin__nav-item">
-								<a href="{{ path('synapse_admin_risks') }}" class="{% if app.request.get('_route') starts with 'synapse_admin_risks' %}active{% endif %}">
-									<i data-lucide="shield-alert"></i>
-									Ange Gardien
-									{% if kpis.risks_pending|default(0) > 0 %}
-										<span class="synapse-admin__badge synapse-admin__badge--nav">{{ kpis.risks_pending }}</span>
-									{% endif %}
-								</a>
-							</li>
+							{% if synapse_config().riskDetectionEnabled %}
+								<li class="synapse-admin__nav-item">
+									<a href="{{ path('synapse_admin_risks') }}" class="{% if app.request.get('_route') starts with 'synapse_admin_risks' %}active{% endif %}">
+										<i data-lucide="shield-alert"></i>
+										Ange Gardien
+										{% if kpis.risks_pending|default(0) > 0 %}
+											<span class="synapse-admin__badge synapse-admin__badge--nav">{{ kpis.risks_pending }}</span>
+										{% endif %}
+									</a>
+								</li>
+							{% endif %}
 							<li class="synapse-admin__nav-item">
 								<a href="{{ path('synapse_admin_config') }}" class="{% if app.request.get('_route') == 'synapse_admin_config' %}active{% endif %}">
 									<i data-lucide="settings"></i>
