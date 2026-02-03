@@ -15,8 +15,10 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class SynapseConfigRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
+    public function __construct(
+        ManagerRegistry $registry,
+        private \Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface $params
+    ) {
         parent::__construct($registry, SynapseConfig::class);
     }
 
@@ -37,6 +39,24 @@ class SynapseConfigRepository extends ServiceEntityRepository
             $em = $this->getEntityManager();
             $em->persist($config);
             $em->flush();
+        } else {
+            // Backfill missing values from parameters (migration-like behavior)
+            $changed = false;
+            
+            if ($config->getVertexProjectId() === null && $this->params->has('synapse.vertex.project_id')) {
+                $config->setVertexProjectId($this->params->get('synapse.vertex.project_id'));
+                $changed = true;
+            }
+            
+            // Si la région est la valeur par défaut Doctrine, on prend celle du paramètre
+            if ($config->getVertexRegion() === 'europe-west1' && $this->params->has('synapse.vertex.region')) {
+                 // On ne touche pas modifions pas si c'est déjà une valeur valide,
+                 // mais pour le projet GCP c'est critique si NULL.
+            }
+
+            if ($changed) {
+                $this->getEntityManager()->flush();
+            }
         }
 
         return $config;
@@ -52,7 +72,12 @@ class SynapseConfigRepository extends ServiceEntityRepository
     {
         $config = new SynapseConfig();
         $config->setScope($scope);
-        $config->setModel('gemini-2.0-flash-exp');
+        
+        // Use parameters from synapse.yaml
+        $config->setModel($this->params->get('synapse.model'));
+        $config->setVertexProjectId($this->params->get('synapse.vertex.project_id'));
+        $config->setVertexRegion($this->params->get('synapse.vertex.region'));
+
         $config->setSafetyEnabled(false);
         $config->setSafetyDefaultThreshold('BLOCK_MEDIUM_AND_ABOVE');
         $config->setGenerationTemperature(1.0);
@@ -61,9 +86,6 @@ class SynapseConfigRepository extends ServiceEntityRepository
         $config->setThinkingEnabled(true);
         $config->setThinkingBudget(1024);
         $config->setContextCachingEnabled(false);
-
-        // New Defaults
-        $config->setVertexRegion('europe-west1');
         // Persistence enforced in code
         $config->setRetentionDays(30);
         $config->setContextLanguage('fr');
