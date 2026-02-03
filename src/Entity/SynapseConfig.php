@@ -39,6 +39,62 @@ class SynapseConfig
     #[ORM\Column(type: Types::STRING, length: 100)]
     private string $model = 'gemini-2.0-flash-exp';
 
+    // Vertex AI
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $vertexProjectId = null;
+
+    #[ORM\Column(type: Types::STRING, length: 50, options: ['default' => 'europe-west1'])]
+    private string $vertexRegion = 'europe-west1';
+
+    // Persistence
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $persistenceEnabled = false;
+
+    #[ORM\Column(type: Types::STRING, length: 20, options: ['default' => 'session'])]
+    private string $persistenceHandler = 'session';
+
+    // Encryption
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $encryptionEnabled = false;
+
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $encryptionKey = null;
+
+    // Token Tracking
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $tokenTrackingEnabled = false;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $tokenPricing = null;
+
+    // Risk Detection
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $riskDetectionEnabled = false;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    private bool $riskDetectionAutoRegisterTool = true;
+
+    // Retention
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 30])]
+    private int $retentionDays = 30;
+
+    // UI & Admin
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    private bool $uiSidebarEnabled = true;
+
+    #[ORM\Column(type: Types::STRING, length: 7, options: ['default' => '#8b5cf6'])]
+    private string $adminDefaultColor = '#8b5cf6';
+
+    #[ORM\Column(type: Types::STRING, length: 50, options: ['default' => 'robot'])]
+    private string $adminDefaultIcon = 'robot';
+
+    // Context
+    #[ORM\Column(type: Types::STRING, length: 5, options: ['default' => 'fr'])]
+    private string $contextLanguage = 'fr';
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $contextBaseIdentity = null;
+
     // Safety Settings
 
     /**
@@ -374,6 +430,184 @@ class SynapseConfig
         return $this->updatedAt;
     }
 
+    // Nouveaux Getters et Setters
+
+    public function getVertexProjectId(): ?string
+    {
+        return $this->vertexProjectId;
+    }
+
+    public function setVertexProjectId(?string $vertexProjectId): self
+    {
+        $this->vertexProjectId = $vertexProjectId;
+        return $this;
+    }
+
+    public function getVertexRegion(): string
+    {
+        return $this->vertexRegion;
+    }
+
+    public function setVertexRegion(string $vertexRegion): self
+    {
+        $this->vertexRegion = $vertexRegion;
+        return $this;
+    }
+
+    public function isPersistenceEnabled(): bool
+    {
+        return $this->persistenceEnabled;
+    }
+
+    public function setPersistenceEnabled(bool $persistenceEnabled): self
+    {
+        $this->persistenceEnabled = $persistenceEnabled;
+        return $this;
+    }
+
+    public function getPersistenceHandler(): string
+    {
+        return $this->persistenceHandler;
+    }
+
+    public function setPersistenceHandler(string $persistenceHandler): self
+    {
+        $this->persistenceHandler = $persistenceHandler;
+        return $this;
+    }
+
+    public function isEncryptionEnabled(): bool
+    {
+        return $this->encryptionEnabled;
+    }
+
+    public function setEncryptionEnabled(bool $encryptionEnabled): self
+    {
+        $this->encryptionEnabled = $encryptionEnabled;
+        return $this;
+    }
+
+    public function getEncryptionKey(): ?string
+    {
+        return $this->encryptionKey;
+    }
+
+    public function setEncryptionKey(?string $encryptionKey): self
+    {
+        $this->encryptionKey = $encryptionKey;
+        return $this;
+    }
+
+    public function isTokenTrackingEnabled(): bool
+    {
+        return $this->tokenTrackingEnabled;
+    }
+
+    public function setTokenTrackingEnabled(bool $tokenTrackingEnabled): self
+    {
+        $this->tokenTrackingEnabled = $tokenTrackingEnabled;
+        return $this;
+    }
+
+    public function getTokenPricing(): ?array
+    {
+        return $this->tokenPricing;
+    }
+
+    public function setTokenPricing(?array $tokenPricing): self
+    {
+        $this->tokenPricing = $tokenPricing;
+        return $this;
+    }
+
+    public function isRiskDetectionEnabled(): bool
+    {
+        return $this->riskDetectionEnabled;
+    }
+
+    public function setRiskDetectionEnabled(bool $riskDetectionEnabled): self
+    {
+        $this->riskDetectionEnabled = $riskDetectionEnabled;
+        return $this;
+    }
+
+    public function isRiskDetectionAutoRegisterTool(): bool
+    {
+        return $this->riskDetectionAutoRegisterTool;
+    }
+
+    public function setRiskDetectionAutoRegisterTool(bool $riskDetectionAutoRegisterTool): self
+    {
+        $this->riskDetectionAutoRegisterTool = $riskDetectionAutoRegisterTool;
+        return $this;
+    }
+
+    public function getRetentionDays(): int
+    {
+        return $this->retentionDays;
+    }
+
+    public function setRetentionDays(int $retentionDays): self
+    {
+        $this->retentionDays = $retentionDays;
+        return $this;
+    }
+
+    public function isUiSidebarEnabled(): bool
+    {
+        return $this->uiSidebarEnabled;
+    }
+
+    public function setUiSidebarEnabled(bool $uiSidebarEnabled): self
+    {
+        $this->uiSidebarEnabled = $uiSidebarEnabled;
+        return $this;
+    }
+
+    public function getAdminDefaultColor(): string
+    {
+        return $this->adminDefaultColor;
+    }
+
+    public function setAdminDefaultColor(string $adminDefaultColor): self
+    {
+        $this->adminDefaultColor = $adminDefaultColor;
+        return $this;
+    }
+
+    public function getAdminDefaultIcon(): string
+    {
+        return $this->adminDefaultIcon;
+    }
+
+    public function setAdminDefaultIcon(string $adminDefaultIcon): self
+    {
+        $this->adminDefaultIcon = $adminDefaultIcon;
+        return $this;
+    }
+
+    public function getContextLanguage(): string
+    {
+        return $this->contextLanguage;
+    }
+
+    public function setContextLanguage(string $contextLanguage): self
+    {
+        $this->contextLanguage = $contextLanguage;
+        return $this;
+    }
+
+    public function getContextBaseIdentity(): ?string
+    {
+        return $this->contextBaseIdentity;
+    }
+
+    public function setContextBaseIdentity(?string $contextBaseIdentity): self
+    {
+        $this->contextBaseIdentity = $contextBaseIdentity;
+        return $this;
+    }
+
     /**
      * Convertit la configuration en tableau pour ChatService
      *
@@ -428,6 +662,61 @@ class SynapseConfig
             ];
         }
 
+        // Vertex
+        if ($this->vertexProjectId) {
+            $config['vertex'] = [
+                'project_id' => $this->vertexProjectId,
+                'region' => $this->vertexRegion,
+            ];
+        }
+
+        // Persistence
+        $config['persistence'] = [
+            'enabled' => $this->persistenceEnabled,
+            'handler' => $this->persistenceHandler,
+        ];
+
+        // Encryption
+        $config['encryption'] = [
+            'enabled' => $this->encryptionEnabled,
+            'key' => $this->encryptionKey,
+        ];
+
+        // Token Tracking
+        $config['token_tracking'] = [
+            'enabled' => $this->tokenTrackingEnabled,
+            'pricing' => $this->tokenPricing ?? [],
+        ];
+
+        // Risk Detection
+        $config['risk_detection'] = [
+            'enabled' => $this->riskDetectionEnabled,
+            'auto_register_tool' => $this->riskDetectionAutoRegisterTool,
+        ];
+
+        // Retention
+        $config['retention'] = [
+            'days' => $this->retentionDays,
+        ];
+
+        // UI
+        $config['ui'] = [
+            'sidebar_enabled' => $this->uiSidebarEnabled,
+        ];
+
+        // Admin
+        $config['admin'] = [
+            'default_color' => $this->adminDefaultColor,
+            'default_icon' => $this->adminDefaultIcon,
+        ];
+
+        // Context
+        $config['context'] = [
+            'language' => $this->contextLanguage,
+            'base_identity' => $this->contextBaseIdentity,
+        ];
+
         return $config;
+
     }
 }

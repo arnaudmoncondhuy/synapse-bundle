@@ -26,9 +26,15 @@ services:
             $generationMaxOutputTokens: '%synapse.generation_config.max_output_tokens%'
             $generationStopSequences: '%synapse.generation_config.stop_sequences%'
             $contextCachingEnabled: '%synapse.context_caching.enabled%'
+            $contextCachingEnabled: '%synapse.context_caching.enabled%'
             $contextCachingId: '%synapse.context_caching.cached_content_id%'
+            $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
 
     # Default implementations (can be overridden by user)
+    ArnaudMoncondhuy\SynapseBundle\Service\DatabaseConfigProvider:
+        arguments:
+            $scope: 'default'
+
     ArnaudMoncondhuy\SynapseBundle\Service\Impl\SessionConversationHandler: ~
 
     ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultContextProvider: ~
@@ -44,6 +50,9 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Service\Formatter\MessageFormatter: ~
 
     # Aliases for interfaces (use default implementations)
+    ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\DatabaseConfigProvider
+
     ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface:
         alias: ArnaudMoncondhuy\SynapseBundle\Service\Impl\SessionConversationHandler
 
@@ -72,7 +81,7 @@ services:
             $promptBuilder: '@ArnaudMoncondhuy\SynapseBundle\Service\PromptBuilder'
             $tools: !tagged_iterator synapse.tool
             $cache: '@cache.app'
-            $configuredModel: '%synapse.model%'
+            $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
 
     # Twig Integration
     ArnaudMoncondhuy\SynapseBundle\Twig\SynapseRuntime:
