@@ -18,7 +18,7 @@ export default class extends Controller {
 
     connect() {
         this.scrollToBottom();
-        this.loadMarked();
+        this.historyLoaded = false;
         this.inputTarget.focus();
 
         // Check for debug mode in URL
@@ -29,13 +29,18 @@ export default class extends Controller {
             this.element.classList.add('synapse-chat--debug-mode');
         }
 
-        // Restore history if present
-        if (this.historyValue && this.historyValue.length > 0) {
-            this.loadHistory(this.historyValue);
-        }
+        // Load marked first, then restore history
+        this.loadMarked().then(() => {
+            if (this.historyValue && this.historyValue.length > 0) {
+                this.loadHistory(this.historyValue);
+            }
+        });
     }
 
     loadHistory(history) {
+        console.log('📜 [History] Loading', history.length, 'messages');
+        console.log('📜 [History] Marked available?', !!this.markedParse);
+
         // Clear default greeting if we have history
         // Use class-based toggling for welcome mode
         if (history.length > 0) {
@@ -48,15 +53,17 @@ export default class extends Controller {
             }
         }
 
-        history.forEach(msg => {
+        history.forEach((msg, index) => {
             const part = msg.parts[0];
             if (msg.role === 'user' && part.text) {
                 this.addMessage(part.text, 'user');
             } else if (msg.role === 'model' && part.text) {
+                console.log(`📜 [History] Message ${index} text preview:`, part.text.substring(0, 100));
                 this.addMessage(part.text, 'assistant', msg.metadata?.debug);
             }
         });
 
+        this.historyLoaded = true;
         this.scrollToBottom();
     }
 
@@ -115,98 +122,128 @@ export default class extends Controller {
             let currentResponseText = '';
             let currentMessageBubble = null;
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
+            // Safety timeout (30 seconds)
+            const streamTimeout = setTimeout(() => {
+                reader.cancel();
+                this.setLoading(false);
+                this.addMessage('⏱️ Timeout: Le serveur ne répond plus. Veuillez réessayer.', 'assistant');
+                console.error('🔴 [Stream] Timeout after 30 seconds');
+            }, 30000);
 
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop();
+            try {
 
-                for (const line of lines) {
-                    if (!line.trim()) continue;
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
 
-                    const trimmedLine = line.trim();
-                    if (!trimmedLine.startsWith('{') && !trimmedLine.startsWith('[')) {
-                        continue;
-                    }
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
 
-                    try {
-                        const evt = JSON.parse(trimmedLine);
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
 
-                        if (evt.type === 'status') {
-                            this.updateLoadingStatus(evt.payload.message);
-                        } else if (evt.type === 'delta') {
-                            // First token received: stop loading animation
-                            if (!currentMessageBubble) {
-                                this.setLoading(false);
-                                // Create the message bubble container manually to hold the stream
-                                this.addMessage('', 'assistant');
-                                const messages = this.messagesTarget.querySelectorAll('.synapse-chat__message--assistant');
-                                const lastMsg = messages[messages.length - 1];
-                                currentMessageBubble = lastMsg.querySelector('.synapse-chat__bubble');
+                        const trimmedLine = line.trim();
+                        if (!trimmedLine.startsWith('{') && !trimmedLine.startsWith('[')) {
+                            continue;
+                        }
+
+                        try {
+                            const evt = JSON.parse(trimmedLine);
+
+                            // Validate event structure
+                            if (!evt || typeof evt !== 'object' || !evt.type) {
+                                console.warn('⚠️ [Stream] Invalid event structure:', evt);
+                                continue;
                             }
 
-                            currentResponseText += evt.payload.text;
-                            currentMessageBubble.innerHTML = this.parseMarkdown(currentResponseText);
-                            this.scrollToBottom();
-
-                        } else if (evt.type === 'result') {
-                            this.setLoading(false);
-
-                            // If we streamed text, ensure final consistency (sometimes helpful for incomplete markdown)
-                            if (currentMessageBubble) {
-                                currentMessageBubble.innerHTML = this.parseMarkdown(evt.payload.answer);
-                                // Add debug footer if needed
-                                if (evt.payload.conversation_id) {
-                                    this.updateUrlWithConversationId(evt.payload.conversation_id);
+                            if (evt.type === 'status') {
+                                if (evt.payload && evt.payload.message) {
+                                    this.updateLoadingStatus(evt.payload.message);
+                                }
+                            } else if (evt.type === 'delta') {
+                                // First token received: stop loading animation
+                                if (!currentMessageBubble) {
+                                    this.setLoading(false);
+                                    // Create the message bubble container manually to hold the stream
+                                    this.addMessage('', 'assistant');
+                                    const messages = this.messagesTarget.querySelectorAll('.synapse-chat__message--assistant');
+                                    const lastMsg = messages[messages.length - 1];
+                                    currentMessageBubble = lastMsg.querySelector('.synapse-chat__bubble');
                                 }
 
-                                // Re-inject debug button if in debug mode
-                                if (this.isDebugMode && evt.payload.debug_id) {
-                                    const debugUrl = `/synapse/_debug/${evt.payload.debug_id}`;
-                                    const debugHtml = `
+                                if (evt.payload && evt.payload.text) {
+                                    currentResponseText += evt.payload.text;
+                                    currentMessageBubble.innerHTML = this.parseMarkdown(currentResponseText);
+                                    this.scrollToBottom();
+                                }
+
+                            } else if (evt.type === 'result') {
+                                this.setLoading(false);
+
+                                // If we streamed text, ensure final consistency (sometimes helpful for incomplete markdown)
+                                if (currentMessageBubble && evt.payload && evt.payload.answer) {
+                                    currentMessageBubble.innerHTML = this.parseMarkdown(evt.payload.answer);
+                                    // Add debug footer if needed
+                                    if (evt.payload.conversation_id) {
+                                        this.updateUrlWithConversationId(evt.payload.conversation_id);
+                                    }
+
+                                    // Re-inject debug button if in debug mode
+                                    if (this.isDebugMode && evt.payload.debug_id) {
+                                        const debugUrl = `/synapse/_debug/${evt.payload.debug_id}`;
+                                        const debugHtml = `
                                         <button type="button" class="synapse-chat__debug-trigger"
                                                 onclick="window.open('${debugUrl}', 'SynapseDebug', 'width=1000,height=900')"
                                                 title="Debug">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                                         </button>
                                     `;
-                                    // wrapper footer
-                                    const footer = document.createElement('div');
-                                    footer.className = 'synapse-chat__footer';
-                                    footer.innerHTML = debugHtml;
+                                        // wrapper footer
+                                        const footer = document.createElement('div');
+                                        footer.className = 'synapse-chat__footer';
+                                        footer.innerHTML = debugHtml;
 
-                                    // Find parent .synapse-chat__content and append footer
-                                    currentMessageBubble.closest('.synapse-chat__content').appendChild(footer);
+                                        // Find parent .synapse-chat__content and append footer
+                                        currentMessageBubble.closest('.synapse-chat__content').appendChild(footer);
+                                    }
+                                } else if (evt.payload && evt.payload.answer) {
+                                    // Fallback if no delta was received (e.g. empty response or error handled as result)
+                                    this.addMessage(evt.payload.answer, 'assistant', evt.payload);
                                 }
-                            } else {
-                                // Fallback if no delta was received (e.g. empty response or error handled as result)
-                                this.addMessage(evt.payload.answer, 'assistant', evt.payload);
-                            }
 
-                        } else if (evt.type === 'title') {
-                            // Auto-generated title received
-                            const conversationId = new URLSearchParams(window.location.search).get('conversation');
-                            if (conversationId && evt.payload.title) {
-                                document.dispatchEvent(new CustomEvent('assistant:title-updated', {
-                                    detail: { conversationId, title: evt.payload.title }
-                                }));
+                            } else if (evt.type === 'title') {
+                                // Auto-generated title received
+                                const conversationId = new URLSearchParams(window.location.search).get('conversation');
+                                if (conversationId && evt.payload && evt.payload.title) {
+                                    document.dispatchEvent(new CustomEvent('assistant:title-updated', {
+                                        detail: { conversationId, title: evt.payload.title }
+                                    }));
+                                }
+                            } else if (evt.type === 'error') {
+                                const errorMsg = evt.payload || evt.message || 'Unknown error';
+                                throw new Error(errorMsg);
+                            } else {
+                                console.warn('⚠️ [Stream] Unknown event type:', evt.type);
                             }
-                        } else if (evt.type === 'error') {
-                            throw new Error(evt.payload);
-                        }
-                    } catch (e) {
-                        if (!(e instanceof SyntaxError)) {
-                            console.error('Synapse Stream Error:', e);
+                        } catch (e) {
+                            if (e instanceof SyntaxError) {
+                                console.warn('⚠️ [Stream] Invalid JSON:', trimmedLine.substring(0, 100));
+                            } else {
+                                console.error('🔴 [Stream] Processing error:', e);
+                                // Don't throw - continue processing other events
+                            }
                         }
                     }
                 }
+            } finally {
+                clearTimeout(streamTimeout);
             }
 
         } catch (error) {
             this.setLoading(false);
-            this.addMessage('Error: ' + error.message, 'assistant');
+            this.addMessage('❌ Erreur: ' + error.message, 'assistant');
+            console.error('🔴 [Stream] Fatal error:', error);
         } finally {
             this.setLoading(false);
             this.inputTarget.focus();
