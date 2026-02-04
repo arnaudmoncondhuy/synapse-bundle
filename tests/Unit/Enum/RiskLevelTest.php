@@ -9,16 +9,16 @@ use PHPUnit\Framework\TestCase;
 
 class RiskLevelTest extends TestCase
 {
-    public function testIsCritical(): void
+    public function testHasRisk(): void
     {
-        $this->assertFalse(RiskLevel::NONE->isCritical());
-        $this->assertFalse(RiskLevel::WARNING->isCritical());
-        $this->assertTrue(RiskLevel::CRITICAL->isCritical());
+        $this->assertFalse(RiskLevel::NONE->hasRisk());
+        $this->assertTrue(RiskLevel::WARNING->hasRisk());
+        $this->assertTrue(RiskLevel::CRITICAL->hasRisk());
     }
 
     public function testGetColor(): void
     {
-        $this->assertEquals('green', RiskLevel::NONE->getColor());
+        $this->assertEquals('gray', RiskLevel::NONE->getColor());
         $this->assertEquals('orange', RiskLevel::WARNING->getColor());
         $this->assertEquals('red', RiskLevel::CRITICAL->getColor());
     }
@@ -33,7 +33,24 @@ class RiskLevelTest extends TestCase
     public function testGetLabel(): void
     {
         $this->assertEquals('Aucun risque', RiskLevel::NONE->getLabel());
-        $this->assertEquals('Attention', RiskLevel::WARNING->getLabel());
+        $this->assertEquals('Avertissement', RiskLevel::WARNING->getLabel());
         $this->assertEquals('Critique', RiskLevel::CRITICAL->getLabel());
+    }
+
+    public function testPendingRisks(): void
+    {
+        $pending = RiskLevel::pendingRisks();
+
+        $this->assertCount(2, $pending);
+        $this->assertContains(RiskLevel::WARNING, $pending);
+        $this->assertContains(RiskLevel::CRITICAL, $pending);
+        $this->assertNotContains(RiskLevel::NONE, $pending);
+    }
+
+    public function testEnumValues(): void
+    {
+        $this->assertEquals('NONE', RiskLevel::NONE->value);
+        $this->assertEquals('WARNING', RiskLevel::WARNING->value);
+        $this->assertEquals('CRITICAL', RiskLevel::CRITICAL->value);
     }
 }

@@ -115,9 +115,15 @@ class ChatApiController extends AbstractController
                 // Load conversation history from database if persistence enabled (WITHOUT new message)
                 if ($conversation && $this->conversationManager) {
                     $dbMessages = $this->conversationManager->getMessages($conversation);
+                    error_log('DEBUG PROBE - DB Messages Count: ' . count($dbMessages));
+                    
                     // Convert DB messages to ChatService format using formatter (handles decryption)
                     if ($this->messageFormatter) {
                         $options['history'] = $this->messageFormatter->entitiesToApiFormat($dbMessages);
+                        error_log('DEBUG PROBE - Formatted History Count: ' . count($options['history']));
+                        if (!empty($options['history'])) {
+                            error_log('DEBUG PROBE - First Message Role: ' . ($options['history'][0]['role'] ?? 'N/A'));
+                        }
                     } else {
                         // Fallback (legacy risks sending encrypted content)
                         $options['history'] = $dbMessages;
