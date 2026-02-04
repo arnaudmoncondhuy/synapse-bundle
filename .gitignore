@@ -4,3 +4,5 @@
 *.cache
 .phpunit.result.cache
 /node_modules/
+nul
+.claude/settings.local.json
