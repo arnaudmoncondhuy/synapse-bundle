@@ -49,7 +49,7 @@ class DatabaseConversationHandler implements ConversationHandlerInterface
             $history[] = [
                 'role' => $this->convertRoleToGemini($message->getRole()),
                 'parts' => [
-                    ['text' => $message->getContent()],
+                    ['text' => $message->getDecryptedContent()],
                 ],
             ];
         }
