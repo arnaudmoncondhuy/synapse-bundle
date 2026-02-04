@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Twig;
 
+use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
@@ -19,6 +20,7 @@ class SynapseExtension extends AbstractExtension
         private \ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry $personaRegistry,
         private \ArnaudMoncondhuy\SynapseBundle\Service\SynapseLayoutResolver $layoutResolver,
         private \ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository $configRepository,
+        private ?EncryptionServiceInterface $encryptionService = null,
     ) {
     }
 
@@ -54,6 +56,15 @@ class SynapseExtension extends AbstractExtension
     {
         if (empty($text)) {
             return '';
+        }
+
+        // 0. Déchiffrer automatiquement si le service est présent et le texte semble chiffré
+        if ($this->encryptionService !== null && $this->encryptionService->isEncrypted($text)) {
+            try {
+                $text = $this->encryptionService->decrypt($text);
+            } catch (\Throwable $e) {
+                // En cas d'erreur de déchiffrement, on garde le texte tel quel
+            }
         }
 
         // 1. Sécuriser le HTML (échapper les balises script, etc.)

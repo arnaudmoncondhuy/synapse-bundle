@@ -88,8 +88,9 @@
 
             {# 2b. History Loop #}
             {% for msg in history %}
-                <div class="synapse-chat__message synapse-chat__message--{{ msg.role == 'user' ? 'user' : 'assistant' }}">
-                    {% if msg.role == 'assistant' or msg.role == 'model' %}
+                {% set is_ai = msg.role == 'assistant' or msg.role == 'model' or msg.role == 'MODEL' %}
+                <div class="synapse-chat__message synapse-chat__message--{{ is_ai ? 'assistant' : 'user' }}">
+                    {% if is_ai %}
                         <div class="synapse-chat__avatar">
                             <div class="avatar-ai">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"><use href="#gemini-icon" fill="url(#gemini-gradient)"></use></svg>
