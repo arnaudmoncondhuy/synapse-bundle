@@ -31,6 +31,11 @@ class LibsodiumEncryptionService implements EncryptionServiceInterface
             throw new \RuntimeException('Extension libsodium is required but not available');
         }
 
+        // FIX: Support du format standard Symfony "base64:..."
+        if (str_starts_with($key, 'base64:')) {
+            $key = base64_decode(substr($key, 7));
+        }
+
         // Si la clé n'a pas la bonne longueur, on la hash en SHA-256 (32 bytes)
         $this->key = mb_strlen($key, '8bit') === self::KEY_LENGTH
             ? $key
