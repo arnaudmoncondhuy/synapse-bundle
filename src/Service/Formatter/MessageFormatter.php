@@ -31,18 +31,32 @@ class MessageFormatter implements MessageFormatterInterface
     {
         $messages = [];
 
-        foreach ($messageEntities as $entity) {
+        // DEBUG: Log what we receive
+        $debugLog = sys_get_temp_dir() . '/synapse_debug.log';
+        file_put_contents($debugLog, date('H:i:s') . " [formatter] received " . count($messageEntities) . " entities\n", FILE_APPEND);
+
+        foreach ($messageEntities as $index => $entity) {
+            $entityClass = is_object($entity) ? get_class($entity) : gettype($entity);
+            $isMessage = $entity instanceof Message;
+            file_put_contents($debugLog, date('H:i:s') . " [formatter] entity[$index] class=$entityClass instanceof Message=" . ($isMessage ? 'YES' : 'NO') . "\n", FILE_APPEND);
+
             if (!$entity instanceof Message) {
                 continue;
             }
 
+            $role = $entity->getRole();
+            $content = $entity->getDecryptedContent();
+            file_put_contents($debugLog, date('H:i:s') . " [formatter] entity[$index] role=" . $role->value . " content_length=" . strlen($content) . "\n", FILE_APPEND);
+
             $messages[] = [
-                'role' => strtolower($entity->getRole()->value),
+                'role' => strtolower($role->value),
                 'parts' => [
-                    ['text' => $entity->getDecryptedContent()]
+                    ['text' => $content]
                 ]
             ];
         }
+
+        file_put_contents($debugLog, date('H:i:s') . " [formatter] returning " . count($messages) . " messages\n", FILE_APPEND);
 
         return $messages;
     }

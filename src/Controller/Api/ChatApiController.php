@@ -62,9 +62,10 @@ class ChatApiController extends AbstractController
         $options['debug'] = $data['debug'] ?? ($options['debug'] ?? false);
         $conversationId = $data['conversation_id'] ?? null;
 
-        // DEBUG: Vérifier injection des services
-        error_log('SYNAPSE DEBUG: conversationManager=' . ($this->conversationManager ? 'OK' : 'NULL'));
-        error_log('SYNAPSE DEBUG: conversationId=' . ($conversationId ?? 'NULL'));
+        // DEBUG: Écrire dans un fichier pour diagnostic
+        $debugLog = sys_get_temp_dir() . '/synapse_debug.log';
+        file_put_contents($debugLog, date('H:i:s') . " conversationManager=" . ($this->conversationManager ? 'OK' : 'NULL') . "\n", FILE_APPEND);
+        file_put_contents($debugLog, date('H:i:s') . " conversationId=" . ($conversationId ?? 'NULL') . "\n", FILE_APPEND);
 
         // Load conversation if ID provided and persistence enabled
         $conversation = null;
@@ -117,21 +118,22 @@ class ChatApiController extends AbstractController
                 }
 
                 // Load conversation history from database if persistence enabled (WITHOUT new message)
-                error_log('SYNAPSE DEBUG: conversation=' . ($conversation ? $conversation->getId() : 'NULL') . ', manager=' . ($this->conversationManager ? 'OK' : 'NULL'));
+                $debugLog = sys_get_temp_dir() . '/synapse_debug.log';
+                file_put_contents($debugLog, date('H:i:s') . " [closure] conversation=" . ($conversation ? $conversation->getId() : 'NULL') . ", manager=" . ($this->conversationManager ? 'OK' : 'NULL') . "\n", FILE_APPEND);
                 if ($conversation && $this->conversationManager) {
                     $dbMessages = $this->conversationManager->getMessages($conversation);
-                    error_log('SYNAPSE DEBUG: dbMessages count=' . count($dbMessages));
+                    file_put_contents($debugLog, date('H:i:s') . " dbMessages count=" . count($dbMessages) . "\n", FILE_APPEND);
 
                     // Convert DB messages to ChatService format using formatter (handles decryption)
                     if ($this->messageFormatter) {
                         $options['history'] = $this->messageFormatter->entitiesToApiFormat($dbMessages);
-                        error_log('SYNAPSE DEBUG: history count=' . count($options['history']));
+                        file_put_contents($debugLog, date('H:i:s') . " history count=" . count($options['history']) . "\n", FILE_APPEND);
                     } else {
                         // Fallback (legacy risks sending encrypted content)
                         $options['history'] = $dbMessages;
                     }
                 } else {
-                    error_log('SYNAPSE DEBUG: SKIPPED history loading - condition false');
+                    file_put_contents($debugLog, date('H:i:s') . " SKIPPED history loading - condition false\n", FILE_APPEND);
                 }
 
                 // Status update callback for streaming
