@@ -122,13 +122,14 @@ class ChatApiController extends AbstractController
                 file_put_contents($debugLog, date('H:i:s') . " [closure] conversation=" . ($conversation ? $conversation->getId() : 'NULL') . ", manager=" . ($this->conversationManager ? 'OK' : 'NULL') . "\n", FILE_APPEND);
                 if ($conversation && $this->conversationManager) {
                     $dbMessages = $this->conversationManager->getMessages($conversation);
-                    file_put_contents($debugLog, date('H:i:s') . " dbMessages count=" . count($dbMessages) . "\n", FILE_APPEND);
+                    file_put_contents($debugLog, date('H:i:s') . " dbMessages type=" . gettype($dbMessages) . " class=" . (is_object($dbMessages) ? get_class($dbMessages) : 'N/A') . " count=" . count($dbMessages) . "\n", FILE_APPEND);
 
                     // DEBUG: Check type before passing to formatter
                     if (!empty($dbMessages)) {
+                        file_put_contents($debugLog, date('H:i:s') . " [before reset] array_keys count=" . count(array_keys((array)$dbMessages)) . "\n", FILE_APPEND);
                         $firstMsg = reset($dbMessages);
                         $firstType = is_object($firstMsg) ? get_class($firstMsg) : gettype($firstMsg);
-                        file_put_contents($debugLog, date('H:i:s') . " [before formatter] first item type=" . $firstType . "\n", FILE_APPEND);
+                        file_put_contents($debugLog, date('H:i:s') . " [before formatter] first item type=" . $firstType . " value=" . json_encode($firstMsg, JSON_PARTIAL_OUTPUT_ON_ERROR) . "\n", FILE_APPEND);
                     }
 
                     // Convert DB messages to ChatService format using formatter (handles decryption)

@@ -232,6 +232,7 @@ class ConversationManager
 
         $messages = $messageRepo->findByConversation($conversation, $limit);
 
+        file_put_contents($debugLog, date('H:i:s') . " [getMessages] raw results type=" . gettype($messages) . " class=" . (is_object($messages) ? get_class($messages) : 'N/A') . "\n", FILE_APPEND);
         file_put_contents($debugLog, date('H:i:s') . " [getMessages] raw results count=" . count($messages) . "\n", FILE_APPEND);
         if (!empty($messages)) {
             $firstItem = reset($messages);
