@@ -62,6 +62,10 @@ class ChatApiController extends AbstractController
         $options['debug'] = $data['debug'] ?? ($options['debug'] ?? false);
         $conversationId = $data['conversation_id'] ?? null;
 
+        // DEBUG: Vérifier injection des services
+        error_log('SYNAPSE DEBUG: conversationManager=' . ($this->conversationManager ? 'OK' : 'NULL'));
+        error_log('SYNAPSE DEBUG: conversationId=' . ($conversationId ?? 'NULL'));
+
         // Load conversation if ID provided and persistence enabled
         $conversation = null;
         if ($conversationId && $this->conversationManager) {
@@ -113,16 +117,21 @@ class ChatApiController extends AbstractController
                 }
 
                 // Load conversation history from database if persistence enabled (WITHOUT new message)
+                error_log('SYNAPSE DEBUG: conversation=' . ($conversation ? $conversation->getId() : 'NULL') . ', manager=' . ($this->conversationManager ? 'OK' : 'NULL'));
                 if ($conversation && $this->conversationManager) {
                     $dbMessages = $this->conversationManager->getMessages($conversation);
+                    error_log('SYNAPSE DEBUG: dbMessages count=' . count($dbMessages));
 
                     // Convert DB messages to ChatService format using formatter (handles decryption)
                     if ($this->messageFormatter) {
                         $options['history'] = $this->messageFormatter->entitiesToApiFormat($dbMessages);
+                        error_log('SYNAPSE DEBUG: history count=' . count($options['history']));
                     } else {
                         // Fallback (legacy risks sending encrypted content)
                         $options['history'] = $dbMessages;
                     }
+                } else {
+                    error_log('SYNAPSE DEBUG: SKIPPED history loading - condition false');
                 }
 
                 // Status update callback for streaming
