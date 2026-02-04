@@ -19,6 +19,16 @@ export default class extends Controller {
 
     connect() {
         console.log('Synapse Sidebar Controller connected');
+
+        // Initialiser l'ID de conversation depuis l'URL si non défini
+        if (!this.currentConversationIdValue) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const conversationId = urlParams.get('conversation');
+            if (conversationId) {
+                this.currentConversationIdValue = conversationId;
+            }
+        }
+
         this.loadConversations();
         this.setupEventListeners();
     }
@@ -52,7 +62,7 @@ export default class extends Controller {
 
         this.listTarget.innerHTML = conversations.map(conv => `
             <div
-                class="conversation-item ${conv.id === this.currentConversationIdValue ? 'active' : ''}"
+                class="conversation-item ${String(conv.id) === String(this.currentConversationIdValue) ? 'active' : ''}"
                 data-conversation-id="${conv.id}"
                 data-action="click->sidebar#selectConversation"
             >
@@ -199,7 +209,7 @@ export default class extends Controller {
             this.dispatch('conversation-deleted', { detail: { conversationId } });
 
             // Si c'était la conversation active, rediriger vers nouvelle conversation
-            if (conversationId === this.currentConversationIdValue) {
+            if (String(conversationId) === String(this.currentConversationIdValue)) {
                 this.currentConversationIdValue = '';
                 this.dispatch('conversation-reset');
 
