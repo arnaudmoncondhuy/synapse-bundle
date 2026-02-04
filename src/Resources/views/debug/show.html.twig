@@ -217,6 +217,10 @@
 							<div class="section-block">
 								<div class="label">🛠️ Arguments Tool ({{ fc.name }})</div>
 								<pre>{{ fc.args|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+								{% if fc.response is defined %}
+									<div class="label" style="margin-top:10px; color:#059669;">✅ Résultat</div>
+									<pre style="background:#064e3b; color:#ecfdf5;">{{ fc.response|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+								{% endif %}
 							</div>
 						{% endfor %}
 					{% endif %}

@@ -18,6 +18,7 @@ export default class extends Controller {
 
     connect() {
         this.scrollToBottom();
+        this.loadMarked();
         this.inputTarget.focus();
 
         // Check for debug mode in URL
@@ -347,8 +348,31 @@ export default class extends Controller {
         this.scrollToBottom();
     }
 
+    async loadMarked() {
+        try {
+            const { parse } = await import('marked');
+            this.markedParse = parse;
+            // Rerender visible messages if needed, or just let new ones use it
+            // Optional: this.rerenderMessages(); 
+        } catch (e) {
+            console.warn('Synapse: "marked" library not found. Install it for better Markdown rendering (php bin/console importmap:require marked). Using fallback parser.');
+        }
+    }
+
     parseMarkdown(text) {
+        if (this.markedParse) {
+            try {
+                return this.markedParse(text);
+            } catch (e) {
+                console.error('Synapse: Error parsing markdown with marked', e);
+                // Fallback to regex if marked fails
+            }
+        }
+
+        // Fallback: Simple Regex Parser
+        // Improved to include Links for "Action Buttons" support
         return text
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
             .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
