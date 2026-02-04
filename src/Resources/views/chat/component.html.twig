@@ -98,7 +98,9 @@
                     {% endif %}
                     <div class="synapse-chat__content">
                         <div class="synapse-chat__bubble">
-                            {{ msg.decryptedContent|synapse_markdown }}
+                            {# Supporte à la fois les entités (via getDecryptedContent) et les tableaux (via clé 'decryptedContent' ou 'content') #}
+                            {% set displayContent = msg.decryptedContent is defined ? msg.decryptedContent : (msg.content is defined ? msg.content : '') %}
+                            {{ displayContent|synapse_markdown }}
                         </div>
                     </div>
                 </div>

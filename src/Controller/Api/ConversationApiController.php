@@ -133,6 +133,7 @@ class ConversationApiController extends AbstractController
                 'id' => $msg->getId(),
                 'role' => $msg->getRole()->value,
                 'content' => $msg->getDecryptedContent(),
+                'decryptedContent' => $msg->getDecryptedContent(),
                 'created_at' => $msg->getCreatedAt()->format('c'),
                 'tokens' => $msg->getTotalTokens(),
             ], $messages);
