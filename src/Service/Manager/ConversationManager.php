@@ -250,6 +250,13 @@ class ConversationManager
             }
         }
 
+        file_put_contents($debugLog, date('H:i:s') . " [getMessages] after loop count=" . count($messages) . "\n", FILE_APPEND);
+        if (!empty($messages)) {
+            $firstItem = reset($messages);
+            $firstType = is_object($firstItem) ? get_class($firstItem) : gettype($firstItem);
+            file_put_contents($debugLog, date('H:i:s') . " [getMessages] after loop first item type=" . $firstType . "\n", FILE_APPEND);
+        }
+
         return $messages;
     }
 
