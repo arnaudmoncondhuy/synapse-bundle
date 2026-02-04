@@ -8,6 +8,7 @@ use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
+use ArnaudMoncondhuy\SynapseBundle\Service\Manager\ConversationManager;
 use ArnaudMoncondhuy\SynapseBundle\Service\Security\LibsodiumEncryptionService;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -104,6 +105,8 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         // Persistence configuration
         $container->setParameter('synapse.persistence.enabled', $config['persistence']['enabled'] ?? false);
         $container->setParameter('synapse.persistence.handler', $config['persistence']['handler'] ?? 'session');
+        $container->setParameter('synapse.persistence.conversation_class', $config['persistence']['conversation_class'] ?? null);
+        $container->setParameter('synapse.persistence.message_class', $config['persistence']['message_class'] ?? null);
 
         // Encryption configuration
         $container->setParameter('synapse.encryption.enabled', $config['encryption']['enabled'] ?? false);
@@ -151,6 +154,18 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
                 EncryptionServiceInterface::class,
                 'synapse.encryption_service'
             );
+        }
+
+        // Register ConversationManager if persistence is enabled with concrete entity classes
+        if ($config['persistence']['enabled'] && !empty($config['persistence']['conversation_class'])) {
+            $container
+                ->register(ConversationManager::class)
+                ->setAutowired(true)
+                ->setPublic(false)
+                ->setArguments([
+                    'conversationClass' => $config['persistence']['conversation_class'],
+                    'messageClass' => $config['persistence']['message_class'] ?? null,
+                ]);
         }
 
         // Chargement des services

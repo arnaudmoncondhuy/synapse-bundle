@@ -35,7 +35,9 @@ class ConversationManager
         private EntityManagerInterface $em,
         private ConversationRepository $conversationRepo,
         private ?EncryptionServiceInterface $encryptionService = null,
-        private ?PermissionCheckerInterface $permissionChecker = null
+        private ?PermissionCheckerInterface $permissionChecker = null,
+        private ?string $conversationClass = null,
+        private ?string $messageClass = null,
     ) {
     }
 
@@ -345,7 +347,7 @@ class ConversationManager
      */
     protected function getConversationClass(): string
     {
-        return Conversation::class;
+        return $this->conversationClass ?? Conversation::class;
     }
 
     /**
@@ -355,6 +357,6 @@ class ConversationManager
      */
     protected function getMessageClass(): string
     {
-        return Message::class;
+        return $this->messageClass ?? Message::class;
     }
 }
