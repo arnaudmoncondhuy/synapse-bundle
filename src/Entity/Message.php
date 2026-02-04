@@ -129,6 +129,13 @@ abstract class Message
     #[ORM\Column(type: Types::JSON, nullable: true)]
     protected ?array $metadata = null;
 
+    /**
+     * Contenu déchiffré (non persistant)
+     * Utilisé pour éviter que Doctrine ne sauvegarde le texte en clair 
+     * lors d'un flush accidentel.
+     */
+    protected ?string $decryptedContent = null;
+
     public function __construct()
     {
         $this->id = (string) new Ulid();
@@ -285,6 +292,23 @@ abstract class Message
             $this->metadata = [];
         }
         $this->metadata[$key] = $value;
+        return $this;
+    }
+
+    /**
+     * Retourne le contenu déchiffré s'il existe, sinon le contenu brut
+     */
+    public function getDecryptedContent(): string
+    {
+        return $this->decryptedContent ?? $this->content;
+    }
+
+    /**
+     * Définit le contenu déchiffré sans affecter la persistence
+     */
+    public function setDecryptedContent(?string $content): self
+    {
+        $this->decryptedContent = $content;
         return $this;
     }
 

@@ -207,7 +207,7 @@ class ConversationManager
         foreach ($messages as $message) {
             if ($this->encryptionService !== null && $this->encryptionService->isEncrypted($message->getContent())) {
                 $decrypted = $this->encryptionService->decrypt($message->getContent());
-                $message->setContent($decrypted);
+                $message->setDecryptedContent($decrypted);
             }
         }
 
@@ -278,6 +278,8 @@ class ConversationManager
      */
     private function setMessageContent(Message $message, string $content): void
     {
+        $message->setDecryptedContent($content);
+
         if ($this->encryptionService !== null) {
             $content = $this->encryptionService->encrypt($content);
         }

@@ -132,7 +132,7 @@ class ConversationApiController extends AbstractController
             $data = array_map(fn($msg) => [
                 'id' => $msg->getId(),
                 'role' => $msg->getRole()->value,
-                'content' => $msg->getContent(),
+                'content' => $msg->getDecryptedContent(),
                 'created_at' => $msg->getCreatedAt()->format('c'),
                 'tokens' => $msg->getTotalTokens(),
             ], $messages);

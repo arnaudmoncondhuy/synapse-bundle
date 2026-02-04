@@ -64,26 +64,30 @@ class SynapseExtension extends AbstractExtension
         // 2. PRIORITY: Liens vers Boutons Action
         // Regex: [Label](URL) -> <a href="URL" class="synapse-btn-action">Label</a>
         $html = preg_replace(
-            '/\[([^\]]+)\]\(([^)]+)\)/',
+            '/\[([^\]]+)\]\(([^)]+)\)/u',
             '<a href="$2" class="synapse-btn-action" target="_blank" rel="noopener noreferrer">$1</a>',
             $html
         );
 
         // 3. Texte Formaté
         // Gras: **text**
-        $html = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $html);
+        $html = preg_replace('/\*\*(.*?)\*\*/u', '<strong>$1</strong>', $html);
         // Italique: *text*
-        $html = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $html);
+        $html = preg_replace('/\*(.*?)\*/u', '<em>$1</em>', $html);
 
         // 4. Blocs de code
         // ```code``` -> <pre><code>code</code></pre>
+        // Regex assouplie : supporte les blocs sur une seule ligne ou sans langage spécifique
         $html = preg_replace_callback(
-            '/```(\w+)?\n([\s\S]*?)```/m',
-            fn($matches) => '<pre><code>' . $matches[2] . '</code></pre>',
+            '/```(\w+)?\s*([\s\S]*?)```/m',
+            function($matches) {
+                $content = trim($matches[2]);
+                return '<pre><code>' . $content . '</code></pre>';
+            },
             $html
         );
         // `code` -> <code>code</code>
-        $html = preg_replace('/`([^`]+)`/', '<code>$1</code>', $html);
+        $html = preg_replace('/`([^`]+)`/u', '<code>$1</code>', $html);
 
         // 5. Detection automatique des groupes de boutons
         // On cherche 2+ boutons consécutifs (séparés ou non par des espaces/sauts de ligne)
