@@ -98,7 +98,7 @@
                     {% endif %}
                     <div class="synapse-chat__content">
                         <div class="synapse-chat__bubble">
-                            {{ msg.content|nl2br }}
+                            {{ msg.content|synapse_markdown }}
                         </div>
                     </div>
                 </div>

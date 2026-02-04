@@ -29,41 +29,16 @@ export default class extends Controller {
             this.element.classList.add('synapse-chat--debug-mode');
         }
 
-        // Load marked first, then restore history
-        this.loadMarked().then(() => {
-            if (this.historyValue && this.historyValue.length > 0) {
-                this.loadHistory(this.historyValue);
-            }
-        });
+        // Load marked async (for streaming)
+        this.loadMarked();
     }
 
+    // History is now rendered server-side via Twig
     loadHistory(history) {
-        console.log('📜 [History] Loading', history.length, 'messages');
-        console.log('📜 [History] Marked available?', !!this.markedParse);
-
-        // Clear default greeting if we have history
-        // Use class-based toggling for welcome mode
-        if (history.length > 0) {
-            if (this.hasContainerTarget) {
-                this.containerTarget.classList.remove('mode-welcome');
-                this.containerTarget.classList.add('mode-chat');
-            }
-            if (this.hasGreetingTarget) {
-                this.greetingTarget.classList.add('hidden');
-            }
-        }
-
-        history.forEach((msg, index) => {
-            const part = msg.parts[0];
-            if (msg.role === 'user' && part.text) {
-                this.addMessage(part.text, 'user');
-            } else if (msg.role === 'model' && part.text) {
-                console.log(`📜 [History] Message ${index} text preview:`, part.text.substring(0, 100));
-                this.addMessage(part.text, 'assistant', msg.metadata?.debug);
-            }
-        });
-
-        this.historyLoaded = true;
+        // Kept empty or remove completely if no longer needed
+        // but removing it requires removing calls to it.
+        // Since we removed the call in connect(), we can remove this method or keep it simple
+        console.log('📜 [History] Managed by Server-Side Rendering');
         this.scrollToBottom();
     }
 
