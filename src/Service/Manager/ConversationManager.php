@@ -30,15 +30,32 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 class ConversationManager
 {
     private ?Conversation $currentConversation = null;
+    private ?ConversationRepository $resolvedConversationRepo = null;
 
     public function __construct(
         private EntityManagerInterface $em,
-        private ConversationRepository $conversationRepo,
+        private ?ConversationRepository $conversationRepo = null,
         private ?EncryptionServiceInterface $encryptionService = null,
         private ?PermissionCheckerInterface $permissionChecker = null,
         private ?string $conversationClass = null,
         private ?string $messageClass = null,
     ) {
+    }
+
+    /**
+     * Récupère le repository de conversations (injecté ou résolu dynamiquement)
+     */
+    private function getConversationRepo(): ConversationRepository
+    {
+        if ($this->conversationRepo !== null) {
+            return $this->conversationRepo;
+        }
+
+        if ($this->resolvedConversationRepo === null) {
+            $this->resolvedConversationRepo = $this->em->getRepository($this->getConversationClass());
+        }
+
+        return $this->resolvedConversationRepo;
     }
 
     /**
@@ -142,7 +159,7 @@ class ConversationManager
      */
     public function getConversation(string $id, ?ConversationOwnerInterface $owner = null): ?Conversation
     {
-        $conversation = $this->conversationRepo->find($id);
+        $conversation = $this->getConversationRepo()->find($id);
 
         if ($conversation === null) {
             return null;
@@ -173,13 +190,13 @@ class ConversationManager
         int $limit = 50
     ): array {
         if ($status !== null) {
-            $conversations = $this->conversationRepo->findBy(
+            $conversations = $this->getConversationRepo()->findBy(
                 ['owner' => $owner, 'status' => $status],
                 ['updatedAt' => 'DESC'],
                 $limit
             );
         } else {
-            $conversations = $this->conversationRepo->findActiveByOwner($owner, $limit);
+            $conversations = $this->getConversationRepo()->findActiveByOwner($owner, $limit);
         }
 
         // Déchiffrer les titres
