@@ -119,7 +119,11 @@ class ConversationManager
         // Calculer total tokens
         $message->calculateTotalTokens();
 
-        $conversation->addMessage($message);
+        // Éviter les doublons si l'objet est déjà dans la collection 
+        // (cas où on sauve un message qui a déjà été ajouté manuellement avant persist)
+        if (!$conversation->getMessages()->contains($message)) {
+            $conversation->addMessage($message);
+        }
         $this->em->persist($message);
         $this->em->flush();
 
