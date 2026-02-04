@@ -37,7 +37,7 @@ class MessageFormatter implements MessageFormatterInterface
             }
 
             $messages[] = [
-                'role' => $entity->getRole()->value,
+                'role' => strtolower($entity->getRole()->value),
                 'parts' => [
                     ['text' => $entity->getDecryptedContent()]
                 ]
