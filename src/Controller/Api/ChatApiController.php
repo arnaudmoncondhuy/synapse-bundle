@@ -124,8 +124,16 @@ class ChatApiController extends AbstractController
                     $dbMessages = $this->conversationManager->getMessages($conversation);
                     file_put_contents($debugLog, date('H:i:s') . " dbMessages count=" . count($dbMessages) . "\n", FILE_APPEND);
 
+                    // DEBUG: Check type before passing to formatter
+                    if (!empty($dbMessages)) {
+                        $firstMsg = reset($dbMessages);
+                        $firstType = is_object($firstMsg) ? get_class($firstMsg) : gettype($firstMsg);
+                        file_put_contents($debugLog, date('H:i:s') . " [before formatter] first item type=" . $firstType . "\n", FILE_APPEND);
+                    }
+
                     // Convert DB messages to ChatService format using formatter (handles decryption)
                     if ($this->messageFormatter) {
+                        file_put_contents($debugLog, date('H:i:s') . " [before formatter call] messageFormatter=" . get_class($this->messageFormatter) . "\n", FILE_APPEND);
                         $options['history'] = $this->messageFormatter->entitiesToApiFormat($dbMessages);
                         file_put_contents($debugLog, date('H:i:s') . " history count=" . count($options['history']) . "\n", FILE_APPEND);
                     } else {
