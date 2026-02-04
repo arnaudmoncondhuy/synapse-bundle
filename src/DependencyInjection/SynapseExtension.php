@@ -163,8 +163,8 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
                 ->setAutowired(true)
                 ->setPublic(false)
                 ->setArguments([
-                    'conversationClass' => $config['persistence']['conversation_class'],
-                    'messageClass' => $config['persistence']['message_class'] ?? null,
+                    '$conversationClass' => $config['persistence']['conversation_class'],
+                    '$messageClass' => $config['persistence']['message_class'] ?? null,
                 ]);
         }
 
