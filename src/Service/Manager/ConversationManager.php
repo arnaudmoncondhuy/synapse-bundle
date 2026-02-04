@@ -223,8 +223,21 @@ class ConversationManager
     {
         $this->checkPermission($conversation, 'view');
 
-        $messageRepo = $this->em->getRepository($this->getMessageClass());
+        $messageClass = $this->getMessageClass();
+        $debugLog = sys_get_temp_dir() . '/synapse_debug.log';
+        file_put_contents($debugLog, date('H:i:s') . " [getMessages] messageClass=$messageClass\n", FILE_APPEND);
+
+        $messageRepo = $this->em->getRepository($messageClass);
+        file_put_contents($debugLog, date('H:i:s') . " [getMessages] repoClass=" . get_class($messageRepo) . "\n", FILE_APPEND);
+
         $messages = $messageRepo->findByConversation($conversation, $limit);
+
+        file_put_contents($debugLog, date('H:i:s') . " [getMessages] raw results count=" . count($messages) . "\n", FILE_APPEND);
+        if (!empty($messages)) {
+            $firstItem = reset($messages);
+            $firstType = is_object($firstItem) ? get_class($firstItem) : gettype($firstItem);
+            file_put_contents($debugLog, date('H:i:s') . " [getMessages] first item type=" . $firstType . "\n", FILE_APPEND);
+        }
 
         // Déchiffrer les contenus ou normaliser
         foreach ($messages as $message) {
