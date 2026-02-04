@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Twig;
 
 use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 use Twig\TwigFunction;
 
 /**
@@ -19,6 +20,13 @@ class SynapseExtension extends AbstractExtension
         private \ArnaudMoncondhuy\SynapseBundle\Service\SynapseLayoutResolver $layoutResolver,
         private \ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository $configRepository,
     ) {
+    }
+
+    public function getFilters(): array
+    {
+        return [
+            new TwigFilter('synapse_markdown', [$this, 'parseMarkdown'], ['is_safe' => ['html']]),
+        ];
     }
 
     public function getFunctions(): array
@@ -36,5 +44,71 @@ class SynapseExtension extends AbstractExtension
             // Récupère la configuration (Entité)
             new TwigFunction('synapse_config', [$this->configRepository, 'getConfig']),
         ];
+    }
+
+    /**
+     * Convertit le Markdown basique en HTML (Liens boutons, Gras, Italique, Code)
+     * Réplique la logique du chat_controller.js pour la cohérence.
+     */
+    public function parseMarkdown(?string $text): string
+    {
+        if (empty($text)) {
+            return '';
+        }
+
+        // 1. Sécuriser le HTML (échapper les balises script, etc.)
+        // On utilise htmlspecialchars mais on doit faire attention si le texte est déjà safe ou non.
+        // Dans le contexte Twig, l'entrée est souvent brute.
+        $html = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+        // 2. PRIORITY: Liens vers Boutons Action
+        // Regex: [Label](URL) -> <a href="URL" class="synapse-btn-action">Label</a>
+        $html = preg_replace(
+            '/\[([^\]]+)\]\(([^)]+)\)/',
+            '<a href="$2" class="synapse-btn-action" target="_blank" rel="noopener noreferrer">$1</a>',
+            $html
+        );
+
+        // 3. Texte Formaté
+        // Gras: **text**
+        $html = preg_replace('/\*\*(.*?)\*\*/', '<strong>$1</strong>', $html);
+        // Italique: *text*
+        $html = preg_replace('/\*(.*?)\*/', '<em>$1</em>', $html);
+
+        // 4. Blocs de code
+        // ```code``` -> <pre><code>code</code></pre>
+        $html = preg_replace_callback(
+            '/```(\w+)?\n([\s\S]*?)```/m',
+            fn($matches) => '<pre><code>' . $matches[2] . '</code></pre>',
+            $html
+        );
+        // `code` -> <code>code</code>
+        $html = preg_replace('/`([^`]+)`/', '<code>$1</code>', $html);
+
+        // 5. Detection automatique des groupes de boutons
+        // On cherche 2+ boutons consécutifs (séparés ou non par des espaces/sauts de ligne)
+        // Note: C'est plus complexe en regex pcre qu'en JS, on simplifie pour l'instant :
+        // Si on trouve plusieurs liens côte à côte, on pourrait les wrapper, mais Twig nl2br va arriver ensuite.
+        
+        // 6. Blocs de boutons consécutifs
+        // On cherche des motifs <a class="synapse-btn-action">...</a> suivis éventuellement de sauts de ligne, répétés
+        // Pattern complexe, on tente une approche simple : si on a une suite de boutons, on les wrap.
+        // (?:\s*<a class="synapse-btn-action".*?<\/a>\s*){2,}
+        
+        $html = preg_replace_callback(
+            '/(?:<a class="synapse-btn-action"[^>]*>.*?<\/a>\s*(\r\n|\r|\n)?\s*){2,}/s',
+            function ($matches) {
+                // Nettoyer les sauts de ligne entre les boutons pour le flexbox
+                $content = preg_replace('/\s*(\r\n|\r|\n)\s*/', '', $matches[0]);
+                return '<div class="synapse-action-group">' . $content . '</div>';
+            },
+            $html
+        );
+
+        // 7. Sauts de ligne (équivalent nl2br)
+        // On évite d'ajouter des BR dans les blocs <pre> ou autour des divs
+        $html = nl2br($html);
+
+        return $html;
     }
 }
