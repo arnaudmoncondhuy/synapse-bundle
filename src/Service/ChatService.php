@@ -226,13 +226,14 @@ class ChatService
                 ];
                 $debugAccumulator['usage'] = $finalUsageMetadata;
                 $debugAccumulator['safety'] = $finalSafetyRatings;
+                $debugAccumulator['raw_response'] = $streamDebugParts;
             }
 
             // Process Function Calls
             if (!empty($currentFunctionCalls)) {
                 $functionResponseParts = [];
 
-                foreach ($currentFunctionCalls as $fc) {
+                foreach ($currentFunctionCalls as $index => $fc) {
                     $functionName = $fc['name'];
                     $args = $fc['args'] ?? [];
 
@@ -256,6 +257,13 @@ class ChatService
                                 'params' => $args,
                                 'result_preview' => substr((string) $functionResponse, 0, 100).'...',
                             ];
+
+                            // Attach full response to the specific turn data for easier display in debug view
+                            // We target the current turn (last added) and the specific function call index
+                            $lastTurnIndex = count($debugAccumulator['turns']) - 1;
+                            if (isset($debugAccumulator['turns'][$lastTurnIndex]['function_calls_data'][$index])) {
+                                $debugAccumulator['turns'][$lastTurnIndex]['function_calls_data'][$index]['response'] = $functionResponse;
+                            }
                         }
                     }
                 }
