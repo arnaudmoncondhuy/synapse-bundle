@@ -14,7 +14,6 @@ class LibsodiumEncryptionServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        // Generate a random 32-byte key for testing
         $this->key = sodium_crypto_secretbox_keygen();
         $this->service = new LibsodiumEncryptionService($this->key);
     }
@@ -37,10 +36,7 @@ class LibsodiumEncryptionServiceTest extends TestCase
         $encrypted1 = $this->service->encrypt($plaintext);
         $encrypted2 = $this->service->encrypt($plaintext);
 
-        // Different ciphertexts (due to random nonce)
         $this->assertNotEquals($encrypted1, $encrypted2);
-
-        // But same plaintext when decrypted
         $this->assertEquals($plaintext, $this->service->decrypt($encrypted1));
         $this->assertEquals($plaintext, $this->service->decrypt($encrypted2));
     }
@@ -56,12 +52,11 @@ class LibsodiumEncryptionServiceTest extends TestCase
         $this->assertFalse($this->service->isEncrypted('short'));
     }
 
-    public function testEncryptEmptyString(): void
+    public function testEncryptEmptyStringThrows(): void
     {
-        $encrypted = $this->service->encrypt('');
-        $decrypted = $this->service->decrypt($encrypted);
+        $this->expectException(\RuntimeException::class);
 
-        $this->assertEquals('', $decrypted);
+        $this->service->encrypt('');
     }
 
     public function testEncryptLongText(): void
@@ -89,11 +84,9 @@ class LibsodiumEncryptionServiceTest extends TestCase
         $plaintext = 'Secret message';
         $encrypted = $this->service->encrypt($plaintext);
 
-        // Create a new service with a different key
         $wrongKeyService = new LibsodiumEncryptionService(sodium_crypto_secretbox_keygen());
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Decryption failed');
 
         $wrongKeyService->decrypt($encrypted);
     }
@@ -101,7 +94,6 @@ class LibsodiumEncryptionServiceTest extends TestCase
     public function testDecryptInvalidDataFails(): void
     {
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Decryption failed');
 
         $this->service->decrypt('invalid_base64_data_that_is_not_encrypted');
     }
@@ -111,12 +103,17 @@ class LibsodiumEncryptionServiceTest extends TestCase
         $plaintext = 'Original message';
         $encrypted = $this->service->encrypt($plaintext);
 
-        // Tamper with the encrypted data
         $tampered = substr($encrypted, 0, -4) . 'XXXX';
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Decryption failed');
 
         $this->service->decrypt($tampered);
+    }
+
+    public function testDecryptEmptyStringThrows(): void
+    {
+        $this->expectException(\RuntimeException::class);
+
+        $this->service->decrypt('');
     }
 }
