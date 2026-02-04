@@ -443,3 +443,44 @@ body:has(.assistant-layout) main {
     gap: 8px;
     margin-top: 8px;
 }
+
+/* ACTION BUTTONS (Markdown Links) */
+.synapse-btn-action {
+    display: inline-block;
+    vertical-align: middle;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none !important;
+    font-weight: 500;
+    font-size: 0.9em;
+    margin: 4px 4px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    white-space: nowrap;
+}
+
+.synapse-btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    color: white !important;
+}
+
+.synapse-btn-action:active {
+    transform: translateY(0);
+}
+
+/* Action Button Group - Flex container for multiple consecutive buttons */
+.synapse-action-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    margin-bottom: 8px;
+}
+
+.synapse-action-group .synapse-btn-action {
+    margin: 0;
+    /* Reset margin as gap handles spacing */
+}

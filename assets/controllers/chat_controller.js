@@ -153,7 +153,7 @@ export default class extends Controller {
 
                         } else if (evt.type === 'result') {
                             this.setLoading(false);
-                            
+
                             // If we streamed text, ensure final consistency (sometimes helpful for incomplete markdown)
                             if (currentMessageBubble) {
                                 currentMessageBubble.innerHTML = this.parseMarkdown(evt.payload.answer);
@@ -161,7 +161,7 @@ export default class extends Controller {
                                 if (evt.payload.conversation_id) {
                                     this.updateUrlWithConversationId(evt.payload.conversation_id);
                                 }
-                                
+
                                 // Re-inject debug button if in debug mode
                                 if (this.isDebugMode && evt.payload.debug_id) {
                                     const debugUrl = `/synapse/_debug/${evt.payload.debug_id}`;
@@ -176,7 +176,7 @@ export default class extends Controller {
                                     const footer = document.createElement('div');
                                     footer.className = 'synapse-chat__footer';
                                     footer.innerHTML = debugHtml;
-                                    
+
                                     // Find parent .synapse-chat__content and append footer
                                     currentMessageBubble.closest('.synapse-chat__content').appendChild(footer);
                                 }
@@ -197,7 +197,7 @@ export default class extends Controller {
                             throw new Error(evt.payload);
                         }
                     } catch (e) {
-                         if (!(e instanceof SyntaxError)) {
+                        if (!(e instanceof SyntaxError)) {
                             console.error('Synapse Stream Error:', e);
                         }
                     }
@@ -360,24 +360,63 @@ export default class extends Controller {
     }
 
     parseMarkdown(text) {
+        // Debug logging
+        console.log('🔍 [Markdown Parser] Input:', text.substring(0, 100));
+
         if (this.markedParse) {
             try {
-                return this.markedParse(text);
+                const result = this.markedParse(text);
+                console.log('✅ [Markdown Parser] Used marked library');
+                return result;
             } catch (e) {
-                console.error('Synapse: Error parsing markdown with marked', e);
+                console.error('❌ [Markdown Parser] Error with marked, using fallback:', e);
                 // Fallback to regex if marked fails
             }
+        } else {
+            console.log('⚠️ [Markdown Parser] Using fallback (marked not loaded)');
         }
 
-        // Fallback: Simple Regex Parser
-        // Improved to include Links for "Action Buttons" support
-        return text
-            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+        // FALLBACK: Robust Regex Parser
+        let html = text;
+
+        // 1. PRIORITY: Convert Markdown links to styled buttons
+        const linksBefore = (html.match(/\[([^\]]+)\]\(([^)]+)\)/g) || []).length;
+        html = html.replace(
+            /\[([^\]]+)\]\(([^)]+)\)/g,
+            '<a href="$2" class="synapse-btn-action" target="_blank" rel="noopener noreferrer">$1</a>'
+        );
+        if (linksBefore > 0) {
+            console.log(`🔗 [Markdown Parser] Converted ${linksBefore} link(s) to buttons`);
+        }
+
+        // 2. Text formatting
+        html = html
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+        // 3. Code blocks
+        html = html
             .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
-            .replace(/`([^`]+)`/g, '<code>$1</code>')
-            .replace(/\n/g, '<br>');
+            .replace(/`([^`]+)`/g, '<code>$1</code>');
+
+        // 4. Line breaks (LAST to avoid breaking HTML tags)
+        html = html.replace(/\n/g, '<br>');
+
+        // 5. Group consecutive action buttons into a flex container
+        // Match 2+ consecutive buttons (with optional <br> between them)
+        html = html.replace(
+            /(<a class="synapse-btn-action"[^>]*>.*?<\/a>(?:<br>)?){2,}/g,
+            (match) => {
+                // Remove <br> tags between buttons and wrap in action group
+                const cleanedButtons = match.replace(/<br>/g, '');
+                const buttonCount = (cleanedButtons.match(/<a class="synapse-btn-action"/g) || []).length;
+                console.log(`📦 [Markdown Parser] Grouped ${buttonCount} consecutive buttons`);
+                return `<div class="synapse-action-group">${cleanedButtons}</div>`;
+            }
+        );
+
+        console.log('✅ [Markdown Parser] Output:', html.substring(0, 100));
+        return html;
     }
 
     setLoading(isLoading) {
