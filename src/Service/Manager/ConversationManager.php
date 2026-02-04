@@ -207,11 +207,14 @@ class ConversationManager
         $messageRepo = $this->em->getRepository($this->getMessageClass());
         $messages = $messageRepo->findByConversation($conversation, $limit);
 
-        // Déchiffrer les contenus
+        // Déchiffrer les contenus ou normaliser
         foreach ($messages as $message) {
             if ($this->encryptionService !== null && $this->encryptionService->isEncrypted($message->getContent())) {
                 $decrypted = $this->encryptionService->decrypt($message->getContent());
                 $message->setDecryptedContent($decrypted);
+            } else {
+                // Fallback explicite pour les messages non chiffrés
+                $message->setDecryptedContent($message->getContent());
             }
         }
 
