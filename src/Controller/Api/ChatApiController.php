@@ -7,6 +7,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Controller\Api;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Enum\MessageRole;
 use ArnaudMoncondhuy\SynapseBundle\Service\ChatService;
+use ArnaudMoncondhuy\SynapseBundle\Service\Formatter\MessageFormatter;
 use ArnaudMoncondhuy\SynapseBundle\Service\Manager\ConversationManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,6 +27,7 @@ class ChatApiController extends AbstractController
     public function __construct(
         private ChatService $chatService,
         private ?ConversationManager $conversationManager = null,
+        private ?MessageFormatter $messageFormatter = null,
     ) {
     }
 
@@ -113,8 +115,13 @@ class ChatApiController extends AbstractController
                 // Load conversation history from database if persistence enabled (WITHOUT new message)
                 if ($conversation && $this->conversationManager) {
                     $dbMessages = $this->conversationManager->getMessages($conversation);
-                    // Convert DB messages to ChatService format
-                    $options['history'] = $dbMessages;
+                    // Convert DB messages to ChatService format using formatter (handles decryption)
+                    if ($this->messageFormatter) {
+                        $options['history'] = $this->messageFormatter->entitiesToApiFormat($dbMessages);
+                    } else {
+                        // Fallback (legacy risks sending encrypted content)
+                        $options['history'] = $dbMessages;
+                    }
                 }
 
                 // Status update callback for streaming
