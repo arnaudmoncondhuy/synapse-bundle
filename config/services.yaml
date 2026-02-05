@@ -120,3 +120,6 @@ services:
         arguments:
             $registry: '@doctrine'
         tags: ['doctrine.repository_service']
+
+    # Accounting (tracking des tâches automatisées)
+    ArnaudMoncondhuy\SynapseBundle\Service\Accounting\TokenAccountingService: ~

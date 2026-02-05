@@ -49,9 +49,26 @@ class TokenAccountingService
         $tokenUsage->setModel($model);
 
         // Tokens
-        $promptTokens = $usage['prompt'] ?? $usage['prompt_tokens'] ?? 0;
-        $completionTokens = $usage['completion'] ?? $usage['completion_tokens'] ?? 0;
-        $thinkingTokens = $usage['thinking'] ?? $usage['thinking_tokens'] ?? 0;
+        // Supporte plusieurs formats :
+        // - format interne : ['prompt'|'prompt_tokens', 'completion'|'completion_tokens', 'thinking'|'thinking_tokens']
+        // - format Vertex/Gemini usageMetadata : ['promptTokenCount', 'candidatesTokenCount', 'thoughtsTokenCount', ...]
+        $promptTokens = $usage['prompt']
+            ?? $usage['prompt_tokens']
+            ?? $usage['promptTokenCount']
+            ?? 0;
+
+        $thinkingTokens = $usage['thinking']
+            ?? $usage['thinking_tokens']
+            ?? $usage['thoughtsTokenCount']
+            ?? 0;
+
+        // Completion tokens :
+        // - soit explicitement fourni
+        // - soit dérivé du format Vertex : candidates + thoughts
+        $completionTokens = $usage['completion']
+            ?? $usage['completion_tokens']
+            ?? (($usage['candidatesTokenCount'] ?? 0) + $thinkingTokens)
+            ?? 0;
 
         $tokenUsage->setPromptTokens($promptTokens);
         $tokenUsage->setCompletionTokens($completionTokens);

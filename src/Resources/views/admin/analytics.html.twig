@@ -1,4 +1,4 @@
-﻿{% extends synapse_admin_layout() %}
+{% extends synapse_admin_layout() %}
 
 {% block admin_title %}Analytique - Synapse Admin
 {% endblock %}
@@ -8,7 +8,7 @@
 		<div>
 			<h1 class="synapse-admin__title">Analytique</h1>
 			<div class="synapse-admin__subtitle">
-				Usage et CoÃ»ts :
+				Usage et Coûts :
 				{{ period_label }}
 			</div>
 		</div>
@@ -23,8 +23,8 @@
 				<i data-lucide="coins"></i>
 			</div>
 			<div>
-				<div class="synapse-admin__kpi-label">CoÃ»t EstimÃ©</div>
-				<div class="synapse-admin__kpi-value">â‚¬{{ cost|number_format(5, '.', ',') }}</div>
+				<div class="synapse-admin__kpi-label">Coût estimé</div>
+				<div class="synapse-admin__kpi-value">€{{ cost|number_format(5, '.', ',') }}</div>
 			</div>
 		</div>
 
@@ -49,7 +49,7 @@
 				<i data-lucide="zap"></i>
 			</div>
 			<div>
-				<div class="synapse-admin__kpi-label">RequÃªtes IA</div>
+				<div class="synapse-admin__kpi-label">Requêtes IA</div>
 				<div class="synapse-admin__kpi-value">{{ stats.request_count|default(0) }}</div>
 			</div>
 		</div>
@@ -62,7 +62,7 @@
 		<div style="display: flex; flex-direction: column; gap: 2rem;">
 			<div class="synapse-admin__card">
 				<div class="synapse-admin__card-header">
-					<h3 style="margin: 0; font-size: 1.1rem;">TÃ¢ches AutomatisÃ©es</h3>
+					<h3 style="margin: 0; font-size: 1.1rem;">Tâches automatisées</h3>
 				</div>
 				<div class="synapse-admin__table-container">
 					<table class="synapse-admin__table">
@@ -95,7 +95,7 @@
 								</tr>
 							{% else %}
 								<tr>
-									<td colspan="4" style="padding: 2rem; text-align: center; color: var(--synapse-admin-text-muted);">Aucune tÃ¢che automatisÃ©e</td>
+									<td colspan="4" style="padding: 2rem; text-align: center; color: var(--synapse-admin-text-muted);">Aucune tâche automatisée</td>
 								</tr>
 							{% endfor %}
 						</tbody>
@@ -110,7 +110,7 @@
 				</div>
 				<div style="padding: 1.5rem; display: flex; align-items: center; justify-content: space-around;">
 					<div style="text-align: center;">
-						<div class="synapse-admin__kpi-value" style="color: var(--synapse-admin-primary);">{{ conversation_stats.message_count|default(0) }}</div>
+						<div class="synapse-admin__kpi-value" style="color: var(--synapse-admin-primary);">{{ conversation_stats.count|default(0) }}</div>
 						<div class="synapse-admin__kpi-label">Messages IA</div>
 					</div>
 					<div style="text-align: center;">
@@ -156,7 +156,7 @@
 							{% endfor %}
 						</div>
 					{% else %}
-						<div style="text-align: center; padding: 2rem; color: var(--synapse-admin-text-muted);">Aucune donnÃ©e d'usage</div>
+						<div style="text-align: center; padding: 2rem; color: var(--synapse-admin-text-muted);">Aucune donnée d'usage</div>
 					{% endif %}
 				</div>
 			</div>
