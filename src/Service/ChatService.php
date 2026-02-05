@@ -258,10 +258,11 @@ class ChatService
                         ];
 
                         if ($options['debug'] ?? false) {
+                            $preview = is_string($functionResponse) ? $functionResponse : json_encode($functionResponse, JSON_UNESCAPED_UNICODE);
                             $debugAccumulator['tool_executions'][] = [
                                 'tool' => $functionName,
                                 'params' => $args,
-                                'result_preview' => substr((string) $functionResponse, 0, 100).'...',
+                                'result_preview' => mb_substr($preview, 0, 100).'...',
                             ];
 
                             // Attach full response to the specific turn data for easier display in debug view
