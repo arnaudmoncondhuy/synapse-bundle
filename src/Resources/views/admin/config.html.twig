@@ -31,7 +31,7 @@
 					<div class="synapse-admin__form-group">
 						<label class="synapse-admin__label">Version du Modèle</label>
 						<input type="text" name="gemini_model" class="synapse-admin__input" value="{{ config.model }}" placeholder="ex: gemini-2.5-flash" required>
-						<p class="synapse-admin__help">Référez-vous à la documentation Vertex AI pour les modèles disponibles.</p>
+						<p class="synapse-admin__help">Nom (ex: gemini-2.0-flash).</p>
 					</div>
 				</div>
 			</div>
@@ -53,10 +53,12 @@
 						<div class="synapse-admin__form-group">
 							<label class="synapse-admin__label">ID Projet GCP</label>
 							<input type="text" name="vertex_project_id" class="synapse-admin__input" value="{{ config.vertexProjectId }}" placeholder="mon-projet-gcp">
+							<p class="synapse-admin__help">ID projet Google Cloud.</p>
 						</div>
 						<div class="synapse-admin__form-group">
 							<label class="synapse-admin__label">Région</label>
 							<input type="text" name="vertex_region" class="synapse-admin__input" value="{{ config.vertexRegion }}" placeholder="europe-west1">
+							<p class="synapse-admin__help">Zone serveur (ex: europe-west1).</p>
 						</div>
 					</div>
 				</div>
@@ -91,7 +93,7 @@
 					<div class="synapse-admin__form-group">
 						<label class="synapse-admin__label">Instructions Personnalisées</label>
 						<textarea name="system_prompt" class="synapse-admin__textarea" rows="12" placeholder="Laissez vide pour utiliser le prompt par défaut..." style="font-family: monospace;">{{ config.systemPrompt }}</textarea>
-						<p class="synapse-admin__help">Ces instructions remplacent le prompt par défaut.</p>
+						<p class="synapse-admin__help">Rôle, ton et limites de l'assistant.</p>
 					</div>
 				</div>
 			</div>
@@ -124,6 +126,7 @@
 								<option value="{{ value }}" {{ config.safetyDefaultThreshold == value ? 'selected' : '' }}>{{ label }}</option>
 							{% endfor %}
 						</select>
+						<p class="synapse-admin__help">Niveau filtrage (strict = sûr).</p>
 					</div>
 
 					<div class="synapse-admin__grid-2">
@@ -183,28 +186,32 @@
 						<div class="synapse-admin__form-group">
 							<label class="synapse-admin__label">🌡️ Température</label>
 							<input type="number" name="generation_temperature" class="synapse-admin__input" step="0.1" min="0" max="2" value="{{ config.generationTemperature }}">
-							<p class="synapse-admin__help">0.0 (Strict) - 2.0 (Créatif)</p>
+							<p class="synapse-admin__help">Hasard : 0.0 (Précis) à 2.0 (Créatif).</p>
 						</div>
 
 						<div class="synapse-admin__form-group">
 							<label class="synapse-admin__label">🎯 Top-P (Nucleus)</label>
 							<input type="number" name="generation_top_p" class="synapse-admin__input" step="0.01" min="0" max="1" value="{{ config.generationTopP }}">
+							<p class="synapse-admin__help">Choix : 0.0 (Limité) à 1.0 (Varié).</p>
 						</div>
 
 						<div class="synapse-admin__form-group">
 							<label class="synapse-admin__label">🔢 Top-K</label>
 							<input type="number" name="generation_top_k" class="synapse-admin__input" min="1" value="{{ config.generationTopK }}">
+							<p class="synapse-admin__help">Vocabulaire : 1 (Simple) à 40+ (Riche).</p>
 						</div>
 
 						<div class="synapse-admin__form-group">
 							<label class="synapse-admin__label">📏 Limite Tokens</label>
 							<input type="number" name="generation_max_output_tokens" class="synapse-admin__input" min="1" value="{{ config.generationMaxOutputTokens }}" placeholder="Défaut">
+							<p class="synapse-admin__help">Taille max réponse (ex: 1000 ≈ 750 mots).</p>
 						</div>
 					</div>
 
 					<div class="synapse-admin__form-group" style="margin-top: 1.5rem;">
 						<label class="synapse-admin__label">🛑 Séquences d'Arrêt</label>
 						<input type="text" name="generation_stop_sequences" class="synapse-admin__input" value="{{ config.generationStopSequences|join(', ') }}" placeholder="Ex: \n\n, END">
+						<p class="synapse-admin__help">Mots stoppant l'IA (ex: STOP, FIN).</p>
 					</div>
 				</div>
 			</div>
@@ -233,7 +240,7 @@
 					<div class="synapse-admin__form-group">
 						<label class="synapse-admin__label">Budget Tokens Thinking</label>
 						<input type="number" name="thinking_budget" class="synapse-admin__input" min="1024" step="1024" value="{{ config.thinkingBudget }}">
-						<p class="synapse-admin__help">Minimum 1024 tokens.</p>
+						<p class="synapse-admin__help">Budget maximum (min 1024 tokens).</p>
 					</div>
 				</div>
 			</div>
@@ -270,6 +277,7 @@
 					<div class="synapse-admin__form-group">
 						<label class="synapse-admin__label">🔑 ID du Cache Vertex AI</label>
 						<input type="text" name="context_caching_id" class="synapse-admin__input" value="{{ config.contextCachingId }}" placeholder="projects/..." style="font-family: monospace;">
+						<p class="synapse-admin__help">Identifiant technique du cache Vertex AI.</p>
 					</div>
 				</div>
 			</div>
@@ -292,6 +300,7 @@
 						<div class="synapse-admin__form-group">
 							<label class="synapse-admin__label">Rétention (Jours)</label>
 							<input type="number" name="retention_days" class="synapse-admin__input" min="1" value="{{ config.retentionDays }}">
+							<p class="synapse-admin__help">Jours de conservation des historiques.</p>
 						</div>
 					</div>
 				</div>
@@ -337,7 +346,7 @@
 					<div class="synapse-admin__form-group">
 						<label class="synapse-admin__label">Langue de l'interface (Context)</label>
 						<input type="text" name="context_language" class="synapse-admin__input" value="{{ config.contextLanguage }}" placeholder="fr">
-						<p class="synapse-admin__help">Utilisée pour le prompt système si aucune langue n'est détectée.</p>
+						<p class="synapse-admin__help">Langue d'interaction par défaut.</p>
 					</div>
 				</div>
 			</div>
