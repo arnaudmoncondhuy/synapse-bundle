@@ -328,7 +328,7 @@ class GeminiClient
         ?array $thinkingConfigOverride
     ): array {
         $payload = [
-            'system_instruction' => [
+            'systemInstruction' => [
                 'parts' => [
                     ['text' => $systemInstruction],
                 ],
@@ -366,6 +366,18 @@ class GeminiClient
                 ];
             } else {
                 $payload['tools'] = $tools;
+            }
+        }
+
+        // Final normalization to ensure Map fields are objects, not lists
+        foreach ($payload['contents'] as &$message) {
+            foreach ($message['parts'] as &$part) {
+                if (isset($part['functionCall']['args']) && is_array($part['functionCall']['args']) && empty($part['functionCall']['args'])) {
+                    $part['functionCall']['args'] = (object) [];
+                }
+                if (isset($part['functionResponse']['response']) && is_array($part['functionResponse']['response']) && empty($part['functionResponse']['response'])) {
+                    $part['functionResponse']['response'] = (object) [];
+                }
             }
         }
 
