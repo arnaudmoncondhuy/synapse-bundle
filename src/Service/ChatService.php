@@ -360,7 +360,7 @@ class ChatService
         return $definitions;
     }
 
-    private function executeTool(string $name, array $args): ?string
+    private function executeTool(string $name, array $args): mixed
     {
         $config = $this->configProvider->getConfig();
         $riskEnabled = $config['risk_detection']['enabled'] ?? false;
