@@ -145,7 +145,12 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
+    background: var(--synapse-admin-bg-surface);
+    padding: 1.5rem 2rem;
+    border-radius: var(--synapse-admin-radius);
+    border: 1px solid var(--synapse-admin-border);
+    box-shadow: var(--synapse-admin-shadow-sm);
 }
 
 .synapse-admin__title {
