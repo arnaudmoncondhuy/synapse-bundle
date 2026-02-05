@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Service\Formatter;
 
+use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\MessageFormatterInterface;
 use ArnaudMoncondhuy\SynapseBundle\Entity\Conversation;
 use ArnaudMoncondhuy\SynapseBundle\Entity\Message;
@@ -16,6 +17,10 @@ use ArnaudMoncondhuy\SynapseBundle\Enum\MessageRole;
  */
 class MessageFormatter implements MessageFormatterInterface
 {
+    public function __construct(
+        private ?EncryptionServiceInterface $encryptionService = null,
+    ) {
+    }
     /**
      * Convertit les entités Message vers le format Gemini
      *
@@ -31,14 +36,22 @@ class MessageFormatter implements MessageFormatterInterface
     {
         $messages = [];
 
-        // DEBUG: Log what we receive
-        $debugLog = sys_get_temp_dir() . '/synapse_debug.log';
-        file_put_contents($debugLog, date('H:i:s') . " [formatter] received " . count($messageEntities) . " entities\n", FILE_APPEND);
-
-        foreach ($messageEntities as $index => $entity) {
-            $entityClass = is_object($entity) ? get_class($entity) : gettype($entity);
-            $isMessage = $entity instanceof Message;
-            file_put_contents($debugLog, date('H:i:s') . " [formatter] entity[$index] class=$entityClass instanceof Message=" . ($isMessage ? 'YES' : 'NO') . "\n", FILE_APPEND);
+        foreach ($messageEntities as $entity) {
+            // Handle serialized entities (Doctrine converts to arrays in closure context)
+            if (is_array($entity)) {
+                // If it looks like serialized message data, try to reconstruct
+                if (isset($entity['role']) && isset($entity['parts'])) {
+                    // Decrypt content if needed
+                    $decrypted = $entity;
+                    if (!empty($entity['parts'][0]['text']) && $this->encryptionService !== null) {
+                        if ($this->encryptionService->isEncrypted($entity['parts'][0]['text'])) {
+                            $decrypted['parts'][0]['text'] = $this->encryptionService->decrypt($entity['parts'][0]['text']);
+                        }
+                    }
+                    $messages[] = $decrypted;
+                    continue;
+                }
+            }
 
             if (!$entity instanceof Message) {
                 continue;
@@ -46,7 +59,6 @@ class MessageFormatter implements MessageFormatterInterface
 
             $role = $entity->getRole();
             $content = $entity->getDecryptedContent();
-            file_put_contents($debugLog, date('H:i:s') . " [formatter] entity[$index] role=" . $role->value . " content_length=" . strlen($content) . "\n", FILE_APPEND);
 
             $messages[] = [
                 'role' => strtolower($role->value),
@@ -55,8 +67,6 @@ class MessageFormatter implements MessageFormatterInterface
                 ]
             ];
         }
-
-        file_put_contents($debugLog, date('H:i:s') . " [formatter] returning " . count($messages) . " messages\n", FILE_APPEND);
 
         return $messages;
     }
