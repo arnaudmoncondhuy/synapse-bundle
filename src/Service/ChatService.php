@@ -202,7 +202,13 @@ class ChatService
                 $modelParts[] = ['text' => $cleanText];
             }
             foreach ($currentFunctionCalls as $fc) {
-                $modelParts[] = ['functionCall' => $fc];
+                // IMPORTANT: Normalisation pour éviter l'erreur "cannot start list" 
+                // et filtrage des champs non-standards de Gemini 2.x
+                $safeFc = [
+                    'name' => $fc['name'] ?? 'unknown',
+                    'args' => (object) ($fc['args'] ?? []),
+                ];
+                $modelParts[] = ['functionCall' => $safeFc];
             }
 
             if (!empty($modelParts)) {
@@ -246,8 +252,8 @@ class ChatService
                     if (null !== $functionResponse) {
                         $functionResponseParts[] = [
                             'functionResponse' => [
-                                'name' => $functionName, // Vertex demande 'name' ici aussi
-                                'response' => ['content' => $functionResponse],
+                                'name' => $functionName,
+                                'response' => is_array($functionResponse) ? $functionResponse : ['content' => $functionResponse],
                             ],
                         ];
 
@@ -368,11 +374,11 @@ class ChatService
 
                 $result = $tool->execute($args);
 
-                if (is_string($result)) {
+                if (is_string($result) || is_array($result) || is_object($result)) {
                     return $result;
                 }
 
-                return json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                return (string) $result;
             }
         }
 
