@@ -224,20 +224,12 @@ class ConversationManager
         $this->checkPermission($conversation, 'view');
 
         $messageClass = $this->getMessageClass();
-        $debugLog = sys_get_temp_dir() . '/synapse_debug.log';
-        file_put_contents($debugLog, date('H:i:s') . " [getMessages] messageClass=$messageClass\n", FILE_APPEND);
-
         $messageRepo = $this->em->getRepository($messageClass);
-        file_put_contents($debugLog, date('H:i:s') . " [getMessages] repoClass=" . get_class($messageRepo) . "\n", FILE_APPEND);
-
         $messages = $messageRepo->findByConversation($conversation, $limit);
 
-        file_put_contents($debugLog, date('H:i:s') . " [getMessages] raw results type=" . gettype($messages) . " class=" . (is_object($messages) ? get_class($messages) : 'N/A') . "\n", FILE_APPEND);
-        file_put_contents($debugLog, date('H:i:s') . " [getMessages] raw results count=" . count($messages) . "\n", FILE_APPEND);
-        if (!empty($messages)) {
-            $firstItem = reset($messages);
-            $firstType = is_object($firstItem) ? get_class($firstItem) : gettype($firstItem);
-            file_put_contents($debugLog, date('H:i:s') . " [getMessages] first item type=" . $firstType . "\n", FILE_APPEND);
+        // FIX: Convert Doctrine Collection to plain array to avoid serialization issues with reset()
+        if (is_object($messages)) {
+            $messages = array_values($messages instanceof \Traversable ? iterator_to_array($messages) : (array)$messages);
         }
 
         // Déchiffrer les contenus ou normaliser
@@ -251,14 +243,14 @@ class ConversationManager
             }
         }
 
-        file_put_contents($debugLog, date('H:i:s') . " [getMessages] after loop count=" . count($messages) . "\n", FILE_APPEND);
-        if (!empty($messages)) {
-            $firstItem = reset($messages);
-            $firstType = is_object($firstItem) ? get_class($firstItem) : gettype($firstItem);
-            file_put_contents($debugLog, date('H:i:s') . " [getMessages] after loop first item type=" . $firstType . "\n", FILE_APPEND);
+        // CRITICAL FIX: Clone objects to detach from Doctrine session
+        // Doctrine converts entities to arrays when accessed in closure context - cloning breaks this
+        $clonedMessages = [];
+        foreach ($messages as $msg) {
+            $clonedMessages[] = clone $msg;
         }
 
-        return $messages;
+        return $clonedMessages;
     }
 
     /**

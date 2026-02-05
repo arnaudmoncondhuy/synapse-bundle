@@ -62,11 +62,6 @@ class ChatApiController extends AbstractController
         $options['debug'] = $data['debug'] ?? ($options['debug'] ?? false);
         $conversationId = $data['conversation_id'] ?? null;
 
-        // DEBUG: Écrire dans un fichier pour diagnostic
-        $debugLog = sys_get_temp_dir() . '/synapse_debug.log';
-        file_put_contents($debugLog, date('H:i:s') . " conversationManager=" . ($this->conversationManager ? 'OK' : 'NULL') . "\n", FILE_APPEND);
-        file_put_contents($debugLog, date('H:i:s') . " conversationId=" . ($conversationId ?? 'NULL') . "\n", FILE_APPEND);
-
         // Load conversation if ID provided and persistence enabled
         $conversation = null;
         if ($conversationId && $this->conversationManager) {
@@ -118,31 +113,16 @@ class ChatApiController extends AbstractController
                 }
 
                 // Load conversation history from database if persistence enabled (WITHOUT new message)
-                $debugLog = sys_get_temp_dir() . '/synapse_debug.log';
-                file_put_contents($debugLog, date('H:i:s') . " [closure] conversation=" . ($conversation ? $conversation->getId() : 'NULL') . ", manager=" . ($this->conversationManager ? 'OK' : 'NULL') . "\n", FILE_APPEND);
                 if ($conversation && $this->conversationManager) {
                     $dbMessages = $this->conversationManager->getMessages($conversation);
-                    file_put_contents($debugLog, date('H:i:s') . " dbMessages type=" . gettype($dbMessages) . " class=" . (is_object($dbMessages) ? get_class($dbMessages) : 'N/A') . " count=" . count($dbMessages) . "\n", FILE_APPEND);
-
-                    // DEBUG: Check type before passing to formatter
-                    if (!empty($dbMessages)) {
-                        file_put_contents($debugLog, date('H:i:s') . " [before reset] array_keys count=" . count(array_keys((array)$dbMessages)) . "\n", FILE_APPEND);
-                        $firstMsg = reset($dbMessages);
-                        $firstType = is_object($firstMsg) ? get_class($firstMsg) : gettype($firstMsg);
-                        file_put_contents($debugLog, date('H:i:s') . " [before formatter] first item type=" . $firstType . " value=" . json_encode($firstMsg, JSON_PARTIAL_OUTPUT_ON_ERROR) . "\n", FILE_APPEND);
-                    }
 
                     // Convert DB messages to ChatService format using formatter (handles decryption)
                     if ($this->messageFormatter) {
-                        file_put_contents($debugLog, date('H:i:s') . " [before formatter call] messageFormatter=" . get_class($this->messageFormatter) . "\n", FILE_APPEND);
                         $options['history'] = $this->messageFormatter->entitiesToApiFormat($dbMessages);
-                        file_put_contents($debugLog, date('H:i:s') . " history count=" . count($options['history']) . "\n", FILE_APPEND);
                     } else {
                         // Fallback (legacy risks sending encrypted content)
                         $options['history'] = $dbMessages;
                     }
-                } else {
-                    file_put_contents($debugLog, date('H:i:s') . " SKIPPED history loading - condition false\n", FILE_APPEND);
                 }
 
                 // Status update callback for streaming

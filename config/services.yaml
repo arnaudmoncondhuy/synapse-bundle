@@ -46,7 +46,9 @@ services:
         arguments:
             $adminRole: '%synapse.security.admin_role%'
 
-    ArnaudMoncondhuy\SynapseBundle\Service\Formatter\MessageFormatter: ~
+    ArnaudMoncondhuy\SynapseBundle\Service\Formatter\MessageFormatter:
+        arguments:
+            $encryptionService: '@?ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface'
 
     # Aliases for interfaces (use default implementations)
     ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface:
