@@ -227,7 +227,10 @@ class TokenUsageRepository extends ServiceEntityRepository
 
         $daily = [];
         foreach ($results as $result) {
+            // Conserver la date comme clé du tableau ET l'exposer dans la valeur
+            // afin que les templates Twig puissent accéder à "day.date".
             $daily[$result['date']] = [
+                'date' => $result['date'],
                 'prompt_tokens' => (int) $result['prompt_tokens'],
                 'completion_tokens' => (int) $result['completion_tokens'],
                 'thinking_tokens' => (int) $result['thinking_tokens'],
