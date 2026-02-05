@@ -81,7 +81,7 @@
 										<div style="font-weight: 600; text-transform:capitalize;">{{ task.module }}</div>
 										<div style="font-size: 0.8rem; color: var(--synapse-admin-text-muted);">{{ task.action }}</div>
 									</td>
-									<td style="text-align: right; color: var(--synapse-admin-text-muted);">{{ task.request_count }}</td>
+									<td style="text-align: right; color: var(--synapse-admin-text-muted);">{{ task.count }}</td>
 									<td style="text-align: right; font-family: monospace;">{{ task.total_tokens|number_format(0, ',', ' ') }}</td>
 									<td style="text-align: right;">
 										{% set percentage = stats.total_tokens > 0 ? (task.total_tokens / stats.total_tokens * 100) : 0 %}
