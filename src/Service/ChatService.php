@@ -204,6 +204,32 @@ class ChatService
             $cleanText = preg_replace('/<\/?thinking[^>]*>/i', '', $cleanText);
             $cleanText = trim($cleanText);
 
+            // Check if response was blocked by safety filters
+            $blockedCategory = null;
+            foreach ($finalSafetyRatings as $rating) {
+                if (isset($rating['blocked']) && $rating['blocked'] === true) {
+                    $blockedCategory = $rating['category'] ?? 'UNKNOWN';
+                    break;
+                }
+            }
+
+            // If response is empty due to safety block, provide user feedback
+            if (empty($cleanText) && $blockedCategory !== null) {
+                $categoryLabels = [
+                    'HARM_CATEGORY_HARASSMENT' => 'harcèlement',
+                    'HARM_CATEGORY_HATE_SPEECH' => 'discours haineux',
+                    'HARM_CATEGORY_SEXUALLY_EXPLICIT' => 'contenu explicite',
+                    'HARM_CATEGORY_DANGEROUS_CONTENT' => 'contenu dangereux',
+                ];
+                $label = $categoryLabels[$blockedCategory] ?? $blockedCategory;
+                $cleanText = "⚠️ Ma réponse a été bloquée par les filtres de sécurité (catégorie : {$label}). Veuillez reformuler votre demande.";
+
+                // Stream this message to user if callback available
+                if ($onToken) {
+                    $onToken($cleanText);
+                }
+            }
+
             $fullTextAccumulator .= $cleanText;
 
             // Ajout réponse Model à l'historique (Note: On garde le texte original pour l'intégrité du tour)
