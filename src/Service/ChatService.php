@@ -117,6 +117,7 @@ class ChatService
             );
 
             $currentTurnText = '';
+            $currentThinking = '';
             $currentFunctionCalls = [];
             $streamDebugParts = [];
 
@@ -131,9 +132,9 @@ class ChatService
                 if (isset($chunk['usageMetadata'])) {
                     $finalUsageMetadata = $chunk['usageMetadata'];
                 }
-                
+
                 $candidate = $chunk['candidates'][0] ?? [];
-                
+
                 if (isset($candidate['safetyRatings'])) {
                     $finalSafetyRatings = $candidate['safetyRatings'];
                 }
@@ -143,11 +144,19 @@ class ChatService
 
                 // 2. Traitement des parts (Texte ou Fonctions)
                 foreach ($parts as $part) {
-                    // Handle native thoughts (keep stream alive)
-                    if (isset($part['thought']) && true === $part['thought']) {
+                    $isThinkingPart = isset($part['thought']) && true === $part['thought'];
+
+                    if ($isThinkingPart) {
                          if ($onStatusUpdate && empty($currentTurnText)) {
                              // Only update status if we haven't started speaking yet
                              $onStatusUpdate('L\'IA réfléchit...', 'thinking_token');
+                         }
+                         // Accumulate thinking content from available fields
+                         if (isset($part['thinkingContent'])) {
+                             $currentThinking .= $part['thinkingContent'];
+                         } elseif (isset($part['text'])) {
+                             // Thinking text might be in the text field when thought=true
+                             $currentThinking .= $part['text'];
                          }
                          continue;
                     }
@@ -155,10 +164,10 @@ class ChatService
                     // Text
                     if (isset($part['text'])) {
                         $textChunk = $part['text'];
-                        
+
                         // Accumulation locale pour ce tour
                         $currentTurnText .= $textChunk;
-                        
+
                         // Streaming vers le frontend via callback
                         // On n'envoie PAS si on est en train d'accumuler une fonction (rare qu'ils soient mélangés mais prudence)
                         // Et on évite d'envoyer les tags <thinking> si possible (filtrage post-hoc difficile en stream)
@@ -177,6 +186,11 @@ class ChatService
                         $currentFunctionCalls[] = $part['functionCall'];
                     }
                 }
+            }
+
+            // Prepend thinking content to text for debug display (so template can extract it)
+            if (!empty($currentThinking)) {
+                $currentTurnText = '<thinking>' . $currentThinking . '</thinking>' . $currentTurnText;
             }
             // ---- END STREAM ----
 
