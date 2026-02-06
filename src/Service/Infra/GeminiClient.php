@@ -123,12 +123,14 @@ class GeminiClient
         $url = $this->buildVertexUrl(self::VERTEX_URL, $effectiveModel);
         
         $payload = $this->buildPayload($systemInstruction, $contents, $tools, $thinkingConfigOverride);
-        $headers = $this->buildVertexHeaders();
 
         try {
+            $headers = $this->buildVertexHeaders(); // Inside try-catch for auth errors
+
             $response = $this->httpClient->request('POST', $url, [
                 'json' => TextUtil::sanitizeArrayUtf8($payload),
                 'headers' => $headers,
+                'timeout' => 300, // 5 minutes timeout for long thinking operations
             ]);
 
             return $response->toArray(); // Attente bloquante
@@ -165,12 +167,14 @@ class GeminiClient
         $url = $this->buildVertexUrl(self::VERTEX_STREAM_URL, $effectiveModel);
 
         $payload = $this->buildPayload($systemInstruction, $contents, $tools, $thinkingConfigOverride);
-        $headers = $this->buildVertexHeaders();
 
         try {
+            $headers = $this->buildVertexHeaders(); // Inside try-catch for auth errors
+
             $response = $this->httpClient->request('POST', $url, [
                 'json' => TextUtil::sanitizeArrayUtf8($payload),
                 'headers' => $headers,
+                'timeout' => 300, // 5 minutes timeout for long thinking operations
             ]); // Ne bloque pas, la requête est lancée
 
             $buffer = '';
