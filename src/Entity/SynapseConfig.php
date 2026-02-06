@@ -582,6 +582,11 @@ class SynapseConfig
             'language' => $this->contextLanguage,
         ];
 
+        // System Prompt (template avec variables à interpoler par l'application)
+        if ($this->systemPrompt !== null) {
+            $config['system_prompt'] = $this->systemPrompt;
+        }
+
         return $config;
 
     }
