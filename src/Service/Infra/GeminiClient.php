@@ -437,10 +437,6 @@ class GeminiClient
 
     private function buildSafetySettings(): array
     {
-        if (!$this->safetySettingsEnabled) {
-            return [];
-        }
-
         $categoryMapping = [
             'hate_speech' => 'HARM_CATEGORY_HATE_SPEECH',
             'dangerous_content' => 'HARM_CATEGORY_DANGEROUS_CONTENT',
@@ -449,12 +445,25 @@ class GeminiClient
         ];
 
         $settings = [];
-        foreach ($categoryMapping as $configKey => $apiCategory) {
-            $threshold = $this->safetyThresholds[$configKey] ?? $this->safetyDefaultThreshold;
-            $settings[] = [
-                'category' => $apiCategory,
-                'threshold' => $threshold,
-            ];
+
+        if (!$this->safetySettingsEnabled) {
+            // When safety is disabled, explicitly set BLOCK_NONE for all categories
+            // Otherwise Google uses restrictive defaults
+            foreach ($categoryMapping as $configKey => $apiCategory) {
+                $settings[] = [
+                    'category' => $apiCategory,
+                    'threshold' => 'BLOCK_NONE',
+                ];
+            }
+        } else {
+            // When safety is enabled, use configured thresholds
+            foreach ($categoryMapping as $configKey => $apiCategory) {
+                $threshold = $this->safetyThresholds[$configKey] ?? $this->safetyDefaultThreshold;
+                $settings[] = [
+                    'category' => $apiCategory,
+                    'threshold' => $threshold,
+                ];
+            }
         }
 
         return $settings;

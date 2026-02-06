@@ -494,19 +494,17 @@ class SynapseConfig
             'model' => $this->model,
         ];
 
-        // Safety Settings
-        if ($this->safetyEnabled) {
-            $config['safety_settings'] = [
-                'enabled' => true,
-                'default_threshold' => $this->safetyDefaultThreshold,
-                'thresholds' => array_filter([
-                    'hate_speech' => $this->safetyHateSpeech,
-                    'dangerous_content' => $this->safetyDangerousContent,
-                    'harassment' => $this->safetyHarassment,
-                    'sexually_explicit' => $this->safetySexuallyExplicit,
-                ]),
-            ];
-        }
+        // Safety Settings - Always include to ensure GeminiClient knows the state
+        $config['safety_settings'] = [
+            'enabled' => $this->safetyEnabled,
+            'default_threshold' => $this->safetyDefaultThreshold,
+            'thresholds' => array_filter([
+                'hate_speech' => $this->safetyHateSpeech,
+                'dangerous_content' => $this->safetyDangerousContent,
+                'harassment' => $this->safetyHarassment,
+                'sexually_explicit' => $this->safetySexuallyExplicit,
+            ]),
+        ];
 
         // Generation Config
         $config['generation_config'] = [
