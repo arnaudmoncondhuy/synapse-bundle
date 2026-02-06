@@ -201,8 +201,33 @@ class ChatApiController extends AbstractController
                         // Could log with a logger if available
                     }
                 }
-            } catch (\Exception $e) {
-                $sendEvent('error', $e->getMessage());
+            } catch (\Throwable $e) {
+                // Better error reporting for API failures
+                $errorMessage = $e->getMessage();
+
+                // Enrich error message for common failures
+                if (str_contains($e::class, 'TimeoutException') || str_contains($errorMessage, 'timeout') || str_contains($errorMessage, 'Timeout')) {
+                    $errorMessage = "⏱️ Timeout API : L'IA n'a pas répondu à temps. Veuillez réessayer.";
+                } elseif (str_contains($e::class, 'ConnectException') || str_contains($errorMessage, 'Connection') || str_contains($errorMessage, 'connect')) {
+                    $errorMessage = "🌐 Erreur de connexion : Impossible de contacter le service IA. Vérifiez votre connexion.";
+                } elseif (str_contains($errorMessage, 'Service Account') || str_contains($errorMessage, 'credentials')) {
+                    $errorMessage = "🔑 Erreur d'authentification : Configuration Google Cloud invalide. Contactez l'administrateur.";
+                } elseif (str_contains($errorMessage, 'access_token') || str_contains($errorMessage, 'OAuth') || str_contains($errorMessage, '401')) {
+                    $errorMessage = "🔐 Erreur d'authentification : Token d'accès expiré ou invalide. Contactez l'administrateur.";
+                } elseif (str_contains($errorMessage, '429') || str_contains($errorMessage, 'quota') || str_contains($errorMessage, 'rate limit')) {
+                    $errorMessage = "⚠️ Quota dépassé : Trop de requêtes. Veuillez réessayer dans quelques minutes.";
+                } elseif (str_contains($errorMessage, '500') || str_contains($errorMessage, '503') || str_contains($errorMessage, 'unavailable')) {
+                    $errorMessage = "🔧 Service indisponible : L'API Google est temporairement indisponible. Veuillez réessayer.";
+                } elseif (str_contains($errorMessage, 'Gemini API Error')) {
+                    // Already formatted by GeminiClient, prefix with emoji
+                    $errorMessage = "🤖 " . $errorMessage;
+                } elseif (str_contains($errorMessage, 'Decryption failed') || str_contains($errorMessage, 'libsodium')) {
+                    $errorMessage = "🔒 Erreur de chiffrement : Impossible de lire les messages. Contactez l'administrateur.";
+                } else {
+                    $errorMessage = "❌ Erreur : " . $errorMessage;
+                }
+
+                $sendEvent('error', $errorMessage);
             }
         });
 
