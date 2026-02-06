@@ -42,8 +42,13 @@ PROMPT;
         $config = $this->configProvider->getConfig();
         $systemPrompt = $config['system_prompt'] ?? null;
 
-        // Si un prompt système est défini en base de données, il remplace celui du ContextProvider
-        $basePrompt = $systemPrompt ?: $this->contextProvider->getSystemPrompt();
+        // Si un prompt système est défini en base de données, on l'interpole avec les variables du ContextProvider
+        if ($systemPrompt) {
+            $context = $this->contextProvider->getInitialContext();
+            $basePrompt = $this->interpolateVariables($systemPrompt, $context);
+        } else {
+            $basePrompt = $this->contextProvider->getSystemPrompt();
+        }
 
         // Ajout d'un séparateur horizontal pour couper la hiérarchie Markdown
         $finalPrompt = self::TECHNICAL_PROMPT."\n\n---\n\n".$basePrompt;
@@ -60,5 +65,37 @@ PROMPT;
         }
 
         return $finalPrompt;
+    }
+
+    /**
+     * Interpole les variables {VAR} dans un template avec les données du contexte.
+     *
+     * Agnostique : le bundle ne connaît pas les variables, il utilise celles
+     * fournies par le ContextProvider via getInitialContext().
+     *
+     * @param string $template Le template avec variables {DATE}, {EMAIL}, etc.
+     * @param array  $context  Le contexte retourné par getInitialContext()
+     *
+     * @return string Le template avec les variables remplacées
+     */
+    private function interpolateVariables(string $template, array $context): string
+    {
+        $replacements = [];
+
+        foreach ($context as $key => $value) {
+            if (is_scalar($value)) {
+                // Variables de premier niveau : date, time, etc.
+                $replacements['{'.strtoupper($key).'}'] = (string) $value;
+            } elseif (is_array($value) && $key === 'user') {
+                // Variables utilisateur : email, nom, prenom, role, groups, etc.
+                foreach ($value as $userKey => $userValue) {
+                    if (is_scalar($userValue)) {
+                        $replacements['{'.strtoupper($userKey).'}'] = (string) $userValue;
+                    }
+                }
+            }
+        }
+
+        return strtr($template, $replacements);
     }
 }
