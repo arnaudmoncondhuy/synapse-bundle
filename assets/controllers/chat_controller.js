@@ -293,11 +293,6 @@ export default class extends Controller {
     addMessage(text, role, debugData = null) {
         let formattedText = text;
 
-        // DEBUG: Log original text
-        if (role === 'assistant') {
-            console.log('🔍 [DEBUG] Original text:', text);
-            console.log('🔍 [DEBUG] Has <thinking>?', text.includes('<thinking>'));
-        }
 
         // Extract and remove thinking blocks (for old data in database)
         if (role === 'assistant') {
@@ -313,9 +308,6 @@ export default class extends Controller {
             formattedText = formattedText.replace(/\n{3,}/g, '\n\n');
             formattedText = formattedText.trim();
 
-            // DEBUG: Log cleaned text
-            console.log('🔍 [DEBUG] After cleaning:', formattedText);
-            console.log('🔍 [DEBUG] Still has <thinking>?', formattedText.includes('<thinking>'));
         }
 
         // Simple markdown parsing
@@ -362,9 +354,7 @@ export default class extends Controller {
 
     async loadMarked() {
         try {
-            console.log('🔄 [Synapse] Loading marked library...');
             const markedModule = await import('marked');
-            console.log('📦 [Synapse] Loaded marked module:', markedModule);
 
             if (typeof markedModule.parse === 'function') {
                 this.markedParse = markedModule.parse;
@@ -376,9 +366,6 @@ export default class extends Controller {
                 console.warn('⚠️ [Synapse] marked module loaded but parse function not found in exports:', markedModule);
             }
 
-            if (this.markedParse) {
-                console.log('✅ [Synapse] Marked parser ready');
-            }
         } catch (e) {
             console.error('🔴 [Synapse] Failed to load marked:', e);
             console.warn('Synapse: "marked" library not found. Install it for better Markdown rendering (php bin/console importmap:require marked). Using fallback parser.');
@@ -386,20 +373,12 @@ export default class extends Controller {
     }
 
     parseMarkdown(text) {
-        // Debug logging
-        console.log('🔍 [Markdown Parser] Input:', text.substring(0, 100));
-
         if (this.markedParse) {
             try {
-                const result = this.markedParse(text);
-                console.log('✅ [Markdown Parser] Used marked library');
-                return result;
+                return this.markedParse(text);
             } catch (e) {
-                console.error('❌ [Markdown Parser] Error with marked, using fallback:', e);
                 // Fallback to regex if marked fails
             }
-        } else {
-            console.log('⚠️ [Markdown Parser] Using fallback (marked not loaded)');
         }
 
         // FALLBACK: Robust Regex Parser
@@ -411,9 +390,6 @@ export default class extends Controller {
             /\[([^\]]+)\]\(([^)]+)\)/g,
             '<a href="$2" class="synapse-btn-action" target="_blank" rel="noopener noreferrer">$1</a>'
         );
-        if (linksBefore > 0) {
-            console.log(`🔗 [Markdown Parser] Converted ${linksBefore} link(s) to buttons`);
-        }
 
         // 2. Text formatting
         html = html
@@ -435,13 +411,10 @@ export default class extends Controller {
             (match) => {
                 // Remove <br> tags between buttons and wrap in action group
                 const cleanedButtons = match.replace(/<br>/g, '');
-                const buttonCount = (cleanedButtons.match(/<a class="synapse-btn-action"/g) || []).length;
-                console.log(`📦 [Markdown Parser] Grouped ${buttonCount} consecutive buttons`);
                 return `<div class="synapse-action-group">${cleanedButtons}</div>`;
             }
         );
 
-        console.log('✅ [Markdown Parser] Output:', html.substring(0, 100));
         return html;
     }
 
