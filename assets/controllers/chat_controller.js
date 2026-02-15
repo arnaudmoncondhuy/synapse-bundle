@@ -362,11 +362,25 @@ export default class extends Controller {
 
     async loadMarked() {
         try {
-            const { parse } = await import('marked');
-            this.markedParse = parse;
-            // Rerender visible messages if needed, or just let new ones use it
-            // Optional: this.rerenderMessages(); 
+            console.log('🔄 [Synapse] Loading marked library...');
+            const markedModule = await import('marked');
+            console.log('📦 [Synapse] Loaded marked module:', markedModule);
+
+            if (typeof markedModule.parse === 'function') {
+                this.markedParse = markedModule.parse;
+            } else if (markedModule.default && typeof markedModule.default.parse === 'function') {
+                this.markedParse = markedModule.default.parse;
+            } else if (markedModule.marked && typeof markedModule.marked.parse === 'function') {
+                this.markedParse = markedModule.marked.parse;
+            } else {
+                console.warn('⚠️ [Synapse] marked module loaded but parse function not found in exports:', markedModule);
+            }
+
+            if (this.markedParse) {
+                console.log('✅ [Synapse] Marked parser ready');
+            }
         } catch (e) {
+            console.error('🔴 [Synapse] Failed to load marked:', e);
             console.warn('Synapse: "marked" library not found. Install it for better Markdown rendering (php bin/console importmap:require marked). Using fallback parser.');
         }
     }
