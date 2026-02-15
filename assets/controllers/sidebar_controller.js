@@ -18,7 +18,6 @@ export default class extends Controller {
     };
 
     connect() {
-        console.log('Synapse Sidebar Controller connected');
 
         // Initialiser l'ID de conversation depuis l'URL si non défini
         if (!this.currentConversationIdValue) {
@@ -327,7 +326,6 @@ export default class extends Controller {
      * Gère la création d'une nouvelle conversation
      */
     handleConversationCreated({ conversationId, title }) {
-        console.log('Sidebar: conversation créée', conversationId, title);
         this.currentConversationIdValue = conversationId;
 
         // Ajouter la conversation en tête de liste (optimistic UI)
@@ -457,15 +455,11 @@ export default class extends Controller {
      * Crée une nouvelle conversation (recharge la page sans conversation ID)
      */
     newConversation(event) {
-        console.log('newConversation() appelée');
         event.preventDefault();
 
         // Supprimer le paramètre conversation de l'URL
         const url = new URL(window.location.href);
-        console.log('URL actuelle:', url.toString());
         url.searchParams.delete('conversation');
-        const newUrl = url.toString();
-        console.log('Nouvelle URL:', newUrl);
-        window.location.href = newUrl;
+        window.location.href = url.toString();
     }
 }
