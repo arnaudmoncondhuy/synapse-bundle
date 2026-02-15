@@ -35,10 +35,6 @@ export default class extends Controller {
 
     // History is now rendered server-side via Twig
     loadHistory(history) {
-        // Kept empty or remove completely if no longer needed
-        // but removing it requires removing calls to it.
-        // Since we removed the call in connect(), we can remove this method or keep it simple
-        console.log('📜 [History] Managed by Server-Side Rendering');
         this.scrollToBottom();
     }
 
