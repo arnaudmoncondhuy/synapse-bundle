@@ -12,6 +12,7 @@
     "require": {
         "php": ">=8.2",
         "symfony/framework-bundle": "^7.0 || ^8.0",
+        "symfony/asset-mapper": "^7.0 || ^8.0",
         "symfony/asset": "^7.0 || ^8.0",
         "symfony/twig-bundle": "^7.0 || ^8.0",
         "symfony/stimulus-bundle": "^2.0",
