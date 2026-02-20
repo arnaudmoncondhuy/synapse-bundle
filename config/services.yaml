@@ -101,6 +101,10 @@ services:
         autoconfigure: true
         tags: ['controller.service_arguments']
 
+    ArnaudMoncondhuy\SynapseBundle\Controller\Api\ConversationApiController:
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
 
 
 

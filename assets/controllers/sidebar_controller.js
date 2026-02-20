@@ -38,6 +38,12 @@ export default class extends Controller {
     async loadConversations() {
         try {
             const response = await fetch(this.apiUrlValue || '/synapse/api/conversations');
+
+            if (response.status === 401) {
+                this.showEmpty();
+                return;
+            }
+
             if (!response.ok) throw new Error('Failed to load conversations');
 
             const conversations = await response.json();
