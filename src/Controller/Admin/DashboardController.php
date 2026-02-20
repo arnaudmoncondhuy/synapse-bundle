@@ -49,10 +49,10 @@ class DashboardController extends AbstractController
 
         return $this->render('@Synapse/admin/dashboard.html.twig', [
             'kpis' => [
-                'conversations_24h' => $conversationsLast24h,
+                'active_conversations' => $conversationsLast24h,
                 'active_users_24h' => $activeUsersLast24h,
-                'pending_risks' => $pendingRisks,
-                'tokens_7d' => $tokenStats,
+                'risks_pending' => $pendingRisks,
+                'tokens_cost' => $tokenStats['cost'] ?? 0,
             ],
             'daily_usage' => $dailyUsage,
         ]);
