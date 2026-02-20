@@ -98,6 +98,12 @@ class ConfigController extends AbstractController
         return $this->render('@Synapse/admin/config.html.twig', [
             'config' => $config,
             'scope' => $scope,
+            'safety_thresholds' => [
+                'BLOCK_LOW_AND_ABOVE' => 'Strict (Bloque faible et +)',
+                'BLOCK_MEDIUM_AND_ABOVE' => 'Standard (Bloque moyen et +)',
+                'BLOCK_ONLY_HIGH' => 'Permissif (Bloque élevé uniquement)',
+                'BLOCK_NONE' => 'Aucun filtre',
+            ],
         ]);
     }
 }
