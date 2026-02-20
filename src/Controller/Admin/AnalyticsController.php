@@ -52,6 +52,7 @@ class AnalyticsController extends AbstractController
 
         return $this->render('@Synapse/admin/analytics.html.twig', [
             'period' => $days,
+            'period_label' => $days === 7 ? '7 derniers jours' : ($days === 90 ? '3 derniers mois' : '30 derniers jours'),
             'global_stats' => $globalStats,
             'daily_usage' => $dailyUsage,
             'usage_by_module' => $usageByModule,
