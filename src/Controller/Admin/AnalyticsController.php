@@ -53,11 +53,13 @@ class AnalyticsController extends AbstractController
         return $this->render('@Synapse/admin/analytics.html.twig', [
             'period' => $days,
             'period_label' => $days === 7 ? '7 derniers jours' : ($days === 90 ? '3 derniers mois' : '30 derniers jours'),
-            'global_stats' => $globalStats,
-            'daily_usage' => $dailyUsage,
+            'cost' => $globalStats['cost'] ?? 0,
+            'stats' => $globalStats,
+            'daily' => $dailyUsage,
             'usage_by_module' => $usageByModule,
             'usage_by_model' => $usageByModel,
-            'automated_tasks' => $automatedTasks,
+            'automated_stats' => $automatedTasks,
+            'conversation_stats' => $usageByModule['chat'] ?? ['count' => 0, 'total_tokens' => 0],
         ]);
     }
 }
