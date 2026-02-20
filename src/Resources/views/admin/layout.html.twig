@@ -60,20 +60,20 @@
 					<nav>
 						<ul class="synapse-admin__nav">
 							<li class="synapse-admin__nav-item">
-								<a href="{{ path('synapse_admin_dashboard') }}" class="{% if app.request.get('_route') == 'synapse_admin_dashboard' %}active{% endif %}">
+								<a href="{{ path('synapse_admin_dashboard') }}" class="{% if app.request.attributes.get('_route') == 'synapse_admin_dashboard' %}active{% endif %}">
 									<i data-lucide="layout-dashboard"></i>
 									Dashboard
 								</a>
 							</li>
 							<li class="synapse-admin__nav-item">
-								<a href="{{ path('synapse_admin_analytics') }}" class="{% if app.request.get('_route') == 'synapse_admin_analytics' %}active{% endif %}">
+								<a href="{{ path('synapse_admin_analytics') }}" class="{% if app.request.attributes.get('_route') == 'synapse_admin_analytics' %}active{% endif %}">
 									<i data-lucide="bar-chart-2"></i>
 									Analytics
 								</a>
 							</li>
 							{% if synapse_config().riskDetectionEnabled %}
 								<li class="synapse-admin__nav-item">
-									<a href="{{ path('synapse_admin_risks') }}" class="{% if app.request.get('_route') starts with 'synapse_admin_risks' %}active{% endif %}">
+									<a href="{{ path('synapse_admin_risks') }}" class="{% if app.request.attributes.get('_route') starts with 'synapse_admin_risks' %}active{% endif %}">
 										<i data-lucide="shield-alert"></i>
 										Ange Gardien
 										{% if kpis.risks_pending|default(0) > 0 %}
@@ -83,7 +83,7 @@
 								</li>
 							{% endif %}
 							<li class="synapse-admin__nav-item">
-								<a href="{{ path('synapse_admin_config') }}" class="{% if app.request.get('_route') == 'synapse_admin_config' %}active{% endif %}">
+								<a href="{{ path('synapse_admin_config') }}" class="{% if app.request.attributes.get('_route') == 'synapse_admin_config' %}active{% endif %}">
 									<i data-lucide="settings"></i>
 									Configuration
 								</a>
