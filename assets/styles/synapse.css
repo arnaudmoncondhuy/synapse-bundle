@@ -120,6 +120,7 @@ body:has(.assistant-layout) main {
     padding: 1rem 2rem 2rem;
     background: var(--synapse-bg-primary);
     width: 100%;
+    box-sizing: border-box;
     z-index: 20;
 }
 
