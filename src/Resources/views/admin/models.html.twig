@@ -14,26 +14,41 @@
         </p>
     </div>
 
+    <!-- Info banner pour novices -->
+    <div class="synapse-admin__card" style="background: rgba(0, 102, 204, 0.05); border-left: 4px solid var(--synapse-admin-primary); margin-bottom: 1.5rem;">
+        <div style="display: flex; gap: 1rem; align-items: flex-start; padding: 1rem 1.5rem;">
+            <i data-lucide="info" style="width: 20px; height: 20px; color: var(--synapse-admin-primary); flex-shrink: 0; margin-top: 0.1rem;"></i>
+            <div>
+                <p style="margin: 0; font-weight: 600; color: var(--synapse-admin-text-main);">Les modèles affichés</p>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--synapse-admin-text-secondary);">
+                    Cette liste contient tous les modèles disponibles pour vos providers configurés. Vous pouvez modifier les libellés et les tarifs pour faciliter le suivi des coûts.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <!-- Filtres par capacités -->
-    <div class="synapse-admin__section" style="margin-bottom: 1.5rem">
-        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap">
-            <span style="font-size: 0.9rem; font-weight: 600; color: var(--synapse-admin-text-muted)">FILTRER PAR :</span>
-            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap">
-                <button type="button" class="filter-btn synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline" data-capability="thinking">
-                    Thinking
-                </button>
-                <button type="button" class="filter-btn synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline" data-capability="tool_calls">
-                    Tool calls
-                </button>
-                <button type="button" class="filter-btn synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline" data-capability="safety">
-                    Safety
-                </button>
-                <button type="button" class="filter-btn synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline" data-capability="streaming">
-                    Streaming
-                </button>
-                <button type="button" id="reset-filters" class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--ghost" style="color: var(--synapse-admin-danger)">
-                    Réinitialiser
-                </button>
+    <div class="synapse-admin__card" style="margin-bottom: 1.5rem;">
+        <div style="padding: 1rem 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap">
+                <span style="font-size: 0.9rem; font-weight: 600; color: var(--synapse-admin-text-muted)">FILTRER PAR :</span>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap">
+                    <button type="button" class="filter-btn synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline" data-capability="thinking">
+                        Thinking
+                    </button>
+                    <button type="button" class="filter-btn synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline" data-capability="tool_calls">
+                        Tool calls
+                    </button>
+                    <button type="button" class="filter-btn synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline" data-capability="safety">
+                        Safety
+                    </button>
+                    <button type="button" class="filter-btn synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline" data-capability="streaming">
+                        Streaming
+                    </button>
+                    <button type="button" id="reset-filters" class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--ghost" style="color: var(--synapse-admin-danger)">
+                        Réinitialiser
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -78,11 +93,31 @@
                             </td>
                             
                             <td>
-                                <div style="display: flex; gap: 0.5rem">
-                                    {% if model.capabilities.thinking %}<i data-lucide="brain" title="Thinking" style="width: 16px; color: var(--synapse-admin-success)"></i>{% endif %}
-                                    {% if model.capabilities.functionCalling %}<i data-lucide="wrench" title="Tool calls" style="width: 16px; color: var(--synapse-admin-success)"></i>{% endif %}
-                                    {% if model.capabilities.safetySettings %}<i data-lucide="shield" title="Safety" style="width: 16px; color: var(--synapse-admin-success)"></i>{% endif %}
-                                    {% if model.capabilities.streaming %}<i data-lucide="activity" title="Streaming" style="width: 16px; color: var(--synapse-admin-success)"></i>{% endif %}
+                                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap">
+                                    {% if model.capabilities.thinking %}
+                                        <span class="synapse-admin__capability-pill synapse-admin__capability-pill--active">
+                                            <i data-lucide="brain" style="width: 14px; height: 14px;"></i>
+                                            Thinking
+                                        </span>
+                                    {% endif %}
+                                    {% if model.capabilities.functionCalling %}
+                                        <span class="synapse-admin__capability-pill synapse-admin__capability-pill--active">
+                                            <i data-lucide="wrench" style="width: 14px; height: 14px;"></i>
+                                            Tools
+                                        </span>
+                                    {% endif %}
+                                    {% if model.capabilities.safetySettings %}
+                                        <span class="synapse-admin__capability-pill synapse-admin__capability-pill--active">
+                                            <i data-lucide="shield" style="width: 14px; height: 14px;"></i>
+                                            Safety
+                                        </span>
+                                    {% endif %}
+                                    {% if model.capabilities.streaming %}
+                                        <span class="synapse-admin__capability-pill synapse-admin__capability-pill--active">
+                                            <i data-lucide="activity" style="width: 14px; height: 14px;"></i>
+                                            Stream
+                                        </span>
+                                    {% endif %}
                                 </div>
                             </td>
                             
@@ -161,41 +196,6 @@
         </div>
     </div>
 </div>
-
-<style>
-.synapse-admin__table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95rem;
-}
-.synapse-admin__table th {
-    text-align: left;
-    padding: 1rem 1.5rem;
-    background: rgba(0,0,0,0.02);
-    border-bottom: 2px solid var(--synapse-admin-border);
-    color: var(--synapse-admin-text-muted);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 0.8rem;
-}
-.synapse-admin__table td {
-    padding: 0.75rem 1.5rem;
-    border-bottom: 1px solid var(--synapse-admin-border);
-    vertical-align: middle;
-}
-.synapse-admin__table tr:last-child td {
-    border-bottom: none;
-}
-.model-row:hover {
-    background: rgba(0,0,0,0.01);
-}
-.filter-btn--active {
-    background: var(--synapse-admin-primary) !important;
-    color: white !important;
-    border-color: var(--synapse-admin-primary) !important;
-}
-</style>
 
 <script>
 function toggleEditForm(id) {

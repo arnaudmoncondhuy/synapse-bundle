@@ -83,8 +83,14 @@
 			</div>
 		</div>
 
+		{# ── Model Capabilities Display ────────────────────────── #}
+		<div class="synapse-admin__card" id="model-caps-display" style="background: rgba(0, 102, 204, 0.05); border-left: 4px solid var(--synapse-admin-primary);">
+			<div class="synapse-admin__card-body" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+				<!-- Capabilities will be populated by JS -->
+			</div>
+		</div>
 
-	{# ── Smart Presets (Novice Mode) ───────────────────────── #}
+		{# ── Smart Presets (Novice Mode) ───────────────────────── #}
 	<div class="synapse-admin__card">
 		<div class="synapse-admin__card-header">
 			<span class="synapse-admin__card-title">Profil recommandé</span>
@@ -158,12 +164,19 @@
 			</div>
 		</div>
 
-		{# ── Thinking ──────────────────────────────────────────────────────── #}
-		<div class="synapse-admin__card" id="section-thinking">
-			<div class="synapse-admin__card-header">
-				<span class="synapse-admin__card-title">Thinking natif (Gemini 2.5+)</span>
-			</div>
-			<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--2">
+		{# ── Advanced Options (Collapsible) ──────────────────────── #}
+		<details class="synapse-admin__details-section" id="advanced-options" open>
+			<summary class="synapse-admin__details-summary">
+				<i data-lucide="chevron-down" class="synapse-admin__details-chevron"></i>
+				Options avancées
+			</summary>
+
+			{# ── Thinking ──────────────────────────────────────────────────────── #}
+			<div class="synapse-admin__card" id="section-thinking">
+				<div class="synapse-admin__card-header">
+					<span class="synapse-admin__card-title">Thinking natif (Gemini 2.5+)</span>
+				</div>
+				<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--2">
 				<div class="synapse-admin__form-row">
 					<label class="synapse-admin__label">
 						<input type="checkbox" name="thinking_enabled" value="1"
@@ -267,6 +280,7 @@
 				</div>
 			</div>
 		</div>
+		</details>
 
 		{# ── Système & Comportement ────────────────────────────────────────── #}
 		<div class="synapse-admin__card">
@@ -299,7 +313,7 @@
 		</div>
 
 
-		<div class="synapse-admin__form-actions">
+		<div class="synapse-admin__sticky-save">
 			<button type="submit" class="synapse-admin__btn synapse-admin__btn--primary">
 				<i data-lucide="save"></i>
 				{{ is_new ? 'Créer le preset' : 'Enregistrer les modifications' }}
@@ -358,6 +372,50 @@ function updateFormVisibility() {
 		if (el) {
 			el.style.display = visible ? '' : 'none';
 		}
+	}
+
+	// Update capability badges
+	updateCapsBadges(modelId, caps);
+}
+
+function updateCapsBadges(modelId, caps) {
+	const displayEl = document.getElementById('model-caps-display');
+	if (!displayEl) return;
+
+	const body = displayEl.querySelector('.synapse-admin__card-body');
+	if (!body) return;
+
+	// Clear existing badges
+	body.innerHTML = '';
+
+	// Add capability badges
+	const capabilities = [
+		{ key: 'thinking', label: 'Thinking', icon: 'brain' },
+		{ key: 'function_calling', label: 'Tool Calls', icon: 'wrench' },
+		{ key: 'safety_settings', label: 'Safety Filters', icon: 'shield' },
+		{ key: 'streaming', label: 'Streaming', icon: 'activity' },
+		{ key: 'context_caching', label: 'Context Caching', icon: 'database' }
+	];
+
+	let hasCapabilities = false;
+	for (const { key, label, icon } of capabilities) {
+		const capKey = key === 'function_calling' ? 'functionCalling' :
+		               key === 'safety_settings' ? 'safetySettings' :
+		               key === 'context_caching' ? 'contextCaching' : key;
+
+		if (caps[capKey]) {
+			const pill = document.createElement('span');
+			pill.className = 'synapse-admin__capability-pill synapse-admin__capability-pill--active';
+			pill.innerHTML = `<i data-lucide="${icon}" style="width: 14px; height: 14px;"></i> ${label}`;
+			body.appendChild(pill);
+			hasCapabilities = true;
+		}
+	}
+
+	if (!hasCapabilities) {
+		body.innerHTML = '<p style="margin: 0; color: var(--synapse-admin-text-secondary); font-size: 0.9rem;">Aucune capacité spéciale pour ce modèle</p>';
+	} else if (typeof lucide !== 'undefined') {
+		lucide.createIcons();
 	}
 }
 

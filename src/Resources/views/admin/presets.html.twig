@@ -20,6 +20,19 @@
 		</a>
 	</div>
 
+	{# Info banner about presets concept #}
+	<div class="synapse-admin__card" style="background: rgba(0, 102, 204, 0.05); border-left: 4px solid var(--synapse-admin-primary); margin-bottom: 1.5rem;">
+		<div style="display: flex; gap: 1rem; align-items: flex-start; padding: 1rem 1.5rem;">
+			<i data-lucide="info" style="width: 20px; height: 20px; color: var(--synapse-admin-primary); flex-shrink: 0; margin-top: 0.1rem;"></i>
+			<div>
+				<p style="margin: 0; font-weight: 600; color: var(--synapse-admin-text-main);">À propos des presets</p>
+				<p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--synapse-admin-text-secondary);">
+					Un preset est une configuration de modèle LLM complète (provider, modèle, paramètres, capacités). Organisés par <strong>scope</strong> (contexte d'utilisation), un seul preset est actif par scope.
+				</p>
+			</div>
+		</div>
+	</div>
+
 	{% if presets is empty %}
 		<div class="synapse-admin__empty" style="text-align: center; padding: 3rem 2rem">
 			<i data-lucide="sliders-horizontal" style="width: 64px; height: 64px; color: var(--synapse-admin-text-light); margin-bottom: 1rem; opacity: 0.5"></i>
@@ -45,12 +58,12 @@
 
 		{% for scope, scopePresets in scopes %}
 			<div class="synapse-admin__section" style="margin-bottom: 3rem">
-				<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid var(--synapse-admin-border)">
-					<i data-lucide="tag" style="width: 20px; height: 20px; color: var(--synapse-admin-primary)"></i>
-					<h2 class="synapse-admin__section-title" style="margin: 0; font-size: 1.25rem">
+				<div class="synapse-admin__scope-header">
+					<div class="synapse-admin__scope-label">
+						<i data-lucide="tag" style="width: 18px; height: 18px;"></i>
 						{{ scope }}
-					</h2>
-					<span style="margin-left: auto; background: var(--synapse-admin-primary-fade); color: var(--synapse-admin-primary); padding: 0.25rem 0.75rem; border-radius: var(--synapse-admin-radius-full); font-size: 0.85rem; font-weight: 600">
+					</div>
+					<span style="background: var(--synapse-admin-primary-fade); color: var(--synapse-admin-primary); padding: 0.25rem 0.75rem; border-radius: var(--synapse-admin-radius-full); font-size: 0.85rem; font-weight: 600">
 						{{ scopePresets|length }} preset{{ scopePresets|length > 1 ? 's' : '' }}
 					</span>
 				</div>
@@ -60,25 +73,25 @@
 						{% set preset = p.entity %}
 						{% set caps = p.caps %}
 						<div class="synapse-admin__card synapse-admin__card--hover"
-						     style="{% if preset.isActive %}border-top: 3px solid var(--synapse-admin-success); position: relative{% else %}border-top: 3px solid var(--synapse-admin-border){% endif %}">
-
-							<!-- Active indicator -->
-							{% if preset.isActive %}
-								<div style="position: absolute; top: 0; right: 0; background: var(--synapse-admin-success); color: white; padding: 0.5rem 1rem; border-radius: 0 0 0 0.5rem; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem">
-									<i data-lucide="check-circle" style="width: 14px; height: 14px"></i>
-									ACTIF
-								</div>
-							{% endif %}
+						     style="border-top: 3px solid {% if preset.isActive %}var(--synapse-admin-success){% else %}var(--synapse-admin-border){% endif %}">
 
 							<!-- Header -->
-							<div class="synapse-admin__card-header" style="display: block; padding: 1.5rem">
-								<h3 style="margin: 0 0 0.25rem 0; font-size: 1.1rem; color: var(--synapse-admin-text-main)">
-									{{ preset.name }}
-								</h3>
-								{% if preset.description %}
-									<p style="margin: 0; font-size: 0.85rem; color: var(--synapse-admin-text-muted); line-height: 1.4">
-										{{ preset.description }}
-									</p>
+							<div class="synapse-admin__card-header" style="display: flex; justify-content: space-between; align-items: flex-start; padding: 1.5rem">
+								<div style="flex: 1">
+									<h3 style="margin: 0 0 0.25rem 0; font-size: 1.1rem; color: var(--synapse-admin-text-main)">
+											{{ preset.name }}
+									</h3>
+									{% if preset.description %}
+										<p style="margin: 0; font-size: 0.85rem; color: var(--synapse-admin-text-muted); line-height: 1.4">
+											{{ preset.description }}
+										</p>
+									{% endif %}
+								</div>
+								{% if preset.isActive %}
+									<span class="synapse-admin__badge synapse-admin__badge--success" style="white-space: nowrap;">
+										<i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
+										Actif
+									</span>
 								{% endif %}
 							</div>
 
@@ -139,35 +152,33 @@
 							</div>
 
 							<!-- Actions -->
-							<div class="synapse-admin__card-footer" style="padding: 1rem 1.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem">
+							<div class="synapse-admin__card-footer" style="padding: 1rem 1.5rem; display: flex; gap: 0.5rem">
 								{% if not preset.isActive %}
 									<form method="post"
 									      action="{{ path('synapse_admin_presets_activate', {id: preset.id}) }}"
-									      style="display: contents">
+									      style="flex: 1;">
 										<button type="submit"
 										        class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--primary"
-										        title="Activer ce preset"
 										        style="width: 100%">
-											<i data-lucide="play"></i>
+											<i data-lucide="play" style="width: 14px; height: 14px;"></i>
+											Activer
 										</button>
 									</form>
-								{% else %}
-									<div></div>
 								{% endif %}
 								<a href="{{ path('synapse_admin_presets_edit', {id: preset.id}) }}"
 								   class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--ghost"
-								   title="Éditer"
-								   style="width: 100%">
-									<i data-lucide="pencil"></i>
+								   style="flex: 1;">
+									<i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
+									Modifier
 								</a>
 								<form method="post"
 								      action="{{ path('synapse_admin_presets_clone', {id: preset.id}) }}"
-								      style="display: contents">
+								      style="flex: 1;">
 									<button type="submit"
 									        class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--ghost"
-									        title="Dupliquer"
 									        style="width: 100%">
-										<i data-lucide="copy"></i>
+										<i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+										Dupliquer
 									</button>
 								</form>
 								{% if not preset.isActive %}
@@ -178,12 +189,10 @@
 										<button type="submit"
 										        class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--danger"
 										        title="Supprimer"
-										        style="width: 100%">
-											<i data-lucide="trash-2"></i>
+										        style="padding: 0.5rem;">
+											<i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
 										</button>
 									</form>
-								{% else %}
-									<div></div>
 								{% endif %}
 							</div>
 						</div>

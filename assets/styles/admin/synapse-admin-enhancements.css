@@ -372,3 +372,255 @@
     margin-top: 0.25rem;
     font-weight: 400;
 }
+
+/* ========================================
+   GRID - 4 columns
+   ======================================== */
+
+.synapse-admin__grid--4 {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+@media (max-width: 1024px) {
+    .synapse-admin__grid--4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .synapse-admin__grid--4 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========================================
+   CAPABILITY PILLS
+   ======================================== */
+
+.synapse-admin__capability-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--synapse-admin-radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--synapse-admin-border-light);
+    color: var(--synapse-admin-text-muted);
+    border: 1px solid var(--synapse-admin-border);
+}
+
+.synapse-admin__capability-pill--active {
+    background: var(--synapse-admin-primary-light);
+    color: var(--synapse-admin-primary-dark);
+    border-color: var(--synapse-admin-primary-fade);
+}
+
+.synapse-admin__capability-pill i {
+    width: 12px;
+    height: 12px;
+}
+
+/* ========================================
+   SCOPE HEADER (Presets page)
+   ======================================== */
+
+.synapse-admin__scope-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    background: var(--synapse-admin-primary-light);
+    border: 1px solid var(--synapse-admin-primary-fade);
+    border-radius: var(--synapse-admin-radius);
+    margin-bottom: 1.5rem;
+}
+
+.synapse-admin__scope-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--synapse-admin-primary-dark);
+}
+
+.synapse-admin__scope-label i {
+    width: 16px;
+    height: 16px;
+}
+
+/* ========================================
+   ACTIVITY CHART (Dashboard)
+   ======================================== */
+
+.synapse-admin__activity-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+}
+
+.synapse-admin__activity-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.synapse-admin__activity-date {
+    width: 42px;
+    font-size: 0.8rem;
+    color: var(--synapse-admin-text-muted);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+
+.synapse-admin__activity-bar-track {
+    flex: 1;
+    height: 20px;
+    background: var(--synapse-admin-border-light);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.synapse-admin__activity-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--synapse-admin-primary-light) 0%, var(--synapse-admin-primary) 100%);
+    border-radius: 4px;
+    min-width: 2px;
+    transition: width 0.3s ease;
+}
+
+.synapse-admin__activity-value {
+    width: 46px;
+    text-align: right;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--synapse-admin-text-main);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+
+/* ========================================
+   DETAILS / COLLAPSIBLE SECTION (Preset editor)
+   ======================================== */
+
+.synapse-admin__details-section {
+    margin-bottom: 1.5rem;
+}
+
+.synapse-admin__details-section > .synapse-admin__card {
+    margin-bottom: 0;
+    border-radius: 0 0 var(--synapse-admin-radius) var(--synapse-admin-radius);
+    border-top: none;
+}
+
+.synapse-admin__details-summary {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.75rem;
+    background: var(--synapse-admin-bg-card);
+    border: 1px solid var(--synapse-admin-border);
+    border-radius: var(--synapse-admin-radius);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--synapse-admin-text-main);
+    list-style: none;
+    transition: background 0.2s;
+    user-select: none;
+}
+
+.synapse-admin__details-summary::-webkit-details-marker {
+    display: none;
+}
+
+details[open] .synapse-admin__details-summary {
+    border-radius: var(--synapse-admin-radius) var(--synapse-admin-radius) 0 0;
+    background: var(--synapse-admin-primary-light);
+    color: var(--synapse-admin-primary-dark);
+    border-color: var(--synapse-admin-primary-fade);
+}
+
+.synapse-admin__details-summary:hover {
+    background: var(--synapse-admin-bg-main);
+}
+
+.synapse-admin__details-summary i {
+    width: 20px;
+    height: 20px;
+    color: var(--synapse-admin-primary);
+}
+
+.synapse-admin__details-chevron {
+    margin-left: auto;
+    transition: transform 0.2s;
+}
+
+details[open] .synapse-admin__details-chevron {
+    transform: rotate(180deg);
+}
+
+/* ========================================
+   STICKY SAVE BAR (Preset editor)
+   ======================================== */
+
+.synapse-admin__sticky-save {
+    position: sticky;
+    bottom: 1.5rem;
+    z-index: 10;
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: white;
+    border: 1px solid var(--synapse-admin-border);
+    border-radius: var(--synapse-admin-radius);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-top: 1.5rem;
+}
+
+/* ========================================
+   SIDEBAR NAV SECTION LABELS
+   ======================================== */
+
+.synapse-admin__nav-section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.3);
+    padding: 1rem 1rem 0.4rem 1rem;
+    margin-top: 0.5rem;
+}
+
+/* ========================================
+   INFO CHIPS (Provider credentials display)
+   ======================================== */
+
+.synapse-admin__info-chip {
+    padding: 0.75rem;
+    background: white;
+    border-radius: var(--synapse-admin-radius-sm);
+    border: 1px solid var(--synapse-admin-border);
+}
+
+.synapse-admin__info-chip-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--synapse-admin-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.synapse-admin__info-chip-value {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--synapse-admin-text-main);
+}
