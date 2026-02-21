@@ -36,6 +36,9 @@ class OvhAiClient implements LlmClientInterface
     private float  $topP          = 0.95;
     private ?int   $maxTokens     = null;
     private array  $stopSequences = [];
+    private bool   $thinkingEnabled = false;
+    private ?int   $thinkingBudget = null;
+    private string $reasoningEffort = 'high';  // high, medium, low, minimal
 
     public function __construct(
         private HttpClientInterface $httpClient,
@@ -58,6 +61,7 @@ class OvhAiClient implements LlmClientInterface
         array $contents,
         array $tools = [],
         ?string $model = null,
+        array &$debugOut = [],
     ): \Generator {
         $this->applyDynamicConfig();
 
@@ -66,6 +70,24 @@ class OvhAiClient implements LlmClientInterface
 
         $messages = $this->toOpenAiMessages($systemInstruction, $contents, $caps->systemPrompt);
         $payload = $this->buildPayload($effectiveModel, $messages, $tools, $caps, true);
+
+        // Capture les paramètres réellement envoyés (après filtrage par ModelCapabilityRegistry)
+        $debugOut['actual_request_params'] = [
+            'model'              => $effectiveModel,
+            'provider'           => 'ovh',
+            'temperature'        => $this->temperature,
+            'top_p'              => $this->topP,
+            'top_k'              => null,  // OVH n'expose pas topK
+            'max_output_tokens'  => $this->maxTokens,
+            'thinking_enabled'   => $this->thinkingEnabled,
+            'thinking_budget'    => $this->thinkingBudget,
+            'reasoning_effort'   => $this->thinkingEnabled ? $this->reasoningEffort : null,
+            'safety_enabled'     => false,  // OVH n'a pas de sécurité native
+            'tools_sent'         => !empty($tools) && $caps->functionCalling,
+            'system_prompt_sent' => $caps->systemPrompt && !empty($systemInstruction),
+            'context_caching'    => false,  // OVH n'a pas de context caching
+        ];
+        $debugOut['raw_request_body'] = $payload;
 
         try {
             $response = $this->httpClient->request('POST', rtrim($this->endpoint, '/') . '/chat/completions', [
@@ -81,6 +103,7 @@ class OvhAiClient implements LlmClientInterface
             // Accumulate tool call arguments across chunks (tool calls are streamed incrementally)
             $toolCallsAccumulator = []; // index => ['id' => '', 'name' => '', 'args' => '']
             $buffer = '';
+            $rawApiChunks = []; // Capturer tous les chunks bruts de l'API pour le debug
 
             foreach ($this->httpClient->stream($response) as $chunk) {
                 try {
@@ -114,6 +137,9 @@ class OvhAiClient implements LlmClientInterface
                         continue;
                     }
 
+                    // Capturer les chunks bruts AVANT normalisation (vrai debug)
+                    $rawApiChunks[] = $data;
+
                     $result = $this->processChunk($data, $toolCallsAccumulator);
                     if ($result !== null) {
                         yield $result;
@@ -127,12 +153,18 @@ class OvhAiClient implements LlmClientInterface
                 $jsonStr = substr($remaining, 6);
                 $data = json_decode($jsonStr, true);
                 if (is_array($data)) {
+                    // Capturer le dernier chunk brut aussi
+                    $rawApiChunks[] = $data;
+
                     $result = $this->processChunk($data, $toolCallsAccumulator);
                     if ($result !== null) {
                         yield $result;
                     }
                 }
             }
+
+            // Passer les chunks bruts de l'API au debug (VRAI brut, avant normalisation)
+            $debugOut['raw_api_chunks'] = $rawApiChunks;
         } catch (\Throwable $e) {
             $this->handleException($e);
         }
@@ -146,6 +178,8 @@ class OvhAiClient implements LlmClientInterface
         array $contents,
         array $tools = [],
         ?string $model = null,
+        ?array $thinkingConfigOverride = null,
+        array &$debugOut = [],
     ): array {
         $this->applyDynamicConfig();
 
@@ -154,6 +188,24 @@ class OvhAiClient implements LlmClientInterface
 
         $messages = $this->toOpenAiMessages($systemInstruction, $contents, $caps->systemPrompt);
         $payload = $this->buildPayload($effectiveModel, $messages, $tools, $caps, false);
+
+        // Capture les paramètres réellement envoyés (après filtrage par ModelCapabilityRegistry)
+        $debugOut['actual_request_params'] = [
+            'model'              => $effectiveModel,
+            'provider'           => 'ovh',
+            'temperature'        => $this->temperature,
+            'top_p'              => $this->topP,
+            'top_k'              => null,  // OVH n'expose pas topK
+            'max_output_tokens'  => $this->maxTokens,
+            'thinking_enabled'   => $this->thinkingEnabled,
+            'thinking_budget'    => $this->thinkingBudget,
+            'reasoning_effort'   => $this->thinkingEnabled ? $this->reasoningEffort : null,
+            'safety_enabled'     => false,  // OVH n'a pas de sécurité native
+            'tools_sent'         => !empty($tools) && $caps->functionCalling,
+            'system_prompt_sent' => $caps->systemPrompt && !empty($systemInstruction),
+            'context_caching'    => false,  // OVH n'a pas de context caching
+        ];
+        $debugOut['raw_request_body'] = $payload;
 
         try {
             $response = $this->httpClient->request('POST', rtrim($this->endpoint, '/') . '/chat/completions', [
@@ -166,6 +218,9 @@ class OvhAiClient implements LlmClientInterface
             ]);
 
             $data = $response->toArray();
+
+            // Passer la réponse brute de l'API au debug (VRAI brut, avant normalisation)
+            $debugOut['raw_api_response'] = $data;
 
             return $this->normalizeCompletionResponse($data);
         } catch (\Throwable $e) {
@@ -185,10 +240,15 @@ class OvhAiClient implements LlmClientInterface
         // Usage metadata (usually in the last chunk with stream_options.include_usage)
         if (isset($data['usage']) && is_array($data['usage'])) {
             $u = $data['usage'];
+            // OVH peut fournir reasoning_tokens sous completion_tokens_details (imbriqué)
+            $reasoningTokens = 0;
+            if (isset($u['completion_tokens_details']) && is_array($u['completion_tokens_details'])) {
+                $reasoningTokens = $u['completion_tokens_details']['reasoning_tokens'] ?? 0;
+            }
             $normalized['usage'] = [
                 'promptTokenCount'     => $u['prompt_tokens'] ?? 0,
                 'candidatesTokenCount' => $u['completion_tokens'] ?? 0,
-                'thoughtsTokenCount'   => 0,
+                'thoughtsTokenCount'   => $reasoningTokens,
                 'totalTokenCount'      => $u['total_tokens'] ?? 0,
             ];
         }
@@ -205,6 +265,14 @@ class OvhAiClient implements LlmClientInterface
         // Text content
         if (isset($delta['content']) && $delta['content'] !== null && $delta['content'] !== '') {
             $normalized['text'] = $delta['content'];
+        }
+
+        // Reasoning/Thinking content (OpenAI compatible format)
+        // OVH may return reasoning in 'reasoning' or 'reasoning_content' fields
+        if (isset($delta['reasoning']) && $delta['reasoning'] !== null && $delta['reasoning'] !== '') {
+            $normalized['thinking'] = $delta['reasoning'];
+        } elseif (isset($delta['reasoning_content']) && $delta['reasoning_content'] !== null && $delta['reasoning_content'] !== '') {
+            $normalized['thinking'] = $delta['reasoning_content'];
         }
 
         // Tool calls (streamed incrementally — name in first chunk, args accumulated)
@@ -236,8 +304,10 @@ class OvhAiClient implements LlmClientInterface
             return $toolChunk;
         }
 
-        // Skip truly empty chunks (no text, no usage, no tool data)
-        $hasContent = $normalized['text'] !== null || !empty($normalized['usage']);
+        // Skip truly empty chunks (no text, no thinking, no usage, no tool data)
+        $hasContent = $normalized['text'] !== null
+                   || $normalized['thinking'] !== null
+                   || !empty($normalized['usage']);
         return $hasContent ? $normalized : null;
     }
 
@@ -405,6 +475,12 @@ class OvhAiClient implements LlmClientInterface
             $payload['tools'] = $this->toOpenAiTools($tools);
         }
 
+        // Ajouter la réflexion/reasoning si activée (paramètre OVH: reasoning_effort)
+        if ($this->thinkingEnabled) {
+            // Les valeurs possibles sont: "high", "medium", "low", "minimal"
+            $payload['reasoning_effort'] = $this->reasoningEffort;
+        }
+
         return $payload;
     }
 
@@ -417,10 +493,15 @@ class OvhAiClient implements LlmClientInterface
 
         if (isset($data['usage']) && is_array($data['usage'])) {
             $u = $data['usage'];
+            // OVH peut fournir reasoning_tokens sous completion_tokens_details (imbriqué)
+            $reasoningTokens = 0;
+            if (isset($u['completion_tokens_details']) && is_array($u['completion_tokens_details'])) {
+                $reasoningTokens = $u['completion_tokens_details']['reasoning_tokens'] ?? 0;
+            }
             $normalized['usage'] = [
                 'promptTokenCount'     => $u['prompt_tokens'] ?? 0,
                 'candidatesTokenCount' => $u['completion_tokens'] ?? 0,
-                'thoughtsTokenCount'   => 0,
+                'thoughtsTokenCount'   => $reasoningTokens,
                 'totalTokenCount'      => $u['total_tokens'] ?? 0,
             ];
         }
@@ -434,6 +515,11 @@ class OvhAiClient implements LlmClientInterface
 
         if (!empty($message['content'])) {
             $normalized['text'] = $message['content'];
+        }
+
+        // OVH retourne le reasoning dans message.reasoning_content (mode synchrone)
+        if (!empty($message['reasoning_content'])) {
+            $normalized['thinking'] = $message['reasoning_content'];
         }
 
         if (!empty($message['tool_calls'])) {
@@ -498,7 +584,15 @@ class OvhAiClient implements LlmClientInterface
             $this->topP          = (float) ($gen['top_p'] ?? $this->topP);
             $this->maxTokens     = $gen['max_output_tokens'] ?? $this->maxTokens;
             $this->stopSequences = $gen['stop_sequences'] ?? $this->stopSequences;
-            // top_k, thinking, safety_settings, context_caching ignorés pour OVH
+            // top_k, safety_settings, context_caching ignorés pour OVH
+        }
+
+        // Réflexion/Thinking (stocké séparément dans config)
+        if (isset($config['thinking'])) {
+            $thinking = $config['thinking'];
+            $this->thinkingEnabled = (bool) ($thinking['enabled'] ?? false);
+            $this->thinkingBudget  = (int) ($thinking['budget'] ?? null);
+            $this->reasoningEffort = (string) ($thinking['reasoning_effort'] ?? 'high');
         }
     }
 

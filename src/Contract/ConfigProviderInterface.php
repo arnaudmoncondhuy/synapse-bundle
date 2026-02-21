@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 
+use ArnaudMoncondhuy\SynapseBundle\Entity\SynapsePreset;
+
 /**
  * Interface pour fournir la configuration dynamique au GeminiClient.
  *
@@ -41,4 +43,20 @@ interface ConfigProviderInterface
      *               ]
      */
     public function getConfig(): array;
+
+    /**
+     * Configure un override temporaire (en mémoire) qui sera retourné par getConfig()
+     * au lieu du preset actif en base de données.
+     *
+     * Utilisé par ChatService pour tester un preset spécifique sans le rendre actif.
+     */
+    public function setOverride(?array $config): void;
+
+    /**
+     * Retourne la configuration complète pour un preset spécifique,
+     * sans modifier le preset actif en DB.
+     *
+     * Utilisé par PresetTestService pour obtenir la config du preset à tester.
+     */
+    public function getConfigForPreset(SynapsePreset $preset): array;
 }

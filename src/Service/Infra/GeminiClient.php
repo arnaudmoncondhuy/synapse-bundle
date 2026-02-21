@@ -61,12 +61,31 @@ class GeminiClient implements LlmClientInterface
         array $tools = [],
         ?string $model = null,
         ?array $thinkingConfigOverride = null,
+        array &$debugOut = [],
     ): array {
         $this->applyDynamicConfig();
 
         $effectiveModel = $model ?? $this->model;
         $url = $this->buildVertexUrl(self::VERTEX_URL, $effectiveModel);
         $payload = $this->buildPayload($systemInstruction, $contents, $tools, $effectiveModel, $thinkingConfigOverride);
+
+        // Capture les paramètres réellement envoyés (après filtrage par ModelCapabilityRegistry)
+        $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
+        $debugOut['actual_request_params'] = [
+            'model'              => $effectiveModel,
+            'provider'           => 'gemini',
+            'temperature'        => $this->generationTemperature,
+            'top_p'              => $this->generationTopP,
+            'top_k'              => $caps->topK ? $this->generationTopK : null,
+            'max_output_tokens'  => $this->generationMaxOutputTokens,
+            'thinking_enabled'   => $this->thinkingEnabled && $caps->thinking,
+            'thinking_budget'    => ($this->thinkingEnabled && $caps->thinking) ? $this->thinkingBudget : null,
+            'safety_enabled'     => $this->safetySettingsEnabled,
+            'tools_sent'         => !empty($tools) && $caps->functionCalling,
+            'context_caching'    => $this->contextCachingEnabled && $caps->contextCaching && $this->contextCachingId,
+            'system_prompt_sent' => !empty($systemInstruction),
+        ];
+        $debugOut['raw_request_body'] = $payload;
 
         try {
             $response = $this->httpClient->request('POST', $url, [
@@ -75,7 +94,11 @@ class GeminiClient implements LlmClientInterface
                 'timeout' => 300,
             ]);
 
-            return $this->normalizeChunk($response->toArray());
+            $data = $response->toArray();
+            // Passer la réponse brute de l'API au debug (VRAI brut, avant normalisation)
+            $debugOut['raw_api_response'] = $data;
+
+            return $this->normalizeChunk($data);
         } catch (\Throwable $e) {
             $this->handleException($e);
             return $this->emptyChunk();
@@ -93,13 +116,34 @@ class GeminiClient implements LlmClientInterface
         array $contents,
         array $tools = [],
         ?string $model = null,
-        ?array $thinkingConfigOverride = null,
+        array &$debugOut = [],
     ): \Generator {
         $this->applyDynamicConfig();
 
         $effectiveModel = $model ?? $this->model;
         $url = $this->buildVertexUrl(self::VERTEX_STREAM_URL, $effectiveModel);
-        $payload = $this->buildPayload($systemInstruction, $contents, $tools, $effectiveModel, $thinkingConfigOverride);
+        $payload = $this->buildPayload($systemInstruction, $contents, $tools, $effectiveModel, null);
+
+        // Capture les paramètres réellement envoyés (après filtrage par ModelCapabilityRegistry)
+        $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
+        $debugOut['actual_request_params'] = [
+            'model'              => $effectiveModel,
+            'provider'           => 'gemini',
+            'temperature'        => $this->generationTemperature,
+            'top_p'              => $this->generationTopP,
+            'top_k'              => $caps->topK ? $this->generationTopK : null,
+            'max_output_tokens'  => $this->generationMaxOutputTokens,
+            'thinking_enabled'   => $this->thinkingEnabled && $caps->thinking,
+            'thinking_budget'    => ($this->thinkingEnabled && $caps->thinking) ? $this->thinkingBudget : null,
+            'safety_enabled'     => $this->safetySettingsEnabled,
+            'tools_sent'         => !empty($tools) && $caps->functionCalling,
+            'context_caching'    => $this->contextCachingEnabled && $caps->contextCaching && $this->contextCachingId,
+            'system_prompt_sent' => !empty($systemInstruction),
+        ];
+        $debugOut['raw_request_body'] = $payload;
+        error_log('DEBUG GeminiClient::streamGenerateContent - debugOut rempli');
+
+        $rawApiChunks = [];
 
         try {
             $response = $this->httpClient->request('POST', $url, [
@@ -155,12 +199,19 @@ class GeminiClient implements LlmClientInterface
                     $jsonData = json_decode($jsonStr, true);
 
                     if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)) {
+                        // Capture le chunk brut AVANT normalisation (pour debug)
+                        $rawApiChunks[] = $jsonData;
                         yield $this->normalizeChunk($jsonData);
                         $buffer = substr($buffer, $objEnd + 1);
                     } else {
                         $buffer = substr($buffer, 1);
                     }
                 }
+            }
+
+            // Sauvegarder les chunks bruts pour le debug
+            if (!empty($rawApiChunks)) {
+                $debugOut['raw_api_chunks'] = $rawApiChunks;
             }
         } catch (\Throwable $e) {
             $this->handleException($e);

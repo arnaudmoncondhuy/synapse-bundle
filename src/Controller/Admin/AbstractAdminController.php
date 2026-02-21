@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Controller\Admin;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
-use ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository;
+use ArnaudMoncondhuy\SynapseBundle\Repository\SynapsePresetRepository;
 use ArnaudMoncondhuy\SynapseBundle\Repository\TokenUsageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,7 +26,7 @@ abstract class AbstractAdminController extends AbstractController
 
     public function __construct(
         protected TokenUsageRepository $tokenUsageRepository,
-        protected SynapseConfigRepository $synapseConfigRepository,
+        protected SynapsePresetRepository $synapsePresetRepository,
         protected EncryptionServiceInterface $encryption,
     ) {
     }
@@ -96,13 +96,15 @@ abstract class AbstractAdminController extends AbstractController
 
     /**
      * Configuration : Paramètres techniques.
+     *
+     * @deprecated This method is kept for backward compatibility. Use PresetsController and SettingsController instead.
      */
     public function config(Request $request, EntityManagerInterface $entityManager): Response
     {
         $this->checkConfigAccess();
 
-        // Récupérer le preset actif (scope default)
-        $config = $this->synapseConfigRepository->findActiveForScope();
+        // Récupérer le preset actif
+        $config = $this->synapsePresetRepository->findActive();
 
         if ($request->isMethod('POST')) {
             // General Config
@@ -137,9 +139,8 @@ abstract class AbstractAdminController extends AbstractController
             $cachingId = $request->request->get('context_caching_id', '');
             $config->setContextCachingId('' !== $cachingId ? $cachingId : null);
 
-            // Custom Prompt
-            $systemPrompt = $request->request->get('system_prompt');
-            $config->setSystemPrompt(!empty($systemPrompt) ? $systemPrompt : null);
+            // Note: system_prompt, retention_days, context_language are now managed in SettingsController
+            // They are stored in SynapseConfig (global settings) instead of SynapsePreset.
 
             $entityManager->flush();
 

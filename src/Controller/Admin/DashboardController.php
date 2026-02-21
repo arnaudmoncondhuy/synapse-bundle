@@ -8,6 +8,7 @@ use ArnaudMoncondhuy\SynapseBundle\Repository\ConversationRepository;
 use ArnaudMoncondhuy\SynapseBundle\Repository\MessageRepository;
 use ArnaudMoncondhuy\SynapseBundle\Repository\TokenUsageRepository;
 use ArnaudMoncondhuy\SynapseBundle\Repository\SynapseProviderRepository;
+use ArnaudMoncondhuy\SynapseBundle\Repository\SynapsePresetRepository;
 use ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +25,7 @@ class DashboardController extends AbstractController
         private MessageRepository $messageRepo,
         private TokenUsageRepository $tokenUsageRepo,
         private SynapseProviderRepository $providerRepo,
+        private SynapsePresetRepository $presetRepo,
         private SynapseConfigRepository $configRepo,
     ) {
     }
@@ -53,8 +55,8 @@ class DashboardController extends AbstractController
             return $provider->isEnabled() && $provider->isConfigured();
         });
 
-        // Active preset for default scope
-        $activePreset = $this->configRepo->findOneBy(['scope' => 'default']);
+        // Active preset
+        $activePreset = $this->presetRepo->findActive();
 
         return $this->render('@Synapse/admin/dashboard.html.twig', [
             'kpis' => [

@@ -6,7 +6,11 @@ namespace ArnaudMoncondhuy\SynapseBundle\Service;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
+use ArnaudMoncondhuy\SynapseBundle\Entity\DebugLog;
+use ArnaudMoncondhuy\SynapseBundle\Entity\SynapsePreset;
+use ArnaudMoncondhuy\SynapseBundle\Repository\DebugLogRepository;
 use ArnaudMoncondhuy\SynapseBundle\Util\TextUtil;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
@@ -34,6 +38,8 @@ class ChatService
         private iterable $tools,
         private CacheInterface $cache,
         private ConfigProviderInterface $configProvider,
+        private EntityManagerInterface $em,
+        private DebugLogRepository $debugLogRepo,
     ) {
     }
 
@@ -89,14 +95,30 @@ class ChatService
         }
 
         $config = $this->configProvider->getConfig();
+
+        // Support d'un preset spécifique passé en option (pour le test des presets)
+        // Permet de tester un preset sans le rendre actif en DB
+        $presetOverride = $options['preset'] ?? null;
+        if ($presetOverride instanceof SynapsePreset) {
+            $config = $this->configProvider->getConfigForPreset($presetOverride);
+            $this->configProvider->setOverride($config);
+        }
+
         $effectiveModel = $config['model'] ?? 'gemini-2.5-flash';
+
+        // Check global debug mode (unless explicitly disabled in options)
+        $globalDebugMode = $config['debug_mode'] ?? false;
+        $debugMode = ($options['debug'] ?? false) || ($globalDebugMode && ($options['debug'] !== false));
+
+        // Check if streaming is enabled (from preset)
+        $streamingEnabled = $config['streaming_enabled'] ?? true;
 
         $activeClient = $this->llmRegistry->getClient();
 
         $debugAccumulator = [
             'model'          => $effectiveModel,
             'provider'       => $activeClient->getProviderName(),
-            'endpoint'       => strtoupper($activeClient->getProviderName()) . ' (Stream)',
+            'endpoint'       => strtoupper($activeClient->getProviderName()) . ($streamingEnabled ? ' (Stream)' : ' (Sync)'),
             'history_loaded' => count($rawHistory) . ' messages',
             'turns'          => [],
             'tool_executions' => [],
@@ -115,24 +137,41 @@ class ChatService
             $debugAccumulator['system_prompt'] = $systemInstruction;
             $debugAccumulator['history'] = $contents;
 
-            // ---- STREAMING EXECUTION ----
-            $stream = $activeClient->streamGenerateContent(
-                $systemInstruction,
-                $contents,
-                $toolDefinitions,
-                null
-            );
-
+            // ---- EXECUTION (Streaming ou Synchrone) ----
+            $debugOut = [];
             $currentTurnText = '';
             $currentThinking = '';
             $currentFunctionCalls = [];
             $streamDebugParts = [];
             $blockedCategory = null;
 
-            // Consommation du flux normalisé
-            foreach ($stream as $chunk) {
+            // Choix entre mode streaming ou synchrone
+            if ($streamingEnabled) {
+                $stream = $activeClient->streamGenerateContent(
+                    $systemInstruction,
+                    $contents,
+                    $toolDefinitions,
+                    null,
+                    $debugOut,
+                );
+                $chunks = $stream; // Itérateur de chunks
+            } else {
+                // Mode synchrone: wrappez la réponse dans un tableau pour utiliser le même code
+                $response = $activeClient->generateContent(
+                    $systemInstruction,
+                    $contents,
+                    $toolDefinitions,
+                    null,  // model
+                    null,  // thinkingConfigOverride
+                    $debugOut,
+                );
+                $chunks = [$response]; // Tableau contenant la réponse unique
+            }
+
+            // Consommation des chunks (normalisés, qu'ils viennent du streaming ou du sync)
+            foreach ($chunks as $chunk) {
                 // Debug storage
-                if ($options['debug'] ?? false) {
+                if ($debugMode) {
                     $streamDebugParts[] = $chunk;
                 }
 
@@ -172,7 +211,24 @@ class ChatService
                     $currentFunctionCalls[] = $fc;
                 }
             }
-            // ---- END STREAM ----
+            // ---- END EXECUTION ----
+
+            // Extract actual request params from LLM client (NOW that Generator has executed)
+            if (!empty($debugOut['actual_request_params'])) {
+                $debugAccumulator['preset_config'] = $debugOut['actual_request_params'];
+                // Add streaming mode info
+                $debugAccumulator['preset_config']['streaming_enabled'] = $streamingEnabled;
+            }
+            if (!empty($debugOut['raw_request_body'])) {
+                $debugAccumulator['raw_request_body'] = $debugOut['raw_request_body'];
+            }
+            // Chunks bruts de l'API (avant normalisation) pour vrai debug
+            if (!empty($debugOut['raw_api_chunks'])) {
+                $debugAccumulator['raw_api_chunks'] = $debugOut['raw_api_chunks'];
+            }
+            if (!empty($debugOut['raw_api_response'])) {
+                $debugAccumulator['raw_api_response'] = $debugOut['raw_api_response'];
+            }
 
             // Prepend thinking for debug display (so template can extract it)
             if (!empty($currentThinking)) {
@@ -223,12 +279,14 @@ class ChatService
             }
 
             // Debug Info Aggregation
-            if ($options['debug'] ?? false) {
+            if ($debugMode) {
                 $functionNames = array_map(fn ($fc) => $fc['name'] ?? 'unknown', $currentFunctionCalls);
 
                 $debugAccumulator['turns'][] = [
                     'turn'                => $i + 1,
-                    'text_content'        => $currentTurnText,
+                    'thinking'            => $currentThinking,  // Réflexion accumulée complète
+                    'text'                => $cleanText,        // Texte sans thinking
+                    'text_content'        => $currentTurnText,  // Format ancien pour compatibilité
                     'has_text'            => !empty($currentTurnText),
                     'function_calls_count' => count($currentFunctionCalls),
                     'function_names'      => $functionNames,
@@ -263,7 +321,7 @@ class ChatService
                             ],
                         ];
 
-                        if ($options['debug'] ?? false) {
+                        if ($debugMode) {
                             $preview = is_string($functionResponse) ? $functionResponse : json_encode($functionResponse, JSON_UNESCAPED_UNICODE);
                             $debugAccumulator['tool_executions'][] = [
                                 'tool'           => $functionName,
@@ -296,21 +354,37 @@ class ChatService
                         'role'  => 'model',
                         'parts' => $modelParts,
                         'metadata' => [
-                            'debug' => ($options['debug'] ?? false) ? $debugAccumulator : null,
+                            'debug' => $debugMode ? $debugAccumulator : null,
                             'usage' => $finalUsageMetadata,
                         ],
                     ];
                 }
             }
 
-            // Save Debug Cache
+            // Save Debug (DB + Cache)
             $debugId = null;
-            if ($options['debug'] ?? false) {
+            if ($debugMode) {
                 $debugId = uniqid('dbg_', true);
+
+                // Save to DB (primary storage)
+                $debugLog = new DebugLog();
+                $debugLog->setDebugId($debugId);
+                $debugLog->setConversationId($options['conversation_id'] ?? null);
+                $debugLog->setCreatedAt(new \DateTimeImmutable());
+                $debugLog->setData($debugAccumulator);
+                $this->em->persist($debugLog);
+                $this->em->flush();
+
+                // Also keep in cache for backward compatibility
                 $this->cache->get("synapse_debug_{$debugId}", function (ItemInterface $item) use ($debugAccumulator) {
                     $item->expiresAfter(86400);
                     return $debugAccumulator;
                 });
+            }
+
+            // Reset l'override après l'appel
+            if ($presetOverride !== null) {
+                $this->configProvider->setOverride(null);
             }
 
             return [
@@ -322,6 +396,11 @@ class ChatService
         }
 
         // Max turns exceeded
+        // Reset l'override après l'appel
+        if ($presetOverride !== null) {
+            $this->configProvider->setOverride(null);
+        }
+
         return [
             'answer'   => "Désolé, je n'ai pas pu traiter votre demande après plusieurs tentatives.",
             'debug_id' => null,

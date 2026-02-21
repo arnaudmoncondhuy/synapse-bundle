@@ -55,27 +55,33 @@ interface LlmClientInterface
      * @param array       $contents          Historique au format Synapse canonical
      * @param array       $tools             Déclarations d'outils (format Synapse)
      * @param string|null $model             Modèle spécifique (override config)
+     * @param array       $debugOut          Sortie de debug : sera remplie avec actual_request_params et raw_request_body
      */
     public function streamGenerateContent(
         string $systemInstruction,
         array $contents,
         array $tools = [],
         ?string $model = null,
+        array &$debugOut = [],
     ): \Generator;
 
     /**
      * Génère du contenu en mode synchrone.
      * Retourne le dernier chunk normalisé.
      *
-     * @param string      $systemInstruction Instruction système
-     * @param array       $contents          Historique au format Synapse canonical
-     * @param array       $tools             Déclarations d'outils (format Synapse)
-     * @param string|null $model             Modèle spécifique (override config)
+     * @param string      $systemInstruction      Instruction système
+     * @param array       $contents               Historique au format Synapse canonical
+     * @param array       $tools                  Déclarations d'outils (format Synapse)
+     * @param string|null $model                  Modèle spécifique (override config)
+     * @param array|null  $thinkingConfigOverride Configuration de thinking (Gemini)
+     * @param array       $debugOut               Sortie de debug : sera remplie avec actual_request_params et raw_request_body
      */
     public function generateContent(
         string $systemInstruction,
         array $contents,
         array $tools = [],
         ?string $model = null,
+        ?array $thinkingConfigOverride = null,
+        array &$debugOut = [],
     ): array;
 }

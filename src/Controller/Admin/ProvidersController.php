@@ -6,7 +6,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Controller\Admin;
 
 use ArnaudMoncondhuy\SynapseBundle\Entity\SynapseProvider;
 use ArnaudMoncondhuy\SynapseBundle\Repository\SynapseProviderRepository;
-use ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository;
+use ArnaudMoncondhuy\SynapseBundle\Repository\SynapsePresetRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,7 +25,7 @@ class ProvidersController extends AbstractController
 {
     public function __construct(
         private SynapseProviderRepository $providerRepo,
-        private SynapseConfigRepository $configRepo,
+        private SynapsePresetRepository $presetRepo,
         private EntityManagerInterface $em,
         private HttpClientInterface $httpClient,
     ) {
@@ -60,15 +60,15 @@ class ProvidersController extends AbstractController
         }
 
         // Count presets per provider
-        $allConfigs = $this->configRepo->findAll();
+        $allPresets = $this->presetRepo->findAllPresets();
         $presetCountByProvider = [];
         $providersByName = [];
         foreach ($providers as $provider) {
             $presetCountByProvider[$provider->getId()] = 0;
             $providersByName[$provider->getName()] = $provider->getId();
         }
-        foreach ($allConfigs as $config) {
-            $providerName = $config->getProviderName();
+        foreach ($allPresets as $preset) {
+            $providerName = $preset->getProviderName();
             if ($providerName && isset($providersByName[$providerName])) {
                 $providerId = $providersByName[$providerName];
                 $presetCountByProvider[$providerId]++;

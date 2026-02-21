@@ -92,6 +92,18 @@
 									Presets
 								</a>
 							</li>
+							<li class="synapse-admin__nav-item">
+								<a href="{{ path('synapse_admin_settings') }}" class="{% if app.request.attributes.get('_route') starts with 'synapse_admin_settings' %}active{% endif %}">
+									<i data-lucide="settings"></i>
+									Paramètres
+								</a>
+							</li>
+							<li class="synapse-admin__nav-item">
+								<a href="{{ path('synapse_admin_debug_logs') }}" class="{% if app.request.attributes.get('_route') starts with 'synapse_admin_debug_logs' %}active{% endif %}">
+									<i data-lucide="bug"></i>
+									Debug Logs
+								</a>
+							</li>
 						</ul>
 					</nav>
 				{% endblock %}

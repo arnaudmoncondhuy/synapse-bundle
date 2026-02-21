@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Twig;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
+use ArnaudMoncondhuy\SynapseBundle\Repository\SynapsePresetRepository;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
@@ -19,7 +20,7 @@ class SynapseExtension extends AbstractExtension
     public function __construct(
         private \ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry $personaRegistry,
         private \ArnaudMoncondhuy\SynapseBundle\Service\SynapseLayoutResolver $layoutResolver,
-        private \ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository $configRepository,
+        private \ArnaudMoncondhuy\SynapseBundle\Repository\SynapsePresetRepository $presetRepository,
         private ?EncryptionServiceInterface $encryptionService = null,
     ) {
     }
@@ -44,7 +45,7 @@ class SynapseExtension extends AbstractExtension
             new TwigFunction('synapse_admin_layout', [$this->layoutResolver, 'getAdminLayout']),
 
             // Récupère le preset actif (Entité)
-            new TwigFunction('synapse_config', [$this->configRepository, 'findActiveForScope']),
+            new TwigFunction('synapse_config', [$this->presetRepository, 'findActive']),
         ];
     }
 

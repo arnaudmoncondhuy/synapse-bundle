@@ -124,6 +124,16 @@
 									Modifier
 								</a>
 								<form method="post"
+								      action="{{ path('synapse_admin_presets_test', {id: preset.id}) }}"
+								      style="flex: 1;">
+									<button type="submit"
+									        class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--ghost"
+									        style="width: 100%">
+										<i data-lucide="flask-conical" style="width: 14px; height: 14px;"></i>
+										Tester
+									</button>
+								</form>
+								<form method="post"
 								      action="{{ path('synapse_admin_presets_clone', {id: preset.id}) }}"
 								      style="flex: 1;">
 									<button type="submit"

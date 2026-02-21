@@ -1,0 +1,65 @@
+{% extends '@Synapse/admin/layout.html.twig' %}
+
+{% block admin_title %}Debug Logs — Synapse Admin{% endblock %}
+
+{% block admin_content %}
+<div class="synapse-admin__page">
+	<div class="synapse-admin__page-header">
+		<h1 class="synapse-admin__page-title">
+			<i data-lucide="bug"></i>
+			Debug Logs
+		</h1>
+	</div>
+
+	{% if logs %}
+	<div class="synapse-admin__card">
+		<table class="synapse-admin__table" style="width: 100%; border-collapse: collapse;">
+			<thead style="background-color: var(--synapse-admin-bg-secondary); border-bottom: 1px solid var(--synapse-admin-border);">
+				<tr>
+					<th style="padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.9rem;">ID Debug</th>
+					<th style="padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.9rem;">Date</th>
+					<th style="padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.9rem;">Modèle</th>
+					<th style="padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.9rem;">Provider</th>
+					<th style="padding: 0.75rem; text-align: left; font-weight: 600; font-size: 0.9rem;">Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for log in logs %}
+				<tr style="border-bottom: 1px solid var(--synapse-admin-border);">
+					<td style="padding: 0.75rem; font-size: 0.9rem; font-family: monospace;">
+						{{ log.debugId }}
+					</td>
+					<td style="padding: 0.75rem; font-size: 0.9rem;">
+						{{ log.createdAt|date('d/m/Y H:i:s') }}
+					</td>
+					<td style="padding: 0.75rem; font-size: 0.9rem;">
+						{{ log.data.preset_config.model ?? log.data.model ?? '–' }}
+					</td>
+					<td style="padding: 0.75rem; font-size: 0.9rem;">
+						{{ log.data.preset_config.provider ?? log.data.provider ?? '–' }}
+					</td>
+					<td style="padding: 0.75rem; font-size: 0.9rem;">
+						<a href="{{ path('synapse_debug_show', {id: log.debugId}) }}"
+						   target="_blank"
+						   class="synapse-admin__link"
+						   style="color: var(--synapse-admin-link); text-decoration: none; cursor: pointer;">
+							<i data-lucide="external-link" style="width: 14px; height: 14px; display: inline; vertical-align: text-bottom;"></i>
+							Voir
+						</a>
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	{% else %}
+	<div class="synapse-admin__card" style="padding: 2rem; text-align: center; color: var(--synapse-admin-text-muted);">
+		<p style="margin: 0;">Aucun log de debug n'a été enregistré. Activez le mode debug global dans les paramètres.</p>
+	</div>
+	{% endif %}
+</div>
+
+<script>
+if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+</script>
+{% endblock %}

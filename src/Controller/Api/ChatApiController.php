@@ -61,6 +61,7 @@ class ChatApiController extends AbstractController
         $options = $data['options'] ?? [];
         $options['debug'] = $data['debug'] ?? ($options['debug'] ?? false);
         $conversationId = $data['conversation_id'] ?? null;
+        $options['conversation_id'] = $conversationId;  // Pass to ChatService for debug logging
 
         // Load conversation if ID provided and persistence enabled
         $conversation = null;
