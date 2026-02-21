@@ -18,7 +18,8 @@
 	</div>
 
 	<form method="post"
-	      action="{{ is_new ? path('synapse_admin_presets_new') : path('synapse_admin_presets_edit', {id: preset.id}) }}">
+	      action="{{ is_new ? path('synapse_admin_presets_new') : path('synapse_admin_presets_edit', {id: preset.id}) }}"
+	      style="display: flex; flex-direction: column; gap: 1.5rem;">
 
 		{# ── Informations de base ──────────────────────────────────────────── #}
 		<div class="synapse-admin__card">
@@ -76,27 +77,7 @@
 			</div>
 		</div>
 
-		{# ── Smart Presets (Novice Mode) ───────────────────────── #}
-	<div class="synapse-admin__card">
-		<div class="synapse-admin__card-header">
-			<span class="synapse-admin__card-title">Profil recommandé</span>
-		</div>
-		<div class="synapse-admin__card-body">
-			<div class="synapse-admin__smart-presets">
-				{% for presetId, preset in smart_presets %}
-					<label class="synapse-admin__smart-preset">
-						<input type="radio" name="smart_preset" value="{{ presetId }}" class="synapse-admin__smart-preset-input">
-						<div class="synapse-admin__smart-preset-content">
-							<span class="synapse-admin__smart-preset-label">{{ preset.label }}</span>
-							<span class="synapse-admin__smart-preset-description">{{ preset.description }}</span>
-						</div>
-					</label>
-				{% endfor %}
-			</div>
-			<p class="synapse-admin__help">Applique automatiquement les paramètres recommandés pour ce profil. Vous pouvez affiner davantage les paramètres ci-dessous.</p>
-		</div>
-	</div>
-		{# ── Paramètres de génération ──────────────────────────────────────── #}
+			{# ── Paramètres de génération ──────────────────────────────────────── #}
 		<div class="synapse-admin__card">
 			<div class="synapse-admin__card-header">
 				<span class="synapse-admin__card-title">Paramètres de génération</span>
