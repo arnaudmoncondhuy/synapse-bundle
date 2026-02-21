@@ -165,17 +165,22 @@
 		<div style="padding: 1.5rem; padding-top: 0;">
 			{% if daily_usage|length > 0 %}
 				<div class="synapse-admin__activity-chart">
-					{% set max_usage = daily_usage|map(attribute: 'total')|max %}
+					{% set max_usage = 0 %}
+					{% for day in daily_usage %}
+						{% if day.total_tokens > max_usage %}
+							{% set max_usage = day.total_tokens %}
+						{% endif %}
+					{% endfor %}
 					{% for day in daily_usage %}
 						<div class="synapse-admin__activity-row">
 							<div class="synapse-admin__activity-date">
 								{{ day.date|date('M d') }}
 							</div>
 							<div class="synapse-admin__activity-bar-track">
-								<div class="synapse-admin__activity-bar" style="width: {% if max_usage > 0 %}{{ (day.total / max_usage) * 100 }}%{% else %}0%{% endif %};"></div>
+								<div class="synapse-admin__activity-bar" style="width: {% if max_usage > 0 %}{{ (day.total_tokens / max_usage) * 100 }}%{% else %}0%{% endif %};"></div>
 							</div>
 							<div class="synapse-admin__activity-value">
-								{{ (day.total / 1000)|round(1) }}k
+								{{ (day.total_tokens / 1000)|round(1) }}k
 							</div>
 						</div>
 					{% endfor %}
