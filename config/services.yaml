@@ -3,33 +3,43 @@ services:
         autowire: true
         autoconfigure: true
 
-    # Infra
+    # ── Infra : Google Vertex AI ──────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Service\Infra\GoogleAuthService:
-        arguments:
-            $serviceAccountJsonPath: '%synapse.vertex.service_account_json%'
+        # $serviceAccountJsonPath defaults to null — credentials injected at runtime from DB
+        # Keep this declaration for potential fallback to YAML file path in future use
 
     ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient:
         arguments:
             $httpClient: '@http_client'
             $googleAuthService: '@ArnaudMoncondhuy\SynapseBundle\Service\Infra\GoogleAuthService'
-            $model: '%synapse.model%'
-            $vertexProjectId: '%synapse.vertex.project_id%'
-            $vertexRegion: '%synapse.vertex.region%'
-            $thinkingEnabled: '%synapse.thinking.enabled%'
-            $thinkingBudget: '%synapse.thinking.budget%'
-            $safetySettingsEnabled: '%synapse.safety_settings.enabled%'
-            $safetyDefaultThreshold: '%synapse.safety_settings.default_threshold%'
-            $safetyThresholds: '%synapse.safety_settings.thresholds%'
-            $generationTemperature: '%synapse.generation_config.temperature%'
-            $generationTopP: '%synapse.generation_config.top_p%'
-            $generationTopK: '%synapse.generation_config.top_k%'
-            $generationMaxOutputTokens: '%synapse.generation_config.max_output_tokens%'
-            $generationStopSequences: '%synapse.generation_config.stop_sequences%'
-            $contextCachingEnabled: '%synapse.context_caching.enabled%'
-            $contextCachingId: '%synapse.context_caching.cached_content_id%'
             $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
+            $capabilityRegistry: '@ArnaudMoncondhuy\SynapseBundle\Service\ModelCapabilityRegistry'
+        tags:
+            - { name: synapse.llm_client }
 
-    # Default implementations (can be overridden by user)
+    # ── Infra : OVH AI Endpoints ──────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Service\Infra\OvhAiClient:
+        arguments:
+            $httpClient: '@http_client'
+            $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
+            $capabilityRegistry: '@ArnaudMoncondhuy\SynapseBundle\Service\ModelCapabilityRegistry'
+        tags:
+            - { name: synapse.llm_client }
+
+    # ── Registre des clients LLM ──────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Service\LlmClientRegistry:
+        arguments:
+            $clients: !tagged_iterator synapse.llm_client
+            $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
+            $defaultProvider: 'gemini'
+
+    # ── Registre des capacités par modèle ────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Service\ModelCapabilityRegistry: ~
+
+    # ── Smart Preset Factory ───────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Service\SmartPresetFactory: ~
+
+    # ── Default implementations (can be overridden by user) ──────────────────
     ArnaudMoncondhuy\SynapseBundle\Service\DatabaseConfigProvider:
         arguments:
             $scope: 'default'
@@ -50,7 +60,7 @@ services:
         arguments:
             $encryptionService: '@?ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface'
 
-    # Aliases for interfaces (use default implementations)
+    # ── Interface aliases (use default implementations) ───────────────────────
     ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface:
         alias: ArnaudMoncondhuy\SynapseBundle\Service\DatabaseConfigProvider
 
@@ -66,7 +76,7 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Contract\MessageFormatterInterface:
         alias: ArnaudMoncondhuy\SynapseBundle\Service\Formatter\MessageFormatter
 
-    # Logic
+    # ── Logic ─────────────────────────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry:
         arguments:
             $configPath: '%synapse.personas_path%'
@@ -76,26 +86,33 @@ services:
             $personaRegistry: '@ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry'
             $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
 
-    # Main service
+    # ── Main service ──────────────────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Service\ChatService:
         arguments:
-            $geminiClient: '@ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient'
+            $llmRegistry: '@ArnaudMoncondhuy\SynapseBundle\Service\LlmClientRegistry'
             $promptBuilder: '@ArnaudMoncondhuy\SynapseBundle\Service\PromptBuilder'
             $tools: !tagged_iterator synapse.tool
             $cache: '@cache.app'
             $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
 
-    # UI Layout Resolution
+    # ── UI Layout Resolution ──────────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Service\SynapseLayoutResolver:
         arguments:
             $layoutMode: '%synapse.ui.layout_mode%'
 
-    # Twig Integration
+    # ── Twig Integration ──────────────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Twig\SynapseRuntime:
         tags: ['twig.runtime']
 
     ArnaudMoncondhuy\SynapseBundle\Twig\SynapseExtension:
         tags: ['twig.extension']
+
+    # ── Controllers ───────────────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Controller\ChatUiController:
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
+
     ArnaudMoncondhuy\SynapseBundle\Controller\Api\ChatApiController:
         autowire: true
         autoconfigure: true
@@ -106,15 +123,31 @@ services:
         autoconfigure: true
         tags: ['controller.service_arguments']
 
-
-
     ArnaudMoncondhuy\SynapseBundle\Controller\Api\ResetController:
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Controller\Api\DebugController:
         tags: ['controller.service_arguments']
 
-    # Repositories (entités concrètes du bundle)
+    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\ConfigController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\ProvidersController:
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\ModelsController:
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\PresetsController:
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
+
+    # ── Repositories (entités concrètes du bundle) ────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Repository\TokenUsageRepository:
         arguments:
             $registry: '@doctrine'
@@ -125,5 +158,15 @@ services:
             $registry: '@doctrine'
         tags: ['doctrine.repository_service']
 
-    # Accounting (tracking des tâches automatisées)
+    ArnaudMoncondhuy\SynapseBundle\Repository\SynapseProviderRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
+
+    ArnaudMoncondhuy\SynapseBundle\Repository\SynapseModelRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
+
+    # ── Accounting ────────────────────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Service\Accounting\TokenAccountingService: ~

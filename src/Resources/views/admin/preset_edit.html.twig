@@ -1,0 +1,376 @@
+{% extends '@Synapse/admin/layout.html.twig' %}
+
+{% block admin_title %}{{ is_new ? 'Nouveau preset' : preset.name }} — Presets — Synapse Admin{% endblock %}
+
+{% block admin_content %}
+<div class="synapse-admin__page">
+	<div class="synapse-admin__page-header">
+		<div>
+			<a href="{{ path('synapse_admin_presets') }}" class="synapse-admin__back-link">
+				<i data-lucide="arrow-left"></i>
+				Retour aux presets
+			</a>
+			<h1 class="synapse-admin__page-title">
+				<i data-lucide="sliders-horizontal"></i>
+				{{ is_new ? 'Nouveau preset' : 'Éditer : ' ~ preset.name }}
+			</h1>
+		</div>
+	</div>
+
+	<form method="post"
+	      action="{{ is_new ? path('synapse_admin_presets_new') : path('synapse_admin_presets_edit', {id: preset.id}) }}">
+
+		{# ── Informations de base ──────────────────────────────────────────── #}
+		<div class="synapse-admin__card">
+			<div class="synapse-admin__card-header">
+				<span class="synapse-admin__card-title">Identification</span>
+			</div>
+			<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--2">
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">Nom du preset <span class="synapse-admin__required">*</span></label>
+					<input type="text" name="name" value="{{ preset.name }}"
+					       class="synapse-admin__input" required placeholder="Ex: Gemini Flash Créatif">
+				</div>
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">Scope</label>
+					<input type="text" name="scope" value="{{ preset.scope }}"
+					       class="synapse-admin__input" placeholder="default">
+					<p class="synapse-admin__help">Identifiant logique du contexte (ex: default, admin, support).</p>
+				</div>
+				<div class="synapse-admin__form-row synapse-admin__col-span-2">
+					<label class="synapse-admin__label">Description</label>
+					<textarea name="description" class="synapse-admin__textarea" rows="2"
+					          placeholder="Description optionnelle du preset…">{{ preset.description }}</textarea>
+				</div>
+			</div>
+		</div>
+
+		{# ── Sélection Provider + Modèle ───────────────────────────────────── #}
+		<div class="synapse-admin__card">
+			<div class="synapse-admin__card-header">
+				<span class="synapse-admin__card-title">Provider & Modèle</span>
+			</div>
+			<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--2">
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">Provider <span class="synapse-admin__required">*</span></label>
+					<select name="provider_name" id="provider-select" class="synapse-admin__select"
+					        onchange="updateModelOptions(this.value)">
+						{% for provider in providers %}
+							<option value="{{ provider.name }}"
+							        {% if provider.name == preset.providerName %}selected{% endif %}>
+								{{ provider.label }}
+								{% if not provider.isEnabled %}(désactivé){% endif %}
+							</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">Modèle <span class="synapse-admin__required">*</span></label>
+					<select name="model" id="model-select" class="synapse-admin__select" onchange="updateFormVisibility()">
+						{% for provider, models in models_by_provider %}
+							<optgroup label="{{ provider }}" data-provider="{{ provider }}">
+								{% for modelId in models %}
+									<option value="{{ modelId }}"
+									        data-provider="{{ provider }}"
+									        {% if modelId == preset.model %}selected{% endif %}>
+										{{ modelId }}
+									</option>
+								{% endfor %}
+							</optgroup>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+		</div>
+
+
+	{# ── Smart Presets (Novice Mode) ───────────────────────── #}
+	<div class="synapse-admin__card">
+		<div class="synapse-admin__card-header">
+			<span class="synapse-admin__card-title">Profil recommandé</span>
+		</div>
+		<div class="synapse-admin__card-body">
+			<div class="synapse-admin__smart-presets">
+				{% for presetId, preset in smart_presets %}
+					<label class="synapse-admin__smart-preset">
+						<input type="radio" name="smart_preset" value="{{ presetId }}" class="synapse-admin__smart-preset-input">
+						<div class="synapse-admin__smart-preset-content">
+							<span class="synapse-admin__smart-preset-label">{{ preset.label }}</span>
+							<span class="synapse-admin__smart-preset-description">{{ preset.description }}</span>
+						</div>
+					</label>
+				{% endfor %}
+			</div>
+			<p class="synapse-admin__help">Applique automatiquement les paramètres recommandés pour ce profil. Vous pouvez affiner davantage les paramètres ci-dessous.</p>
+		</div>
+	</div>
+		{# ── Paramètres de génération ──────────────────────────────────────── #}
+		<div class="synapse-admin__card">
+			<div class="synapse-admin__card-header">
+				<span class="synapse-admin__card-title">Paramètres de génération</span>
+			</div>
+			<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--3">
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">Température</label>
+					<div class="synapse-admin__range-wrapper">
+						<input type="range" name="generation_temperature"
+						       min="0" max="2" step="0.1"
+						       value="{{ preset.generationTemperature }}"
+						       class="synapse-admin__range"
+						       oninput="this.nextElementSibling.textContent = this.value">
+						<span class="synapse-admin__range-value">{{ preset.generationTemperature }}</span>
+					</div>
+					<p class="synapse-admin__help">0 = déterministe · 2 = très créatif</p>
+				</div>
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">Top P</label>
+					<div class="synapse-admin__range-wrapper">
+						<input type="range" name="generation_top_p"
+						       min="0" max="1" step="0.05"
+						       value="{{ preset.generationTopP }}"
+						       class="synapse-admin__range"
+						       oninput="this.nextElementSibling.textContent = this.value">
+						<span class="synapse-admin__range-value">{{ preset.generationTopP }}</span>
+					</div>
+				</div>
+				<div class="synapse-admin__form-row" id="section-top-k">
+					<label class="synapse-admin__label">Top K</label>
+					<input type="number" name="generation_top_k"
+					       value="{{ preset.generationTopK }}"
+					       min="1" max="100"
+					       class="synapse-admin__input">
+					<p class="synapse-admin__help">Ignoré pour les modèles OVH.</p>
+				</div>
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">Max Output Tokens</label>
+					<input type="number" name="generation_max_output_tokens"
+					       value="{{ preset.generationMaxOutputTokens ?: '' }}"
+					       class="synapse-admin__input"
+					       placeholder="Illimité">
+				</div>
+				<div class="synapse-admin__form-row synapse-admin__col-span-2">
+					<label class="synapse-admin__label">Séquences d'arrêt</label>
+					<input type="text" name="generation_stop_sequences"
+					       value="{{ preset.generationStopSequences ? preset.generationStopSequences|join(', ') : '' }}"
+					       class="synapse-admin__input"
+					       placeholder="Ex: \n, END, STOP (séparés par des virgules)">
+				</div>
+			</div>
+		</div>
+
+		{# ── Thinking ──────────────────────────────────────────────────────── #}
+		<div class="synapse-admin__card" id="section-thinking">
+			<div class="synapse-admin__card-header">
+				<span class="synapse-admin__card-title">Thinking natif (Gemini 2.5+)</span>
+			</div>
+			<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--2">
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">
+						<input type="checkbox" name="thinking_enabled" value="1"
+						       {% if preset.thinkingEnabled %}checked{% endif %}>
+						Activer le thinking
+					</label>
+					<p class="synapse-admin__help">Permet au modèle de raisonner avant de répondre. Ignoré pour les modèles sans capacité thinking.</p>
+				</div>
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">Budget thinking (tokens)</label>
+					<input type="number" name="thinking_budget"
+					       value="{{ preset.thinkingBudget }}"
+					       min="128" max="24576"
+					       class="synapse-admin__input">
+					<p class="synapse-admin__help">0–24576 tokens alloués à la réflexion interne.</p>
+				</div>
+			</div>
+		</div>
+
+		{# ── Safety Settings ───────────────────────────────────────────────── #}
+		<div class="synapse-admin__card" id="section-safety">
+			<div class="synapse-admin__card-header">
+				<span class="synapse-admin__card-title">Filtres de sécurité (Gemini)</span>
+			</div>
+			<div class="synapse-admin__card-body">
+				<div class="synapse-admin__form-row" style="margin-bottom: 1rem">
+					<label class="synapse-admin__label">
+						<input type="checkbox" name="safety_enabled" value="1"
+						       {% if preset.safetyEnabled %}checked{% endif %}>
+						Activer les filtres de sécurité
+					</label>
+				</div>
+				<div class="synapse-admin__grid synapse-admin__grid--3">
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">Seuil par défaut</label>
+						<select name="safety_default_threshold" class="synapse-admin__select">
+							{% for value, label in safety_thresholds %}
+								<option value="{{ value }}" {% if preset.safetyDefaultThreshold == value %}selected{% endif %}>{{ label }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">Hate Speech</label>
+						<select name="safety_hate_speech" class="synapse-admin__select">
+							<option value="">Par défaut</option>
+							{% for value, label in safety_thresholds %}
+								<option value="{{ value }}" {% if preset.safetyHateSpeech == value %}selected{% endif %}>{{ label }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">Dangerous Content</label>
+						<select name="safety_dangerous_content" class="synapse-admin__select">
+							<option value="">Par défaut</option>
+							{% for value, label in safety_thresholds %}
+								<option value="{{ value }}" {% if preset.safetyDangerousContent == value %}selected{% endif %}>{{ label }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">Harassment</label>
+						<select name="safety_harassment" class="synapse-admin__select">
+							<option value="">Par défaut</option>
+							{% for value, label in safety_thresholds %}
+								<option value="{{ value }}" {% if preset.safetyHarassment == value %}selected{% endif %}>{{ label }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">Sexually Explicit</label>
+						<select name="safety_sexually_explicit" class="synapse-admin__select">
+							<option value="">Par défaut</option>
+							{% for value, label in safety_thresholds %}
+								<option value="{{ value }}" {% if preset.safetySexuallyExplicit == value %}selected{% endif %}>{{ label }}</option>
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		{# ── Context Caching ───────────────────────────────────────────────── #}
+		<div class="synapse-admin__card" id="section-caching">
+			<div class="synapse-admin__card-header">
+				<span class="synapse-admin__card-title">Context Caching (Gemini)</span>
+			</div>
+			<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--2">
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">
+						<input type="checkbox" name="context_caching_enabled" value="1"
+						       {% if preset.contextCachingEnabled %}checked{% endif %}>
+						Activer le context caching
+					</label>
+				</div>
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">ID du cached content</label>
+					<input type="text" name="context_caching_id"
+					       value="{{ preset.contextCachingId }}"
+					       class="synapse-admin__input"
+					       placeholder="projects/…/cachedContents/…">
+				</div>
+			</div>
+		</div>
+
+		{# ── Système & Comportement ────────────────────────────────────────── #}
+		<div class="synapse-admin__card">
+			<div class="synapse-admin__card-header">
+				<span class="synapse-admin__card-title">Système & Comportement</span>
+			</div>
+			<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--2">
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">Langue du contexte</label>
+					<select name="context_language" class="synapse-admin__select">
+						<option value="fr" {% if preset.contextLanguage == 'fr' %}selected{% endif %}>Français</option>
+						<option value="en" {% if preset.contextLanguage == 'en' %}selected{% endif %}>English</option>
+					</select>
+				</div>
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">Rétention RGPD (jours)</label>
+					<input type="number" name="retention_days"
+					       value="{{ preset.retentionDays }}"
+					       min="1" max="3650"
+					       class="synapse-admin__input">
+				</div>
+				<div class="synapse-admin__form-row synapse-admin__col-span-2">
+					<label class="synapse-admin__label">Prompt système personnalisé</label>
+					<textarea name="system_prompt"
+					          class="synapse-admin__textarea"
+					          rows="4"
+					          placeholder="Instructions système supplémentaires ajoutées au prompt de base du bundle…">{{ preset.systemPrompt }}</textarea>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="synapse-admin__form-actions">
+			<button type="submit" class="synapse-admin__btn synapse-admin__btn--primary">
+				<i data-lucide="save"></i>
+				{{ is_new ? 'Créer le preset' : 'Enregistrer les modifications' }}
+			</button>
+			<a href="{{ path('synapse_admin_presets') }}" class="synapse-admin__btn synapse-admin__btn--ghost">
+				Annuler
+			</a>
+		</div>
+	</form>
+</div>
+
+<script>
+const modelCapabilities = {{ model_capabilities|json_encode|raw }};
+
+function updateModelOptions(providerName) {
+	const select = document.getElementById('model-select');
+	const optgroups = select.querySelectorAll('optgroup');
+
+	optgroups.forEach(group => {
+		const isMatch = group.dataset.provider === providerName;
+		group.style.display = isMatch ? '' : 'none';
+	});
+
+	// Auto-select first option of provider if current model is not from this provider
+	const currentModelId = select.value;
+	if (!modelCapabilities[currentModelId] || modelCapabilities[currentModelId].provider !== providerName) {
+		for (const opt of select.querySelectorAll('option')) {
+			if (opt.dataset.provider === providerName) {
+				select.value = opt.value;
+				break;
+			}
+		}
+	}
+	
+	updateFormVisibility();
+}
+
+function updateFormVisibility() {
+	const modelId = document.getElementById('model-select').value;
+	const caps = modelCapabilities[modelId] || {
+		thinking: false,
+		safety_settings: false,
+		top_k: true,
+		context_caching: false
+	};
+
+	const sections = {
+		'section-thinking': caps.thinking,
+		'section-safety': caps.safety_settings,
+		'section-top-k': caps.top_k,
+		'section-caching': caps.context_caching
+	};
+
+	for (const [id, visible] of Object.entries(sections)) {
+		const el = document.getElementById(id);
+		if (el) {
+			el.style.display = visible ? '' : 'none';
+		}
+	}
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+	const providerSelect = document.getElementById('provider-select');
+	const modelSelect = document.getElementById('model-select');
+
+	providerSelect.addEventListener('change', (e) => updateModelOptions(e.target.value));
+	modelSelect.addEventListener('change', () => updateFormVisibility());
+
+	updateModelOptions(providerSelect.value);
+	updateFormVisibility();
+});
+</script>
+{% endblock %}

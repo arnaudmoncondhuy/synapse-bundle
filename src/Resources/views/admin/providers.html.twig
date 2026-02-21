@@ -1,0 +1,210 @@
+{% extends '@Synapse/admin/layout.html.twig' %}
+
+{% block admin_title %}Providers LLM — Synapse Admin{% endblock %}
+
+{% block admin_content %}
+<div class="synapse-admin__page">
+	<div class="synapse-admin__page-header">
+		<h1 class="synapse-admin__page-title">
+			<i data-lucide="plug"></i>
+			Providers LLM
+		</h1>
+		<p class="synapse-admin__page-subtitle">
+			Configurez vos providers LLM et leurs credentials. Une fois configurés, utilisez-les dans les presets.
+		</p>
+	</div>
+
+	<div class="synapse-admin__grid synapse-admin__grid--2">
+		{% for provider in providers %}
+			<div class="synapse-admin__card synapse-admin__card--hover"
+			     style="border-left: 4px solid {% if provider.isEnabled and provider.isConfigured %}var(--synapse-admin-success){% elseif provider.isEnabled %}var(--synapse-admin-warning){% else %}var(--synapse-admin-border){% endif %}">
+
+				<!-- Header -->
+				<div class="synapse-admin__card-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem">
+					<div style="flex: 1">
+						<div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem">
+							{% if provider.name == 'gemini' %}
+								<i data-lucide="zap" style="color: #4285f4; width: 24px; height: 24px"></i>
+							{% elseif provider.name == 'ovh' %}
+								<i data-lucide="cloud" style="color: #0050d8; width: 24px; height: 24px"></i>
+							{% else %}
+								<i data-lucide="cpu" style="width: 24px; height: 24px"></i>
+							{% endif %}
+							<h3 style="margin: 0; font-size: 1.15rem">{{ provider.label }}</h3>
+						</div>
+						<p style="margin: 0; font-size: 0.85rem; color: var(--synapse-admin-text-muted)">
+							{% if provider.name == 'gemini' %}
+								Google Vertex AI — Modèles Gemini 2.5/2.0
+							{% elseif provider.name == 'ovh' %}
+								OVH AI Endpoints — Compatible API OpenAI
+							{% else %}
+								{{ provider.name }}
+							{% endif %}
+						</p>
+					</div>
+					<div style="text-align: right">
+						<span class="synapse-admin__badge {% if provider.isEnabled and provider.isConfigured %}synapse-admin__badge--success{% elseif provider.isEnabled %}synapse-admin__badge--warning{% else %}synapse-admin__badge--muted{% endif %}"
+						      style="white-space: nowrap">
+							{% if provider.isEnabled and provider.isConfigured %}
+								<i data-lucide="check-circle" style="width: 12px; height: 12px; margin-right: 0.25rem"></i> Configuré
+							{% elseif provider.isEnabled %}
+								<i data-lucide="alert-circle" style="width: 12px; height: 12px; margin-right: 0.25rem"></i> Incomplet
+							{% else %}
+								<i data-lucide="circle-off" style="width: 12px; height: 12px; margin-right: 0.25rem"></i> Désactivé
+							{% endif %}
+						</span>
+					</div>
+				</div>
+
+				<!-- Credentials Info -->
+				<div class="synapse-admin__card-body" style="padding: 1.5rem; background: var(--synapse-admin-bg-main)">
+					{% if provider.name == 'gemini' %}
+						{% set creds = provider.credentials %}
+						<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem">
+							<div style="padding: 0.75rem; background: white; border-radius: 0.5rem; border: 1px solid var(--synapse-admin-border)">
+								<p style="margin: 0 0 0.25rem 0; font-size: 0.75rem; font-weight: 600; color: var(--synapse-admin-text-muted); text-transform: uppercase; letter-spacing: 0.05em">
+									<i data-lucide="key" style="width: 14px; height: 14px; margin-right: 0.25rem; display: inline"></i>
+									Projet GCP
+								</p>
+								<p style="margin: 0; font-size: 0.95rem; font-weight: 500; color: var(--synapse-admin-text-main)">
+									{{ creds.project_id|default('—') }}
+								</p>
+							</div>
+							<div style="padding: 0.75rem; background: white; border-radius: 0.5rem; border: 1px solid var(--synapse-admin-border)">
+								<p style="margin: 0 0 0.25rem 0; font-size: 0.75rem; font-weight: 600; color: var(--synapse-admin-text-muted); text-transform: uppercase; letter-spacing: 0.05em">
+									<i data-lucide="map-pin" style="width: 14px; height: 14px; margin-right: 0.25rem; display: inline"></i>
+									Région
+								</p>
+								<p style="margin: 0; font-size: 0.95rem; font-weight: 500; color: var(--synapse-admin-text-main)">
+									{{ creds.region|default('—') }}
+								</p>
+							</div>
+							<div style="padding: 0.75rem; background: white; border-radius: 0.5rem; border: 1px solid var(--synapse-admin-border); grid-column: 1 / -1">
+								<p style="margin: 0 0 0.25rem 0; font-size: 0.75rem; font-weight: 600; color: var(--synapse-admin-text-muted); text-transform: uppercase; letter-spacing: 0.05em">
+									<i data-lucide="file-json" style="width: 14px; height: 14px; margin-right: 0.25rem; display: inline"></i>
+									Service Account JSON
+								</p>
+								<p style="margin: 0; font-size: 0.95rem; font-weight: 500; color: {% if creds.service_account_json is defined and creds.service_account_json %}var(--synapse-admin-success){% else %}var(--synapse-admin-text-muted){% endif %}">
+									{% if creds.service_account_json is defined and creds.service_account_json %}
+										<i data-lucide="check-circle" style="width: 16px; height: 16px; margin-right: 0.25rem; display: inline"></i> Configuré
+									{% else %}
+										<i data-lucide="alert-circle" style="width: 16px; height: 16px; margin-right: 0.25rem; display: inline"></i> Non configuré
+									{% endif %}
+								</p>
+							</div>
+						</div>
+					{% elseif provider.name == 'ovh' %}
+						{% set creds = provider.credentials %}
+						<div style="display: grid; grid-template-columns: 1fr; gap: 1rem">
+							<div style="padding: 0.75rem; background: white; border-radius: 0.5rem; border: 1px solid var(--synapse-admin-border)">
+								<p style="margin: 0 0 0.25rem 0; font-size: 0.75rem; font-weight: 600; color: var(--synapse-admin-text-muted); text-transform: uppercase; letter-spacing: 0.05em">
+									<i data-lucide="key" style="width: 14px; height: 14px; margin-right: 0.25rem; display: inline"></i>
+									API Key
+								</p>
+								<p style="margin: 0; font-size: 0.95rem; font-weight: 500; color: {% if creds.api_key is defined and creds.api_key %}var(--synapse-admin-success){% else %}var(--synapse-admin-text-muted){% endif %}">
+									{% if creds.api_key is defined and creds.api_key %}
+										<i data-lucide="check-circle" style="width: 16px; height: 16px; margin-right: 0.25rem; display: inline"></i>
+										Configurée ({{ creds.api_key|slice(0,8) }}…)
+									{% else %}
+										<i data-lucide="alert-circle" style="width: 16px; height: 16px; margin-right: 0.25rem; display: inline"></i>
+										Non configurée
+									{% endif %}
+								</p>
+							</div>
+							<div style="padding: 0.75rem; background: white; border-radius: 0.5rem; border: 1px solid var(--synapse-admin-border)">
+								<p style="margin: 0 0 0.25rem 0; font-size: 0.75rem; font-weight: 600; color: var(--synapse-admin-text-muted); text-transform: uppercase; letter-spacing: 0.05em">
+									<i data-lucide="link" style="width: 14px; height: 14px; margin-right: 0.25rem; display: inline"></i>
+									Endpoint
+								</p>
+								<p style="margin: 0; font-size: 0.9rem; font-weight: 500; color: var(--synapse-admin-text-main); word-break: break-all">
+									{{ creds.endpoint|default('Défaut OVH') }}
+								</p>
+							</div>
+						</div>
+					{% endif %}
+				</div>
+
+				<!-- Footer with action -->
+				<div class="synapse-admin__card-footer" style="padding: 1rem 1.5rem; background: white; display: flex; gap: 0.75rem">
+					{% if provider.isEnabled and provider.isConfigured %}
+						<button type="button"
+						        class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--ghost"
+						        onclick="testProvider({{ provider.id }}, '{{ provider.name }}')"
+						        style="flex: 1"
+						        title="Tester les credentials">
+							<i data-lucide="zap"></i>
+							Tester
+						</button>
+					{% endif %}
+					<a href="{{ path('synapse_admin_providers_edit', {id: provider.id}) }}"
+					   class="synapse-admin__btn synapse-admin__btn--primary"
+					   style="flex: 1; justify-content: center">
+						<i data-lucide="settings"></i>
+						Configurer
+					</a>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+</div>
+
+<script>
+async function testProvider(providerId, providerName) {
+	const btn = event.target.closest('button');
+	const originalHtml = btn.innerHTML;
+	btn.disabled = true;
+	btn.innerHTML = '<i data-lucide="loader"></i> Test en cours...';
+
+	try {
+		const response = await fetch('{{ path('synapse_admin_providers_test', {'id': 'PLACEHOLDER'}) }}'.replace('PLACEHOLDER', providerId), {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'X-Requested-With': 'XMLHttpRequest'
+			}
+		});
+
+		const data = await response.json();
+
+		if (data.success) {
+			btn.innerHTML = '<i data-lucide="check-circle" style="color: #16a34a"></i> ✓ OK';
+			btn.style.backgroundColor = '#dcfce7';
+			btn.style.color = '#166534';
+			setTimeout(() => {
+				btn.innerHTML = originalHtml;
+				btn.disabled = false;
+				btn.style.backgroundColor = '';
+				btn.style.color = '';
+				lucide.createIcons();
+			}, 3000);
+		} else {
+			btn.innerHTML = '<i data-lucide="alert-circle" style="color: #dc2626"></i> ✗ Erreur';
+			btn.style.backgroundColor = '#fee2e2';
+			btn.style.color = '#991b1b';
+			alert('Erreur: ' + (data.error || 'Credentials invalides'));
+			setTimeout(() => {
+				btn.innerHTML = originalHtml;
+				btn.disabled = false;
+				btn.style.backgroundColor = '';
+				btn.style.color = '';
+				lucide.createIcons();
+			}, 3000);
+		}
+	} catch (error) {
+		btn.innerHTML = '<i data-lucide="alert-circle"></i> Erreur réseau';
+		btn.style.backgroundColor = '#fee2e2';
+		btn.style.color = '#991b1b';
+		setTimeout(() => {
+			btn.innerHTML = originalHtml;
+			btn.disabled = false;
+			btn.style.backgroundColor = '';
+			btn.style.color = '';
+			lucide.createIcons();
+		}, 3000);
+		console.error('Test error:', error);
+	}
+}
+
+if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+</script>
+{% endblock %}

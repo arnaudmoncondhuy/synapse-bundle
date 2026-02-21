@@ -33,9 +33,6 @@ class DashboardController extends AbstractController
         $conversationsLast24h = $this->conversationRepo->countActiveLast24h();
         $activeUsersLast24h = $this->conversationRepo->countActiveUsersSince($last24h);
 
-        // Risques en attente
-        $pendingRisks = $this->conversationRepo->countPendingRisks();
-
         // Usage tokens (7 derniers jours)
         $last7days = new \DateTimeImmutable('-7 days');
         $now = new \DateTimeImmutable();
@@ -51,7 +48,6 @@ class DashboardController extends AbstractController
             'kpis' => [
                 'active_conversations' => $conversationsLast24h,
                 'active_users_24h' => $activeUsersLast24h,
-                'risks_pending' => $pendingRisks,
                 'tokens_cost' => $tokenStats['cost'] ?? 0,
             ],
             'daily_usage' => $dailyUsage,

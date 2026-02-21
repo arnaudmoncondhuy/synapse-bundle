@@ -6,7 +6,6 @@ namespace ArnaudMoncondhuy\SynapseBundle\Service;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
-use ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient;
 use ArnaudMoncondhuy\SynapseBundle\Util\TextUtil;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -16,16 +15,21 @@ use Symfony\Contracts\Cache\ItemInterface;
  *
  * Cette classe coordonne :
  * 1. La construction du contexte (Prompt Builder).
- * 2. La communication avec l'API externe (GeminiClient) en mode Streaming.
- * 3. L'exécution dynamique des outils (Function Calling).
- * 4. La boucle de réflexion multi-tours avec l'IA.
+ * 2. La sélection du client LLM actif (LlmClientRegistry).
+ * 3. La communication via streaming normalisé.
+ * 4. L'exécution dynamique des outils (Function Calling).
+ * 5. La boucle de réflexion multi-tours avec l'IA.
+ *
+ * Les chunks yielded par les clients LLM sont au format Synapse normalisé :
+ *   ['text' => string|null, 'thinking' => string|null, 'function_calls' => [...],
+ *    'usage' => [...], 'safety_ratings' => [...], 'blocked' => bool, 'blocked_category' => string|null]
  */
 class ChatService
 {
     private const MAX_TURNS = 5;
 
     public function __construct(
-        private GeminiClient $geminiClient,
+        private LlmClientRegistry $llmRegistry,
         private PromptBuilder $promptBuilder,
         private iterable $tools,
         private CacheInterface $cache,
@@ -36,10 +40,10 @@ class ChatService
     /**
      * Traite un message utilisateur et retourne la réponse de l'IA (après exécution d'outils si nécessaire).
      *
-     * @param string $message
-     * @param array $options
+     * @param string        $message
+     * @param array         $options
      * @param callable|null $onStatusUpdate Function(string $message, string $step): void
-     * @param callable|null $onToken        Function(string $token): void (Nouveau pour le streaming)
+     * @param callable|null $onToken        Function(string $token): void
      *
      * @return array
      */
@@ -87,11 +91,14 @@ class ChatService
         $config = $this->configProvider->getConfig();
         $effectiveModel = $config['model'] ?? 'gemini-2.5-flash';
 
+        $activeClient = $this->llmRegistry->getClient();
+
         $debugAccumulator = [
-            'model' => $effectiveModel,
-            'endpoint' => 'Vertex AI (Stream)',
-            'history_loaded' => count($rawHistory).' messages',
-            'turns' => [],
+            'model'          => $effectiveModel,
+            'provider'       => $activeClient->getProviderName(),
+            'endpoint'       => strtoupper($activeClient->getProviderName()) . ' (Stream)',
+            'history_loaded' => count($rawHistory) . ' messages',
+            'turns'          => [],
             'tool_executions' => [],
         ];
 
@@ -109,7 +116,7 @@ class ChatService
             $debugAccumulator['history'] = $contents;
 
             // ---- STREAMING EXECUTION ----
-            $stream = $this->geminiClient->streamGenerateContent(
+            $stream = $activeClient->streamGenerateContent(
                 $systemInstruction,
                 $contents,
                 $toolDefinitions,
@@ -120,111 +127,77 @@ class ChatService
             $currentThinking = '';
             $currentFunctionCalls = [];
             $streamDebugParts = [];
+            $blockedCategory = null;
 
-            // Consommation du flux
+            // Consommation du flux normalisé
             foreach ($stream as $chunk) {
                 // Debug storage
                 if ($options['debug'] ?? false) {
                     $streamDebugParts[] = $chunk;
                 }
 
-                // 1. Métadonnées (souvent à la fin ou mises à jour à chaque chunk)
-                if (isset($chunk['usageMetadata'])) {
-                    $finalUsageMetadata = $chunk['usageMetadata'];
+                // Usage metadata
+                if (!empty($chunk['usage'])) {
+                    $finalUsageMetadata = $chunk['usage'];
                 }
 
-                $candidate = $chunk['candidates'][0] ?? [];
-
-                if (isset($candidate['safetyRatings'])) {
-                    $finalSafetyRatings = $candidate['safetyRatings'];
+                // Safety ratings
+                if (!empty($chunk['safety_ratings'])) {
+                    $finalSafetyRatings = $chunk['safety_ratings'];
                 }
 
-                $content = $candidate['content'] ?? [];
-                $parts = $content['parts'] ?? [];
+                // Blocked response
+                if ($chunk['blocked']) {
+                    $blockedCategory = $chunk['blocked_category'];
+                }
 
-                // 2. Traitement des parts (Texte ou Fonctions)
-                foreach ($parts as $part) {
-                    $isThinkingPart = isset($part['thought']) && true === $part['thought'];
-
-                    if ($isThinkingPart) {
-                         if ($onStatusUpdate && empty($currentTurnText)) {
-                             // Only update status if we haven't started speaking yet
-                             $onStatusUpdate('L\'IA réfléchit...', 'thinking_token');
-                         }
-                         // Accumulate thinking content from available fields
-                         if (isset($part['thinkingContent'])) {
-                             $currentThinking .= $part['thinkingContent'];
-                         } elseif (isset($part['text'])) {
-                             // Thinking text might be in the text field when thought=true
-                             $currentThinking .= $part['text'];
-                         }
-                         continue;
+                // Thinking content
+                if ($chunk['thinking'] !== null) {
+                    if ($onStatusUpdate && empty($currentTurnText)) {
+                        $onStatusUpdate('L\'IA réfléchit...', 'thinking_token');
                     }
+                    $currentThinking .= $chunk['thinking'];
+                }
 
-                    // Text
-                    if (isset($part['text'])) {
-                        $textChunk = $part['text'];
-
-                        // Accumulation locale pour ce tour
-                        $currentTurnText .= $textChunk;
-
-                        // Streaming vers le frontend via callback
-                        // On n'envoie PAS si on est en train d'accumuler une fonction (rare qu'ils soient mélangés mais prudence)
-                        // Et on évite d'envoyer les tags <thinking> si possible (filtrage post-hoc difficile en stream)
-                        // Pour l'instant, on envoie tout le texte brut, le frontend affichera.
-                        if ($onToken) {
-                            $onToken($textChunk);
-                        }
-                    }
-
-                    // Function Calls (souvent un chunk distinct ou à la fin)
-                    if (isset($part['functionCall'])) {
-                        // On stocke l'appel.
-                        // Attention : en streaming, un functionCall peut-il être splitté ?
-                        // Vertex renvoie généralement l'objet functionCall complet dans un chunk.
-                        // Si ce n'est pas le cas, mon parser JSON dans GeminiClient aura reconstitué l'objet complet.
-                        $currentFunctionCalls[] = $part['functionCall'];
+                // Text content
+                if ($chunk['text'] !== null) {
+                    $currentTurnText .= $chunk['text'];
+                    if ($onToken) {
+                        $onToken($chunk['text']);
                     }
                 }
-            }
 
-            // Prepend thinking content to text for debug display (so template can extract it)
-            if (!empty($currentThinking)) {
-                $currentTurnText = '<thinking>' . $currentThinking . '</thinking>' . $currentTurnText;
+                // Function calls
+                foreach ($chunk['function_calls'] as $fc) {
+                    $currentFunctionCalls[] = $fc;
+                }
             }
             // ---- END STREAM ----
 
-            // Nettoyage du texte accumulé (comme avant)
+            // Prepend thinking for debug display (so template can extract it)
+            if (!empty($currentThinking)) {
+                $currentTurnText = '<thinking>' . $currentThinking . '</thinking>' . $currentTurnText;
+            }
+
+            // Sanitize accumulated text
             $currentTurnText = TextUtil::sanitizeUtf8($currentTurnText);
-            
-            // Suppression des tags thinking pour l'historique et le texte final global
-            // Note: Le frontend a reçu les tags via stream, c'est au JS de clean si besoin visuellement.
-            // Ici on clean pour la mémoire propres.
+
+            // Strip thinking tags for clean storage / final answer
             $cleanText = preg_replace('/<thinking>.*?<\/thinking>/is', '', $currentTurnText);
             $cleanText = preg_replace('/<\/?thinking[^>]*>/i', '', $cleanText);
             $cleanText = trim($cleanText);
 
-            // Check if response was blocked by safety filters
-            $blockedCategory = null;
-            foreach ($finalSafetyRatings as $rating) {
-                if (isset($rating['blocked']) && $rating['blocked'] === true) {
-                    $blockedCategory = $rating['category'] ?? 'UNKNOWN';
-                    break;
-                }
-            }
-
             // If response is empty due to safety block, provide user feedback
             if (empty($cleanText) && $blockedCategory !== null) {
                 $categoryLabels = [
-                    'HARM_CATEGORY_HARASSMENT' => 'harcèlement',
-                    'HARM_CATEGORY_HATE_SPEECH' => 'discours haineux',
+                    'HARM_CATEGORY_HARASSMENT'       => 'harcèlement',
+                    'HARM_CATEGORY_HATE_SPEECH'      => 'discours haineux',
                     'HARM_CATEGORY_SEXUALLY_EXPLICIT' => 'contenu explicite',
                     'HARM_CATEGORY_DANGEROUS_CONTENT' => 'contenu dangereux',
                 ];
                 $label = $categoryLabels[$blockedCategory] ?? $blockedCategory;
                 $cleanText = "⚠️ Ma réponse a été bloquée par les filtres de sécurité (catégorie : {$label}). Veuillez reformuler votre demande.";
 
-                // Stream this message to user if callback available
                 if ($onToken) {
                     $onToken($cleanText);
                 }
@@ -232,18 +205,12 @@ class ChatService
 
             $fullTextAccumulator .= $cleanText;
 
-            // Ajout réponse Model à l'historique (Note: On garde le texte original pour l'intégrité du tour)
-            // Mais pour éviter de polluer le contexte avec des thoughts, on peut utiliser le cleanText.
-            // Cependant, Google recommande de garder les thoughts. 
-            // Vu qu'on filtrait avant, on continue de filtrer pour l'historique. 
-            // Ainsi, la BDD reste propre.
+            // Build model parts for history
             $modelParts = [];
             if ('' !== $cleanText) {
                 $modelParts[] = ['text' => $cleanText];
             }
             foreach ($currentFunctionCalls as $fc) {
-                // IMPORTANT: Normalisation pour éviter l'erreur "cannot start list" 
-                // et filtrage des champs non-standards de Gemini 2.x
                 $safeFc = [
                     'name' => $fc['name'] ?? 'unknown',
                     'args' => (object) ($fc['args'] ?? []),
@@ -257,21 +224,20 @@ class ChatService
 
             // Debug Info Aggregation
             if ($options['debug'] ?? false) {
-                // Calculate derived metrics for template compatibility
                 $functionNames = array_map(fn ($fc) => $fc['name'] ?? 'unknown', $currentFunctionCalls);
-                
+
                 $debugAccumulator['turns'][] = [
-                    'turn' => $i + 1,
-                    'text_content' => $currentTurnText,
-                    'has_text' => !empty($currentTurnText),
+                    'turn'                => $i + 1,
+                    'text_content'        => $currentTurnText,
+                    'has_text'            => !empty($currentTurnText),
                     'function_calls_count' => count($currentFunctionCalls),
-                    'function_names' => $functionNames,
-                    'function_calls_data' => $currentFunctionCalls, // Alias for template compatibility
-                    'function_calls' => $currentFunctionCalls,
-                    'raw_chunks_count' => count($streamDebugParts),
+                    'function_names'      => $functionNames,
+                    'function_calls_data' => $currentFunctionCalls,
+                    'function_calls'      => $currentFunctionCalls,
+                    'raw_chunks_count'    => count($streamDebugParts),
                 ];
-                $debugAccumulator['usage'] = $finalUsageMetadata;
-                $debugAccumulator['safety'] = $finalSafetyRatings;
+                $debugAccumulator['usage']        = $finalUsageMetadata;
+                $debugAccumulator['safety']       = $finalSafetyRatings;
                 $debugAccumulator['raw_response'] = $streamDebugParts;
             }
 
@@ -284,7 +250,7 @@ class ChatService
                     $args = $fc['args'] ?? [];
 
                     if ($onStatusUpdate) {
-                        $onStatusUpdate("Exécution de l'outil: {$functionName}...", 'tool:'.$functionName);
+                        $onStatusUpdate("Exécution de l'outil: {$functionName}...", 'tool:' . $functionName);
                     }
 
                     $functionResponse = $this->executeTool($functionName, $args);
@@ -292,7 +258,7 @@ class ChatService
                     if (null !== $functionResponse) {
                         $functionResponseParts[] = [
                             'functionResponse' => [
-                                'name' => $functionName,
+                                'name'     => $functionName,
                                 'response' => is_array($functionResponse) ? $functionResponse : ['content' => $functionResponse],
                             ],
                         ];
@@ -300,13 +266,11 @@ class ChatService
                         if ($options['debug'] ?? false) {
                             $preview = is_string($functionResponse) ? $functionResponse : json_encode($functionResponse, JSON_UNESCAPED_UNICODE);
                             $debugAccumulator['tool_executions'][] = [
-                                'tool' => $functionName,
-                                'params' => $args,
-                                'result_preview' => mb_substr($preview, 0, 100).'...',
+                                'tool'           => $functionName,
+                                'params'         => $args,
+                                'result_preview' => mb_substr($preview, 0, 100) . '...',
                             ];
 
-                            // Attach full response to the specific turn data for easier display in debug view
-                            // We target the current turn (last added) and the specific function call index
                             $lastTurnIndex = count($debugAccumulator['turns']) - 1;
                             if (isset($debugAccumulator['turns'][$lastTurnIndex]['function_calls_data'][$index])) {
                                 $debugAccumulator['turns'][$lastTurnIndex]['function_calls_data'][$index]['response'] = $functionResponse;
@@ -318,26 +282,23 @@ class ChatService
                 if (!empty($functionResponseParts)) {
                     $contents[] = ['role' => 'function', 'parts' => $functionResponseParts];
                     $rawHistory[] = ['role' => 'function', 'parts' => $functionResponseParts];
-                    // On boucle pour laisser le modèle répondre après l'outil
-                    continue; 
+                    continue; // Loop back for model to process tool results
                 }
             }
 
-            // Pas d'appel de fonction -> Fin du tour
-            // Sauvegarde historique final
+            // No function calls → end of turn, save history
             if (!$isStateless) {
                 if (!empty($message)) {
-                     $rawHistory[] = ['role' => 'user', 'parts' => [['text' => TextUtil::sanitizeUtf8($message)]]];
+                    $rawHistory[] = ['role' => 'user', 'parts' => [['text' => TextUtil::sanitizeUtf8($message)]]];
                 }
                 if (!empty($modelParts)) {
-                     // On attache les métadonnées finales au dernier message du modèle
-                     $rawHistory[] = [
-                        'role' => 'model',
+                    $rawHistory[] = [
+                        'role'  => 'model',
                         'parts' => $modelParts,
                         'metadata' => [
                             'debug' => ($options['debug'] ?? false) ? $debugAccumulator : null,
-                            'usage' => $finalUsageMetadata, // IMPORTANT pour la BDD
-                        ]
+                            'usage' => $finalUsageMetadata,
+                        ],
                     ];
                 }
             }
@@ -353,19 +314,19 @@ class ChatService
             }
 
             return [
-                'answer' => $fullTextAccumulator,
+                'answer'   => $fullTextAccumulator,
                 'debug_id' => $debugId,
-                'usage' => $finalUsageMetadata,
-                'safety' => $finalSafetyRatings,
+                'usage'    => $finalUsageMetadata,
+                'safety'   => $finalSafetyRatings,
             ];
         }
 
         // Max turns exceeded
         return [
-            'answer' => "Désolé, je n'ai pas pu traiter votre demande après plusieurs tentatives.",
+            'answer'   => "Désolé, je n'ai pas pu traiter votre demande après plusieurs tentatives.",
             'debug_id' => null,
-            'usage' => $finalUsageMetadata,
-            'safety' => $finalSafetyRatings,
+            'usage'    => $finalUsageMetadata,
+            'safety'   => $finalSafetyRatings,
         ];
     }
 
@@ -382,19 +343,11 @@ class ChatService
     {
         $definitions = [];
 
-        $config = $this->configProvider->getConfig();
-        $riskEnabled = $config['risk_detection']['enabled'] ?? false;
-
         foreach ($this->tools as $tool) {
-            // Filter ReportRiskTool if disabled
-            if ($tool->getName() === 'report_risk' && !$riskEnabled) {
-                continue;
-            }
-
             $definitions[] = [
-                'name' => $tool->getName(),
+                'name'        => $tool->getName(),
                 'description' => $tool->getDescription(),
-                'parameters' => $tool->getInputSchema(),
+                'parameters'  => $tool->getInputSchema(),
             ];
         }
 
@@ -403,16 +356,8 @@ class ChatService
 
     private function executeTool(string $name, array $args): mixed
     {
-        $config = $this->configProvider->getConfig();
-        $riskEnabled = $config['risk_detection']['enabled'] ?? false;
-
         foreach ($this->tools as $tool) {
             if ($tool->getName() === $name) {
-                // Prevent execution if risk detection is disabled and tool is report_risk
-                if ($name === 'report_risk' && !$riskEnabled) {
-                    return null;
-                }
-
                 $result = $tool->execute($args);
 
                 if (is_string($result) || is_array($result) || is_object($result)) {
@@ -450,7 +395,7 @@ class ChatService
 
             if (!empty($cleanParts)) {
                 $sanitized[] = [
-                    'role' => $role,
+                    'role'  => $role,
                     'parts' => $cleanParts,
                 ];
             }

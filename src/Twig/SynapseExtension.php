@@ -43,8 +43,8 @@ class SynapseExtension extends AbstractExtension
             // Résout dynamiquement le layout admin à utiliser (standalone ou module)
             new TwigFunction('synapse_admin_layout', [$this->layoutResolver, 'getAdminLayout']),
 
-            // Récupère la configuration (Entité)
-            new TwigFunction('synapse_config', [$this->configRepository, 'getConfig']),
+            // Récupère le preset actif (Entité)
+            new TwigFunction('synapse_config', [$this->configRepository, 'findActiveForScope']),
         ];
     }
 

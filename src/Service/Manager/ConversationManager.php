@@ -11,8 +11,6 @@ use ArnaudMoncondhuy\SynapseBundle\Entity\Conversation;
 use ArnaudMoncondhuy\SynapseBundle\Entity\Message;
 use ArnaudMoncondhuy\SynapseBundle\Enum\ConversationStatus;
 use ArnaudMoncondhuy\SynapseBundle\Enum\MessageRole;
-use ArnaudMoncondhuy\SynapseBundle\Enum\RiskCategory;
-use ArnaudMoncondhuy\SynapseBundle\Enum\RiskLevel;
 use ArnaudMoncondhuy\SynapseBundle\Repository\ConversationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -266,17 +264,47 @@ class ConversationManager
     }
 
     /**
-     * Marque une conversation comme présentant un risque
+     * Retourne les messages d'une conversation formatés en tableau pour le rendu Twig.
      *
-     * @param Conversation $conversation Conversation
-     * @param RiskLevel $level Niveau de risque
-     * @param RiskCategory $category Catégorie de risque
+     * Gère les deux formats possibles (objet Message ou tableau legacy).
+     * Filtre les messages non affichables (système, fonction, etc.).
+     *
+     * @param Conversation $conversation Conversation à formater
+     * @return array<int, array{role: string, content: string, parts: array, metadata: array}>
      */
-    public function markRisk(Conversation $conversation, RiskLevel $level, RiskCategory $category): void
+    public function getHistoryArray(Conversation $conversation): array
     {
-        $conversation->setRiskLevel($level);
-        $conversation->setRiskCategory($category);
-        $this->em->flush();
+        $history = [];
+        $messages = $this->getMessages($conversation);
+
+        foreach ($messages as $msg) {
+            if (is_array($msg)) {
+                $role = strtolower($msg['role'] ?? 'model');
+                if (!in_array($role, ['user', 'model', 'assistant'], true)) {
+                    continue;
+                }
+                $content  = $msg['content'] ?? ($msg['parts'][0]['text'] ?? '');
+                $parts    = $msg['parts'] ?? [['text' => $content]];
+                $metadata = $msg['metadata'] ?? [];
+            } else {
+                if (!$msg->isDisplayable()) {
+                    continue;
+                }
+                $role     = $msg->getRole()->value;
+                $content  = $msg->getDecryptedContent() ?? $msg->getContent();
+                $metadata = $msg->getMetadata() ?? [];
+                $parts    = [['text' => $content]];
+            }
+
+            $history[] = [
+                'role'     => $role,
+                'content'  => $content,
+                'parts'    => $parts,
+                'metadata' => $metadata,
+            ];
+        }
+
+        return $history;
     }
 
     /**
