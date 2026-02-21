@@ -4,33 +4,15 @@
 
 {% block admin_content %}
 <div class="synapse-admin__page">
-	<div class="synapse-admin__page-header" style="display: flex; justify-content: space-between; align-items: flex-start">
-		<div>
-			<h1 class="synapse-admin__page-title">
-				<i data-lucide="sliders-horizontal"></i>
-				Presets LLM
-			</h1>
-			<p class="synapse-admin__page-subtitle">
-				Créez et gérez vos configurations LLM par scope d'application.
-			</p>
-		</div>
+	<div class="synapse-admin__page-header" style="display: flex; justify-content: space-between; align-items: center">
+		<h1 class="synapse-admin__page-title" style="margin: 0;">
+			<i data-lucide="sliders-horizontal"></i>
+			Presets LLM
+		</h1>
 		<a href="{{ path('synapse_admin_presets_new') }}" class="synapse-admin__btn synapse-admin__btn--primary" style="white-space: nowrap">
 			<i data-lucide="plus"></i>
-			Nouveau preset
+			Nouveau
 		</a>
-	</div>
-
-	{# Info banner about presets concept #}
-	<div class="synapse-admin__card" style="background: rgba(0, 102, 204, 0.05); border-left: 4px solid var(--synapse-admin-primary); margin-bottom: 1.5rem;">
-		<div style="display: flex; gap: 1rem; align-items: flex-start; padding: 1rem 1.5rem;">
-			<i data-lucide="info" style="width: 20px; height: 20px; color: var(--synapse-admin-primary); flex-shrink: 0; margin-top: 0.1rem;"></i>
-			<div>
-				<p style="margin: 0; font-weight: 600; color: var(--synapse-admin-text-main);">À propos des presets</p>
-				<p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--synapse-admin-text-secondary);">
-					Un preset est une configuration de modèle LLM complète (provider, modèle, paramètres, capacités). Organisés par <strong>scope</strong> (contexte d'utilisation), un seul preset est actif par scope.
-				</p>
-			</div>
-		</div>
 	</div>
 
 	{% if presets is empty %}
@@ -45,48 +27,18 @@
 			</a>
 		</div>
 	{% else %}
-		{# Grouper par scope #}
-		{% set scopes = {} %}
-		{% for p in presets %}
-			{% set preset = p.entity %}
-			{% set scope = preset.scope %}
-			{% if scopes[scope] is not defined %}
-				{% set scopes = scopes|merge({(scope): []}) %}
-			{% endif %}
-			{% set scopes = scopes|merge({(scope): scopes[scope]|merge([p])}) %}
-		{% endfor %}
-
-		{% for scope, scopePresets in scopes %}
-			<div class="synapse-admin__section" style="margin-bottom: 3rem">
-				<div class="synapse-admin__scope-header">
-					<div class="synapse-admin__scope-label">
-						<i data-lucide="tag" style="width: 18px; height: 18px;"></i>
-						{{ scope }}
-					</div>
-					<span style="background: var(--synapse-admin-primary-fade); color: var(--synapse-admin-primary); padding: 0.25rem 0.75rem; border-radius: var(--synapse-admin-radius-full); font-size: 0.85rem; font-weight: 600">
-						{{ scopePresets|length }} preset{{ scopePresets|length > 1 ? 's' : '' }}
-					</span>
-				</div>
-
-				<div class="synapse-admin__grid synapse-admin__grid--2" style="gap: 1.5rem">
-					{% for p in scopePresets %}
+		<div class="synapse-admin__grid synapse-admin__grid--2" style="gap: 1.5rem">
+			{% for p in presets %}
 						{% set preset = p.entity %}
 						{% set caps = p.caps %}
 						<div class="synapse-admin__card synapse-admin__card--hover"
 						     style="border-top: 3px solid {% if preset.isActive %}var(--synapse-admin-success){% else %}var(--synapse-admin-border){% endif %}">
 
 							<!-- Header -->
-							<div class="synapse-admin__card-header" style="display: flex; justify-content: space-between; align-items: flex-start; padding: 1.5rem">
-								<div style="flex: 1">
-									<h3 style="margin: 0 0 0.25rem 0; font-size: 1.1rem; color: var(--synapse-admin-text-main)">
-											{{ preset.name }}
-									</h3>
-									{% if preset.description %}
-										<p style="margin: 0; font-size: 0.85rem; color: var(--synapse-admin-text-muted); line-height: 1.4">
-											{{ preset.description }}
-										</p>
-									{% endif %}
-								</div>
+							<div class="synapse-admin__card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem">
+								<h3 style="margin: 0; font-size: 1.1rem; color: var(--synapse-admin-text-main)">
+									{{ preset.name }}
+								</h3>
 								{% if preset.isActive %}
 									<span class="synapse-admin__badge synapse-admin__badge--success" style="white-space: nowrap;">
 										<i data-lucide="check-circle" style="width: 14px; height: 14px;"></i>
@@ -198,8 +150,6 @@
 						</div>
 					{% endfor %}
 				</div>
-			</div>
-		{% endfor %}
 	{% endif %}
 </div>
 

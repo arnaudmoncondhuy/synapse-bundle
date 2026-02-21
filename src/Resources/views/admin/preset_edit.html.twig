@@ -22,25 +22,11 @@
 
 		{# ── Informations de base ──────────────────────────────────────────── #}
 		<div class="synapse-admin__card">
-			<div class="synapse-admin__card-header">
-				<span class="synapse-admin__card-title">Identification</span>
-			</div>
-			<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--2">
+			<div class="synapse-admin__card-body">
 				<div class="synapse-admin__form-row">
 					<label class="synapse-admin__label">Nom du preset <span class="synapse-admin__required">*</span></label>
 					<input type="text" name="name" value="{{ preset.name }}"
 					       class="synapse-admin__input" required placeholder="Ex: Gemini Flash Créatif">
-				</div>
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">Scope</label>
-					<input type="text" name="scope" value="{{ preset.scope }}"
-					       class="synapse-admin__input" placeholder="default">
-					<p class="synapse-admin__help">Identifiant logique du contexte (ex: default, admin, support).</p>
-				</div>
-				<div class="synapse-admin__form-row synapse-admin__col-span-2">
-					<label class="synapse-admin__label">Description</label>
-					<textarea name="description" class="synapse-admin__textarea" rows="2"
-					          placeholder="Description optionnelle du preset…">{{ preset.description }}</textarea>
 				</div>
 			</div>
 		</div>
