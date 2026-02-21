@@ -7,6 +7,8 @@ namespace ArnaudMoncondhuy\SynapseBundle\Controller\Admin;
 use ArnaudMoncondhuy\SynapseBundle\Repository\ConversationRepository;
 use ArnaudMoncondhuy\SynapseBundle\Repository\MessageRepository;
 use ArnaudMoncondhuy\SynapseBundle\Repository\TokenUsageRepository;
+use ArnaudMoncondhuy\SynapseBundle\Repository\SynapseProviderRepository;
+use ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -21,6 +23,8 @@ class DashboardController extends AbstractController
         private ConversationRepository $conversationRepo,
         private MessageRepository $messageRepo,
         private TokenUsageRepository $tokenUsageRepo,
+        private SynapseProviderRepository $providerRepo,
+        private SynapseConfigRepository $configRepo,
     ) {
     }
 
@@ -44,13 +48,24 @@ class DashboardController extends AbstractController
         $last30days = new \DateTimeImmutable('-30 days');
         $dailyUsage = $this->tokenUsageRepo->getDailyUsage($last30days, $now);
 
+        // Active providers (enabled and configured)
+        $activeProviders = array_filter($this->providerRepo->findAll(), function($provider) {
+            return $provider->isEnabled() && $provider->isConfigured();
+        });
+
+        // Active preset for default scope
+        $activePreset = $this->configRepo->findOneBy(['scope' => 'default']);
+
         return $this->render('@Synapse/admin/dashboard.html.twig', [
             'kpis' => [
                 'active_conversations' => $conversationsLast24h,
                 'active_users_24h' => $activeUsersLast24h,
+                'tokens_7d' => $tokenStats['totalTokens'] ?? 0,
                 'tokens_cost' => $tokenStats['cost'] ?? 0,
             ],
             'daily_usage' => $dailyUsage,
+            'active_providers' => $activeProviders,
+            'active_preset' => $activePreset,
         ]);
     }
 }

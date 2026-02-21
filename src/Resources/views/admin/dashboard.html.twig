@@ -4,17 +4,20 @@
 {% endblock %}
 
 {% block admin_content %}
-	<header class="synapse-admin__header">
+	<header class="synapse-admin__page-header">
 		<div>
 			<h1 class="synapse-admin__title">Tableau de Bord</h1>
-			<p class="synapse-admin__subtitle">Vue d'ensemble de l'activité de l'assistant</p>
+			<p class="synapse-admin__subtitle">Vue d'ensemble de l'activité et de la configuration</p>
+		</div>
+		<div style="font-size: 0.875rem; color: var(--synapse-admin-text-secondary, #666);">
+			{% set today = "now"|date("d M Y") %}
+			{{ today }}
 		</div>
 	</header>
 
-	{# KPIs Grid #}
-	<div
-		class="synapse-admin__grid-3" style="margin-bottom: 2rem;">
-		{# Conversations #}
+	{# KPIs Grid - 4 columns #}
+	<div class="synapse-admin__grid synapse-admin__grid--4" style="margin-bottom: 2rem;">
+		{# Conversations 24h #}
 		<div class="synapse-admin__card synapse-admin__card--hover" style="padding: 1.5rem;">
 			<div class="synapse-admin__kpi">
 				<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--success">
@@ -23,71 +26,165 @@
 				<div>
 					<div class="synapse-admin__kpi-label">Conversations (24h)</div>
 					<div class="synapse-admin__kpi-value">{{ kpis.active_conversations }}</div>
-					{% if kpis.active_conversations > 0 %}
-						<div class="synapse-admin__kpi-sub" style="color: var(--synapse-admin-success); display: flex; align-items: center; gap: 0.25rem;">
-							<i data-lucide="trending-up" style="width: 14px; height: 14px;"></i>
-							En activité
-						</div>
-					{% else %}
-						<div class="synapse-admin__kpi-sub">Aucune activité récente</div>
-					{% endif %}
 				</div>
 			</div>
 		</div>
 
-		{# Tokens #}
+		{# Active Users 24h #}
+		<div class="synapse-admin__card synapse-admin__card--hover" style="padding: 1.5rem;">
+			<div class="synapse-admin__kpi">
+				<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--primary">
+					<i data-lucide="users"></i>
+				</div>
+				<div>
+					<div class="synapse-admin__kpi-label">Utilisateurs actifs (24h)</div>
+					<div class="synapse-admin__kpi-value">{{ kpis.active_users_24h }}</div>
+				</div>
+			</div>
+		</div>
+
+		{# Tokens 7 days #}
+		<div class="synapse-admin__card synapse-admin__card--hover" style="padding: 1.5rem;">
+			<div class="synapse-admin__kpi">
+				<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--warning">
+					<i data-lucide="cpu"></i>
+				</div>
+				<div>
+					<div class="synapse-admin__kpi-label">Tokens (7 jours)</div>
+					<div class="synapse-admin__kpi-value">{{ (kpis.tokens_7d / 1000)|round(1) }}k</div>
+				</div>
+			</div>
+		</div>
+
+		{# Estimated Cost #}
 		<div class="synapse-admin__card synapse-admin__card--hover" style="padding: 1.5rem;">
 			<div class="synapse-admin__kpi">
 				<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--warning">
 					<i data-lucide="coins"></i>
 				</div>
 				<div>
-					<div class="synapse-admin__kpi-label">Coût Estimé</div>
-					<div class="synapse-admin__kpi-value">€{{ kpis.tokens_cost|number_format(5, '.', ' ') }}</div>
-					<div class="synapse-admin__kpi-sub">Usage depuis le début du mois</div>
+					<div class="synapse-admin__kpi-label">Coût estimé du mois</div>
+					<div class="synapse-admin__kpi-value">€{{ kpis.tokens_cost|number_format(2, '.', ',') }}</div>
 				</div>
 			</div>
 		</div>
 	</div>
 
-	{# System Status #}
+	{# Configuration Status - 2 column grid #}
+	<div class="synapse-admin__grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+		{# Active Providers #}
+		<div class="synapse-admin__card">
+			<div class="synapse-admin__card-header">
+				<h3 style="font-size: 1.1rem; margin: 0;">Providers Actifs</h3>
+			</div>
+			<div style="padding: 1.5rem; padding-top: 0;">
+				{% if active_providers|length > 0 %}
+					<div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+						{% for provider in active_providers %}
+							<div class="synapse-admin__capability-pill synapse-admin__capability-pill--active">
+								{% set icons = {
+									'gemini': 'sparkles',
+									'ovh': 'zap',
+									'openai': 'cpu'
+								} %}
+								<i data-lucide="{{ icons[provider.name]|default('plug') }}" style="width: 14px; height: 14px;"></i>
+								{{ provider.label ?? provider.name }}
+							</div>
+						{% endfor %}
+					</div>
+					<p style="font-size: 0.875rem; color: var(--synapse-admin-text-secondary, #666); margin-top: 0.75rem;">
+						{{ active_providers|length }} provider{{ active_providers|length > 1 ? 's' : '' }} configuré{{ active_providers|length > 1 ? 's' : '' }}
+					</p>
+				{% else %}
+					<div style="padding: 1.5rem; text-align: center; background: var(--synapse-admin-bg-secondary, #f5f5f5); border-radius: 0.5rem;">
+						<p style="color: var(--synapse-admin-text-secondary, #666); margin: 0;">
+							<i data-lucide="alert-circle" style="width: 20px; height: 20px; margin-bottom: 0.5rem;"></i><br>
+							Aucun provider configuré
+						</p>
+						<a href="{{ path('synapse_admin_providers') }}" style="color: var(--synapse-admin-primary, #0066cc); text-decoration: none; font-size: 0.875rem; margin-top: 0.5rem;">
+							Configurer un provider →
+						</a>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+
+		{# Active Preset #}
+		<div class="synapse-admin__card">
+			<div class="synapse-admin__card-header">
+				<h3 style="font-size: 1.1rem; margin: 0;">Preset Actif (default)</h3>
+			</div>
+			<div style="padding: 1.5rem; padding-top: 0;">
+				{% if active_preset %}
+					<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+						<div>
+							<div style="font-weight: 600; margin-bottom: 0.25rem;">{{ active_preset.name }}</div>
+							{% if active_preset.model %}
+								<div style="font-size: 0.875rem; color: var(--synapse-admin-text-secondary, #666);">
+									{{ active_preset.model.label ?? active_preset.model.name }}
+								</div>
+							{% endif %}
+						</div>
+						<a href="{{ path('synapse_admin_presets_edit', {id: active_preset.id}) }}" style="color: var(--synapse-admin-primary, #0066cc); text-decoration: none; font-size: 0.875rem;">
+							Éditer →
+						</a>
+					</div>
+					<div style="background: var(--synapse-admin-bg-secondary, #f5f5f5); border-radius: 0.5rem; padding: 0.75rem; font-size: 0.875rem;">
+						<div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+							<span>Température:</span>
+							<strong>{{ active_preset.generationTemperature ?? 'N/A' }}</strong>
+						</div>
+						<div style="display: flex; justify-content: space-between;">
+							<span>Max tokens:</span>
+							<strong>{{ active_preset.generationMaxOutputTokens ?? 'N/A' }}</strong>
+						</div>
+					</div>
+				{% else %}
+					<div style="padding: 1.5rem; text-align: center; background: var(--synapse-admin-bg-secondary, #f5f5f5); border-radius: 0.5rem;">
+						<p style="color: var(--synapse-admin-text-secondary, #666); margin: 0;">
+							<i data-lucide="alert-circle" style="width: 20px; height: 20px; margin-bottom: 0.5rem;"></i><br>
+							Aucun preset configuré
+						</p>
+						<a href="{{ path('synapse_admin_presets_new') }}" style="color: var(--synapse-admin-primary, #0066cc); text-decoration: none; font-size: 0.875rem; margin-top: 0.5rem;">
+							Créer un preset →
+						</a>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	{# Activity Chart - Full width #}
 	<div class="synapse-admin__card">
 		<div class="synapse-admin__card-header">
-			<h3 style="font-size: 1.1rem; margin: 0;">État du Système</h3>
+			<h3 style="font-size: 1.1rem; margin: 0;">Activité (30 derniers jours)</h3>
+			<a href="{{ path('synapse_admin_analytics') }}" style="color: var(--synapse-admin-primary, #0066cc); text-decoration: none; font-size: 0.875rem;">
+				Analytics complets →
+			</a>
 		</div>
-		<div class="synapse-admin__table-container">
-			<table class="synapse-admin__table">
-				<tbody>
-					<tr>
-						<td style="display: flex; align-items: center; gap: 1rem;">
-							<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--primary" style="width: 40px; height: 40px; font-size: 1.2rem;">
-								<i data-lucide="lock"></i>
+		<div style="padding: 1.5rem; padding-top: 0;">
+			{% if daily_usage|length > 0 %}
+				<div class="synapse-admin__activity-chart">
+					{% set max_usage = daily_usage|map(attribute: 'total')|max %}
+					{% for day in daily_usage %}
+						<div class="synapse-admin__activity-row">
+							<div class="synapse-admin__activity-date">
+								{{ day.date|date('M d') }}
 							</div>
-							<div>
-								<div style="font-weight: 600;">Chiffrement Server-Side</div>
-								<div style="font-size: 0.85rem; color: var(--synapse-admin-text-muted);">Sodium Library</div>
+							<div class="synapse-admin__activity-bar-track">
+								<div class="synapse-admin__activity-bar" style="width: {% if max_usage > 0 %}{{ (day.total / max_usage) * 100 }}%{% else %}0%{% endif %};"></div>
 							</div>
-						</td>
-						<td style="text-align: right;">
-							<span class="synapse-admin__badge synapse-admin__badge--success">Actif</span>
-						</td>
-					</tr>
-					<tr>
-						<td style="display: flex; align-items: center; gap: 1rem;">
-							<div class="synapse-admin__kpi-icon synapse-admin__kpi-icon--primary" style="width: 40px; height: 40px; font-size: 1.2rem;">
-								<i data-lucide="sparkles"></i>
+							<div class="synapse-admin__activity-value">
+								{{ (day.total / 1000)|round(1) }}k
 							</div>
-							<div>
-								<div style="font-weight: 600;">API Vertex AI</div>
-								<div style="font-size: 0.85rem; color: var(--synapse-admin-text-muted);">Google Gemini 2.5</div>
-							</div>
-						</td>
-						<td style="text-align: right;">
-							<span class="synapse-admin__badge synapse-admin__badge--success">Connecté</span>
-						</td>
-					</tr>
-				</tbody>
-			</table>
+						</div>
+					{% endfor %}
+				</div>
+			{% else %}
+				<div style="padding: 2rem; text-align: center; color: var(--synapse-admin-text-secondary, #666);">
+					<p>Aucune données disponibles pour la période sélectionnée.</p>
+				</div>
+			{% endif %}
 		</div>
 	</div>
 {% endblock %}

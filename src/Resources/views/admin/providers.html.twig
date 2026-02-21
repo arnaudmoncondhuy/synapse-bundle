@@ -31,6 +31,11 @@
 								<i data-lucide="cpu" style="width: 24px; height: 24px"></i>
 							{% endif %}
 							<h3 style="margin: 0; font-size: 1.15rem">{{ provider.label }}</h3>
+							{% if preset_count_by_provider[provider.id] > 0 %}
+								<span class="synapse-admin__badge synapse-admin__badge--primary" style="margin-left: auto;">
+									{{ preset_count_by_provider[provider.id] }} preset{{ preset_count_by_provider[provider.id] > 1 ? 's' : '' }}
+								</span>
+							{% endif %}
 						</div>
 						<p style="margin: 0; font-size: 0.85rem; color: var(--synapse-admin-text-muted)">
 							{% if provider.name == 'gemini' %}
@@ -133,14 +138,14 @@
 						        style="flex: 1"
 						        title="Tester les credentials">
 							<i data-lucide="zap"></i>
-							Tester
+							Tester la connexion
 						</button>
 					{% endif %}
 					<a href="{{ path('synapse_admin_providers_edit', {id: provider.id}) }}"
 					   class="synapse-admin__btn synapse-admin__btn--primary"
 					   style="flex: 1; justify-content: center">
 						<i data-lucide="settings"></i>
-						Configurer
+						Modifier les credentials
 					</a>
 				</div>
 			</div>

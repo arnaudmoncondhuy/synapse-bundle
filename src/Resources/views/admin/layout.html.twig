@@ -32,11 +32,12 @@
 			{% endblock %}
 		</title>
 
-		{% block admin_stylesheets %}
-			<link rel="stylesheet" href="{{ asset('synapse/styles/admin/synapse-variables.css') }}">
-			<link rel="stylesheet" href="{{ asset('synapse/styles/admin/synapse-admin.css') }}">
-			{% block admin_custom_styles %}{% endblock %}
-		{% endblock %}
+	{% block admin_stylesheets %}
+		<link rel="stylesheet" href="{{ asset('synapse/styles/admin/synapse-variables.css') }}">
+		<link rel="stylesheet" href="{{ asset('synapse/styles/admin/synapse-admin.css') }}">
+		<link rel="stylesheet" href="{{ asset('synapse/styles/admin/synapse-admin-enhancements.css') }}">
+		{% block admin_custom_styles %}{% endblock %}
+	{% endblock %}
 
 		{% block admin_head_scripts %}
 			{# Lucide Icons - Local fallback recommandé #}
@@ -59,8 +60,9 @@
 				{% block admin_navigation %}
 					<nav>
 						<ul class="synapse-admin__nav">
+							<li class="synapse-admin__nav-section-label">Monitoring</li>
 							<li class="synapse-admin__nav-item">
-								<a href="{{ path('synapse_admin_dashboard') }}" class="{% if app.request.attributes.get('_route') == 'synapse_admin_dashboard' %}active{% endif %}">
+								<a href="{{ path('synapse_admin_dashboard') }}" class="{% if app.request.attributes.get('_route') in ['synapse_admin_dashboard', 'synapse_admin_index'] %}active{% endif %}">
 									<i data-lucide="layout-dashboard"></i>
 									Dashboard
 								</a>
@@ -71,6 +73,7 @@
 									Analytics
 								</a>
 							</li>
+							<li class="synapse-admin__nav-section-label" style="margin-top: 1.5rem;">Configuration</li>
 							<li class="synapse-admin__nav-item">
 								<a href="{{ path('synapse_admin_providers') }}" class="{% if app.request.attributes.get('_route') starts with 'synapse_admin_providers' %}active{% endif %}">
 									<i data-lucide="plug"></i>
@@ -95,8 +98,13 @@
 
 				{% block admin_sidebar_footer %}
 					<div class="synapse-admin__sidebar-footer">
-						Synapse Bundle v2.0<br>
-						Made with ❤️ by MakerLab
+						<div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+							<i data-lucide="package" style="width: 16px; height: 16px;"></i>
+							<span>Synapse Bundle</span>
+						</div>
+						<div style="font-size: 0.875rem; color: var(--color-text-secondary, #666);">
+							v2.0 • Made with ❤️ by MakerLab
+						</div>
 					</div>
 				{% endblock %}
 			</aside>
