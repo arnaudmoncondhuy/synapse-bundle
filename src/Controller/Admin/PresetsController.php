@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Controller\Admin;
 
-use ArnaudMoncondhuy\SynapseBundle\Entity\SynapseConfig;
-use ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository;
+use ArnaudMoncondhuy\SynapseBundle\Entity\SynapsePreset;
+use ArnaudMoncondhuy\SynapseBundle\Repository\SynapsePresetRepository;
 use ArnaudMoncondhuy\SynapseBundle\Repository\SynapseProviderRepository;
 use ArnaudMoncondhuy\SynapseBundle\Service\DatabaseConfigProvider;
 use ArnaudMoncondhuy\SynapseBundle\Service\ModelCapabilityRegistry;
@@ -20,13 +20,13 @@ use Symfony\Component\Routing\Attribute\Route;
  * Gestion des presets de configuration LLM
  *
  * Un preset associe un provider + modèle + paramètres de génération.
- * Un seul preset peut être actif par scope.
+ * Un seul preset peut être actif à la fois.
  */
 #[Route('/synapse/admin/presets')]
 class PresetsController extends AbstractController
 {
     public function __construct(
-        private SynapseConfigRepository $configRepo,
+        private SynapsePresetRepository $presetRepo,
         private SynapseProviderRepository $providerRepo,
         private ModelCapabilityRegistry $capabilityRegistry,
         private DatabaseConfigProvider $configProvider,
@@ -40,7 +40,7 @@ class PresetsController extends AbstractController
     #[Route('', name: 'synapse_admin_presets', methods: ['GET'])]
     public function index(): Response
     {
-        $presets  = $this->configRepo->findAllPresets();
+        $presets  = $this->presetRepo->findAllPresets();
         $providers = $this->providerRepo->findAllOrdered();
 
         $presetsWithCaps = [];
@@ -63,13 +63,14 @@ class PresetsController extends AbstractController
     #[Route('/new', name: 'synapse_admin_presets_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
-        $preset = new SynapseConfig();
-        $preset->setScope('default');
+        $preset = new SynapsePreset();
 
         if ($request->isMethod('POST')) {
             $this->applyFormData($preset, $request->request->all());
             $this->em->persist($preset);
             $this->em->flush();
+
+            $this->configProvider->clearCache();
 
             $this->addFlash('success', 'Preset "' . $preset->getName() . '" créé.');
 
@@ -91,14 +92,13 @@ class PresetsController extends AbstractController
      * Éditer un preset existant
      */
     #[Route('/{id}/edit', name: 'synapse_admin_presets_edit', methods: ['GET', 'POST'])]
-    public function edit(SynapseConfig $preset, Request $request): Response
+    public function edit(SynapsePreset $preset, Request $request): Response
     {
         if ($request->isMethod('POST')) {
             $this->applyFormData($preset, $request->request->all());
             $this->em->flush();
 
-            // Invalider le cache du scope modifié
-            $this->configProvider->setScope($preset->getScope());
+            // Invalider le cache
             $this->configProvider->clearCache();
 
             $this->addFlash('success', 'Preset "' . $preset->getName() . '" mis à jour.');
@@ -118,18 +118,17 @@ class PresetsController extends AbstractController
     }
 
     /**
-     * Activer un preset (désactive les autres du même scope)
+     * Activer un preset (désactive tous les autres)
      */
     #[Route('/{id}/activate', name: 'synapse_admin_presets_activate', methods: ['POST'])]
-    public function activate(SynapseConfig $preset): Response
+    public function activate(SynapsePreset $preset): Response
     {
-        $this->configRepo->activatePreset($preset);
+        $this->presetRepo->activate($preset);
 
-        // Invalider le cache du scope
-        $this->configProvider->setScope($preset->getScope());
+        // Invalider le cache
         $this->configProvider->clearCache();
 
-        $this->addFlash('success', 'Preset "' . $preset->getName() . '" activé pour le scope "' . $preset->getScope() . '".');
+        $this->addFlash('success', 'Preset "' . $preset->getName() . '" activé.');
 
         return $this->redirectToRoute('synapse_admin_presets');
     }
@@ -138,12 +137,10 @@ class PresetsController extends AbstractController
      * Cloner un preset
      */
     #[Route('/{id}/clone', name: 'synapse_admin_presets_clone', methods: ['POST'])]
-    public function clone(SynapseConfig $source): Response
+    public function clone(SynapsePreset $source): Response
     {
-        $clone = new SynapseConfig();
+        $clone = new SynapsePreset();
         $clone->setName($source->getName() . ' (copie)');
-        $clone->setScope($source->getScope());
-        $clone->setDescription($source->getDescription());
         $clone->setProviderName($source->getProviderName());
         $clone->setModel($source->getModel());
         $clone->setSafetyEnabled($source->isSafetyEnabled());
@@ -159,15 +156,16 @@ class PresetsController extends AbstractController
         $clone->setGenerationStopSequences($source->getGenerationStopSequences());
         $clone->setThinkingEnabled($source->isThinkingEnabled());
         $clone->setThinkingBudget($source->getThinkingBudget());
+        $clone->setReasoningEffort($source->getReasoningEffort());
+        $clone->setStreamingEnabled($source->isStreamingEnabled());
         $clone->setContextCachingEnabled($source->isContextCachingEnabled());
         $clone->setContextCachingId($source->getContextCachingId());
-        $clone->setRetentionDays($source->getRetentionDays());
-        $clone->setContextLanguage($source->getContextLanguage());
-        $clone->setSystemPrompt($source->getSystemPrompt());
         $clone->setIsActive(false); // Clone starts inactive
 
         $this->em->persist($clone);
         $this->em->flush();
+
+        $this->configProvider->clearCache();
 
         $this->addFlash('success', 'Preset "' . $source->getName() . '" cloné.');
 
@@ -178,7 +176,7 @@ class PresetsController extends AbstractController
      * Supprimer un preset
      */
     #[Route('/{id}/delete', name: 'synapse_admin_presets_delete', methods: ['POST'])]
-    public function delete(SynapseConfig $preset): Response
+    public function delete(SynapsePreset $preset): Response
     {
         if ($preset->isActive()) {
             $this->addFlash('error', 'Impossible de supprimer le preset actif. Activez d\'abord un autre preset.');
@@ -189,6 +187,8 @@ class PresetsController extends AbstractController
         $this->em->remove($preset);
         $this->em->flush();
 
+        $this->configProvider->clearCache();
+
         $this->addFlash('success', 'Preset "' . $name . '" supprimé.');
 
         return $this->redirectToRoute('synapse_admin_presets');
@@ -197,31 +197,50 @@ class PresetsController extends AbstractController
     /**
      * Applique les données du formulaire à l'entité preset.
      */
-    private function applyFormData(SynapseConfig $preset, array $data): void
+    private function applyFormData(SynapsePreset $preset, array $data): void
     {
         $preset->setName($data['name'] ?? 'Preset');
-        $preset->setScope($data['scope'] ?? 'default');
-        $preset->setDescription(!empty($data['description']) ? $data['description'] : null);
         $preset->setProviderName($data['provider_name'] ?? 'gemini');
-        $preset->setModel($data['model'] ?? 'gemini-2.5-flash');
+
+        $modelName = $data['model'] ?? 'gemini-2.5-flash';
+        $preset->setModel($modelName);
 
         // Apply smart preset if selected
         if (!empty($data['smart_preset'])) {
             $data = $this->smartPresetFactory->applyPreset($data['smart_preset'], $data);
         }
 
+        // Récupération des capacités du modèle pour nettoyer les données non supportées
+        $caps = $this->capabilityRegistry->getCapabilities($modelName);
+
         // Safety Settings
-        $preset->setSafetyEnabled((bool) ($data['safety_enabled'] ?? false));
-        $preset->setSafetyDefaultThreshold($data['safety_default_threshold'] ?? 'BLOCK_MEDIUM_AND_ABOVE');
-        $preset->setSafetyHateSpeech(!empty($data['safety_hate_speech']) ? $data['safety_hate_speech'] : null);
-        $preset->setSafetyDangerousContent(!empty($data['safety_dangerous_content']) ? $data['safety_dangerous_content'] : null);
-        $preset->setSafetyHarassment(!empty($data['safety_harassment']) ? $data['safety_harassment'] : null);
-        $preset->setSafetySexuallyExplicit(!empty($data['safety_sexually_explicit']) ? $data['safety_sexually_explicit'] : null);
+        $safetyEnabled = (bool) ($data['safety_enabled'] ?? false);
+        if ($caps->safetySettings && $safetyEnabled) {
+            $preset->setSafetyEnabled(true);
+            $preset->setSafetyDefaultThreshold($data['safety_default_threshold'] ?? 'BLOCK_MEDIUM_AND_ABOVE');
+            $preset->setSafetyHateSpeech(!empty($data['safety_hate_speech']) ? $data['safety_hate_speech'] : null);
+            $preset->setSafetyDangerousContent(!empty($data['safety_dangerous_content']) ? $data['safety_dangerous_content'] : null);
+            $preset->setSafetyHarassment(!empty($data['safety_harassment']) ? $data['safety_harassment'] : null);
+            $preset->setSafetySexuallyExplicit(!empty($data['safety_sexually_explicit']) ? $data['safety_sexually_explicit'] : null);
+        } else {
+            $preset->setSafetyEnabled(false);
+            $preset->setSafetyDefaultThreshold(null);
+            $preset->setSafetyHateSpeech(null);
+            $preset->setSafetyDangerousContent(null);
+            $preset->setSafetyHarassment(null);
+            $preset->setSafetySexuallyExplicit(null);
+        }
 
         // Generation Config
         $preset->setGenerationTemperature((float) ($data['generation_temperature'] ?? 1.0));
         $preset->setGenerationTopP((float) ($data['generation_top_p'] ?? 0.95));
-        $preset->setGenerationTopK((int) ($data['generation_top_k'] ?? 40));
+
+        if ($caps->topK) {
+            $preset->setGenerationTopK((int) ($data['generation_top_k'] ?? 40));
+        } else {
+            $preset->setGenerationTopK(null); // Force à null si non supporté
+        }
+
         $preset->setGenerationMaxOutputTokens(
             !empty($data['generation_max_output_tokens']) ? (int) $data['generation_max_output_tokens'] : null
         );
@@ -232,21 +251,29 @@ class PresetsController extends AbstractController
         );
 
         // Thinking
-        $preset->setThinkingEnabled((bool) ($data['thinking_enabled'] ?? false));
-        $preset->setThinkingBudget((int) ($data['thinking_budget'] ?? 1024));
+        $thinkingEnabled = (bool) ($data['thinking_enabled'] ?? false);
+        if ($caps->thinking && $thinkingEnabled) {
+            $preset->setThinkingEnabled(true);
+            $preset->setThinkingBudget((int) ($data['thinking_budget'] ?? 1024));
+            $preset->setReasoningEffort($data['reasoning_effort'] ?? 'high');
+        } else {
+            $preset->setThinkingEnabled(false);
+            $preset->setThinkingBudget(null);
+            $preset->setReasoningEffort(null);
+        }
+
+        // Streaming Mode (checkbox non envoyé = false)
+        $preset->setStreamingEnabled(!empty($data['streaming_enabled']));
 
         // Context Caching
-        $preset->setContextCachingEnabled((bool) ($data['context_caching_enabled'] ?? false));
-        $preset->setContextCachingId(!empty($data['context_caching_id']) ? $data['context_caching_id'] : null);
-
-        // Retention
-        $preset->setRetentionDays((int) ($data['retention_days'] ?? 30));
-
-        // Context
-        $preset->setContextLanguage($data['context_language'] ?? 'fr');
-
-        // System Prompt
-        $preset->setSystemPrompt(!empty($data['system_prompt']) ? $data['system_prompt'] : null);
+        $cachingEnabled = (bool) ($data['context_caching_enabled'] ?? false);
+        if ($caps->contextCaching && $cachingEnabled) {
+            $preset->setContextCachingEnabled(true);
+            $preset->setContextCachingId(!empty($data['context_caching_id']) ? $data['context_caching_id'] : null);
+        } else {
+            $preset->setContextCachingEnabled(false);
+            $preset->setContextCachingId(null);
+        }
     }
 
     private function getModelsByProvider(): array

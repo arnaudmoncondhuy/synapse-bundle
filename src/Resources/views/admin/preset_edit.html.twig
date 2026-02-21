@@ -141,7 +141,7 @@
 			{# ── Thinking ──────────────────────────────────────────────────────── #}
 			<div class="synapse-admin__card" id="section-thinking">
 				<div class="synapse-admin__card-header">
-					<span class="synapse-admin__card-title">Thinking natif (Gemini 2.5+)</span>
+					<span class="synapse-admin__card-title">Réflexion & Reasoning</span>
 				</div>
 				<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--2">
 				<div class="synapse-admin__form-row">
@@ -150,15 +150,25 @@
 						       {% if preset.thinkingEnabled %}checked{% endif %}>
 						Activer le thinking
 					</label>
-					<p class="synapse-admin__help">Permet au modèle de raisonner avant de répondre. Ignoré pour les modèles sans capacité thinking.</p>
+					<p class="synapse-admin__help">Gemini: réflexion interne. OVH: reasoning effort.</p>
 				</div>
 				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">Budget thinking (tokens)</label>
+					<label class="synapse-admin__label">Budget thinking (Gemini)</label>
 					<input type="number" name="thinking_budget"
 					       value="{{ preset.thinkingBudget }}"
 					       min="128" max="24576"
 					       class="synapse-admin__input">
 					<p class="synapse-admin__help">0–24576 tokens alloués à la réflexion interne.</p>
+				</div>
+				<div class="synapse-admin__form-row">
+					<label class="synapse-admin__label">Effort de reasoning (OVH)</label>
+					<select name="reasoning_effort" class="synapse-admin__select">
+						<option value="high" {% if preset.reasoningEffort == 'high' %}selected{% endif %}>Élevé (high)</option>
+						<option value="medium" {% if preset.reasoningEffort == 'medium' %}selected{% endif %}>Moyen (medium)</option>
+						<option value="low" {% if preset.reasoningEffort == 'low' %}selected{% endif %}>Faible (low)</option>
+						<option value="minimal" {% if preset.reasoningEffort == 'minimal' %}selected{% endif %}>Minimal</option>
+					</select>
+					<p class="synapse-admin__help">OVH Gpt-oss-20b: contrôle l'effort de réflexion.</p>
 				</div>
 			</div>
 		</div>
@@ -225,6 +235,26 @@
 			</div>
 		</div>
 
+		{# ── Streaming Mode (Debug) ────────────────────────────────────────── #}
+		<div class="synapse-admin__card" id="section-streaming">
+			<div class="synapse-admin__card-header">
+				<span class="synapse-admin__card-title">Mode Streaming</span>
+			</div>
+			<div class="synapse-admin__card-body">
+				<div class="synapse-admin__form-row" style="margin-bottom: 1rem">
+					<label class="synapse-admin__label">
+						<input type="checkbox" name="streaming_enabled" value="1"
+						       {% if preset.streamingEnabled %}checked{% endif %}>
+						Activer le streaming (SSE)
+					</label>
+					<p style="color: #6b7280; font-size: 12px; margin-top: 0.5rem;">
+						✓ Par défaut: réponses en temps réel (chunks SSE)<br/>
+						✗ Désactivé: mode synchrone - réponse complète d'un coup (mieux pour le debug)
+					</p>
+				</div>
+			</div>
+		</div>
+
 		{# ── Context Caching ───────────────────────────────────────────────── #}
 		<div class="synapse-admin__card" id="section-caching">
 			<div class="synapse-admin__card-header">
@@ -248,36 +278,6 @@
 			</div>
 		</div>
 		</details>
-
-		{# ── Système & Comportement ────────────────────────────────────────── #}
-		<div class="synapse-admin__card">
-			<div class="synapse-admin__card-header">
-				<span class="synapse-admin__card-title">Système & Comportement</span>
-			</div>
-			<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--2">
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">Langue du contexte</label>
-					<select name="context_language" class="synapse-admin__select">
-						<option value="fr" {% if preset.contextLanguage == 'fr' %}selected{% endif %}>Français</option>
-						<option value="en" {% if preset.contextLanguage == 'en' %}selected{% endif %}>English</option>
-					</select>
-				</div>
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">Rétention RGPD (jours)</label>
-					<input type="number" name="retention_days"
-					       value="{{ preset.retentionDays }}"
-					       min="1" max="3650"
-					       class="synapse-admin__input">
-				</div>
-				<div class="synapse-admin__form-row synapse-admin__col-span-2">
-					<label class="synapse-admin__label">Prompt système personnalisé</label>
-					<textarea name="system_prompt"
-					          class="synapse-admin__textarea"
-					          rows="4"
-					          placeholder="Instructions système supplémentaires ajoutées au prompt de base du bundle…">{{ preset.systemPrompt }}</textarea>
-				</div>
-			</div>
-		</div>
 
 
 		<div class="synapse-admin__sticky-save">
@@ -338,6 +338,23 @@ function updateFormVisibility() {
 		const el = document.getElementById(id);
 		if (el) {
 			el.style.display = visible ? '' : 'none';
+			
+			// Si la section contient des champs obligatoires désactivés, on enlève le 'required' pour ne pas bloquer le form
+			const inputs = el.querySelectorAll('input, select, textarea');
+			inputs.forEach(input => {
+				if (!visible) {
+					// On ne touche pas au disabled, juste on cache, et le contrôleur PHP ignorera les valeurs de toute façon
+					// Mais on s'assure de ne pas envoyer un required caché
+					if (input.hasAttribute('required')) {
+						input.dataset.wasRequired = 'true';
+						input.removeAttribute('required');
+					}
+				} else {
+					if (input.dataset.wasRequired === 'true') {
+						input.setAttribute('required', 'required');
+					}
+				}
+			});
 		}
 	}
 
