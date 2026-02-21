@@ -62,15 +62,16 @@ class ProvidersController extends AbstractController
         // Count presets per provider
         $allConfigs = $this->configRepo->findAll();
         $presetCountByProvider = [];
+        $providersByName = [];
         foreach ($providers as $provider) {
             $presetCountByProvider[$provider->getId()] = 0;
+            $providersByName[$provider->getName()] = $provider->getId();
         }
         foreach ($allConfigs as $config) {
-            if ($config->getModel() && $config->getModel()->getProvider()) {
-                $providerId = $config->getModel()->getProvider()->getId();
-                if (isset($presetCountByProvider[$providerId])) {
-                    $presetCountByProvider[$providerId]++;
-                }
+            $providerName = $config->getProviderName();
+            if ($providerName && isset($providersByName[$providerName])) {
+                $providerId = $providersByName[$providerName];
+                $presetCountByProvider[$providerId]++;
             }
         }
 
