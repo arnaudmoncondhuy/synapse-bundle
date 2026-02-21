@@ -42,7 +42,9 @@ services:
     # ── Default implementations (can be overridden by user) ──────────────────
     ArnaudMoncondhuy\SynapseBundle\Service\DatabaseConfigProvider:
         arguments:
-            $scope: 'default'
+            $presetRepo: '@ArnaudMoncondhuy\SynapseBundle\Repository\SynapsePresetRepository'
+            $globalConfigRepo: '@ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository'
+            $providerRepo: '@ArnaudMoncondhuy\SynapseBundle\Repository\SynapseProviderRepository'
 
     ArnaudMoncondhuy\SynapseBundle\Service\Impl\SessionConversationHandler: ~
 
@@ -94,6 +96,13 @@ services:
             $tools: !tagged_iterator synapse.tool
             $cache: '@cache.app'
             $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
+            $em: '@doctrine.orm.entity_manager'
+            $debugLogRepo: '@ArnaudMoncondhuy\SynapseBundle\Repository\DebugLogRepository'
+
+    # ── Agents ────────────────────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Agent\PresetValidator\PresetValidatorAgent:
+        autowire: true
+        autoconfigure: true
 
     # ── UI Layout Resolution ──────────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Service\SynapseLayoutResolver:
@@ -147,8 +156,28 @@ services:
         autoconfigure: true
         tags: ['controller.service_arguments']
 
+    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\PresetTestController:
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\SettingsController:
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\DebugLogsController:
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
+
     # ── Repositories (entités concrètes du bundle) ────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Repository\TokenUsageRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
+
+    ArnaudMoncondhuy\SynapseBundle\Repository\SynapsePresetRepository:
         arguments:
             $registry: '@doctrine'
         tags: ['doctrine.repository_service']
@@ -164,6 +193,11 @@ services:
         tags: ['doctrine.repository_service']
 
     ArnaudMoncondhuy\SynapseBundle\Repository\SynapseModelRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
+
+    ArnaudMoncondhuy\SynapseBundle\Repository\DebugLogRepository:
         arguments:
             $registry: '@doctrine'
         tags: ['doctrine.repository_service']
