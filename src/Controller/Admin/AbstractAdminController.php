@@ -53,25 +53,9 @@ abstract class AbstractAdminController extends AbstractController
             'nav_active' => 'dashboard',
             'kpis' => [
                 'active_conversations' => $this->getActiveConversationsCount(),
-                'risks_pending' => $this->getPendingRisksCount(),
                 'tokens_cost' => $cost,
                 'users_count' => $this->getActiveUsersCount($start),
             ],
-        ]);
-    }
-
-    /**
-     * Sécurité : Gestion des risques (Ange Gardien).
-     */
-    public function risks(): Response
-    {
-        $this->checkRisksAccess();
-
-        return $this->render($this->getTemplatePath('risks'), [
-            'module_color' => $this->getModuleColor(),
-            'module_icon' => $this->getModuleIcon(),
-            'nav_active' => 'risks',
-            'alerts' => $this->getPendingRisks(),
         ]);
     }
 
@@ -117,8 +101,8 @@ abstract class AbstractAdminController extends AbstractController
     {
         $this->checkConfigAccess();
 
-        // Récupérer la configuration (singleton)
-        $config = $this->synapseConfigRepository->getConfig();
+        // Récupérer le preset actif (scope default)
+        $config = $this->synapseConfigRepository->findActiveForScope();
 
         if ($request->isMethod('POST')) {
             // General Config
@@ -173,54 +157,6 @@ abstract class AbstractAdminController extends AbstractController
         ]);
     }
 
-    /**
-     * Vue Conversation : Lecture d'une conversation à risque (Break-Glass).
-     */
-    public function conversation(string $id, Request $request): Response
-    {
-        $this->checkConversationAccess();
-
-        $conversation = $this->getConversationById($id);
-
-        if (!$conversation) {
-            throw $this->createNotFoundException('Conversation introuvable');
-        }
-
-        // RGPD : Tracer l'accès administrateur à cette donnée privée
-        $this->logSecurityAccess($id, $conversation, $request);
-
-        // Déchiffrement (transparent via getTitle() et getContent())
-        try {
-            $title = $conversation->getTitle() ?: 'Sans titre';
-        } catch (\Exception $e) {
-            $title = '[Erreur Déchiffrement Titre]';
-        }
-
-        $messages = [];
-        foreach ($conversation->getMessages() as $msg) {
-            try {
-                $content = $msg->getContent();
-            } catch (\Exception $e) {
-                $content = '[Message Indéchiffrable]';
-            }
-
-            $messages[] = [
-                'role' => strtolower($msg->getRole()->value),
-                'content' => $content,
-                'createdAt' => $msg->getCreatedAt(),
-            ];
-        }
-
-        return $this->render($this->getTemplatePath('conversation'), [
-            'module_color' => $this->getModuleColor(),
-            'module_icon' => $this->getModuleIcon(),
-            'conversation' => $conversation,
-            'decrypted_title' => $title,
-            'messages' => $messages,
-            'nav_active' => 'risks',
-        ]);
-    }
-
     protected function getSafetyThresholds(): array
     {
         return [
@@ -239,11 +175,6 @@ abstract class AbstractAdminController extends AbstractController
     abstract protected function checkDashboardAccess(): void;
 
     /**
-     * Vérifier l'accès aux risques.
-     */
-    abstract protected function checkRisksAccess(): void;
-
-    /**
      * Vérifier l'accès à l'analytique.
      */
     abstract protected function checkAnalyticsAccess(): void;
@@ -252,11 +183,6 @@ abstract class AbstractAdminController extends AbstractController
      * Vérifier l'accès à la configuration.
      */
     abstract protected function checkConfigAccess(): void;
-
-    /**
-     * Vérifier l'accès à la lecture de conversation.
-     */
-    abstract protected function checkConversationAccess(): void;
 
     /**
      * Récupérer la couleur du module.
@@ -274,29 +200,9 @@ abstract class AbstractAdminController extends AbstractController
     abstract protected function getActiveConversationsCount(): int;
 
     /**
-     * Récupérer le nombre de risques en attente.
-     */
-    abstract protected function getPendingRisksCount(): int;
-
-    /**
      * Récupérer le nombre d'utilisateurs actifs depuis une date.
      */
     abstract protected function getActiveUsersCount(\DateTimeImmutable $since): int;
-
-    /**
-     * Récupérer les risques en attente.
-     */
-    abstract protected function getPendingRisks(): array;
-
-    /**
-     * Récupérer une conversation par ID.
-     */
-    abstract protected function getConversationById(string $id): mixed;
-
-    /**
-     * Logger l'accès sécurité (RGPD).
-     */
-    abstract protected function logSecurityAccess(string $conversationId, mixed $conversation, Request $request): void;
 
     /**
      * Récupérer le nom de la route de configuration.

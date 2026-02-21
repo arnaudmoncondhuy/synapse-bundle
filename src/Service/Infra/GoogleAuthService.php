@@ -9,8 +9,10 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 /**
  * Service d'authentification OAuth2 pour Google Cloud / Vertex AI.
  *
- * Gère la génération et le refresh automatique des access tokens
- * à partir d'un fichier de credentials Service Account.
+ * Gère la génération et le refresh automatique des access tokens.
+ * Supporte deux sources de credentials :
+ *  - Fichier JSON Service Account (chemin YAML — fallback)
+ *  - Contenu JSON injecté depuis la DB via setCredentialsJson()
  */
 class GoogleAuthService
 {
@@ -20,10 +22,32 @@ class GoogleAuthService
     private ?string $cachedToken = null;
     private ?int $tokenExpiry = null;
 
+    /** Credentials injectés depuis la DB (prioritaires sur le fichier) */
+    private ?array $credentialsOverride = null;
+
     public function __construct(
         private HttpClientInterface $httpClient,
-        private ?string $serviceAccountJsonPath,
+        private ?string $serviceAccountJsonPath = null,
     ) {
+    }
+
+    /**
+     * Injecte les credentials depuis un contenu JSON (depuis la DB).
+     * Invalide le token en cache si les credentials changent.
+     */
+    public function setCredentialsJson(string $jsonContent): void
+    {
+        $credentials = json_decode($jsonContent, true);
+        if (!is_array($credentials)) {
+            return; // JSON invalide — on ne remplace pas
+        }
+
+        // Invalider le cache si les credentials ont changé
+        if ($this->credentialsOverride !== $credentials) {
+            $this->cachedToken = null;
+            $this->tokenExpiry = null;
+            $this->credentialsOverride = $credentials;
+        }
     }
 
     /**
@@ -31,7 +55,7 @@ class GoogleAuthService
      */
     public function getAccessToken(): string
     {
-        // Check if token is still valid (with 5 min buffer)
+        // Vérifier si le token est encore valide (5 min de marge)
         if ($this->cachedToken && $this->tokenExpiry && time() < ($this->tokenExpiry - 300)) {
             return $this->cachedToken;
         }
@@ -41,24 +65,16 @@ class GoogleAuthService
 
     private function refreshToken(): string
     {
-        if (!$this->serviceAccountJsonPath || !file_exists($this->serviceAccountJsonPath)) {
-            throw new \RuntimeException('Service Account JSON file not found: ' . $this->serviceAccountJsonPath);
-        }
+        $credentials = $this->loadCredentials();
 
-        $credentials = json_decode(file_get_contents($this->serviceAccountJsonPath), true);
-
-        if (!$credentials) {
-            throw new \RuntimeException('Invalid Service Account JSON file');
-        }
-
-        // Create JWT assertion
+        // Créer l'assertion JWT
         $jwt = $this->createJwtAssertion($credentials);
 
-        // Exchange JWT for access token
+        // Échanger le JWT contre un access token
         $response = $this->httpClient->request('POST', self::TOKEN_URL, [
             'body' => [
                 'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-                'assertion' => $jwt,
+                'assertion'  => $jwt,
             ],
         ]);
 
@@ -70,6 +86,34 @@ class GoogleAuthService
         return $this->cachedToken;
     }
 
+    /**
+     * Charge les credentials depuis la source disponible.
+     *
+     * Priorité : DB (setCredentialsJson) > fichier YAML
+     *
+     * @throws \RuntimeException Si aucune source de credentials n'est disponible
+     */
+    private function loadCredentials(): array
+    {
+        // Priorité 1 : credentials injectés depuis la DB
+        if ($this->credentialsOverride !== null) {
+            return $this->credentialsOverride;
+        }
+
+        // Priorité 2 : fichier JSON (chemin YAML)
+        if ($this->serviceAccountJsonPath && file_exists($this->serviceAccountJsonPath)) {
+            $credentials = json_decode(file_get_contents($this->serviceAccountJsonPath), true);
+            if (is_array($credentials)) {
+                return $credentials;
+            }
+            throw new \RuntimeException('Invalid Service Account JSON file: ' . $this->serviceAccountJsonPath);
+        }
+
+        throw new \RuntimeException(
+            'Google credentials not configured. Add a Gemini provider in the Synapse admin (Providers → Gemini).'
+        );
+    }
+
     private function createJwtAssertion(array $credentials): string
     {
         $header = [
@@ -79,14 +123,14 @@ class GoogleAuthService
 
         $now = time();
         $payload = [
-            'iss' => $credentials['client_email'],
+            'iss'   => $credentials['client_email'],
             'scope' => self::SCOPE,
-            'aud' => self::TOKEN_URL,
-            'iat' => $now,
-            'exp' => $now + 3600,
+            'aud'   => self::TOKEN_URL,
+            'iat'   => $now,
+            'exp'   => $now + 3600,
         ];
 
-        $headerEncoded = $this->base64UrlEncode(json_encode($header));
+        $headerEncoded  = $this->base64UrlEncode(json_encode($header));
         $payloadEncoded = $this->base64UrlEncode(json_encode($payload));
 
         $signatureInput = $headerEncoded . '.' . $payloadEncoded;
@@ -98,9 +142,7 @@ class GoogleAuthService
             OPENSSL_ALGO_SHA256
         );
 
-        $signatureEncoded = $this->base64UrlEncode($signature);
-
-        return $signatureInput . '.' . $signatureEncoded;
+        return $signatureInput . '.' . $this->base64UrlEncode($signature);
     }
 
     private function base64UrlEncode(string $data): string

@@ -43,7 +43,6 @@ class ConversationApiController extends AbstractController
             'created_at' => $conv->getCreatedAt()->format('c'),
             'updated_at' => $conv->getUpdatedAt()->format('c'),
             'status' => $conv->getStatus()->value,
-            'risk_level' => $conv->getRiskLevel()->value,
             'message_count' => $conv->getMessageCount(),
         ], $conversations);
 

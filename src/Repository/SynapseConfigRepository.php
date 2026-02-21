@@ -9,75 +9,95 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository pour l'entité SynapseConfig
+ * Repository pour les presets de configuration Synapse
  *
  * @extends ServiceEntityRepository<SynapseConfig>
  */
 class SynapseConfigRepository extends ServiceEntityRepository
 {
-    public function __construct(
-        ManagerRegistry $registry,
-        private \Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface $params
-    ) {
+    public function __construct(ManagerRegistry $registry)
+    {
         parent::__construct($registry, SynapseConfig::class);
     }
 
     /**
-     * Récupère la configuration pour un scope
-     *
-     * Si la configuration n'existe pas, en crée une avec les valeurs par défaut.
-     *
-     * @param string $scope Scope de la configuration
-     * @return SynapseConfig Configuration
+     * Retourne le preset actif pour un scope, ou en crée un par défaut si aucun n'existe.
      */
-    public function getConfig(string $scope = 'default'): SynapseConfig
+    public function findActiveForScope(string $scope = 'default'): SynapseConfig
     {
-        $config = $this->findOneBy(['scope' => $scope]);
+        $config = $this->findOneBy(['scope' => $scope, 'isActive' => true]);
 
-        if ($config === null) {
-            $config = $this->createDefaultConfig($scope);
-            $em = $this->getEntityManager();
-            $em->persist($config);
-            $em->flush();
-        } else {
-            // Backfill missing values from parameters (migration-like behavior)
-            $changed = false;
-            
-            if ($config->getVertexProjectId() === null && $this->params->has('synapse.vertex.project_id')) {
-                $config->setVertexProjectId($this->params->get('synapse.vertex.project_id'));
-                $changed = true;
-            }
-            
-            // Si la région est la valeur par défaut Doctrine, on prend celle du paramètre
-            if ($config->getVertexRegion() === 'europe-west1' && $this->params->has('synapse.vertex.region')) {
-                 // On ne touche pas modifions pas si c'est déjà une valeur valide,
-                 // mais pour le projet GCP c'est critique si NULL.
-            }
-
-            if ($changed) {
-                $this->getEntityManager()->flush();
-            }
+        if ($config !== null) {
+            return $config;
         }
+
+        // Fallback : premier preset du scope
+        $config = $this->findOneBy(['scope' => $scope], ['id' => 'ASC']);
+
+        if ($config !== null) {
+            // Auto-activate it
+            $config->setIsActive(true);
+            $this->getEntityManager()->flush();
+            return $config;
+        }
+
+        // Aucun preset — créer le défaut
+        $config = $this->createDefaultConfig($scope);
+        $em = $this->getEntityManager();
+        $em->persist($config);
+        $em->flush();
 
         return $config;
     }
 
     /**
-     * Crée une configuration avec les valeurs par défaut
+     * Active un preset et désactive tous les autres du même scope.
+     */
+    public function activatePreset(SynapseConfig $preset): void
+    {
+        $em = $this->getEntityManager();
+
+        // Désactiver tous les presets du scope
+        $em->createQuery(
+            'UPDATE ' . SynapseConfig::class . ' c SET c.isActive = false WHERE c.scope = :scope'
+        )->setParameter('scope', $preset->getScope())->execute();
+
+        // Activer le preset cible
+        $preset->setIsActive(true);
+        $em->flush();
+    }
+
+    /**
+     * Tous les presets d'un scope, triés par id.
      *
-     * @param string $scope Scope de la configuration
-     * @return SynapseConfig Configuration par défaut
+     * @return SynapseConfig[]
+     */
+    public function findForScope(string $scope): array
+    {
+        return $this->findBy(['scope' => $scope], ['id' => 'ASC']);
+    }
+
+    /**
+     * Tous les presets, triés par scope puis id.
+     *
+     * @return SynapseConfig[]
+     */
+    public function findAllPresets(): array
+    {
+        return $this->findBy([], ['scope' => 'ASC', 'id' => 'ASC']);
+    }
+
+    /**
+     * Crée un preset avec les valeurs par défaut pour un scope donné.
      */
     private function createDefaultConfig(string $scope): SynapseConfig
     {
         $config = new SynapseConfig();
         $config->setScope($scope);
-        
-        // Use parameters from synapse.yaml
-        $config->setModel($this->params->get('synapse.model'));
-        $config->setVertexProjectId($this->params->get('synapse.vertex.project_id'));
-        $config->setVertexRegion($this->params->get('synapse.vertex.region'));
-
+        $config->setName('Preset par défaut');
+        $config->setIsActive(true);
+        $config->setProviderName('gemini');
+        $config->setModel('gemini-2.5-flash');
         $config->setSafetyEnabled(false);
         $config->setSafetyDefaultThreshold('BLOCK_MEDIUM_AND_ABOVE');
         $config->setGenerationTemperature(1.0);
@@ -86,41 +106,9 @@ class SynapseConfigRepository extends ServiceEntityRepository
         $config->setThinkingEnabled(true);
         $config->setThinkingBudget(1024);
         $config->setContextCachingEnabled(false);
-        // Persistence enforced in code
         $config->setRetentionDays(30);
         $config->setContextLanguage('fr');
 
         return $config;
-    }
-
-    /**
-     * Liste toutes les configurations disponibles
-     *
-     * @return SynapseConfig[] Configurations
-     */
-    public function findAllConfigs(): array
-    {
-        return $this->findBy([], ['scope' => 'ASC']);
-    }
-
-    /**
-     * Supprime une configuration
-     *
-     * @param string $scope Scope de la configuration
-     * @return bool True si supprimée, false si non trouvée
-     */
-    public function deleteConfig(string $scope): bool
-    {
-        $config = $this->findOneBy(['scope' => $scope]);
-
-        if ($config === null) {
-            return false;
-        }
-
-        $em = $this->getEntityManager();
-        $em->remove($config);
-        $em->flush();
-
-        return true;
     }
 }

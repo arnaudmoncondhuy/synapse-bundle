@@ -8,6 +8,8 @@ use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
+use ArnaudMoncondhuy\SynapseBundle\Repository\ConversationRepository;
+use ArnaudMoncondhuy\SynapseBundle\Repository\MessageRepository;
 use ArnaudMoncondhuy\SynapseBundle\Service\Manager\ConversationManager;
 use ArnaudMoncondhuy\SynapseBundle\Service\Security\LibsodiumEncryptionService;
 use Symfony\Component\Config\FileLocator;
@@ -38,19 +40,45 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         // 1. Enregistrement du namespace Twig @Synapse
         $container->prependExtensionConfig('twig', [
             'paths' => [
-                __DIR__.'/../Resources/views' => 'Synapse',
+                __DIR__ . '/../Resources/views' => 'Synapse',
             ],
         ]);
 
         // 2. Enregistrement des assets pour AssetMapper (Stimulus controllers)
-        // Cela permet de faire un simple `import 'synapse/chat_controller'` dans l'app
         $container->prependExtensionConfig('framework', [
             'asset_mapper' => [
                 'paths' => [
-                    realpath(dirname(__DIR__, 2).'/assets') => 'synapse',
+                    realpath(dirname(__DIR__, 2) . '/assets') => 'synapse',
                 ],
             ],
         ]);
+
+        // 3. Auto-configuration du mapping Doctrine pour les entités du bundle.
+        if ($container->hasExtension('doctrine')) {
+            $alreadyMapped = false;
+            foreach ($container->getExtensionConfig('doctrine') as $doctrineConfig) {
+                if (isset($doctrineConfig['orm']['mappings']['SynapseBundle'])) {
+                    $alreadyMapped = true;
+                    break;
+                }
+            }
+
+            if (!$alreadyMapped) {
+                $container->prependExtensionConfig('doctrine', [
+                    'orm' => [
+                        'mappings' => [
+                            'SynapseBundle' => [
+                                'type'      => 'attribute',
+                                'is_bundle' => false,
+                                'dir'       => dirname(__DIR__) . '/Entity',
+                                'prefix'    => 'ArnaudMoncondhuy\\SynapseBundle\\Entity',
+                                'alias'     => 'Synapse',
+                            ],
+                        ],
+                    ],
+                ]);
+            }
+        }
     }
 
     /**
@@ -63,86 +91,48 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        // Injection des paramètres dans le conteneur
-        $container->setParameter('synapse.model', $config['model']);
-
-        // Définition du chemin par défaut si non spécifié
-        $personasPath = $config['personas_path'] ?? (dirname(__DIR__, 1).'/Resources/config/personas.json');
+        // ── Personas ──────────────────────────────────────────────────────────
+        $personasPath = $config['personas_path'] ?? (dirname(__DIR__, 1) . '/Resources/config/personas.json');
         $container->setParameter('synapse.personas_path', $personasPath);
 
-        // Thinking configuration
-        $container->setParameter('synapse.thinking.enabled', $config['thinking']['enabled'] ?? true);
-        $container->setParameter('synapse.thinking.budget', $config['thinking']['budget'] ?? 1024);
-
-        // Vertex AI configuration (always enabled)
-        $container->setParameter('synapse.vertex.project_id', $config['vertex']['project_id']);
-        $container->setParameter('synapse.vertex.region', $config['vertex']['region'] ?? 'europe-west1');
-        $container->setParameter('synapse.vertex.service_account_json', $config['vertex']['service_account_json']);
-
-        // Safety Settings configuration
-        $container->setParameter('synapse.safety_settings.enabled', $config['safety_settings']['enabled'] ?? false);
-        $container->setParameter('synapse.safety_settings.default_threshold', $config['safety_settings']['default_threshold'] ?? 'BLOCK_MEDIUM_AND_ABOVE');
-        $container->setParameter('synapse.safety_settings.thresholds', $config['safety_settings']['thresholds'] ?? [
-            'hate_speech' => 'BLOCK_MEDIUM_AND_ABOVE',
-            'dangerous_content' => 'BLOCK_MEDIUM_AND_ABOVE',
-            'harassment' => 'BLOCK_MEDIUM_AND_ABOVE',
-            'sexually_explicit' => 'BLOCK_MEDIUM_AND_ABOVE',
-        ]);
-
-        // Generation Config
-        $container->setParameter('synapse.generation_config.temperature', $config['generation_config']['temperature'] ?? 1.0);
-        $container->setParameter('synapse.generation_config.top_p', $config['generation_config']['top_p'] ?? 0.95);
-        $container->setParameter('synapse.generation_config.top_k', $config['generation_config']['top_k'] ?? 40);
-        $container->setParameter('synapse.generation_config.max_output_tokens', $config['generation_config']['max_output_tokens'] ?? null);
-        $container->setParameter('synapse.generation_config.stop_sequences', $config['generation_config']['stop_sequences'] ?? []);
-
-        // Context Caching configuration
-        $container->setParameter('synapse.context_caching.enabled', $config['context_caching']['enabled'] ?? false);
-        $container->setParameter('synapse.context_caching.cached_content_id', $config['context_caching']['cached_content_id'] ?? null);
-
-        // ========== NOUVELLES CONFIGURATIONS (Refonte) ==========
-
-        // Persistence configuration
+        // ── Persistence ───────────────────────────────────────────────────────
         $container->setParameter('synapse.persistence.enabled', $config['persistence']['enabled'] ?? false);
         $container->setParameter('synapse.persistence.handler', $config['persistence']['handler'] ?? 'session');
         $container->setParameter('synapse.persistence.conversation_class', $config['persistence']['conversation_class'] ?? null);
         $container->setParameter('synapse.persistence.message_class', $config['persistence']['message_class'] ?? null);
 
-        // Encryption configuration
+        // ── Encryption ────────────────────────────────────────────────────────
         $container->setParameter('synapse.encryption.enabled', $config['encryption']['enabled'] ?? false);
         $container->setParameter('synapse.encryption.key', $config['encryption']['key'] ?? null);
 
-        // Token tracking configuration
+        // ── Token Tracking ────────────────────────────────────────────────────
         $container->setParameter('synapse.token_tracking.enabled', $config['token_tracking']['enabled'] ?? false);
         $container->setParameter('synapse.token_tracking.pricing', $config['token_tracking']['pricing'] ?? []);
 
-        // Risk detection configuration
-        $container->setParameter('synapse.risk_detection.enabled', $config['risk_detection']['enabled'] ?? false);
-        $container->setParameter('synapse.risk_detection.auto_register_tool', $config['risk_detection']['auto_register_tool'] ?? true);
 
-        // Retention configuration
+        // ── Retention ─────────────────────────────────────────────────────────
         $container->setParameter('synapse.retention.days', $config['retention']['days'] ?? 30);
 
-        // Security configuration
+        // ── Security ──────────────────────────────────────────────────────────
         $container->setParameter('synapse.security.permission_checker', $config['security']['permission_checker'] ?? 'default');
         $container->setParameter('synapse.security.admin_role', $config['security']['admin_role'] ?? 'ROLE_ADMIN');
 
-        // Context configuration
+        // ── Context ───────────────────────────────────────────────────────────
         $container->setParameter('synapse.context.provider', $config['context']['provider'] ?? 'default');
         $container->setParameter('synapse.context.language', $config['context']['language'] ?? 'fr');
         $container->setParameter('synapse.context.base_identity', $config['context']['base_identity'] ?? null);
 
-        // Admin configuration
+        // ── Admin ─────────────────────────────────────────────────────────────
         $container->setParameter('synapse.admin.enabled', $config['admin']['enabled'] ?? false);
         $container->setParameter('synapse.admin.route_prefix', $config['admin']['route_prefix'] ?? '/synapse/admin');
         $container->setParameter('synapse.admin.default_color', $config['admin']['default_color'] ?? '#8b5cf6');
         $container->setParameter('synapse.admin.default_icon', $config['admin']['default_icon'] ?? 'robot');
 
-        // UI configuration
+        // ── UI ────────────────────────────────────────────────────────────────
         $container->setParameter('synapse.ui.sidebar_enabled', $config['ui']['sidebar_enabled'] ?? true);
         $container->setParameter('synapse.ui.layout_mode', $config['ui']['layout_mode'] ?? 'standalone');
 
-        // Register encryption service if enabled
+        // ── Encryption Service ────────────────────────────────────────────────
         if ($config['encryption']['enabled']) {
             $container
                 ->register('synapse.encryption_service', LibsodiumEncryptionService::class)
@@ -156,24 +146,40 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
             );
         }
 
-        // Register ConversationManager if persistence is enabled with concrete entity classes
+        // ── Repository aliases (doctrine persistence) ─────────────────────────
+        if ($config['persistence']['enabled'] && $config['persistence']['handler'] === 'doctrine') {
+            if (!empty($config['persistence']['conversation_repository'])) {
+                $container->setAlias(
+                    ConversationRepository::class,
+                    $config['persistence']['conversation_repository']
+                )->setPublic(true);
+            }
+            if (!empty($config['persistence']['message_repository'])) {
+                $container->setAlias(
+                    MessageRepository::class,
+                    $config['persistence']['message_repository']
+                )->setPublic(true);
+            }
+        }
+
+        // ── ConversationManager (si persistence activée avec entités concrètes) ──
         if ($config['persistence']['enabled'] && !empty($config['persistence']['conversation_class'])) {
             $container
                 ->register(ConversationManager::class)
                 ->setAutowired(true)
                 ->setPublic(false)
                 ->setArguments([
-                    '$conversationRepo' => null,
+                    '$conversationRepo'  => null,
                     '$conversationClass' => $config['persistence']['conversation_class'],
-                    '$messageClass' => $config['persistence']['message_class'] ?? null,
+                    '$messageClass'      => $config['persistence']['message_class'] ?? null,
                 ]);
         }
 
-        // Chargement des services
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
+        // ── Chargement des services ───────────────────────────────────────────
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('services.yaml');
 
-        // Auto-configuration : Ajout automatique de Tags pour les classes implémentant nos interfaces
+        // ── Auto-configuration (Tags automatiques) ────────────────────────────
         $container->registerForAutoconfiguration(AiToolInterface::class)
             ->addTag('synapse.tool');
 

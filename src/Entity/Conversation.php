@@ -6,8 +6,6 @@ namespace ArnaudMoncondhuy\SynapseBundle\Entity;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Enum\ConversationStatus;
-use ArnaudMoncondhuy\SynapseBundle\Enum\RiskLevel;
-use ArnaudMoncondhuy\SynapseBundle\Enum\RiskCategory;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -83,18 +81,6 @@ abstract class Conversation
     protected ConversationStatus $status = ConversationStatus::ACTIVE;
 
     /**
-     * Niveau de risque détecté (Système "Ange Gardien")
-     */
-    #[ORM\Column(type: Types::STRING, length: 20, enumType: RiskLevel::class)]
-    protected RiskLevel $riskLevel = RiskLevel::NONE;
-
-    /**
-     * Catégorie de risque détecté
-     */
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true, enumType: RiskCategory::class)]
-    protected ?RiskCategory $riskCategory = null;
-
-    /**
      * Résumé de la conversation (généré par IA)
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -122,7 +108,6 @@ abstract class Conversation
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
         $this->status = ConversationStatus::ACTIVE;
-        $this->riskLevel = RiskLevel::NONE;
         $this->messages = new ArrayCollection();
     }
 
@@ -168,28 +153,6 @@ abstract class Conversation
     public function setStatus(ConversationStatus $status): self
     {
         $this->status = $status;
-        return $this;
-    }
-
-    public function getRiskLevel(): RiskLevel
-    {
-        return $this->riskLevel;
-    }
-
-    public function setRiskLevel(RiskLevel $riskLevel): self
-    {
-        $this->riskLevel = $riskLevel;
-        return $this;
-    }
-
-    public function getRiskCategory(): ?RiskCategory
-    {
-        return $this->riskCategory;
-    }
-
-    public function setRiskCategory(?RiskCategory $riskCategory): self
-    {
-        $this->riskCategory = $riskCategory;
         return $this;
     }
 
@@ -258,14 +221,6 @@ abstract class Conversation
     }
 
     // Méthodes Helper
-
-    /**
-     * Vérifie si la conversation a un risque détecté
-     */
-    public function hasRisk(): bool
-    {
-        return $this->riskLevel->hasRisk();
-    }
 
     /**
      * Vérifie si la conversation est active

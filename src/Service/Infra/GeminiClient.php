@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Service\Infra;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
+use ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface;
+use ArnaudMoncondhuy\SynapseBundle\Service\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseBundle\Util\TextUtil;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -12,103 +14,46 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 /**
  * Client HTTP de bas niveau pour l'API Google Gemini via Vertex AI.
  *
- * Cette classe gère :
- * - L'authentification OAuth2 via GoogleAuthService.
- * - La communication HTTP (POST).
- * - La sérialisation des requêtes (Payload).
- * - La gestion sécurisée des erreurs.
- * - Le Streaming (Server-Sent Events / JSON Stream).
- *
- * Elle n'a PAS de logique métier "Synapse" (pas d'historique, pas de persona),
- * elle ne fait que passer les plats à Google.
+ * Credentials (project_id, region, service_account_json) chargés dynamiquement
+ * depuis SynapseProvider en DB — aucune valeur YAML requise après l'installation.
  */
-class GeminiClient
+class GeminiClient implements LlmClientInterface
 {
-    private const VERTEX_URL = 'https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/%s:generateContent';
+    private const VERTEX_URL        = 'https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/%s:generateContent';
     private const VERTEX_STREAM_URL = 'https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/%s:streamGenerateContent';
 
+    // ── Config runtime (chargée depuis DB via applyDynamicConfig) ────────────
+    private string $model                   = 'gemini-2.5-flash';
+    private string $vertexProjectId         = '';
+    private string $vertexRegion            = 'europe-west1';
+    private bool   $thinkingEnabled         = true;
+    private int    $thinkingBudget          = 1024;
+    private bool   $safetySettingsEnabled   = false;
+    private string $safetyDefaultThreshold  = 'BLOCK_MEDIUM_AND_ABOVE';
+    private array  $safetyThresholds        = [];
+    private float  $generationTemperature   = 1.0;
+    private float  $generationTopP          = 0.95;
+    private int    $generationTopK          = 40;
+    private ?int   $generationMaxOutputTokens = null;
+    private array  $generationStopSequences = [];
+    private bool   $contextCachingEnabled   = false;
+    private ?string $contextCachingId       = null;
 
     public function __construct(
         private HttpClientInterface $httpClient,
         private GoogleAuthService $googleAuthService,
-        private string $model = 'gemini-2.5-flash',
-        private string $vertexProjectId,
-        private string $vertexRegion = 'europe-west1',
-        private bool $thinkingEnabled = true,
-        private int $thinkingBudget = 1024,
-        private bool $safetySettingsEnabled = false,
-        private string $safetyDefaultThreshold = 'BLOCK_MEDIUM_AND_ABOVE',
-        private array $safetyThresholds = [],
-        private float $generationTemperature = 1.0,
-        private float $generationTopP = 0.95,
-        private int $generationTopK = 40,
-        private ?int $generationMaxOutputTokens = null,
-        private array $generationStopSequences = [],
-        private bool $contextCachingEnabled = false,
-        private ?string $contextCachingId = null,
         private ConfigProviderInterface $configProvider,
-    ) {
-        // Initial application of dynamic config
-        $this->applyDynamicConfig();
-    }
+        private ModelCapabilityRegistry $capabilityRegistry,
+    ) {}
 
-    /**
-     * Applique la configuration dynamique depuis le ConfigProvider si présent.
-     *
-     * Le provider a la priorité sur les paramètres du constructeur.
-     */
-    private function applyDynamicConfig(): void
+    public function getProviderName(): string
     {
-        // On récupère la config fraîchement chargée
-        $config = $this->configProvider->getConfig();
-
-        // Vertex AI
-        if (isset($config['vertex'])) {
-            $this->vertexProjectId = $config['vertex']['project_id'] ?? $this->vertexProjectId;
-            $this->vertexRegion = $config['vertex']['region'] ?? $this->vertexRegion;
-        }
-
-        // Thinking
-        if (isset($config['thinking'])) {
-            $this->thinkingEnabled = $config['thinking']['enabled'] ?? $this->thinkingEnabled;
-            $this->thinkingBudget = $config['thinking']['budget'] ?? $this->thinkingBudget;
-        }
-
-        // Safety Settings
-        if (isset($config['safety_settings'])) {
-            $this->safetySettingsEnabled = $config['safety_settings']['enabled'] ?? $this->safetySettingsEnabled;
-            $this->safetyDefaultThreshold = $config['safety_settings']['default_threshold'] ?? $this->safetyDefaultThreshold;
-            $this->safetyThresholds = $config['safety_settings']['thresholds'] ?? $this->safetyThresholds;
-        }
-
-        // Generation Config
-        if (isset($config['generation_config'])) {
-            $this->generationTemperature = $config['generation_config']['temperature'] ?? $this->generationTemperature;
-            $this->generationTopP = $config['generation_config']['top_p'] ?? $this->generationTopP;
-            $this->generationTopK = $config['generation_config']['top_k'] ?? $this->generationTopK;
-            $this->generationMaxOutputTokens = $config['generation_config']['max_output_tokens'] ?? $this->generationMaxOutputTokens;
-            $this->generationStopSequences = $config['generation_config']['stop_sequences'] ?? $this->generationStopSequences;
-        }
-
-        // Context Caching
-        if (isset($config['context_caching'])) {
-            $this->contextCachingEnabled = $config['context_caching']['enabled'] ?? $this->contextCachingEnabled;
-            $this->contextCachingId = $config['context_caching']['cached_content_id'] ?? $this->contextCachingId;
-        }
+        return 'gemini';
     }
 
     /**
-     * Génère du contenu via l'API Gemini sur Vertex AI (Mode Synchrone).
-     *
-     * @param string      $systemInstruction      instructions systèmes (System Prompt)
-     * @param array       $contents               Historique de la conversation au format Gemini API.
-     * @param array       $tools                  Définitions des outils (Function Declarations).
-     * @param string|null $model                  modèle spécifique pour cette requête.
-     * @param array|null  $thinkingConfigOverride Configuration thinking personnalisée.
-     *
-     * @return array La réponse brute de l'API (le premier candidat).
-     *
-     * @throws \RuntimeException Si l'appel API échoue.
+     * Génère du contenu via Vertex AI (mode synchrone).
+     * Retourne un chunk normalisé au format Synapse.
      */
     public function generateContent(
         string $systemInstruction,
@@ -117,42 +62,31 @@ class GeminiClient
         ?string $model = null,
         ?array $thinkingConfigOverride = null,
     ): array {
-        $this->applyDynamicConfig(); // Refresh config
+        $this->applyDynamicConfig();
 
         $effectiveModel = $model ?? $this->model;
         $url = $this->buildVertexUrl(self::VERTEX_URL, $effectiveModel);
-        
-        $payload = $this->buildPayload($systemInstruction, $contents, $tools, $thinkingConfigOverride);
+        $payload = $this->buildPayload($systemInstruction, $contents, $tools, $effectiveModel, $thinkingConfigOverride);
 
         try {
-            $headers = $this->buildVertexHeaders(); // Inside try-catch for auth errors
-
             $response = $this->httpClient->request('POST', $url, [
-                'json' => TextUtil::sanitizeArrayUtf8($payload),
-                'headers' => $headers,
-                'timeout' => 300, // 5 minutes timeout for long thinking operations
+                'json'    => TextUtil::sanitizeArrayUtf8($payload),
+                'headers' => $this->buildVertexHeaders(),
+                'timeout' => 300,
             ]);
 
-            return $response->toArray(); // Attente bloquante
+            return $this->normalizeChunk($response->toArray());
         } catch (\Throwable $e) {
             $this->handleException($e);
-            return []; // Unreachable with handleException throwing
+            return $this->emptyChunk();
         }
     }
 
     /**
-     * Génère du contenu via l'API Gemini sur Vertex AI (Mode Streaming).
+     * Génère du contenu via Vertex AI (mode streaming).
+     * Yield des chunks normalisés au format Synapse.
      *
-     * Retourne un générateur qui yield chaque chunk de réponse JSON décodé
-     * au fur et à mesure de leur réception.
-     *
-     * @param string      $systemInstruction      instructions systèmes
-     * @param array       $contents               Historique
-     * @param array       $tools                  Outils
-     * @param string|null $model                  Modèle
-     * @param array|null  $thinkingConfigOverride Config thinking
-     *
-     * @return \Generator<array> Yield chaque chunk JSON (tableau associatif).
+     * @return \Generator<array>
      */
     public function streamGenerateContent(
         string $systemInstruction,
@@ -161,63 +95,39 @@ class GeminiClient
         ?string $model = null,
         ?array $thinkingConfigOverride = null,
     ): \Generator {
-        $this->applyDynamicConfig(); // Refresh config
+        $this->applyDynamicConfig();
 
         $effectiveModel = $model ?? $this->model;
         $url = $this->buildVertexUrl(self::VERTEX_STREAM_URL, $effectiveModel);
-
-        $payload = $this->buildPayload($systemInstruction, $contents, $tools, $thinkingConfigOverride);
+        $payload = $this->buildPayload($systemInstruction, $contents, $tools, $effectiveModel, $thinkingConfigOverride);
 
         try {
-            $headers = $this->buildVertexHeaders(); // Inside try-catch for auth errors
-
             $response = $this->httpClient->request('POST', $url, [
-                'json' => TextUtil::sanitizeArrayUtf8($payload),
-                'headers' => $headers,
-                'timeout' => 300, // 5 minutes timeout for long thinking operations
-            ]); // Ne bloque pas, la requête est lancée
+                'json'    => TextUtil::sanitizeArrayUtf8($payload),
+                'headers' => $this->buildVertexHeaders(),
+                'timeout' => 300,
+            ]);
 
             $buffer = '';
-            $depth = 0;
-            $inString = false;
-            $escape = false;
 
-            // Lecture du flux chunk par chunk
             foreach ($this->httpClient->stream($response) as $chunk) {
-                // Check for transport errors immediately
-                if ($chunk->isLast()) {
-                    // Check if request failed at HTTP level
-                   // $chunk->getContent() will throw if status code is error and we check it.
-                   // But stream() yields chunks.
-                   // We trust Symfony HttpClient to handle status checks if we access headers/content?
-                   // Actually stream() yields ChunkInterface.
-                   // If we call getContent() on a timeout/error chunk it throws.
-                }
-                
                 try {
-                    $content = $chunk->getContent(); // Peut bloquer un tout petit peu le temps d'avoir des paquets
+                    $content = $chunk->getContent();
                 } catch (\Throwable $e) {
                     $this->handleException($e);
-                    return; // Unreachable
+                    return;
                 }
 
-                // Append content to buffer
                 $buffer .= $content;
 
-                // Parsing JSON Stream "à la main" pour extraire les objets complets du tableau
-                // Le format est : [ {obj1}, {obj2}, ... ]
-                // On cherche à extraire les objets { ... } de niveau 1.
-                
-                // Note : Faire un parser JSON complet est complexe.
-                // Simplification robuste : Vertex renvoie des objets séparés par des virgules.
-                // On va scanner le buffer pour trouver des objets complets.
-                
+                // Parsing JSON Stream : format Vertex [ {obj1}, {obj2}, ... ]
                 while (true) {
-                    // Nettoyage début : sauter [ et , et whitespace
-                    if (empty($buffer)) break;
+                    if (empty($buffer)) {
+                        break;
+                    }
 
                     $buffer = ltrim($buffer, " \t\n\r,");
-                    
+
                     if (str_starts_with($buffer, '[')) {
                         $buffer = substr($buffer, 1);
                         continue;
@@ -227,40 +137,28 @@ class GeminiClient
                         continue;
                     }
 
-                    // Si vide après nettoyage, on attend plus de données
-                    if (empty($buffer)) break;
-                    
-                    // On suppose qu'on est au début d'un objet '{'
+                    if (empty($buffer)) {
+                        break;
+                    }
+
                     if (!str_starts_with($buffer, '{')) {
-                        // Si on a du "garbage" on le vire (ne devrait pas arriver avec Vertex)
-                        // ou on attend la suite si C'est incomplet ?
-                        // Vertex ne coupe pas n'importe comment en théorie, mais le réseau oui.
-                        // Si ça ne commence pas par {, on peut avoir un problème.
-                        // Mais ça peut être la fin d'un array ']'
-                         break; // Wait for more data
+                        break;
                     }
 
-                    // Tenter de trouver la fin de l'objet via json_decode sur des substrings ? Trop lourd.
-                    // On compte les accolades.
                     $objEnd = $this->findObjectEnd($buffer);
-                    
+
                     if ($objEnd === null) {
-                        break; // Objet pas encore complet, attendre le prochain chunk HTTP
+                        break;
                     }
 
-                    // On a un objet complet de 0 à $objEnd (inclus)
-                    $jsonStr = substr($buffer, 0, $objEnd + 1);
+                    $jsonStr  = substr($buffer, 0, $objEnd + 1);
                     $jsonData = json_decode($jsonStr, true);
 
                     if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)) {
-                        yield $jsonData;
-                        
-                        // Avancer le buffer
+                        yield $this->normalizeChunk($jsonData);
                         $buffer = substr($buffer, $objEnd + 1);
                     } else {
-                        // Parse error ? On log ou on ignore ?
-                        // On suppose que c'est un glitch, on avance d'un char pour éviter boucle inf
-                         $buffer = substr($buffer, 1);
+                        $buffer = substr($buffer, 1);
                     }
                 }
             }
@@ -270,16 +168,148 @@ class GeminiClient
     }
 
     /**
-     * Trouve l'index de fermeture de l'objet JSON courant (balance des accolades).
-     * Simple et naïf mais fonctionne pour les flux Vertex standards.
-     * Gère les accolades dans les chaînes de caractères.
+     * Normalise un chunk brut Gemini vers le format Synapse canonical.
      */
+    private function normalizeChunk(array $rawChunk): array
+    {
+        $normalized = $this->emptyChunk();
+
+        if (isset($rawChunk['usageMetadata'])) {
+            $u = $rawChunk['usageMetadata'];
+            $normalized['usage'] = [
+                'promptTokenCount'     => $u['promptTokenCount'] ?? 0,
+                'candidatesTokenCount' => $u['candidatesTokenCount'] ?? 0,
+                'thoughtsTokenCount'   => $u['thoughtsTokenCount'] ?? 0,
+                'totalTokenCount'      => $u['totalTokenCount'] ?? 0,
+            ];
+        }
+
+        $candidate = $rawChunk['candidates'][0] ?? [];
+
+        if (isset($candidate['safetyRatings'])) {
+            $normalized['safety_ratings'] = $candidate['safetyRatings'];
+            foreach ($candidate['safetyRatings'] as $rating) {
+                if ($rating['blocked'] ?? false) {
+                    $normalized['blocked']          = true;
+                    $normalized['blocked_category'] = $rating['category'] ?? 'UNKNOWN';
+                    break;
+                }
+            }
+        }
+
+        $parts         = $candidate['content']['parts'] ?? [];
+        $textParts     = [];
+        $thinkingParts = [];
+
+        foreach ($parts as $part) {
+            $isThinking = isset($part['thought']) && true === $part['thought'];
+
+            if ($isThinking) {
+                if (isset($part['thinkingContent'])) {
+                    $thinkingParts[] = $part['thinkingContent'];
+                } elseif (isset($part['text'])) {
+                    $thinkingParts[] = $part['text'];
+                }
+            } elseif (isset($part['text'])) {
+                $textParts[] = $part['text'];
+            } elseif (isset($part['functionCall'])) {
+                $normalized['function_calls'][] = [
+                    'name' => $part['functionCall']['name'],
+                    'args' => $part['functionCall']['args'] ?? [],
+                ];
+            }
+        }
+
+        if (!empty($textParts)) {
+            $normalized['text'] = implode('', $textParts);
+        }
+
+        if (!empty($thinkingParts)) {
+            $normalized['thinking'] = implode('', $thinkingParts);
+        }
+
+        return $normalized;
+    }
+
+    private function emptyChunk(): array
+    {
+        return [
+            'text'             => null,
+            'thinking'         => null,
+            'function_calls'   => [],
+            'usage'            => [],
+            'safety_ratings'   => [],
+            'blocked'          => false,
+            'blocked_category' => null,
+        ];
+    }
+
+    /**
+     * Applique la configuration dynamique depuis le ConfigProvider (DB).
+     *
+     * Lecture des credentials provider depuis provider_credentials :
+     *   - project_id, region → vertexProjectId, vertexRegion
+     *   - service_account_json → injecté dans GoogleAuthService
+     */
+    private function applyDynamicConfig(): void
+    {
+        $config = $this->configProvider->getConfig();
+
+        if (!empty($config['model'])) {
+            $this->model = $config['model'];
+        }
+
+        // Provider credentials (SynapseProvider en DB)
+        if (!empty($config['provider_credentials'])) {
+            $creds = $config['provider_credentials'];
+
+            if (!empty($creds['project_id'])) {
+                $this->vertexProjectId = $creds['project_id'];
+            }
+            if (!empty($creds['region'])) {
+                $this->vertexRegion = $creds['region'];
+            }
+            if (!empty($creds['service_account_json'])) {
+                $this->googleAuthService->setCredentialsJson($creds['service_account_json']);
+            }
+        }
+
+        // Thinking
+        if (isset($config['thinking'])) {
+            $this->thinkingEnabled = $config['thinking']['enabled'] ?? $this->thinkingEnabled;
+            $this->thinkingBudget  = $config['thinking']['budget'] ?? $this->thinkingBudget;
+        }
+
+        // Safety Settings
+        if (isset($config['safety_settings'])) {
+            $this->safetySettingsEnabled  = $config['safety_settings']['enabled'] ?? $this->safetySettingsEnabled;
+            $this->safetyDefaultThreshold = $config['safety_settings']['default_threshold'] ?? $this->safetyDefaultThreshold;
+            $this->safetyThresholds       = $config['safety_settings']['thresholds'] ?? $this->safetyThresholds;
+        }
+
+        // Generation Config
+        if (isset($config['generation_config'])) {
+            $gen = $config['generation_config'];
+            $this->generationTemperature     = (float) ($gen['temperature'] ?? $this->generationTemperature);
+            $this->generationTopP            = (float) ($gen['top_p'] ?? $this->generationTopP);
+            $this->generationTopK            = (int) ($gen['top_k'] ?? $this->generationTopK);
+            $this->generationMaxOutputTokens = $gen['max_output_tokens'] ?? $this->generationMaxOutputTokens;
+            $this->generationStopSequences   = $gen['stop_sequences'] ?? $this->generationStopSequences;
+        }
+
+        // Context Caching
+        if (isset($config['context_caching'])) {
+            $this->contextCachingEnabled = $config['context_caching']['enabled'] ?? $this->contextCachingEnabled;
+            $this->contextCachingId      = $config['context_caching']['cached_content_id'] ?? $this->contextCachingId;
+        }
+    }
+
     private function findObjectEnd(string $buffer): ?int
     {
-        $len = strlen($buffer);
-        $depth = 0;
+        $len      = strlen($buffer);
+        $depth    = 0;
         $inString = false;
-        $escaped = false;
+        $escaped  = false;
 
         for ($i = 0; $i < $len; $i++) {
             $char = $buffer[$i];
@@ -305,23 +335,26 @@ class GeminiClient
                 } elseif ($char === '}') {
                     $depth--;
                     if ($depth === 0) {
-                        return $i; // Found end of object
+                        return $i;
                     }
                 }
             }
         }
 
-        return null; // Not found yet
+        return null;
     }
 
     private function buildVertexUrl(string $template, string $model): string
     {
+        $caps = $this->capabilityRegistry->getCapabilities($model);
+        $finalModelId = $caps->modelId ?? $model;
+
         return sprintf(
             $template,
             $this->vertexRegion,
             $this->vertexProjectId,
             $this->vertexRegion,
-            $model
+            $finalModelId
         );
     }
 
@@ -329,8 +362,11 @@ class GeminiClient
         string $systemInstruction,
         array $contents,
         array $tools,
+        string $effectiveModel,
         ?array $thinkingConfigOverride
     ): array {
+        $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
+
         $payload = [
             'systemInstruction' => [
                 'parts' => [
@@ -340,25 +376,25 @@ class GeminiClient
             'contents' => $contents,
         ];
 
-        // Build generation config
-        $generationConfig = $this->buildGenerationConfig($thinkingConfigOverride);
+        $generationConfig = $this->buildGenerationConfig($effectiveModel, $thinkingConfigOverride);
         if (!empty($generationConfig)) {
             $payload['generationConfig'] = $generationConfig;
         }
 
-        // Safety Settings
-        $safetySettings = $this->buildSafetySettings();
-        if (!empty($safetySettings)) {
-            $payload['safetySettings'] = $safetySettings;
+        if ($caps->safetySettings) {
+            $safetySettings = $this->buildSafetySettings();
+            if (!empty($safetySettings)) {
+                $payload['safetySettings'] = $safetySettings;
+            }
+        } else {
+            $payload['safetySettings'] = $this->buildSafetySettingsBlockNone();
         }
 
-        // Context Caching
-        if ($this->contextCachingEnabled && $this->contextCachingId) {
+        if ($caps->contextCaching && $this->contextCachingEnabled && $this->contextCachingId) {
             $payload['cachedContent'] = $this->contextCachingId;
         }
 
-        // Tools
-        if (!empty($tools)) {
+        if (!empty($tools) && $caps->functionCalling) {
             $firstTool = reset($tools);
             $isFlatFunctionList = is_array($firstTool)
                 && isset($firstTool['name'])
@@ -373,7 +409,7 @@ class GeminiClient
             }
         }
 
-        // Final normalization to ensure Map fields are objects, not lists
+        // Normalize empty Map fields
         foreach ($payload['contents'] as &$message) {
             foreach ($message['parts'] as &$part) {
                 if (isset($part['functionCall']['args']) && is_array($part['functionCall']['args']) && empty($part['functionCall']['args'])) {
@@ -390,21 +426,24 @@ class GeminiClient
 
     private function buildVertexHeaders(): array
     {
-        $accessToken = $this->googleAuthService->getAccessToken();
-
         return [
-            'Authorization' => 'Bearer ' . $accessToken,
-            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->googleAuthService->getAccessToken(),
+            'Content-Type'  => 'application/json',
         ];
     }
 
-    private function buildGenerationConfig(?array $thinkingConfigOverride = null): array
+    private function buildGenerationConfig(string $effectiveModel, ?array $thinkingConfigOverride = null): array
     {
+        $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
+
         $config = [
             'temperature' => $this->generationTemperature,
-            'topP' => $this->generationTopP,
-            'topK' => $this->generationTopK,
+            'topP'        => $this->generationTopP,
         ];
+
+        if ($caps->topK) {
+            $config['topK'] = $this->generationTopK;
+        }
 
         if ($this->generationMaxOutputTokens !== null) {
             $config['maxOutputTokens'] = $this->generationMaxOutputTokens;
@@ -414,8 +453,7 @@ class GeminiClient
             $config['stopSequences'] = $this->generationStopSequences;
         }
 
-        // Add thinking config if enabled
-        $thinkingConfig = $thinkingConfigOverride ?? $this->buildThinkingConfig();
+        $thinkingConfig = $thinkingConfigOverride ?? $this->buildThinkingConfig($effectiveModel);
         if ($thinkingConfig) {
             $config['thinkingConfig'] = $thinkingConfig;
         }
@@ -423,14 +461,16 @@ class GeminiClient
         return $config;
     }
 
-    private function buildThinkingConfig(): ?array
+    private function buildThinkingConfig(string $effectiveModel): ?array
     {
-        if (!$this->thinkingEnabled) {
+        $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
+
+        if (!$this->thinkingEnabled || !$caps->thinking) {
             return null;
         }
 
         return [
-            'thinkingBudget' => $this->thinkingBudget,
+            'thinkingBudget'  => $this->thinkingBudget,
             'includeThoughts' => true,
         ];
     }
@@ -438,35 +478,38 @@ class GeminiClient
     private function buildSafetySettings(): array
     {
         $categoryMapping = [
-            'hate_speech' => 'HARM_CATEGORY_HATE_SPEECH',
+            'hate_speech'       => 'HARM_CATEGORY_HATE_SPEECH',
             'dangerous_content' => 'HARM_CATEGORY_DANGEROUS_CONTENT',
-            'harassment' => 'HARM_CATEGORY_HARASSMENT',
+            'harassment'        => 'HARM_CATEGORY_HARASSMENT',
             'sexually_explicit' => 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
         ];
 
-        $settings = [];
-
         if (!$this->safetySettingsEnabled) {
-            // When safety is disabled, explicitly set BLOCK_NONE for all categories
-            // Otherwise Google uses restrictive defaults
-            foreach ($categoryMapping as $configKey => $apiCategory) {
-                $settings[] = [
-                    'category' => $apiCategory,
-                    'threshold' => 'BLOCK_NONE',
-                ];
-            }
-        } else {
-            // When safety is enabled, use configured thresholds
-            foreach ($categoryMapping as $configKey => $apiCategory) {
-                $threshold = $this->safetyThresholds[$configKey] ?? $this->safetyDefaultThreshold;
-                $settings[] = [
-                    'category' => $apiCategory,
-                    'threshold' => $threshold,
-                ];
-            }
+            return $this->buildSafetySettingsBlockNone();
+        }
+
+        $settings = [];
+        foreach ($categoryMapping as $configKey => $apiCategory) {
+            $threshold  = $this->safetyThresholds[$configKey] ?? $this->safetyDefaultThreshold;
+            $settings[] = [
+                'category'  => $apiCategory,
+                'threshold' => $threshold,
+            ];
         }
 
         return $settings;
+    }
+
+    private function buildSafetySettingsBlockNone(): array
+    {
+        $categories = [
+            'HARM_CATEGORY_HATE_SPEECH',
+            'HARM_CATEGORY_DANGEROUS_CONTENT',
+            'HARM_CATEGORY_HARASSMENT',
+            'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+        ];
+
+        return array_map(fn($cat) => ['category' => $cat, 'threshold' => 'BLOCK_NONE'], $categories);
     }
 
     private function handleException(\Throwable $e): void
@@ -475,7 +518,7 @@ class GeminiClient
 
         if ($e instanceof HttpExceptionInterface) {
             try {
-                $errorBody = $e->getResponse()->getContent(false); // false = don't throw
+                $errorBody = $e->getResponse()->getContent(false);
                 $message .= ' || Google Error: ' . $errorBody;
             } catch (\Throwable) {
             }

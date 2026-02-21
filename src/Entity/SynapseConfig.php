@@ -8,12 +8,12 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Configuration dynamique du bundle Synapse
+ * Preset de configuration LLM (multi-preset par scope)
  *
- * Permet de modifier la configuration en temps réel sans redémarrage.
- * Remplace les paramètres statiques YAML.
+ * Un preset associe un provider + un modèle + des paramètres de génération.
+ * Un seul preset peut être actif par scope à la fois (enforced by application).
  *
- * Support multi-scope pour différents contextes (ex: default, admin, support-client)
+ * Les credentials du provider sont stockés dans SynapseProvider.
  */
 #[ORM\Entity]
 #[ORM\Table(name: 'synapse_config')]
@@ -26,46 +26,44 @@ class SynapseConfig
     private ?int $id = null;
 
     /**
-     * Scope de la configuration (permet plusieurs configs)
-     *
-     * Exemples : 'default', 'admin', 'support-client', 'moderation'
+     * Nom lisible du preset
      */
-    #[ORM\Column(type: Types::STRING, length: 50, unique: true)]
+    #[ORM\Column(type: Types::STRING, length: 100)]
+    private string $name = 'Preset par défaut';
+
+    /**
+     * Scope de la configuration (ex: 'default', 'admin', 'support-client')
+     */
+    #[ORM\Column(type: Types::STRING, length: 50)]
     private string $scope = 'default';
 
     /**
-     * Modèle Gemini à utiliser
+     * Preset actif pour ce scope (un seul actif par scope)
+     */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $isActive = false;
+
+    /**
+     * Description optionnelle du preset
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $description = null;
+
+    /**
+     * Provider LLM actif pour ce preset ('gemini', 'ovh', etc.)
+     */
+    #[ORM\Column(type: Types::STRING, length: 50)]
+    private string $providerName = 'gemini';
+
+    /**
+     * Modèle LLM à utiliser (dépend du provider actif)
      */
     #[ORM\Column(type: Types::STRING, length: 100)]
-    private string $model = 'gemini-2.0-flash-exp';
-
-    // Vertex AI
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $vertexProjectId = null;
-
-    #[ORM\Column(type: Types::STRING, length: 50, options: ['default' => 'europe-west1'])]
-    private string $vertexRegion = 'europe-west1';
-
-    // Persistence
-    // Removed: persistenceEnabled (Always true)
-    // Removed: persistenceHandler (Always 'doctrine')
-
-
-
-
-
-    // Risk Detection
-    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    private bool $riskDetectionEnabled = false;
-
-    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
-    private bool $riskDetectionAutoRegisterTool = true;
+    private string $model = 'gemini-2.5-flash';
 
     // Retention
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 30])]
     private int $retentionDays = 30;
-
-
 
     // Context
     #[ORM\Column(type: Types::STRING, length: 5, options: ['default' => 'fr'])]
@@ -203,6 +201,17 @@ class SynapseConfig
         return $this->id;
     }
 
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+        return $this;
+    }
+
     public function getScope(): string
     {
         return $this->scope;
@@ -211,6 +220,39 @@ class SynapseConfig
     public function setScope(string $scope): self
     {
         $this->scope = $scope;
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): self
+    {
+        $this->isActive = $isActive;
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    public function getProviderName(): string
+    {
+        return $this->providerName;
+    }
+
+    public function setProviderName(string $providerName): self
+    {
+        $this->providerName = $providerName;
         return $this;
     }
 
@@ -406,57 +448,6 @@ class SynapseConfig
         return $this->updatedAt;
     }
 
-    // Nouveaux Getters et Setters
-
-    public function getVertexProjectId(): ?string
-    {
-        return $this->vertexProjectId;
-    }
-
-    public function setVertexProjectId(?string $vertexProjectId): self
-    {
-        $this->vertexProjectId = $vertexProjectId;
-        return $this;
-    }
-
-    public function getVertexRegion(): string
-    {
-        return $this->vertexRegion;
-    }
-
-    public function setVertexRegion(string $vertexRegion): self
-    {
-        $this->vertexRegion = $vertexRegion;
-        return $this;
-    }
-
-
-
-
-
-
-    public function isRiskDetectionEnabled(): bool
-    {
-        return $this->riskDetectionEnabled;
-    }
-
-    public function setRiskDetectionEnabled(bool $riskDetectionEnabled): self
-    {
-        $this->riskDetectionEnabled = $riskDetectionEnabled;
-        return $this;
-    }
-
-    public function isRiskDetectionAutoRegisterTool(): bool
-    {
-        return $this->riskDetectionAutoRegisterTool;
-    }
-
-    public function setRiskDetectionAutoRegisterTool(bool $riskDetectionAutoRegisterTool): self
-    {
-        $this->riskDetectionAutoRegisterTool = $riskDetectionAutoRegisterTool;
-        return $this;
-    }
-
     public function getRetentionDays(): int
     {
         return $this->retentionDays;
@@ -467,8 +458,6 @@ class SynapseConfig
         $this->retentionDays = $retentionDays;
         return $this;
     }
-
-
 
     public function getContextLanguage(): string
     {
@@ -481,27 +470,29 @@ class SynapseConfig
         return $this;
     }
 
-
-
     /**
-     * Convertit la configuration en tableau pour ChatService
+     * Convertit le preset en tableau pour ChatService / LLM clients
      *
-     * @return array Configuration formatée pour le ChatService
+     * Note : les credentials du provider (provider_credentials) sont ajoutés
+     * par DatabaseConfigProvider après fusion avec SynapseProvider.
+     *
+     * @return array Configuration formatée pour les services LLM
      */
     public function toArray(): array
     {
         $config = [
-            'model' => $this->model,
+            'provider'  => $this->providerName,
+            'model'     => $this->model,
         ];
 
-        // Safety Settings - Always include to ensure GeminiClient knows the state
+        // Safety Settings
         $config['safety_settings'] = [
-            'enabled' => $this->safetyEnabled,
+            'enabled'           => $this->safetyEnabled,
             'default_threshold' => $this->safetyDefaultThreshold,
-            'thresholds' => array_filter([
-                'hate_speech' => $this->safetyHateSpeech,
+            'thresholds'        => array_filter([
+                'hate_speech'       => $this->safetyHateSpeech,
                 'dangerous_content' => $this->safetyDangerousContent,
-                'harassment' => $this->safetyHarassment,
+                'harassment'        => $this->safetyHarassment,
                 'sexually_explicit' => $this->safetySexuallyExplicit,
             ]),
         ];
@@ -509,8 +500,8 @@ class SynapseConfig
         // Generation Config
         $config['generation_config'] = [
             'temperature' => $this->generationTemperature,
-            'top_p' => $this->generationTopP,
-            'top_k' => $this->generationTopK,
+            'top_p'       => $this->generationTopP,
+            'top_k'       => $this->generationTopK,
         ];
 
         if ($this->generationMaxOutputTokens !== null) {
@@ -524,55 +515,20 @@ class SynapseConfig
         // Thinking Config
         $config['thinking'] = [
             'enabled' => $this->thinkingEnabled,
-            'budget' => $this->thinkingBudget,
+            'budget'  => $this->thinkingBudget,
         ];
 
         // Context Caching
         if ($this->contextCachingEnabled && $this->contextCachingId !== null) {
             $config['context_caching'] = [
-                'enabled' => true,
+                'enabled'           => true,
                 'cached_content_id' => $this->contextCachingId,
             ];
         }
 
-        // Vertex
-        if ($this->vertexProjectId) {
-            $config['vertex'] = [
-                'project_id' => $this->vertexProjectId,
-                'region' => $this->vertexRegion,
-            ];
-        }
-
-        // Persistence
-        $config['persistence'] = [
-            'enabled' => true, // Enforced
-            'handler' => 'doctrine', // Enforced
-        ];
-
-
-
-
-
-        // Risk Detection
-        $config['risk_detection'] = [
-            'enabled' => $this->riskDetectionEnabled,
-            'auto_register_tool' => $this->riskDetectionAutoRegisterTool,
-        ];
-
         // Retention
         $config['retention'] = [
             'days' => $this->retentionDays,
-        ];
-
-        // UI
-        $config['ui'] = [
-            'sidebar_enabled' => true, // Enforced
-        ];
-
-        // Admin
-        $config['admin'] = [
-            'default_color' => '#8b5cf6', // Fallback
-            'default_icon' => 'robot', // Fallback
         ];
 
         // Context
@@ -580,12 +536,11 @@ class SynapseConfig
             'language' => $this->contextLanguage,
         ];
 
-        // System Prompt (template avec variables à interpoler par l'application)
+        // System Prompt
         if ($this->systemPrompt !== null) {
             $config['system_prompt'] = $this->systemPrompt;
         }
 
         return $config;
-
     }
 }

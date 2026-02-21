@@ -40,7 +40,6 @@ class ConversationController extends AbstractController
                 'conversation_id' => $id,
                 'admin_user' => $this->getUser()?->getUserIdentifier(),
                 'owner' => $conversation->getOwner()->getIdentifier(),
-                'risk_level' => $conversation->getRiskLevel()->value,
             ]);
         }
 

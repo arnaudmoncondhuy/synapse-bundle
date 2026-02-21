@@ -1,0 +1,315 @@
+{% extends '@Synapse/admin/layout.html.twig' %}
+
+{% block admin_title %}Catalogue des modèles — Synapse Admin{% endblock %}
+
+{% block admin_content %}
+<div class="synapse-admin__page" id="models-page">
+    <div class="synapse-admin__page-header">
+        <h1 class="synapse-admin__page-title">
+            <i data-lucide="cpu"></i>
+            Catalogue des modèles
+        </h1>
+        <p class="synapse-admin__page-subtitle">
+            Gérez vos modèles LLM, configurez leur pricing et filtrez par capacités.
+        </p>
+    </div>
+
+    <!-- Filtres par capacités -->
+    <div class="synapse-admin__section" style="margin-bottom: 1.5rem">
+        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap">
+            <span style="font-size: 0.9rem; font-weight: 600; color: var(--synapse-admin-text-muted)">FILTRER PAR :</span>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap">
+                <button type="button" class="filter-btn synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline" data-capability="thinking">
+                    Thinking
+                </button>
+                <button type="button" class="filter-btn synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline" data-capability="tool_calls">
+                    Tool calls
+                </button>
+                <button type="button" class="filter-btn synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline" data-capability="safety">
+                    Safety
+                </button>
+                <button type="button" class="filter-btn synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline" data-capability="streaming">
+                    Streaming
+                </button>
+                <button type="button" id="reset-filters" class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--ghost" style="color: var(--synapse-admin-danger)">
+                    Réinitialiser
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau des modèles -->
+    <div class="synapse-admin__card" style="padding: 0; overflow: hidden">
+        <div class="synapse-admin__table-container">
+            <table class="synapse-admin__table" id="models-table">
+                <thead>
+                    <tr>
+                        <th style="cursor: pointer" onclick="sortTable(0)">Modèle <i data-lucide="chevrons-up-down" style="width: 14px"></i></th>
+                        <th style="cursor: pointer" onclick="sortTable(1)">Provider <i data-lucide="chevrons-up-down" style="width: 14px"></i></th>
+                        <th>Capacités</th>
+                        <th style="cursor: pointer" onclick="sortTable(3)">Input <i data-lucide="chevrons-up-down" style="width: 14px"></i></th>
+                        <th style="cursor: pointer" onclick="sortTable(4)">Output <i data-lucide="chevrons-up-down" style="width: 14px"></i></th>
+                        <th style="cursor: pointer" onclick="sortTable(5)">Statut <i data-lucide="chevrons-up-down" style="width: 14px"></i></th>
+                        <th style="text-align: right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for model in models %}
+                        <tr class="model-row" 
+                            data-thinking="{{ model.capabilities.thinking ? '1' : '0' }}"
+                            data-tool_calls="{{ model.capabilities.functionCalling ? '1' : '0' }}"
+                            data-safety="{{ model.capabilities.safetySettings ? '1' : '0' }}"
+                            data-streaming="{{ model.capabilities.streaming ? '1' : '0' }}">
+                            
+                            <td style="padding: 1rem 1.5rem">
+                                <div style="font-weight: 600">{{ model.db_entity ? model.db_entity.label : model.id }}</div>
+                                <code style="font-size: 0.75rem; color: var(--synapse-admin-text-muted)">{{ model.id }}</code>
+                            </td>
+                            
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem">
+                                    {% if model.provider == 'gemini' %}
+                                        <i data-lucide="zap" style="width: 14px; color: #4285f4"></i>
+                                    {% elseif model.provider == 'ovh' %}
+                                        <i data-lucide="cloud" style="width: 14px; color: #0050d8"></i>
+                                    {% endif %}
+                                    {{ model.provider|capitalize }}
+                                </div>
+                            </td>
+                            
+                            <td>
+                                <div style="display: flex; gap: 0.5rem">
+                                    {% if model.capabilities.thinking %}<i data-lucide="brain" title="Thinking" style="width: 16px; color: var(--synapse-admin-success)"></i>{% endif %}
+                                    {% if model.capabilities.functionCalling %}<i data-lucide="wrench" title="Tool calls" style="width: 16px; color: var(--synapse-admin-success)"></i>{% endif %}
+                                    {% if model.capabilities.safetySettings %}<i data-lucide="shield" title="Safety" style="width: 16px; color: var(--synapse-admin-success)"></i>{% endif %}
+                                    {% if model.capabilities.streaming %}<i data-lucide="activity" title="Streaming" style="width: 16px; color: var(--synapse-admin-success)"></i>{% endif %}
+                                </div>
+                            </td>
+                            
+                            <td>
+                                {% if model.pricing_input %}
+                                    <span style="font-family: monospace">{{ model.pricing_input|number_format(4) }}{{ model.currency }}</span>
+                                {% else %}
+                                    <span style="color: var(--synapse-admin-text-light)">—</span>
+                                {% endif %}
+                            </td>
+                            
+                            <td>
+                                {% if model.pricing_output %}
+                                    <span style="font-family: monospace">{{ model.pricing_output|number_format(4) }}{{ model.currency }}</span>
+                                {% else %}
+                                    <span style="color: var(--synapse-admin-text-light)">—</span>
+                                {% endif %}
+                            </td>
+                            
+                            <td>
+                                <span class="synapse-admin__badge {% if model.is_enabled %}synapse-admin__badge--success{% else %}synapse-admin__badge--muted{% endif %}">
+                                    {{ model.is_enabled ? 'Activé' : 'Désactivé' }}
+                                </span>
+                            </td>
+                            
+                            <td style="text-align: right; padding-right: 1.5rem">
+                                <div style="display: flex; justify-content: flex-end; gap: 0.25rem">
+                                    <form method="post" action="{{ path('synapse_admin_models_toggle', {modelId: model.id}) }}">
+                                        <button type="submit" class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--ghost" title="{{ model.is_enabled ? 'Désactiver' : 'Activer' }}">
+                                            <i data-lucide="{{ model.is_enabled ? 'eye-off' : 'eye' }}"></i>
+                                        </button>
+                                    </form>
+                                    <button type="button" class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--ghost" 
+                                            onclick="toggleEditForm('{{ model.id|replace({'-': '_', '.': '_'}) }}')" title="Éditer">
+                                        <i data-lucide="edit"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        
+                        <!-- Formulaire d'édition (ligne masquée) -->
+                        <tr id="edit-{{ model.id|replace({'-': '_', '.': '_'}) }}" class="edit-row" style="display: none; background: rgba(0,0,0,0.02)">
+                            <td colspan="7" style="padding: 1.5rem">
+                                <form method="post" action="{{ path('synapse_admin_models_pricing', {modelId: model.id}) }}" 
+                                      style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 1.5rem; align-items: flex-end">
+                                    <div>
+                                        <label class="synapse-admin__label">Libellé</label>
+                                        <input type="text" name="label" value="{{ model.db_entity ? model.db_entity.label : model.id }}" class="synapse-admin__input" style="width: 100%">
+                                    </div>
+                                    <div>
+                                        <label class="synapse-admin__label">Input ({{ model.currency }}/1M)</label>
+                                        <input type="number" name="pricing_input" step="0.0001" value="{{ model.pricing_input|default('') }}" class="synapse-admin__input" style="width: 100%">
+                                    </div>
+                                    <div>
+                                        <label class="synapse-admin__label">Output ({{ model.currency }}/1M)</label>
+                                        <input type="number" name="pricing_output" step="0.0001" value="{{ model.pricing_output|default('') }}" class="synapse-admin__input" style="width: 100%">
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem">
+                                        <button type="submit" class="synapse-admin__btn synapse-admin__btn--primary" style="flex: 1">Enregistrer</button>
+                                        <button type="button" class="synapse-admin__btn synapse-admin__btn--outline" onclick="toggleEditForm('{{ model.id|replace({'-': '_', '.': '_'}) }}')">
+                                            Annuler
+                                        </button>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" style="padding: 3rem; text-align: center; color: var(--synapse-admin-text-muted)">
+                                Aucun modèle disponible pour les providers configurés.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.synapse-admin__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+.synapse-admin__table th {
+    text-align: left;
+    padding: 1rem 1.5rem;
+    background: rgba(0,0,0,0.02);
+    border-bottom: 2px solid var(--synapse-admin-border);
+    color: var(--synapse-admin-text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.8rem;
+}
+.synapse-admin__table td {
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid var(--synapse-admin-border);
+    vertical-align: middle;
+}
+.synapse-admin__table tr:last-child td {
+    border-bottom: none;
+}
+.model-row:hover {
+    background: rgba(0,0,0,0.01);
+}
+.filter-btn--active {
+    background: var(--synapse-admin-primary) !important;
+    color: white !important;
+    border-color: var(--synapse-admin-primary) !important;
+}
+</style>
+
+<script>
+function toggleEditForm(id) {
+    const form = document.getElementById('edit-' + id);
+    if (form) {
+        form.style.display = form.style.display === 'none' ? 'table-row' : 'none';
+    }
+}
+
+// ---- FILTRAGE ----
+const filterButtons = document.querySelectorAll('.filter-btn');
+const activeFilters = new Set();
+
+filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const cap = btn.dataset.capability;
+        if (activeFilters.has(cap)) {
+            activeFilters.delete(cap);
+            btn.classList.remove('filter-btn--active');
+        } else {
+            activeFilters.add(cap);
+            btn.classList.add('filter-btn--active');
+        }
+        applyFilters();
+    });
+});
+
+document.getElementById('reset-filters').addEventListener('click', () => {
+    activeFilters.clear();
+    filterButtons.forEach(btn => btn.classList.remove('filter-btn--active'));
+    applyFilters();
+});
+
+function applyFilters() {
+    const rows = document.querySelectorAll('.model-row');
+    rows.forEach(row => {
+        let visible = true;
+        activeFilters.forEach(cap => {
+            if (row.dataset[cap] !== '1') {
+                visible = false;
+            }
+        });
+        row.style.display = visible ? 'table-row' : 'none';
+        
+        // Cacher aussi la ligne d'édition si elle était ouverte
+        const idSuffix = row.id ? row.id : ''; // Just in case, but we use onclick logic
+        // Safer way to get the ID from the onclick attribute in the last cell
+        const btn = row.cells[row.cells.length-1].querySelector('button[onclick]');
+        if (btn) {
+            const match = btn.getAttribute('onclick').match(/'([^']+)'/);
+            if (match) {
+                const id = match[1];
+                const editRow = document.getElementById('edit-' + id);
+                if (editRow && !visible) {
+                    editRow.style.display = 'none';
+                }
+            }
+        }
+    });
+}
+
+// ---- TRI ----
+let lastSortColumn = -1;
+let sortAsc = true;
+
+function sortTable(columnIndex) {
+    const table = document.getElementById("models-table");
+    const tbody = table.querySelector("tbody");
+    const rows = Array.from(tbody.querySelectorAll(".model-row"));
+    
+    // Toggle direction if same column
+    if (lastSortColumn === columnIndex) {
+        sortAsc = !sortAsc;
+    } else {
+        sortAsc = true;
+        lastSortColumn = columnIndex;
+    }
+
+    rows.sort((a, b) => {
+        let valA = a.cells[columnIndex].innerText.toLowerCase().trim();
+        let valB = b.cells[columnIndex].innerText.toLowerCase().trim();
+
+        // Numeric sort for pricing
+        if (columnIndex === 3 || columnIndex === 4) {
+            valA = parseFloat(valA.replace('$', '').replace('€', '')) || 0;
+            valB = parseFloat(valB.replace('$', '').replace('€', '')) || 0;
+            return sortAsc ? valA - valB : valB - valA;
+        }
+
+        if (sortAsc) {
+            return valA.localeCompare(valB);
+        } else {
+            return valB.localeCompare(valA);
+        }
+    });
+
+    // Re-append in order
+    rows.forEach(row => {
+        tbody.appendChild(row);
+        // On doit aussi déplacer la ligne d'édition correspondante juste après
+        const btn = row.cells[row.cells.length-1].querySelector('button[onclick]');
+        if (btn) {
+            const match = btn.getAttribute('onclick').match(/'([^']+)'/);
+            if (match) {
+                const id = match[1];
+                const editRow = document.getElementById('edit-' + id);
+                if (editRow) {
+                    tbody.appendChild(editRow);
+                }
+            }
+        }
+    });
+}
+
+if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+</script>
+{% endblock %}

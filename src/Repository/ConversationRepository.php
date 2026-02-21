@@ -7,7 +7,6 @@ namespace ArnaudMoncondhuy\SynapseBundle\Repository;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Entity\Conversation;
 use ArnaudMoncondhuy\SynapseBundle\Enum\ConversationStatus;
-use ArnaudMoncondhuy\SynapseBundle\Enum\RiskLevel;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -105,39 +104,6 @@ abstract class ConversationRepository extends ServiceEntityRepository
             ->setParameter('since', $since)
             ->getQuery()
             ->getSingleScalarResult();
-    }
-
-    /**
-     * Compte les conversations avec risques en attente
-     *
-     * @return int Nombre de conversations à risque
-     */
-    public function countPendingRisks(): int
-    {
-        return (int) $this->createQueryBuilder('c')
-            ->select('COUNT(c.id)')
-            ->where('c.riskLevel IN (:levels)')
-            ->setParameter('levels', RiskLevel::pendingRisks())
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
-
-    /**
-     * Trouve les conversations avec risques en attente
-     *
-     * @param int $limit Nombre maximum de résultats
-     * @return Conversation[] Conversations à risque
-     */
-    public function findPendingRisks(int $limit = 100): array
-    {
-        return $this->createQueryBuilder('c')
-            ->where('c.riskLevel IN (:levels)')
-            ->setParameter('levels', RiskLevel::pendingRisks())
-            ->orderBy('c.riskLevel', 'DESC')  // CRITICAL en premier
-            ->addOrderBy('c.updatedAt', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
     }
 
     /**
