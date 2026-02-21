@@ -121,7 +121,7 @@
 							<div style="font-weight: 600; margin-bottom: 0.25rem;">{{ active_preset.name }}</div>
 							{% if active_preset.model %}
 								<div style="font-size: 0.875rem; color: var(--synapse-admin-text-secondary, #666);">
-									{{ active_preset.model.label ?? active_preset.model.name }}
+									<code>{{ active_preset.model }}</code>
 								</div>
 							{% endif %}
 						</div>
