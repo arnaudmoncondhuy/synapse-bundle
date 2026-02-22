@@ -141,7 +141,6 @@ class GeminiClient implements LlmClientInterface
             'system_prompt_sent' => !empty($systemInstruction),
         ];
         $debugOut['raw_request_body'] = $payload;
-        error_log('DEBUG GeminiClient::streamGenerateContent - debugOut rempli');
 
         $rawApiChunks = [];
 

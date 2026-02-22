@@ -38,21 +38,44 @@ class DebugController extends AbstractController
     #[Route('/_debug/{id}', name: 'synapse_debug_show', methods: ['GET'])]
     public function show(string $id): Response
     {
-        // 1. Try to fetch from DB first (primary storage)
-        $debugLog = $this->debugLogRepo->findByDebugId($id);
-        if ($debugLog !== null) {
-            $data = $debugLog->getData();
-        } else {
-            // 2. Fallback to cache (for backward compatibility with old logs)
+        // 1. Try to fetch from cache first (has fresh, complete data)
+        $data = null;
+        try {
             $data = $this->cache->get("synapse_debug_{$id}", function (ItemInterface $item) {
-                // If not found, it means it expired or doesn't exist
+                // Cache miss - return placeholder to indicate cache was empty
+                $item->expiresAfter(86400);
                 return null;
             });
+        } catch (\Exception $e) {
+            // Cache error, will fallback to DB
+        }
+
+        // 2. Fallback to DB if cache missed
+        if (null === $data) {
+            $debugLog = $this->debugLogRepo->findByDebugId($id);
+            if ($debugLog !== null) {
+                $data = $debugLog->getData();
+                // Re-populate cache for next time
+                if ($data !== null) {
+                    try {
+                        $this->cache->get("synapse_debug_{$id}", function (ItemInterface $item) use ($data) {
+                            $item->expiresAfter(86400);
+                            return $data;
+                        });
+                    } catch (\Exception $e) {
+                        // Cache write error, but data is still available
+                    }
+                }
+            }
         }
 
         if (null === $data) {
             return new Response('Debug data expired or not found.', 404);
         }
+
+        // Debug: log what we're about to render
+        error_log("DebugController: Rendering with data keys: " . implode(', ', is_array($data) ? array_keys($data) : array_keys((array)$data)));
+        error_log("DebugController: Turns count: " . (count($data['turns'] ?? $data->turns ?? []) ?? 0));
 
         return $this->render('@Synapse/debug/show.html.twig', [
             'id' => $id,

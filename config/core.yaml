@@ -1,0 +1,165 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # ── Infra : Google Vertex AI ──────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Service\Infra\GoogleAuthService:
+        # $serviceAccountJsonPath defaults to null — credentials injected at runtime from DB
+        # Keep this declaration for potential fallback to YAML file path in future use
+
+    ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient:
+        arguments:
+            $httpClient: '@http_client'
+            $googleAuthService: '@ArnaudMoncondhuy\SynapseBundle\Service\Infra\GoogleAuthService'
+            $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
+            $capabilityRegistry: '@ArnaudMoncondhuy\SynapseBundle\Service\ModelCapabilityRegistry'
+        tags:
+            - { name: synapse.llm_client }
+
+    # ── Infra : OVH AI Endpoints ──────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Service\Infra\OvhAiClient:
+        arguments:
+            $httpClient: '@http_client'
+            $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
+            $capabilityRegistry: '@ArnaudMoncondhuy\SynapseBundle\Service\ModelCapabilityRegistry'
+        tags:
+            - { name: synapse.llm_client }
+
+    # ── Registre des clients LLM ──────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Service\LlmClientRegistry:
+        arguments:
+            $clients: !tagged_iterator synapse.llm_client
+            $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
+            $defaultProvider: 'gemini'
+
+    # ── Registre des capacités par modèle ────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Service\ModelCapabilityRegistry: ~
+
+    # ── Smart Preset Factory ───────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Service\SmartPresetFactory: ~
+
+    # ── Default implementations (can be overridden by user) ──────────────────
+    ArnaudMoncondhuy\SynapseBundle\Service\DatabaseConfigProvider:
+        arguments:
+            $presetRepo: '@ArnaudMoncondhuy\SynapseBundle\Repository\SynapsePresetRepository'
+            $globalConfigRepo: '@ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository'
+            $providerRepo: '@ArnaudMoncondhuy\SynapseBundle\Repository\SynapseProviderRepository'
+
+    ArnaudMoncondhuy\SynapseBundle\Service\Impl\SessionConversationHandler: ~
+
+    ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultContextProvider: ~
+
+    ArnaudMoncondhuy\SynapseBundle\Service\Context\UserAwareContextProvider:
+        arguments:
+            $language: '%synapse.context.language%'
+
+    ArnaudMoncondhuy\SynapseBundle\Service\Security\DefaultPermissionChecker:
+        arguments:
+            $adminRole: '%synapse.security.admin_role%'
+
+    ArnaudMoncondhuy\SynapseBundle\Service\Formatter\MessageFormatter:
+        arguments:
+            $encryptionService: '@?ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface'
+
+    # ── Interface aliases (use default implementations) ───────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\DatabaseConfigProvider
+
+    ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\Core\DatabaseConversationHandler
+
+    ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\Impl\DefaultContextProvider
+
+    ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\Security\DefaultPermissionChecker
+
+    ArnaudMoncondhuy\SynapseBundle\Contract\MessageFormatterInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\Formatter\MessageFormatter
+
+    # ── Logic ─────────────────────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry:
+        arguments:
+            $configPath: '%synapse.personas_path%'
+
+    ArnaudMoncondhuy\SynapseBundle\Service\PromptBuilder:
+        arguments:
+            $personaRegistry: '@ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry'
+            $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
+
+    # ── Main service ──────────────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Service\ChatService:
+        arguments:
+            $llmRegistry: '@ArnaudMoncondhuy\SynapseBundle\Service\LlmClientRegistry'
+            $promptBuilder: '@ArnaudMoncondhuy\SynapseBundle\Service\PromptBuilder'
+            $tools: !tagged_iterator synapse.tool
+            $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
+            $em: '@doctrine.orm.entity_manager'
+            $dispatcher: '@event_dispatcher'
+
+    # ── Agents ────────────────────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Agent\PresetValidator\PresetValidatorAgent:
+        autowire: true
+        autoconfigure: true
+
+    # ── Repositories (required by core services) ──────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Repository\TokenUsageRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
+
+    ArnaudMoncondhuy\SynapseBundle\Repository\SynapsePresetRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
+
+    ArnaudMoncondhuy\SynapseBundle\Repository\SynapseConfigRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
+
+    ArnaudMoncondhuy\SynapseBundle\Repository\SynapseProviderRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
+
+    ArnaudMoncondhuy\SynapseBundle\Repository\SynapseModelRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
+
+    ArnaudMoncondhuy\SynapseBundle\Repository\DebugLogRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
+
+    # ── Debug Logging ─────────────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Service\Logger\MonologDebugLogger:
+        arguments:
+            $logger: '@logger'
+        tags:
+            - { name: 'monolog.logger', channel: 'synapse_debug' }
+        public: false
+
+    # Default alias (uses Monolog for lightweight payloads)
+    ArnaudMoncondhuy\SynapseBundle\Contract\SynapseDebugLoggerInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Service\Logger\MonologDebugLogger
+
+    # ── Event Subscribers ──────────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\EventSubscriber\ContextBuilderSubscriber:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ArnaudMoncondhuy\SynapseBundle\EventSubscriber\ToolExecutionSubscriber:
+        arguments:
+            $tools: !tagged_iterator synapse.tool
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    ArnaudMoncondhuy\SynapseBundle\EventSubscriber\DebugLogSubscriber:
+        autowire: true
+        autoconfigure: true
+        public: false

@@ -177,7 +177,14 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
 
         // ── Chargement des services ───────────────────────────────────────────
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
-        $loader->load('services.yaml');
+
+        // Load core services (always loaded)
+        $loader->load('core.yaml');
+
+        // Load admin services (conditionally, if admin is enabled)
+        if ($config['admin']['enabled'] ?? false) {
+            $loader->load('admin.yaml');
+        }
 
         // ── Auto-configuration (Tags automatiques) ────────────────────────────
         $container->registerForAutoconfiguration(AiToolInterface::class)
