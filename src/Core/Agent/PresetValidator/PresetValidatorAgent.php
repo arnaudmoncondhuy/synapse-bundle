@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ArnaudMoncondhuy\SynapseBundle\Agent\PresetValidator;
+namespace ArnaudMoncondhuy\SynapseBundle\Core\Agent\PresetValidator;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\AgentInterface;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapsePreset;
