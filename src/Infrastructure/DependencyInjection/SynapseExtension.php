@@ -38,9 +38,16 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
     public function prepend(ContainerBuilder $container): void
     {
         // 1. Enregistrement du namespace Twig @Synapse
+        // Support both: dev (src/Infrastructure/) and vendor (installed bundle)
+        $viewsPath = dirname(__DIR__, 2) . '/Infrastructure/Resources/views';
+        if (!is_dir($viewsPath)) {
+            // Fallback for vendor install
+            $viewsPath = dirname(__DIR__) . '/Resources/views';
+        }
+
         $container->prependExtensionConfig('twig', [
             'paths' => [
-                __DIR__ . '/../Resources/views' => 'Synapse',
+                $viewsPath => 'Synapse',
             ],
         ]);
 
@@ -92,7 +99,11 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $config = $this->processConfiguration($configuration, $configs);
 
         // ── Personas ──────────────────────────────────────────────────────────
-        $personasPath = $config['personas_path'] ?? (dirname(__DIR__, 1) . '/Resources/config/personas.json');
+        $personasPath = $config['personas_path'] ?? (dirname(__DIR__) . '/Infrastructure/Resources/config/personas.json');
+        // Fallback for vendor install
+        if (!is_file($personasPath)) {
+            $personasPath = dirname(__DIR__) . '/Resources/config/personas.json';
+        }
         $container->setParameter('synapse.personas_path', $personasPath);
 
         // ── Persistence ───────────────────────────────────────────────────────
