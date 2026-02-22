@@ -15,17 +15,17 @@
 
 {# Controller wrapper pour inclure le bouton toggle dans le scope Stimulus #}
 <div
-    data-controller="sidebar"
-    data-sidebar-api-url-value="{{ apiUrl }}"
-    data-sidebar-current-conversation-id-value="{{ currentConversationId }}"
+    data-controller="synapse-sidebar"
+    data-synapse-sidebar-api-url-value="{{ apiUrl }}"
+    data-synapse-sidebar-current-conversation-id-value="{{ currentConversationId }}"
 >
     {# Sidebar drawer #}
     <div
         class="synapse-sidebar synapse-sidebar-{{ position }}"
-        data-sidebar-target="drawer"
+        data-synapse-sidebar-target="drawer"
     >
         {# Overlay (mobile) #}
-        <div class="drawer-overlay" data-action="click->sidebar#close"></div>
+        <div class="drawer-overlay" data-action="click->synapse-sidebar#close"></div>
 
         {# Drawer content #}
         <div class="drawer-content">
@@ -39,7 +39,7 @@
                 </h3>
                 <button
                     class="sidebar-close"
-                    data-action="click->sidebar#close"
+                    data-action="click->synapse-sidebar#close"
                     title="Fermer"
                 >
                     ×
@@ -47,14 +47,14 @@
             </div>
 
             {# Empty state #}
-            <div class="sidebar-empty hidden" data-sidebar-target="empty">
+            <div class="sidebar-empty hidden" data-synapse-sidebar-target="empty">
                 <div class="empty-icon">💬</div>
                 <p class="empty-text">Aucune conversation</p>
                 <p class="empty-hint">Démarrez une nouvelle conversation pour commencer</p>
             </div>
 
             {# Conversations list #}
-            <div class="sidebar-list" data-sidebar-target="list">
+            <div class="sidebar-list" data-synapse-sidebar-target="list">
                 {# Rempli dynamiquement par le controller #}
             </div>
 
@@ -62,7 +62,7 @@
             <div class="sidebar-footer">
                 <button
                     class="btn-new-conversation"
-                    data-action="click->sidebar#newConversation"
+                    data-action="click->synapse-sidebar#newConversation"
                     title="Nouvelle conversation"
                 >
                     <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -78,8 +78,8 @@
     {# Toggle button - maintenant dans le scope du controller #}
     <button
         class="sidebar-toggle sidebar-toggle-{{ position }}"
-        data-action="click->sidebar#toggle"
-        data-sidebar-target="toggle"
+        data-action="click->synapse-sidebar#toggle"
+        data-synapse-sidebar-target="toggle"
         title="Historique des conversations"
     >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">

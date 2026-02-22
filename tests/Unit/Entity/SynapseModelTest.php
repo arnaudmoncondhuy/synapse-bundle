@@ -74,7 +74,7 @@ class SynapseModelTest extends TestCase
     }
 
     /**
-     * Test setEnabled et isEnabled.
+     * Test setIsEnabled et isEnabled.
      */
     public function testSetAndIsEnabled(): void
     {
@@ -82,7 +82,7 @@ class SynapseModelTest extends TestCase
         $model = new SynapseModel();
 
         // Act
-        $model->setEnabled(false);
+        $model->setIsEnabled(false);
 
         // Assert
         $this->assertFalse($model->isEnabled());
@@ -95,16 +95,16 @@ class SynapseModelTest extends TestCase
     {
         // Arrange
         $model = new SynapseModel();
-        $model->setEnabled(false);
+        $model->setIsEnabled(false);
 
         // Act
-        $model->enable();
+        $model->setIsEnabled(true);
 
         // Assert
         $this->assertTrue($model->isEnabled());
 
         // Act
-        $model->disable();
+        $model->setIsEnabled(false);
 
         // Assert
         $this->assertFalse($model->isEnabled());
@@ -185,7 +185,7 @@ class SynapseModelTest extends TestCase
             ->setPricingInput(0.075)
             ->setPricingOutput(0.3)
             ->setSortOrder(1)
-            ->setEnabled(true);
+            ->setIsEnabled(true);
 
         // Assert
         $this->assertEquals('gemini', $model->getProviderName());
@@ -236,10 +236,10 @@ class SynapseModelTest extends TestCase
     {
         // Arrange
         $model = new SynapseModel();
-        $model->disable();
+        $model->setIsEnabled(false);
 
         // Act
-        $model->enable();
+        $model->setIsEnabled(true);
 
         // Assert
         $this->assertTrue($model->isEnabled());
@@ -258,7 +258,7 @@ class SynapseModelTest extends TestCase
             ->setPricingInput(1.25)
             ->setPricingOutput(10.00)
             ->setSortOrder(0)
-            ->setEnabled(true);
+            ->setIsEnabled(true);
 
         // Assert
         $this->assertEquals('gemini', $model->getProviderName());
@@ -281,7 +281,7 @@ class SynapseModelTest extends TestCase
             ->setPricingInput(0.05)
             ->setPricingOutput(0.15)
             ->setSortOrder(10)
-            ->setEnabled(true);
+            ->setIsEnabled(true);
 
         // Assert
         $this->assertEquals('ovh', $model->getProviderName());
@@ -333,16 +333,16 @@ class SynapseModelTest extends TestCase
         $model = new SynapseModel();
 
         // Act & Assert
-        $model->enable();
+        $model->setIsEnabled(true);
         $this->assertTrue($model->isEnabled());
 
-        $model->disable();
+        $model->setIsEnabled(false);
         $this->assertFalse($model->isEnabled());
 
-        $model->enable();
+        $model->setIsEnabled(true);
         $this->assertTrue($model->isEnabled());
 
-        $model->setEnabled(false);
+        $model->setIsEnabled(false);
         $this->assertFalse($model->isEnabled());
     }
 }

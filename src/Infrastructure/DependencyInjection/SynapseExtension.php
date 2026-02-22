@@ -214,8 +214,10 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
             ->addTag('synapse.conversation_handler');
 
         // ── Twig Globals ──────────────────────────────────────────────────────
-        $container->getDefinition(SynapseRuntime::class)
-            ->setArgument('$version', '%synapse.version%');
+        if ($config['admin']['enabled'] ?? false) {
+            $container->getDefinition(SynapseRuntime::class)
+                ->setArgument('$version', '%synapse.version%');
+        }
     }
 
     /**

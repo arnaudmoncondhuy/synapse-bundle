@@ -69,10 +69,10 @@ export default class extends Controller {
             <div
                 class="conversation-item ${String(conv.id) === String(this.currentConversationIdValue) ? 'active' : ''}"
                 data-conversation-id="${conv.id}"
-                data-action="click->sidebar#selectConversation"
+                data-action="click->synapse-sidebar#selectConversation"
             >
                 <div class="conversation-header">
-                    <span class="conversation-title" data-sidebar-target="title">${this.escapeHtml(conv.title || 'Nouvelle conversation')}</span>
+                    <span class="conversation-title" data-synapse-sidebar-target="title">${this.escapeHtml(conv.title || 'Nouvelle conversation')}</span>
                     <!-- Risk badge removed - should only be visible in admin interface -->
                 </div>
                 <div class="conversation-meta">
@@ -82,14 +82,14 @@ export default class extends Controller {
                 <div class="conversation-actions">
                     <button
                         class="conversation-edit"
-                        data-action="click->sidebar#startRename:stop"
+                        data-action="click->synapse-sidebar#startRename:stop"
                         title="Renommer"
                     >
                         ✎
                     </button>
                     <button
                         class="conversation-delete"
-                        data-action="click->sidebar#deleteConversation:stop"
+                        data-action="click->synapse-sidebar#deleteConversation:stop"
                         title="Supprimer"
                     >
                         ×
@@ -265,7 +265,7 @@ export default class extends Controller {
             const span = document.createElement('span');
             span.className = 'conversation-title';
             span.textContent = newTitle || currentTitle;
-            span.dataset.sidebarTarget = 'title';
+            span.dataset.synapseSidebarTarget = 'title';
             input.replaceWith(span);
         };
 
@@ -363,10 +363,10 @@ export default class extends Controller {
             <div
                 class="conversation-item active"
                 data-conversation-id="${conversation.id}"
-                data-action="click->sidebar#selectConversation"
+                data-action="click->synapse-sidebar#selectConversation"
             >
                 <div class="conversation-header">
-                    <span class="conversation-title" data-sidebar-target="title">${this.escapeHtml(conversation.title)}</span>
+                    <span class="conversation-title" data-synapse-sidebar-target="title">${this.escapeHtml(conversation.title)}</span>
                     <!-- Risk badge removed - should only be visible in admin interface -->
                 </div>
                 <div class="conversation-meta">
@@ -376,14 +376,14 @@ export default class extends Controller {
                 <div class="conversation-actions">
                     <button
                         class="conversation-edit"
-                        data-action="click->sidebar#startRename:stop"
+                        data-action="click->synapse-sidebar#startRename:stop"
                         title="Renommer"
                     >
                         ✎
                     </button>
                     <button
                         class="conversation-delete"
-                        data-action="click->sidebar#deleteConversation:stop"
+                        data-action="click->synapse-sidebar#deleteConversation:stop"
                         title="Supprimer"
                     >
                         ×

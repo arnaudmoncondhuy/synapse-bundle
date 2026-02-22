@@ -64,8 +64,8 @@ class ConversationTest extends TestCase
 
         // Assert
         $this->assertIsString($id);
-        // ULID est un UUID format 36 caractères
-        $this->assertEquals(36, strlen($id));
+        // ULID au format string : 26 caractères
+        $this->assertEquals(26, strlen($id));
     }
 
     /**
@@ -280,8 +280,8 @@ class ConversationTest extends TestCase
         $conversation = $this->createConversation();
         $originalUpdatedAt = $conversation->getUpdatedAt();
 
-        // Wait a tiny bit to ensure timestamp changes
-        usleep(1000);
+        // Wait to ensure timestamp changes (at least 1 second)
+        usleep(1100000);
 
         // Act
         $conversation->updateTimestamp();

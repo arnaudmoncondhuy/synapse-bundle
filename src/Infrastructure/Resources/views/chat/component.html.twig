@@ -54,15 +54,15 @@
 </svg>
 
 {% set history = history|default([]) %}
-{% set controller_override = controller_override|default('synapse--chat') %}
+{% set controller_override = controller_override|default('synapse-chat') %}
 {% set attr = attr|default({}) %}
 {% set allow_new_chat = allow_new_chat|default(false) %}
 {% set mode_class = history is empty ? 'mode-welcome' : 'mode-chat' %}
 
 <div id="synapse-chat-container"
      class="synapse-fullscreen-container {{ mode_class }}"
-     data-controller="{{ controller_override|default('synapse--chat') }}"
-     data-{{ controller_override|default('synapse--chat') }}-target="container"
+     data-controller="{{ controller_override|default('synapse-chat') }}"
+     data-{{ controller_override|default('synapse-chat') }}-target="container"
      {% for k, v in attr|default({}) %} {{ k }}="{{ v|e('html_attr') }}"{% endfor %}>
 
     <div class="synapse-chat">
@@ -71,10 +71,10 @@
         {% block synapse_header %}{% endblock %}
 
         {# 2. Messages Area #}
-        <div class="synapse-chat__messages" data-{{ controller_override|default('synapse--chat') }}-target="messages">
+        <div class="synapse-chat__messages" data-{{ controller_override|default('synapse-chat') }}-target="messages">
             
             {# 2a. Welcome/Empty State #}
-            <div id="welcome-greeting" class="assistant-empty-state {{ history is not empty ? 'hidden' : '' }}" data-{{ controller_override|default('synapse--chat') }}-target="greeting">
+            <div id="welcome-greeting" class="assistant-empty-state {{ history is not empty ? 'hidden' : '' }}" data-{{ controller_override|default('synapse-chat') }}-target="greeting">
                 {% block synapse_greeting_content %}
                     <div class="greeting-title">
                         <div class="avatar-ai">
@@ -110,11 +110,11 @@
 
         {# 3. Input Area #}
         <div class="synapse-chat__input-area">
-            <form data-action="submit->{{ controller_override|default('synapse--chat') }}#send" id="chat-form">
+            <form data-action="submit->{{ controller_override|default('synapse-chat') }}#send" id="chat-form">
                 <div class="synapse-chat__input-wrapper">
                     <!-- Textarea -->
                     <textarea 
-                        data-{{ controller_override|default('synapse--chat') }}-target="input" 
+                        data-{{ controller_override|default('synapse-chat') }}-target="input" 
                         placeholder="Saisissez un prompt..." 
                         rows="1"></textarea>
 
@@ -123,7 +123,7 @@
                         <div class="input-toolbar-left">
                             {# Reset Button - Hidden by default, use sidebar "Nouvelle conversation" instead #}
                             {% if allow_new_chat|default(false) %}
-                                <button type="button" class="action-round-btn" data-action="click->{{ controller_override|default('synapse--chat') }}#newConversation" title="Nouvelle discussion">
+                                <button type="button" class="action-round-btn" data-action="click->{{ controller_override|default('synapse-chat') }}#newConversation" title="Nouvelle discussion">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M13 8H7"></path><path d="M17 12H7"></path></svg>
                                 </button>
                             {% endif %}
@@ -131,7 +131,7 @@
                             {# Persona Selector (if available) #}
                             {% set personas = synapse_get_personas() %}
                             {% if personas is not empty %}
-                                <select class="persona-input-selector" data-{{ controller_override|default('synapse--chat') }}-target="personaSelect">
+                                <select class="persona-input-selector" data-{{ controller_override|default('synapse-chat') }}-target="personaSelect">
                                     <option value="">L'assistant (par défaut)</option>
                                     {% for p in personas %}
                                         <option value="{{ p.key }}">{{ p.emoji }} {{ p.name }}</option>
@@ -141,7 +141,7 @@
                         </div>
 
                         <div class="input-toolbar-right">
-                            <button type="submit" class="btn-send-main" data-{{ controller_override|default('synapse--chat') }}-target="submitBtn">
+                            <button type="submit" class="btn-send-main" data-{{ controller_override|default('synapse-chat') }}-target="submitBtn">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                             </button>
                         </div>

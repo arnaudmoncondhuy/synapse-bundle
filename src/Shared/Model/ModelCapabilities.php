@@ -10,7 +10,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Shared\Model;
  * Décrit ce que supporte ou non un modèle donné.
  * Utilisé par les clients LLM pour adapter le payload à envoyer à l'API.
  */
-final class ModelCapabilities
+class ModelCapabilities
 {
     public function __construct(
         /** Identifiant exact du modèle (tel qu'envoyé à l'API) */

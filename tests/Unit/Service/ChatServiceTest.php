@@ -50,15 +50,20 @@ class ChatServiceTest extends TestCase
         $options = ['debug' => false];
 
         $this->dispatcher->method('dispatch')
-            ->willReturnCallback(function (SynapsePrePromptEvent $event) {
-                $event->setPrompt([
-                    ['role' => 'system', 'content' => 'You are helpful'],
-                    ['role' => 'user', 'content' => 'Hello'],
-                ]);
-                $event->setConfig([
-                    'debug_mode' => false,
-                    'streaming_enabled' => false,
-                ]);
+            ->willReturnCallback(function ($event) {
+                if ($event instanceof SynapsePrePromptEvent) {
+                    $event->setPrompt([
+                        'contents' => [
+                            ['role' => 'system', 'content' => 'You are helpful'],
+                            ['role' => 'user', 'content' => 'Hello'],
+                        ],
+                        'toolDefinitions' => [],
+                    ]);
+                    $event->setConfig([
+                        'debug_mode' => false,
+                        'streaming_enabled' => false,
+                    ]);
+                }
                 return $event;
             });
 
@@ -116,7 +121,10 @@ class ChatServiceTest extends TestCase
             ->method('dispatch')
             ->with($this->isInstanceOf(SynapsePrePromptEvent::class))
             ->willReturnCallback(function (SynapsePrePromptEvent $event) {
-                $event->setPrompt([['role' => 'user', 'content' => 'Test']]);
+                $event->setPrompt([
+                    'contents' => [['role' => 'user', 'content' => 'Test']],
+                    'toolDefinitions' => [],
+                ]);
                 $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
                 return $event;
             });
@@ -151,9 +159,14 @@ class ChatServiceTest extends TestCase
         $message = 'Hello';
 
         $this->dispatcher->method('dispatch')
-            ->willReturnCallback(function (SynapsePrePromptEvent $event) {
-                $event->setPrompt([['role' => 'user', 'content' => 'Hello']]);
-                $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+            ->willReturnCallback(function ($event) {
+                if ($event instanceof SynapsePrePromptEvent) {
+                    $event->setPrompt([
+                        'contents' => [['role' => 'user', 'content' => 'Hello']],
+                        'toolDefinitions' => [],
+                    ]);
+                    $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+                }
                 return $event;
             });
 
@@ -189,9 +202,14 @@ class ChatServiceTest extends TestCase
         $message = 'Test';
 
         $this->dispatcher->method('dispatch')
-            ->willReturnCallback(function (SynapsePrePromptEvent $event) {
-                $event->setPrompt([['role' => 'user', 'content' => 'Test']]);
-                $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+            ->willReturnCallback(function ($event) {
+                if ($event instanceof SynapsePrePromptEvent) {
+                    $event->setPrompt([
+                        'contents' => [['role' => 'user', 'content' => 'Test']],
+                        'toolDefinitions' => [],
+                    ]);
+                    $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+                }
                 return $event;
             });
 
@@ -227,12 +245,17 @@ class ChatServiceTest extends TestCase
         $options = ['debug' => true];
 
         $this->dispatcher->method('dispatch')
-            ->willReturnCallback(function (SynapsePrePromptEvent $event) {
-                $event->setPrompt([['role' => 'user', 'content' => 'Debug test']]);
-                $event->setConfig([
-                    'streaming_enabled' => false,
-                    'debug_mode' => false,
-                ]);
+            ->willReturnCallback(function ($event) {
+                if ($event instanceof SynapsePrePromptEvent) {
+                    $event->setPrompt([
+                        'contents' => [['role' => 'user', 'content' => 'Debug test']],
+                        'toolDefinitions' => [],
+                    ]);
+                    $event->setConfig([
+                        'streaming_enabled' => false,
+                        'debug_mode' => false,
+                    ]);
+                }
                 return $event;
             });
 
@@ -272,9 +295,14 @@ class ChatServiceTest extends TestCase
         };
 
         $this->dispatcher->method('dispatch')
-            ->willReturnCallback(function (SynapsePrePromptEvent $event) {
-                $event->setPrompt([['role' => 'user', 'content' => 'Test']]);
-                $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+            ->willReturnCallback(function ($event) {
+                if ($event instanceof SynapsePrePromptEvent) {
+                    $event->setPrompt([
+                        'contents' => [['role' => 'user', 'content' => 'Test']],
+                        'toolDefinitions' => [],
+                    ]);
+                    $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+                }
                 return $event;
             });
 
@@ -309,8 +337,11 @@ class ChatServiceTest extends TestCase
         // Arrange
         $message = 'Format test';
         $expectedPrompt = [
-            ['role' => 'system', 'content' => 'System instruction'],
-            ['role' => 'user', 'content' => 'Format test'],
+            'contents' => [
+                ['role' => 'system', 'content' => 'System instruction'],
+                ['role' => 'user', 'content' => 'Format test'],
+            ],
+            'toolDefinitions' => [],
         ];
 
         $this->dispatcher->method('dispatch')
