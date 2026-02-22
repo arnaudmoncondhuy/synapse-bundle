@@ -213,7 +213,7 @@ L'outil sera automatiquement disponible pour l'IA !
 
 Le bundle gère les prompts en 3 couches :
 
-1. **Technical Prompt** (Interne) : Règles de formatage et de pensée (`<thinking>`)
+1. **Technical Prompt** (Interne) : Règles de formatage et de réflexion native (via Gemini `thinkingConfig`)
 2. **System Prompt** (Applicatif) : Votre contexte métier (Date, Rôle, etc.)
 3. **User Prompt** : La demande de l'utilisateur
 

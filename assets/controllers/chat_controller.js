@@ -289,23 +289,6 @@ export default class extends Controller {
     addMessage(text, role, debugData = null) {
         let formattedText = text;
 
-
-        // Extract and remove thinking blocks (for old data in database)
-        if (role === 'assistant') {
-            // Remove complete thinking blocks (with or without newlines)
-            formattedText = formattedText.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
-            formattedText = formattedText.replace(/```thinking[\s\S]*?```/g, '');
-            formattedText = formattedText.replace(/^\s*```\s*$/gm, '');
-
-            // Remove orphan thinking tags (unclosed or malformed)
-            formattedText = formattedText.replace(/<\/?thinking[^>]*>/gi, '');
-
-            // Clean up multiple consecutive newlines
-            formattedText = formattedText.replace(/\n{3,}/g, '\n\n');
-            formattedText = formattedText.trim();
-
-        }
-
         // Simple markdown parsing
         formattedText = this.parseMarkdown(formattedText);
 

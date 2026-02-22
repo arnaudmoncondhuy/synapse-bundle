@@ -230,18 +230,11 @@ class ChatService
                 $debugAccumulator['raw_api_response'] = $debugOut['raw_api_response'];
             }
 
-            // Prepend thinking for debug display (so template can extract it)
-            if (!empty($currentThinking)) {
-                $currentTurnText = '<thinking>' . $currentThinking . '</thinking>' . $currentTurnText;
-            }
-
             // Sanitize accumulated text
             $currentTurnText = TextUtil::sanitizeUtf8($currentTurnText);
 
-            // Strip thinking tags for clean storage / final answer
-            $cleanText = preg_replace('/<thinking>.*?<\/thinking>/is', '', $currentTurnText);
-            $cleanText = preg_replace('/<\/?thinking[^>]*>/i', '', $cleanText);
-            $cleanText = trim($cleanText);
+            // Use text directly (thinking is now handled by native LLM thinking)
+            $cleanText = $currentTurnText;
 
             // If response is empty due to safety block, provide user feedback
             if (empty($cleanText) && $blockedCategory !== null) {

@@ -181,12 +181,8 @@ class ChatApiController extends AbstractController
                             $titleResult = $this->chatService->ask($titlePrompt, ['stateless' => true, 'debug' => false]);
 
                             if (!empty($titleResult['answer'])) {
-                                // Clean the result (remove <thinking> tags, quotes, etc.)
+                                // Clean the result (remove quotes, etc.)
                                 $rawTitle = $titleResult['answer'];
-                                if (preg_match('/<thinking>.*?<\/thinking>/s', $rawTitle, $matches)) {
-                                    $rawTitle = str_replace($matches[0], '', $rawTitle);
-                                }
-
                                 $newTitle = trim(str_replace(['"', 'Titre:', 'Title:'], '', $rawTitle));
 
                                 if (!empty($newTitle)) {

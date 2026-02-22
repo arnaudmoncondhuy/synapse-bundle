@@ -38,7 +38,8 @@ class PromptBuilderTest extends TestCase
 
         // Assert
         $this->assertStringContainsString('BASE_APP_PROMPT', $result);
-        $this->assertStringContainsString('<thinking>', $result, 'Le prompt technique doit contenir les instructions de thinking');
+        $this->assertStringContainsString('CADRE TECHNIQUE DE RÉPONSE', $result, 'Le prompt technique doit être présent');
+        $this->assertStringNotContainsString('<thinking>', $result, 'Le prompt ne doit pas contenir les balises <thinking> (thinking natif)');
     }
 
     public function testBuildSystemInstructionInjectsPersonaIfProvided(): void
