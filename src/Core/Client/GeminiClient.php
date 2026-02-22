@@ -42,6 +42,7 @@ class GeminiClient implements LlmClientInterface
     private ?int   $generationMaxOutputTokens = null;
     private array  $generationStopSequences = [];
 
+    public function __construct(
         private HttpClientInterface $httpClient,
         private GeminiAuthService $geminiAuthService,
         private ConfigProviderInterface $configProvider,
