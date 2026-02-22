@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle;
 
-use ArnaudMoncondhuy\SynapseBundle\DependencyInjection\SynapseExtension;
+use ArnaudMoncondhuy\SynapseBundle\Infrastructure\DependencyInjection\SynapseExtension;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
