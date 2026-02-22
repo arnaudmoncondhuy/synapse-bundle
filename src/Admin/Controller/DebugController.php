@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ArnaudMoncondhuy\SynapseBundle\Controller\Api;
+namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\DebugLogRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
