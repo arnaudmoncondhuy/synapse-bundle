@@ -34,7 +34,7 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api\ResetController:
         tags: ['controller.service_arguments']
 
-    ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api\DebugController:
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\DebugLogsController:
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ConfigController:
