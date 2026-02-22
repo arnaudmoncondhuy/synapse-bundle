@@ -29,7 +29,15 @@ class ModelCapabilityRegistry
      */
     private function loadModels(): void
     {
-        $configDir = __DIR__ . '/../Resources/config/models';
+        // Essayer d'abord le chemin dans Infrastructure (après refactorisation)
+        // __DIR__ = src/Core/Chat, donc dirname(__DIR__, 3) = bundle root
+        $configDir = dirname(__DIR__, 3) . '/src/Infrastructure/Resources/config/models';
+
+        // Fallback vers Core/Resources (ancien chemin)
+        if (!is_dir($configDir)) {
+            $configDir = dirname(__DIR__, 3) . '/src/Core/Resources/config/models';
+        }
+
         if (!is_dir($configDir)) {
             return;
         }
