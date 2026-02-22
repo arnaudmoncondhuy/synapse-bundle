@@ -267,18 +267,20 @@
 						<div class="turn">
 							<div class="turn-header">
 								<span class="badge">{{ msg.role | upper }}</span>
+								{% if msg.tool_call_id %}
+									<span class="badge" style="background: #fee2e2; color: #991b1b; margin-left: 8px;">{{ msg.tool_call_id }}</span>
+								{% endif %}
 							</div>
-							{% if msg.parts %}
-								{% for part in msg.parts %}
-									{% if part.text %}
-										<p>{{ part.text }}</p>
-									{% elseif part.functionCall %}
-										<strong>🔧 Appel fonction: {{ part.functionCall.name }}</strong>
-										<pre>{{ part.functionCall.args | json_encode }}</pre>
-									{% elseif part.functionResponse %}
-										<strong>✓ Réponse fonction: {{ part.functionResponse.name }}</strong>
-										<pre>{{ part.functionResponse.response | json_encode }}</pre>
-									{% endif %}
+							{% if msg.content %}
+								<p>{{ msg.content }}</p>
+							{% endif %}
+							{% if msg.tool_calls %}
+								<h4 style="color: #dc2626; margin: 12px 0 8px 0; font-size: 0.95rem;">🔧 Appels de fonction ({{ msg.tool_calls | length }})</h4>
+								{% for tc in msg.tool_calls %}
+									<div style="background: #fef2f2; border-left: 3px solid #dc2626; padding: 10px; margin: 8px 0; border-radius: 4px;">
+										<strong>{{ tc.function.name }}</strong>
+										<pre style="background: #1f2937; color: #f3f4f6; margin: 8px 0;">{{ tc.function.arguments }}</pre>
+									</div>
 								{% endfor %}
 							{% endif %}
 						</div>
