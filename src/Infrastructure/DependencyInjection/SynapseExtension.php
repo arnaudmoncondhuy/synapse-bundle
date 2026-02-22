@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Infrastructure\DependencyInjection;
 
+use ArnaudMoncondhuy\SynapseBundle\Admin\Twig\SynapseRuntime;
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
