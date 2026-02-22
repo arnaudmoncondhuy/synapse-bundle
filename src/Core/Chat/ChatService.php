@@ -117,7 +117,7 @@ class ChatService
                     $prompt['contents'],
                     $prompt['toolDefinitions'] ?? [],
                     null,
-                    null,
+                    [],
                     $debugOut,
                 );
                 $chunks = [$response];

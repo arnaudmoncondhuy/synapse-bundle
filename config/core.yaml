@@ -4,14 +4,14 @@ services:
         autoconfigure: true
 
     # ── Infra : Google Vertex AI ──────────────────────────────────────────────
-    ArnaudMoncondhuy\SynapseBundle\Core\Client\GoogleAuthService:
+    ArnaudMoncondhuy\SynapseBundle\Core\Client\GeminiAuthService:
         # $serviceAccountJsonPath defaults to null — credentials injected at runtime from DB
         # Keep this declaration for potential fallback to YAML file path in future use
 
     ArnaudMoncondhuy\SynapseBundle\Core\Client\GeminiClient:
         arguments:
             $httpClient: '@http_client'
-            $googleAuthService: '@ArnaudMoncondhuy\SynapseBundle\Core\Client\GoogleAuthService'
+            $geminiAuthService: '@ArnaudMoncondhuy\SynapseBundle\Core\Client\GeminiAuthService'
             $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
             $capabilityRegistry: '@ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry'
         tags:

@@ -354,7 +354,7 @@ class ChatServiceTest extends TestCase
         $capturedContents = null;
         $mockClient = $this->createMock(\ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface::class);
         $mockClient->method('generateContent')
-            ->willReturnCallback(function (array $contents) use (&$capturedContents) {
+            ->willReturnCallback(function (array $contents, array $tools = [], ?string $model = null, array $options = []) use (&$capturedContents) {
                 $capturedContents = $contents;
                 return [
                     'text' => 'Response',

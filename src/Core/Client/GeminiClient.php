@@ -42,9 +42,8 @@ class GeminiClient implements LlmClientInterface
     private ?int   $generationMaxOutputTokens = null;
     private array  $generationStopSequences = [];
 
-    public function __construct(
         private HttpClientInterface $httpClient,
-        private GoogleAuthService $googleAuthService,
+        private GeminiAuthService $geminiAuthService,
         private ConfigProviderInterface $configProvider,
         private ModelCapabilityRegistry $capabilityRegistry,
     ) {}
@@ -351,7 +350,7 @@ class GeminiClient implements LlmClientInterface
                 $this->vertexRegion = $creds['region'];
             }
             if (!empty($creds['service_account_json'])) {
-                $this->googleAuthService->setCredentialsJson($creds['service_account_json']);
+                $this->geminiAuthService->setCredentialsJson($creds['service_account_json']);
             }
         }
 

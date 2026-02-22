@@ -14,7 +14,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  *  - Fichier JSON Service Account (chemin YAML — fallback)
  *  - Contenu JSON injecté depuis la DB via setCredentialsJson()
  */
-class GoogleAuthService
+class GeminiAuthService
 {
     private const TOKEN_URL = 'https://oauth2.googleapis.com/token';
     private const SCOPE = 'https://www.googleapis.com/auth/cloud-platform';
@@ -28,8 +28,7 @@ class GoogleAuthService
     public function __construct(
         private HttpClientInterface $httpClient,
         private ?string $serviceAccountJsonPath = null,
-    ) {
-    }
+    ) {}
 
     /**
      * Injecte les credentials depuis un contenu JSON (depuis la DB).

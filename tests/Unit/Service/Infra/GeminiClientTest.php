@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Infra;
 
 use ArnaudMoncondhuy\SynapseBundle\Core\Client\GeminiClient;
-use ArnaudMoncondhuy\SynapseBundle\Core\Client\GoogleAuthService;
+use ArnaudMoncondhuy\SynapseBundle\Core\Client\GeminiAuthService;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Model\ModelCapabilities;
@@ -16,7 +16,7 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 class GeminiClientTest extends TestCase
 {
     private HttpClientInterface $httpClient;
-    private GoogleAuthService $googleAuthService;
+    private GeminiAuthService $geminiAuthService;
     private ConfigProviderInterface $configProvider;
     private ModelCapabilityRegistry $capabilityRegistry;
     private GeminiClient $geminiClient;
@@ -24,7 +24,7 @@ class GeminiClientTest extends TestCase
     protected function setUp(): void
     {
         $this->httpClient = $this->createMock(HttpClientInterface::class);
-        $this->googleAuthService = $this->createMock(GoogleAuthService::class);
+        $this->geminiAuthService = $this->createMock(GeminiAuthService::class);
         $this->configProvider = $this->createMock(ConfigProviderInterface::class);
         $this->capabilityRegistry = $this->createMock(ModelCapabilityRegistry::class);
 
@@ -42,7 +42,7 @@ class GeminiClientTest extends TestCase
 
         $this->geminiClient = new GeminiClient(
             $this->httpClient,
-            $this->googleAuthService,
+            $this->geminiAuthService,
             $this->configProvider,
             $this->capabilityRegistry,
         );
