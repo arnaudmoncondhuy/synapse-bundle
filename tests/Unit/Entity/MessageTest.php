@@ -80,8 +80,8 @@ class MessageTest extends TestCase
     {
         $message = $this->createMessage();
         $ratings = [
-            'HARM_CATEGORY_HATE_SPEECH' => 'NEGLIGIBLE',
-            'HARM_CATEGORY_DANGEROUS_CONTENT' => 'LOW',
+            'hate_speech' => ['probability' => 'NEGLIGIBLE'],
+            'dangerous_content' => ['probability' => 'LOW'],
         ];
         $message->setSafetyRatings($ratings);
 
