@@ -27,7 +27,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  *
  * Les chunks yielded par les clients LLM sont au format Synapse normalisé :
  *   ['text' => string|null, 'thinking' => string|null, 'function_calls' => [...],
- *    'usage' => [...], 'safety_ratings' => [...], 'blocked' => bool, 'blocked_category' => string|null]
+ *    'usage' => [...], 'safety_ratings' => [...], 'blocked' => bool, 'blocked_reason' => string|null]
  */
 class ChatService
 {

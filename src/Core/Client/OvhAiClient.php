@@ -447,13 +447,13 @@ class OvhAiClient implements LlmClientInterface
     private function emptyChunk(): array
     {
         return [
-            'text'             => null,
-            'thinking'         => null,
-            'function_calls'   => [],
-            'usage'            => [],
-            'safety_ratings'   => [],
-            'blocked'          => false,
-            'blocked_category' => null,
+            'text'           => null,
+            'thinking'       => null,
+            'function_calls' => [],
+            'usage'          => [],
+            'safety_ratings' => [],
+            'blocked'        => false,
+            'blocked_reason' => null,
         ];
     }
 
