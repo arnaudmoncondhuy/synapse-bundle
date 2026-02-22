@@ -26,6 +26,11 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
     ) {
     }
 
+    /**
+     * Décrit l'événement écouté : SynapsePrePromptEvent avec haute priorité (100).
+     *
+     * @return array<string, array{0: string, 1: int}> Mapping : {eventClass: [methodName, priority]}
+     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -33,14 +38,21 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * Traite l'événement SynapsePrePromptEvent pour construire le prompt final.
+     * Peuple l'événement avec : système instruction, contenu message (stateless/stateful),
+     * configuration, et définitions d'outils.
+     *
+     * @param SynapsePrePromptEvent $event L'événement contenant message et options
+     */
     public function onPrePrompt(SynapsePrePromptEvent $event): void
     {
         $message = $event->getMessage();
         $options = $event->getOptions();
 
-        // ── Build system instruction ──
+        // ── Build system message (OpenAI format) ──
         $personaKey = $options['persona'] ?? null;
-        $systemInstruction = $this->promptBuilder->buildSystemInstruction($personaKey);
+        $systemMessage = $this->promptBuilder->buildSystemMessage($personaKey);
 
         // ── Load history ──
         $isStateless = $options['stateless'] ?? false;
@@ -61,7 +73,7 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
             }
         }
 
-        // ── Get config ──
+        // Get config
         $config = $this->configProvider->getConfig();
 
         // Support preset override (for testing)
@@ -69,11 +81,11 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
             $config = $this->configProvider->getConfigForPreset($options['preset']);
         }
 
-        // ── Build complete prompt ──
+        // ── Build complete prompt (system message + history) ──
+        // System instruction is now the first message in contents (OpenAI canonical format)
         $prompt = [
-            'systemInstruction' => $systemInstruction,  // String, not wrapped
-            'contents'          => $contents,
-            'toolDefinitions'   => $options['tools'] ?? [],
+            'contents'        => array_merge([$systemMessage], $contents),
+            'toolDefinitions' => $options['tools'] ?? [],
         ];
 
         // Set on event

@@ -64,9 +64,9 @@ class SynapseChunkReceivedEvent extends Event
         return $this->chunk['blocked'] ?? false;
     }
 
-    public function getBlockedCategory(): ?string
+    public function getBlockedReason(): ?string
     {
-        return $this->chunk['blocked_category'] ?? null;
+        return $this->chunk['blocked_reason'] ?? null;
     }
 
     public function getTurn(): int

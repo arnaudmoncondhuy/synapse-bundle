@@ -45,10 +45,12 @@ class DebugLogSubscriber implements EventSubscriberInterface
         // Capture initial context for debug
         $prompt = $event->getPrompt();
         $config = $event->getConfig();
-        $systemInstruction = $prompt['systemInstruction'] ?? null;
-        // Handle both string and array formats for backward compatibility
-        if (is_array($systemInstruction)) {
-            $systemInstruction = $systemInstruction['parts'][0]['text'] ?? null;
+
+        // Extract system instruction from contents (first message with role: 'system')
+        $systemInstruction = null;
+        $contents = $prompt['contents'] ?? [];
+        if (!empty($contents) && ($contents[0]['role'] ?? '') === 'system') {
+            $systemInstruction = $contents[0]['content'] ?? null;
         }
 
         // Extract preset config parameters for display

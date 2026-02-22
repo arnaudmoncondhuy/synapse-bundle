@@ -14,8 +14,9 @@ namespace ArnaudMoncondhuy\SynapseBundle\Contract;
  * FORMAT INTERNE SYNAPSE (OpenAI canonical)
  * ═══════════════════════════════════════════════════════
  *
- * Input $contents :
+ * Input $contents (OpenAI format, le système est le PREMIER message) :
  *   [
+ *     ['role' => 'system',    'content' => '...'],  // First message = system instruction
  *     ['role' => 'user',      'content' => '...'],
  *     ['role' => 'assistant', 'content' => '...', 'tool_calls' => [
  *         ['id' => '...', 'type' => 'function', 'function' => ['name' => '...', 'arguments' => '...']]
@@ -24,6 +25,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Contract;
  *   ]
  *
  * Chaque client est responsable de convertir ce format vers l'API de son provider.
+ * Par exemple, GeminiClient extrait le message système et le place dans systemInstruction Gemini.
  *
  * Output (chunks yield par streamGenerateContent) :
  *   [
@@ -38,7 +40,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Contract;
  *     ],
  *     'safety_ratings'   => array,         // Gemini only, [] pour les autres
  *     'blocked'          => bool,
- *     'blocked_category' => string|null,
+ *     'blocked_reason'   => string|null,   // Raison lisible de bloquage (ex: 'harcèlement', 'discours haineux')
  *   ]
  */
 interface LlmClientInterface
@@ -53,14 +55,12 @@ interface LlmClientInterface
      * Génère du contenu en mode streaming.
      * Yield des chunks normalisés (voir format ci-dessus).
      *
-     * @param string      $systemInstruction Instruction système
-     * @param array       $contents          Historique au format Synapse canonical
+     * @param array       $contents          Historique au format OpenAI canonical (inclut le message système en tête)
      * @param array       $tools             Déclarations d'outils (format Synapse)
      * @param string|null $model             Modèle spécifique (override config)
      * @param array       $debugOut          Sortie de debug : sera remplie avec actual_request_params et raw_request_body
      */
     public function streamGenerateContent(
-        string $systemInstruction,
         array $contents,
         array $tools = [],
         ?string $model = null,
@@ -71,15 +71,13 @@ interface LlmClientInterface
      * Génère du contenu en mode synchrone.
      * Retourne le dernier chunk normalisé.
      *
-     * @param string      $systemInstruction      Instruction système
-     * @param array       $contents               Historique au format Synapse canonical
+     * @param array       $contents               Historique au format OpenAI canonical (inclut le message système en tête)
      * @param array       $tools                  Déclarations d'outils (format Synapse)
      * @param string|null $model                  Modèle spécifique (override config)
      * @param array|null  $thinkingConfigOverride Configuration de thinking (Gemini)
      * @param array       $debugOut               Sortie de debug : sera remplie avec actual_request_params et raw_request_body
      */
     public function generateContent(
-        string $systemInstruction,
         array $contents,
         array $tools = [],
         ?string $model = null,

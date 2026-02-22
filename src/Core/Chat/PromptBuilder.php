@@ -38,6 +38,30 @@ PROMPT;
     ) {
     }
 
+    /**
+     * Construit un message système au format OpenAI canonical.
+     *
+     * Retourne un tableau avec role et content, prêt à être utilisé dans le tableau contents.
+     *
+     * @param string|null $personaKey Clé optionnelle de la personnalité
+     * @return array{role: 'system', content: string} Message système au format OpenAI
+     */
+    public function buildSystemMessage(?string $personaKey = null): array
+    {
+        $systemContent = $this->buildSystemInstruction($personaKey);
+
+        return [
+            'role'    => 'system',
+            'content' => $systemContent,
+        ];
+    }
+
+    /**
+     * Construit l'instruction système brute (texte pur).
+     *
+     * @param string|null $personaKey Clé optionnelle de la personnalité
+     * @return string Le texte complet du système (techniques + contexte + persona)
+     */
     public function buildSystemInstruction(?string $personaKey = null): string
     {
         $config = $this->configProvider->getConfig();

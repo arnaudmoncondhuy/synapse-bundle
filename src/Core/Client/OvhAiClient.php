@@ -13,11 +13,11 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 /**
  * Client HTTP pour OVH AI Endpoints (100% compatible API OpenAI).
  *
- * Convertit le format interne Synapse (canonical Gemini-like) vers le format
- * OpenAI Chat Completions, et normalise la réponse vers le format Synapse.
+ * Utilise le format OpenAI canonical en interne (aucune conversion nécessaire).
+ * Les messages reçus sont déjà au format OpenAI, envoyés directement à l'API.
  *
- * Format entrant (Synapse canonical) :
- *   ['role' => 'user'|'model'|'function', 'parts' => [...]]
+ * Format entrant (OpenAI canonical) :
+ *   ['role' => 'user'|'assistant'|'system'|'tool', 'content' => string, 'tool_calls' => [...], 'tool_call_id' => ...]
  *
  * Format sortant (chunks normalisés) :
  *   ['text' => string|null, 'thinking' => null, 'function_calls' => [...], ...]
@@ -55,9 +55,10 @@ class OvhAiClient implements LlmClientInterface
     /**
      * Génère du contenu en mode streaming (SSE).
      * Yield des chunks normalisés au format Synapse.
+     *
+     * Les messages sont déjà au format OpenAI canonical, envoyés directement.
      */
     public function streamGenerateContent(
-        string $systemInstruction,
         array $contents,
         array $tools = [],
         ?string $model = null,
@@ -68,7 +69,7 @@ class OvhAiClient implements LlmClientInterface
         $effectiveModel = $model ?? $this->model;
         $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
 
-        $messages = $this->toOpenAiMessages($systemInstruction, $contents, $caps->systemPrompt);
+        $messages = $contents;  // Already OpenAI format, passthrough
         $payload = $this->buildPayload($effectiveModel, $messages, $tools, $caps, true);
 
         // Capture les paramètres réellement envoyés (après filtrage par ModelCapabilityRegistry)
@@ -172,9 +173,10 @@ class OvhAiClient implements LlmClientInterface
 
     /**
      * Génère du contenu en mode synchrone (non-streaming).
+     *
+     * Les messages sont déjà au format OpenAI canonical, envoyés directement.
      */
     public function generateContent(
-        string $systemInstruction,
         array $contents,
         array $tools = [],
         ?string $model = null,
@@ -186,7 +188,7 @@ class OvhAiClient implements LlmClientInterface
         $effectiveModel = $model ?? $this->model;
         $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
 
-        $messages = $this->toOpenAiMessages($systemInstruction, $contents, $caps->systemPrompt);
+        $messages = $contents;  // Already OpenAI format, passthrough
         $payload = $this->buildPayload($effectiveModel, $messages, $tools, $caps, false);
 
         // Capture les paramètres réellement envoyés (après filtrage par ModelCapabilityRegistry)
@@ -334,27 +336,6 @@ class OvhAiClient implements LlmClientInterface
         return $chunk;
     }
 
-    /**
-     * Format messages for OpenAI API.
-     *
-     * Messages are already in OpenAI canonical format internally,
-     * so this is mainly a passthrough with system instruction prepending.
-     */
-    private function toOpenAiMessages(string $systemInstruction, array $contents, bool $includeSystem): array
-    {
-        $messages = [];
-
-        if ($includeSystem && $systemInstruction !== '') {
-            $messages[] = ['role' => 'system', 'content' => $systemInstruction];
-        }
-
-        // Messages are already in OpenAI canonical format — pass through directly
-        foreach ($contents as $msg) {
-            $messages[] = $msg;
-        }
-
-        return $messages;
-    }
 
     /**
      * Convertit les déclarations d'outils Synapse en format OpenAI.

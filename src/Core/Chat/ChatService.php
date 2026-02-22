@@ -31,6 +31,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  */
 class ChatService
 {
+    /** @var int Nombre de tours maximum pour la boucle de réflexion multi-tours (function calling) */
     private const MAX_TURNS = 5;
 
     public function __construct(
@@ -106,7 +107,6 @@ class ChatService
             // ── LLM CALL (Streaming or Sync) ──
             if ($streamingEnabled) {
                 $chunks = $activeClient->streamGenerateContent(
-                    $prompt['systemInstruction'],
                     $prompt['contents'],
                     $prompt['toolDefinitions'] ?? [],
                     null,
@@ -114,7 +114,6 @@ class ChatService
                 );
             } else {
                 $response = $activeClient->generateContent(
-                    $prompt['systemInstruction'],
                     $prompt['contents'],
                     $prompt['toolDefinitions'] ?? [],
                     null,
@@ -161,14 +160,8 @@ class ChatService
 
                 // Handle blocked responses
                 if ($chunk['blocked'] ?? false) {
-                    $categoryLabels = [
-                        'HARM_CATEGORY_HARASSMENT'       => 'harcèlement',
-                        'HARM_CATEGORY_HATE_SPEECH'      => 'discours haineux',
-                        'HARM_CATEGORY_SEXUALLY_EXPLICIT' => 'contenu explicite',
-                        'HARM_CATEGORY_DANGEROUS_CONTENT' => 'contenu dangereux',
-                    ];
-                    $label = $categoryLabels[$chunk['blocked_category'] ?? 'unknown'] ?? ($chunk['blocked_category'] ?? 'unknown');
-                    $blockedMsg = "⚠️ Ma réponse a été bloquée par les filtres de sécurité (catégorie : {$label}). Veuillez reformuler votre demande.";
+                    $reason = $chunk['blocked_reason'] ?? 'contenu bloqué par les filtres de sécurité';
+                    $blockedMsg = "⚠️ Ma réponse a été bloquée ({$reason}). Veuillez reformuler votre demande.";
                     $fullTextAccumulator .= $blockedMsg;
                     $modelText .= $blockedMsg;
                     if ($onToken) {
@@ -264,8 +257,20 @@ class ChatService
         ];
     }
 
+    /**
+     * Réinitialise l'historique de conversation actuel.
+     * Appelé typiquement lors d'un appel ask() avec l'option reset_conversation = true.
+     * Stub actuellement vide — l'historique est géré par le ConversationHandler via les events.
+     */
     public function resetConversation(): void {}
 
+    /**
+     * Récupère l'historique de conversation complet au format Synapse.
+     * Retourne les messages au format OpenAI : [{role, content, tool_calls?, tool_call_id?}, ...].
+     * Stub actuellement vide — l'historique est géré par le ConversationHandler via les events.
+     *
+     * @return array<int, array{role: string, content: string|null, tool_calls?: array, tool_call_id?: string}> Messages au format OpenAI
+     */
     public function getConversationHistory(): array
     {
         return [];

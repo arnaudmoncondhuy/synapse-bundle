@@ -54,9 +54,12 @@ class GeminiClient implements LlmClientInterface
     /**
      * Génère du contenu via Vertex AI (mode synchrone).
      * Retourne un chunk normalisé au format Synapse.
+     *
+     * Les messages sont au format OpenAI canonical (contents contient déjà le message système en tête).
+     *
+     * @throws \RuntimeException En cas d'erreur API Vertex AI
      */
     public function generateContent(
-        string $systemInstruction,
         array $contents,
         array $tools = [],
         ?string $model = null,
@@ -67,7 +70,7 @@ class GeminiClient implements LlmClientInterface
 
         $effectiveModel = $model ?? $this->model;
         $url = $this->buildVertexUrl(self::VERTEX_URL, $effectiveModel);
-        $payload = $this->buildPayload($systemInstruction, $contents, $tools, $effectiveModel, $thinkingConfigOverride);
+        $payload = $this->buildPayload($contents, $tools, $effectiveModel, $thinkingConfigOverride);
 
         // Capture les paramètres réellement envoyés (après filtrage par ModelCapabilityRegistry)
         $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
@@ -109,10 +112,12 @@ class GeminiClient implements LlmClientInterface
      * Génère du contenu via Vertex AI (mode streaming).
      * Yield des chunks normalisés au format Synapse.
      *
+     * Les messages sont au format OpenAI canonical (contents contient déjà le message système en tête).
+     *
      * @return \Generator<array>
+     * @throws \RuntimeException En cas d'erreur API Vertex AI
      */
     public function streamGenerateContent(
-        string $systemInstruction,
         array $contents,
         array $tools = [],
         ?string $model = null,
@@ -122,7 +127,7 @@ class GeminiClient implements LlmClientInterface
 
         $effectiveModel = $model ?? $this->model;
         $url = $this->buildVertexUrl(self::VERTEX_STREAM_URL, $effectiveModel);
-        $payload = $this->buildPayload($systemInstruction, $contents, $tools, $effectiveModel, null);
+        $payload = $this->buildPayload($contents, $tools, $effectiveModel, null);
 
         // Capture les paramètres réellement envoyés (après filtrage par ModelCapabilityRegistry)
         $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
@@ -240,8 +245,8 @@ class GeminiClient implements LlmClientInterface
             $normalized['safety_ratings'] = $candidate['safetyRatings'];
             foreach ($candidate['safetyRatings'] as $rating) {
                 if ($rating['blocked'] ?? false) {
-                    $normalized['blocked']          = true;
-                    $normalized['blocked_category'] = $rating['category'] ?? 'UNKNOWN';
+                    $normalized['blocked']        = true;
+                    $normalized['blocked_reason'] = $this->getHarmCategoryLabel($rating['category'] ?? 'UNKNOWN');
                     break;
                 }
             }
@@ -282,17 +287,41 @@ class GeminiClient implements LlmClientInterface
         return $normalized;
     }
 
+    /**
+     * Retourne la structure de chunk vide au format Synapse.
+     * Utilisée comme base pour la normalisation des réponses API.
+     *
+     * @return array<string, mixed> Structure : {text, thinking, function_calls[], usage[], safety_ratings[], blocked, blocked_reason}
+     */
     private function emptyChunk(): array
     {
         return [
-            'text'             => null,
-            'thinking'         => null,
-            'function_calls'   => [],
-            'usage'            => [],
-            'safety_ratings'   => [],
-            'blocked'          => false,
-            'blocked_category' => null,
+            'text'           => null,
+            'thinking'       => null,
+            'function_calls' => [],
+            'usage'          => [],
+            'safety_ratings' => [],
+            'blocked'        => false,
+            'blocked_reason' => null,
         ];
+    }
+
+    /**
+     * Convertit une catégorie Gemini HARM_CATEGORY_* en string lisible.
+     *
+     * @param string $category Catégorie Gemini (ex: 'HARM_CATEGORY_HATE_SPEECH')
+     * @return string Description en français
+     */
+    private function getHarmCategoryLabel(string $category): string
+    {
+        $labels = [
+            'HARM_CATEGORY_HARASSMENT'        => 'harcèlement',
+            'HARM_CATEGORY_HATE_SPEECH'       => 'discours haineux',
+            'HARM_CATEGORY_SEXUALLY_EXPLICIT' => 'contenu explicite',
+            'HARM_CATEGORY_DANGEROUS_CONTENT' => 'contenu dangereux',
+        ];
+
+        return $labels[$category] ?? $category;
     }
 
     /**
@@ -395,6 +424,15 @@ class GeminiClient implements LlmClientInterface
         return null;
     }
 
+    /**
+     * Construit l'URL d'appel API Vertex AI pour le modèle spécifié.
+     * Substitue region, project_id et model_id dans le template URL.
+     * Le model_id est obtenu depuis ModelCapabilityRegistry (peut différer du model passé).
+     *
+     * @param string $template Template URL Vertex : https://REGION-aiplatform.googleapis.com/v1/projects/PROJECT/locations/REGION/publishers/google/models/MODEL:endpoint
+     * @param string $model Identifiant du modèle (ex: 'gemini-2.5-flash')
+     * @return string URL complète et fonctionnelle pour l'API Vertex
+     */
     private function buildVertexUrl(string $template, string $model): string
     {
         $caps = $this->capabilityRegistry->getCapabilities($model);
@@ -506,7 +544,6 @@ class GeminiClient implements LlmClientInterface
     }
 
     private function buildPayload(
-        string $systemInstruction,
         array $contents,
         array $tools,
         string $effectiveModel,
@@ -514,8 +551,17 @@ class GeminiClient implements LlmClientInterface
     ): array {
         $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
 
+        // Extract system instruction from contents (first message with role: 'system')
+        $systemInstruction = '';
+        $contentsWithoutSystem = $contents;
+
+        if (!empty($contents) && ($contents[0]['role'] ?? '') === 'system') {
+            $systemInstruction = $contents[0]['content'] ?? '';
+            $contentsWithoutSystem = array_slice($contents, 1);
+        }
+
         // Convert OpenAI format to Gemini format for the API
-        $geminiContents = $this->toGeminiMessages($contents);
+        $geminiContents = $this->toGeminiMessages($contentsWithoutSystem);
 
         $payload = [
             'systemInstruction' => [
@@ -562,6 +608,12 @@ class GeminiClient implements LlmClientInterface
         return $payload;
     }
 
+    /**
+     * Construit les headers HTTP d'authentification pour Vertex AI.
+     * Obtient un token Bearer OAuth2 via GoogleAuthService.
+     *
+     * @return array<string, string> Headers : {Authorization: 'Bearer ...', Content-Type: 'application/json'}
+     */
     private function buildVertexHeaders(): array
     {
         return [
@@ -570,6 +622,16 @@ class GeminiClient implements LlmClientInterface
         ];
     }
 
+    /**
+     * Construit la configuration de génération pour l'appel API Vertex.
+     * Applique les paramètres de température, top_p, top_k, tokens max, etc.
+     * Intègre optionnellement une config thinking (peut être surcharge par paramètre).
+     * Filtre les paramètres selon les capacités du modèle (ModelCapabilityRegistry).
+     *
+     * @param string $effectiveModel Identifiant du modèle
+     * @param array|null $thinkingConfigOverride Config thinking optionnelle (surcharge buildThinkingConfig)
+     * @return array<string, mixed> Config Gemini : {temperature, topP, topK?, maxOutputTokens?, stopSequences?, thinkingConfig?}
+     */
     private function buildGenerationConfig(string $effectiveModel, ?array $thinkingConfigOverride = null): array
     {
         $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
@@ -599,6 +661,13 @@ class GeminiClient implements LlmClientInterface
         return $config;
     }
 
+    /**
+     * Construit la configuration thinking (ou retourne null si désactivé).
+     * Le thinking n'est envoyé que si : (1) activé en config ET (2) supporté par le modèle.
+     *
+     * @param string $effectiveModel Identifiant du modèle
+     * @return array<string, mixed>|null Config thinking : {thinkingBudget: int, includeThoughts: true} ou null
+     */
     private function buildThinkingConfig(string $effectiveModel): ?array
     {
         $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
@@ -613,6 +682,13 @@ class GeminiClient implements LlmClientInterface
         ];
     }
 
+    /**
+     * Construit les seuils de sécurité configurés pour chaque catégorie de contenu.
+     * Si safety_settings est désactivé, délègue à buildSafetySettingsBlockNone().
+     * Sinon, applique les seuils par catégorie (ou défaut si non configurée).
+     *
+     * @return array<int, array{category: string, threshold: string}> Seuils : [{category: HARM_CATEGORY_*, threshold: BLOCK_*}, ...]
+     */
     private function buildSafetySettings(): array
     {
         $categoryMapping = [
@@ -638,6 +714,12 @@ class GeminiClient implements LlmClientInterface
         return $settings;
     }
 
+    /**
+     * Construit les seuils de sécurité avec BLOCK_NONE sur toutes les catégories.
+     * Utilisé quand safety_settings est désactivé (aucun filtrage).
+     *
+     * @return array<int, array{category: string, threshold: 'BLOCK_NONE'}> Seuils : [{category: HARM_CATEGORY_*, threshold: 'BLOCK_NONE'}, ...]
+     */
     private function buildSafetySettingsBlockNone(): array
     {
         $categories = [
@@ -650,6 +732,15 @@ class GeminiClient implements LlmClientInterface
         return array_map(fn($cat) => ['category' => $cat, 'threshold' => 'BLOCK_NONE'], $categories);
     }
 
+    /**
+     * Transforme toute exception en RuntimeException avec contexte API.
+     * Pour les HttpExceptionInterface, enrichit le message avec la réponse d'erreur Google.
+     * Conserve la exception d'origine comme cause (previous).
+     *
+     * @param \Throwable $e Exception originelle (HttpExceptionInterface, network, etc.)
+     * @return void N'existe jamais — lève toujours \RuntimeException
+     * @throws \RuntimeException Toujours levée avec message normalisé
+     */
     private function handleException(\Throwable $e): void
     {
         $message = $e->getMessage();
