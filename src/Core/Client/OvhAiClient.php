@@ -85,7 +85,7 @@ class OvhAiClient implements LlmClientInterface
             'reasoning_effort'   => $this->thinkingEnabled ? $this->reasoningEffort : null,
             'safety_enabled'     => false,  // OVH n'a pas de sécurité native
             'tools_sent'         => !empty($tools) && $caps->functionCalling,
-            'system_prompt_sent' => $caps->systemPrompt && !empty($systemInstruction),
+            'system_prompt_sent' => $caps->systemPrompt && !empty($contents) && ($contents[0]['role'] ?? '') === 'system',
             'context_caching'    => false,  // OVH n'a pas de context caching
         ];
         $debugOut['raw_request_body'] = $payload;
@@ -204,7 +204,7 @@ class OvhAiClient implements LlmClientInterface
             'reasoning_effort'   => $this->thinkingEnabled ? $this->reasoningEffort : null,
             'safety_enabled'     => false,  // OVH n'a pas de sécurité native
             'tools_sent'         => !empty($tools) && $caps->functionCalling,
-            'system_prompt_sent' => $caps->systemPrompt && !empty($systemInstruction),
+            'system_prompt_sent' => $caps->systemPrompt && !empty($contents) && ($contents[0]['role'] ?? '') === 'system',
             'context_caching'    => false,  // OVH n'a pas de context caching
         ];
         $debugOut['raw_request_body'] = $payload;
