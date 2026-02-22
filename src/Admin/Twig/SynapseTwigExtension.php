@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Admin\Twig;
 
+use ArnaudMoncondhuy\SynapseBundle\Admin\Layout\SynapseLayoutResolver;
 use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
+use ArnaudMoncondhuy\SynapseBundle\Core\PersonaRegistry;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -18,9 +20,9 @@ use Twig\TwigFunction;
 class SynapseTwigExtension extends AbstractExtension
 {
     public function __construct(
-        private \ArnaudMoncondhuy\SynapseBundle\Shared\Service\PersonaRegistry $personaRegistry,
-        private \ArnaudMoncondhuy\SynapseBundle\Admin\Layout\SynapseLayoutResolver $layoutResolver,
-        private \ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository $presetRepository,
+        private PersonaRegistry $personaRegistry,
+        private SynapseLayoutResolver $layoutResolver,
+        private SynapsePresetRepository $presetRepository,
         private ?EncryptionServiceInterface $encryptionService = null,
     ) {
     }
