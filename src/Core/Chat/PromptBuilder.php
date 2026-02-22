@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Core\Chat;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
+use ArnaudMoncondhuy\SynapseBundle\Core\PersonaRegistry;
 
 /**
  * Constructeur de Prompts Systèmes.

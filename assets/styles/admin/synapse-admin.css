@@ -1,0 +1,500 @@
+/**
+ * Synapse Admin - Main Stylesheet
+ * 
+ * Design System 2026 - Modern, Clean, Agnostic
+ * Namespace: .synapse-admin__ pour éviter les conflits
+ */
+
+/* ========================================
+   RESET & BASE
+   ======================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.synapse-admin-root {
+    font-family: var(--synapse-admin-font-sans);
+    color: var(--synapse-admin-text-main);
+    background: var(--synapse-admin-bg-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+.synapse-admin-root a {
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+}
+
+.synapse-admin-root h1,
+.synapse-admin-root h2,
+.synapse-admin-root h3 {
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+/* ========================================
+   LAYOUT - Standalone Mode
+   ======================================== */
+
+.synapse-admin__layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+}
+
+/* ========================================
+   SIDEBAR
+   ======================================== */
+
+.synapse-admin__sidebar {
+    background: var(--synapse-admin-bg-sidebar);
+    color: var(--synapse-admin-text-light);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+}
+
+.synapse-admin__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--synapse-admin-text-inverse);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 2.5rem;
+    padding-left: 0.5rem;
+}
+
+.synapse-admin__brand-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--synapse-admin-primary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.synapse-admin__nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.synapse-admin__nav-item a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--synapse-admin-radius-sm);
+    font-weight: 500;
+    color: var(--synapse-admin-text-light);
+    position: relative;
+}
+
+.synapse-admin__nav-item a:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--synapse-admin-text-inverse);
+}
+
+.synapse-admin__nav-item a.active {
+    background: var(--synapse-admin-primary);
+    color: var(--synapse-admin-text-inverse);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.synapse-admin__nav-item a i {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.synapse-admin__sidebar-footer {
+    margin-top: auto;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.8rem;
+    color: var(--synapse-admin-text-muted);
+}
+
+/* ========================================
+   MAIN CONTENT
+   ======================================== */
+
+.synapse-admin__main {
+    padding: 2rem;
+    max-width: 1600px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* ========================================
+   HEADER
+   ======================================== */
+
+.synapse-admin__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2.5rem;
+    background: var(--synapse-admin-bg-surface);
+    padding: 1.5rem 2rem;
+    border-radius: var(--synapse-admin-radius);
+    border: 1px solid var(--synapse-admin-border);
+    box-shadow: var(--synapse-admin-shadow-sm);
+}
+
+.synapse-admin__title {
+    font-size: 1.875rem;
+    color: var(--synapse-admin-text-main);
+    margin-bottom: 0.5rem;
+}
+
+.synapse-admin__subtitle {
+    color: var(--synapse-admin-text-muted);
+    font-size: 0.95rem;
+}
+
+/* ========================================
+   CARDS
+   ======================================== */
+
+.synapse-admin__card {
+    background: var(--synapse-admin-bg-card);
+    border-radius: var(--synapse-admin-radius);
+    border: 1px solid var(--synapse-admin-border);
+    box-shadow: var(--synapse-admin-shadow-sm);
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.synapse-admin__card--hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--synapse-admin-shadow);
+}
+
+.synapse-admin__card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--synapse-admin-border-light);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.synapse-admin__card-body {
+    padding: 1.5rem;
+}
+
+/* ========================================
+   GRID SYSTEM
+   ======================================== */
+
+.synapse-admin__grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.synapse-admin__grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.synapse-admin__grid-4 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+.synapse-admin__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--synapse-admin-radius-sm);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.synapse-admin__btn--primary {
+    background: var(--synapse-admin-primary);
+    color: white;
+    box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
+}
+
+.synapse-admin__btn--primary:hover {
+    background: var(--synapse-admin-primary-dark);
+    transform: translateY(-1px);
+}
+
+.synapse-admin__btn--secondary {
+    background: white;
+    border: 1px solid var(--synapse-admin-border);
+    color: var(--synapse-admin-text-main);
+}
+
+.synapse-admin__btn--secondary:hover {
+    background: var(--synapse-admin-bg-main);
+    border-color: var(--synapse-admin-text-muted);
+}
+
+.synapse-admin__btn--outline {
+    background: transparent;
+    border: 1px solid var(--synapse-admin-border);
+    color: var(--synapse-admin-text-muted);
+}
+
+.synapse-admin__btn--outline:hover {
+    border-color: var(--synapse-admin-text-main);
+    color: var(--synapse-admin-text-main);
+}
+
+/* ========================================
+   BADGES
+   ======================================== */
+
+.synapse-admin__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--synapse-admin-radius-full);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.synapse-admin__badge--success {
+    background: var(--synapse-admin-success-bg);
+    color: var(--synapse-admin-success);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.synapse-admin__badge--warning {
+    background: var(--synapse-admin-warning-bg);
+    color: var(--synapse-admin-warning);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.synapse-admin__badge--error {
+    background: var(--synapse-admin-error-bg);
+    color: var(--synapse-admin-error);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.synapse-admin__badge--nav {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    margin-left: auto;
+}
+
+/* ========================================
+   FORMS
+   ======================================== */
+
+.synapse-admin__form-group {
+    margin-bottom: 1.25rem;
+}
+
+.synapse-admin__label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--synapse-admin-text-main);
+    font-size: 0.9rem;
+}
+
+.synapse-admin__input,
+.synapse-admin__select,
+.synapse-admin__textarea {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--synapse-admin-border);
+    border-radius: var(--synapse-admin-radius-sm);
+    background: white;
+    color: var(--synapse-admin-text-main);
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.synapse-admin__input:focus,
+.synapse-admin__select:focus,
+.synapse-admin__textarea:focus {
+    outline: none;
+    border-color: var(--synapse-admin-primary);
+    box-shadow: 0 0 0 3px var(--synapse-admin-primary-fade);
+}
+
+.synapse-admin__help {
+    font-size: 0.8rem;
+    color: var(--synapse-admin-text-muted);
+    margin-top: 0.375rem;
+}
+
+/* ========================================
+   TABLES
+   ======================================== */
+
+.synapse-admin__table-container {
+    overflow-x: auto;
+}
+
+.synapse-admin__table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.synapse-admin__table th {
+    text-align: left;
+    padding: 1rem 1.5rem;
+    background: var(--synapse-admin-bg-main);
+    color: var(--synapse-admin-text-muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--synapse-admin-border);
+}
+
+.synapse-admin__table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--synapse-admin-border-light);
+    color: var(--synapse-admin-text-main);
+}
+
+.synapse-admin__table tr:last-child td {
+    border-bottom: none;
+}
+
+/* ========================================
+   ALERTS
+   ======================================== */
+
+.synapse-admin__alert {
+    padding: 1rem;
+    border-radius: var(--synapse-admin-radius);
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+.synapse-admin__alert--success {
+    background: var(--synapse-admin-success-bg);
+    color: var(--synapse-admin-success);
+    border: 1px solid rgba(0, 180, 0, 0.1);
+}
+
+.synapse-admin__alert--error {
+    background: var(--synapse-admin-error-bg);
+    color: var(--synapse-admin-error);
+    border: 1px solid rgba(255, 0, 0, 0.1);
+}
+
+.synapse-admin__alert--info {
+    background: var(--synapse-admin-primary-light);
+    color: var(--synapse-admin-primary-dark);
+    border: 1px solid var(--synapse-admin-primary-fade);
+}
+
+/* ========================================
+   KPI COMPONENTS
+   ======================================== */
+
+.synapse-admin__kpi {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.synapse-admin__kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.synapse-admin__kpi-icon--primary {
+    background: var(--synapse-admin-primary-light);
+    color: var(--synapse-admin-primary);
+}
+
+.synapse-admin__kpi-icon--warning {
+    background: var(--synapse-admin-warning-bg);
+    color: var(--synapse-admin-warning);
+}
+
+.synapse-admin__kpi-icon--success {
+    background: var(--synapse-admin-success-bg);
+    color: var(--synapse-admin-success);
+}
+
+.synapse-admin__kpi-icon--error {
+    background: var(--synapse-admin-error-bg);
+    color: var(--synapse-admin-error);
+}
+
+.synapse-admin__kpi-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--synapse-admin-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.synapse-admin__kpi-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--synapse-admin-text-main);
+    line-height: 1.2;
+}
+
+.synapse-admin__kpi-sub {
+    font-size: 0.8rem;
+    color: var(--synapse-admin-text-muted);
+    margin-top: 0.25rem;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .synapse-admin__layout {
+        grid-template-columns: 1fr;
+    }
+
+    .synapse-admin__sidebar {
+        display: none;
+    }
+
+    .synapse-admin__main {
+        padding: 1rem;
+    }
+
+    .synapse-admin__grid-2,
+    .synapse-admin__grid-3,
+    .synapse-admin__grid-4 {
+        grid-template-columns: 1fr;
+    }
+}
