@@ -72,6 +72,11 @@ services:
         autoconfigure: true
         tags: ['controller.service_arguments']
 
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\DebugController:
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
+
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\AnalyticsController:
         autowire: true
         autoconfigure: true
