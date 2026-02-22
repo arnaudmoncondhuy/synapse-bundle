@@ -154,6 +154,13 @@ class ProvidersController extends AbstractController
         }
     }
 
+    /**
+     * Teste la configuration Gemini en validant le JSON de service account.
+     * Vérifie que le project_id du JSON correspond à celui configuré.
+     *
+     * @param SynapseProvider $provider Provider Gemini à tester
+     * @throws \Exception Si JSON invalide, champs manquants, ou IDs non correspondants
+     */
     private function testGemini(SynapseProvider $provider): void
     {
         $creds = $this->decryptCredentials($provider->getCredentials());
@@ -181,6 +188,13 @@ class ProvidersController extends AbstractController
         }
     }
 
+    /**
+     * Teste la configuration OVH en faisant un appel à l'endpoint /models.
+     * Vérifie que l'API key est valide et l'endpoint accessible.
+     *
+     * @param SynapseProvider $provider Provider OVH à tester
+     * @throws \Exception Si API key manquante ou connexion impossible
+     */
     private function testOvh(SynapseProvider $provider): void
     {
         $creds = $this->decryptCredentials($provider->getCredentials());
@@ -251,6 +265,11 @@ class ProvidersController extends AbstractController
         return $credentials;
     }
 
+    /**
+     * Retourne les régions Vertex AI disponibles avec leurs labels pour le formulaire.
+     *
+     * @return array<string, string> Mapping région => label (ex: 'europe-west1' => 'Europe West 1 (Belgique)')
+     */
     private function getGeminiRegions(): array
     {
         return [

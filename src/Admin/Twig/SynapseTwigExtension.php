@@ -26,6 +26,11 @@ class SynapseTwigExtension extends AbstractExtension
         private ?EncryptionServiceInterface $encryptionService = null,
     ) {}
 
+    /**
+     * Enregistre les filtres Twig personnalisés du bundle.
+     *
+     * @return array<TwigFilter> Filtres : {synapse_markdown}
+     */
     public function getFilters(): array
     {
         return [
@@ -33,6 +38,11 @@ class SynapseTwigExtension extends AbstractExtension
         ];
     }
 
+    /**
+     * Enregistre les fonctions Twig personnalisées du bundle.
+     *
+     * @return array<TwigFunction> Fonctions : {synapse_chat_widget, synapse_get_personas, synapse_admin_layout, synapse_config, synapse_version}
+     */
     public function getFunctions(): array
     {
         return [

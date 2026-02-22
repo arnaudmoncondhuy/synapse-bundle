@@ -25,8 +25,11 @@ use Symfony\Contracts\Cache\ItemInterface;
  */
 class DatabaseConfigProvider implements ConfigProviderInterface
 {
+    /** @var string Clé de cache Symfony pour la configuration active */
     private const CACHE_KEY = 'synapse.config.active';
-    private const CACHE_TTL = 300; // 5 minutes
+
+    /** @var int Durée du cache en secondes (5 minutes) */
+    private const CACHE_TTL = 300;
 
     private ?array $configOverride = null;
 

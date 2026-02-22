@@ -20,8 +20,10 @@ use Symfony\Component\HttpFoundation\Response;
  */
 abstract class AbstractAdminController extends AbstractController
 {
-    // Tarifs Gemini 2.5 Flash (Janvier 2026)
+    /** @var float Tarif par million de tokens d'entrée (Gemini 2.5 Flash, Janvier 2026) */
     protected const PRICE_INPUT_PER_1M = 0.30;
+
+    /** @var float Tarif par million de tokens de sortie (Gemini 2.5 Flash, Janvier 2026) */
     protected const PRICE_OUTPUT_PER_1M = 2.50;
 
     public function __construct(

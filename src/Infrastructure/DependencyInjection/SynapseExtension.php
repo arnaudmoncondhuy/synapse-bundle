@@ -218,6 +218,12 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
             ->setArgument('$version', '%synapse.version%');
     }
 
+    /**
+     * Retourne l'alias de l'extension pour la configuration YAML.
+     * Permet aux utilisateurs d'utiliser `synapse:` au lieu de `synapse_extension:` dans config/packages/synapse.yaml.
+     *
+     * @return string L'alias 'synapse'
+     */
     public function getAlias(): string
     {
         return 'synapse';

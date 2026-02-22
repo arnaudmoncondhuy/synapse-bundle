@@ -22,6 +22,11 @@ class ToolExecutionSubscriber implements EventSubscriberInterface
     ) {
     }
 
+    /**
+     * Décrit l'événement écouté : SynapseToolCallRequestedEvent avec priorité normale (0).
+     *
+     * @return array<string, array{0: string, 1: int}> Mapping : {eventClass: [methodName, priority]}
+     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -29,6 +34,13 @@ class ToolExecutionSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * Exécute les outils/fonctions demandées par le LLM.
+     * Parcourt chaque appel d'outil, cherche l'implémentation correspondante, l'exécute,
+     * et enregistre le résultat sur l'événement pour la prochaine itération.
+     *
+     * @param SynapseToolCallRequestedEvent $event L'événement contenant les appels d'outils
+     */
     public function onToolCallRequested(SynapseToolCallRequestedEvent $event): void
     {
         foreach ($event->getToolCalls() as $toolCall) {

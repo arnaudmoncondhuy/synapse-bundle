@@ -11,16 +11,19 @@
 		</h1>
 	</div>
 
-	<div class="synapse-admin__card" style="max-width: 700px;">
-		<form method="POST" action="{{ path('synapse_admin_settings') }}" class="synapse-admin__form">
-			<div class="synapse-admin__form-section">
-				<h2 style="font-size: 1rem; margin: 0 0 1rem 0; padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border)">
-					<i data-lucide="shield" style="width: 16px; margin-right: 0.5rem; display: inline"></i>
-					Rétention RGPD
-				</h2>
+	<div class="synapse-admin__card" style="max-width: 800px;">
+		<form method="POST" action="{{ path('synapse_admin_settings') }}" class="synapse-admin__form" style="padding: 2rem;">
+			<!-- RGPD Retention Section -->
+			<div class="synapse-admin__form-section" style="margin-bottom: 2.5rem;">
+				<div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+					<i data-lucide="shield" style="width: 20px; height: 20px; color: var(--synapse-admin-primary); flex-shrink: 0;"></i>
+					<h2 style="font-size: 1.1rem; margin: 0; font-weight: 700; letter-spacing: -0.01em;">
+						Rétention RGPD
+					</h2>
+				</div>
 
-				<div class="synapse-admin__form-group">
-					<label for="retention_days" style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.95rem">
+				<div class="synapse-admin__form-group" style="margin-bottom: 0;">
+					<label for="retention_days" style="display: block; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.95rem; color: var(--synapse-admin-text)">
 						Nombre de jours de conservation
 					</label>
 					<input type="number"
@@ -29,27 +32,30 @@
 						   min="1"
 						   max="3650"
 						   value="{{ config.retentionDays }}"
-						   style="width: 100%; padding: 0.5rem; border: 1px solid var(--synapse-admin-border); border-radius: 0.375rem; font-size: 0.95rem"
+						   style="width: 180px; padding: 0.75rem; border: 1px solid var(--synapse-admin-border); border-radius: 0.5rem; font-size: 0.95rem;"
 						   required>
-					<small style="display: block; margin-top: 0.25rem; color: var(--synapse-admin-text-muted)">
+					<small style="display: block; margin-top: 0.5rem; color: var(--synapse-admin-text-muted); line-height: 1.4;">
 						Les conversations seront supprimées après ce nombre de jours (1-3650 jours)
 					</small>
 				</div>
 			</div>
 
-			<div class="synapse-admin__form-section" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--synapse-admin-border)">
-				<h2 style="font-size: 1rem; margin: 0 0 1rem 0; padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border)">
-					<i data-lucide="globe" style="width: 16px; margin-right: 0.5rem; display: inline"></i>
-					Contexte de génération
-				</h2>
+			<!-- Context Section -->
+			<div class="synapse-admin__form-section" style="margin-bottom: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--synapse-admin-border);">
+				<div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+					<i data-lucide="globe" style="width: 20px; height: 20px; color: var(--synapse-admin-primary); flex-shrink: 0;"></i>
+					<h2 style="font-size: 1.1rem; margin: 0; font-weight: 700; letter-spacing: -0.01em;">
+						Contexte de génération
+					</h2>
+				</div>
 
-				<div class="synapse-admin__form-group">
-					<label for="context_language" style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.95rem">
+				<div class="synapse-admin__form-group" style="margin-bottom: 0;">
+					<label for="context_language" style="display: block; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.95rem; color: var(--synapse-admin-text);">
 						Langue du contexte
 					</label>
 					<select id="context_language"
 							name="context_language"
-							style="width: 100%; padding: 0.5rem; border: 1px solid var(--synapse-admin-border); border-radius: 0.375rem; font-size: 0.95rem"
+							style="width: 100%; max-width: 400px; padding: 0.75rem; border: 1px solid var(--synapse-admin-border); border-radius: 0.5rem; font-size: 0.95rem;"
 							required>
 						{% for code, label in languages %}
 							<option value="{{ code }}" {% if config.contextLanguage == code %}selected{% endif %}>
@@ -57,53 +63,59 @@
 							</option>
 						{% endfor %}
 					</select>
-					<small style="display: block; margin-top: 0.25rem; color: var(--synapse-admin-text-muted)">
+					<small style="display: block; margin-top: 0.5rem; color: var(--synapse-admin-text-muted); line-height: 1.4;">
 						Langue utilisée comme contexte dans les prompts système (affecte tous les modèles)
 					</small>
 				</div>
 			</div>
 
-			<div class="synapse-admin__form-section" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--synapse-admin-border)">
-				<h2 style="font-size: 1rem; margin: 0 0 1rem 0; padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border)">
-					<i data-lucide="message-square" style="width: 16px; margin-right: 0.5rem; display: inline"></i>
-					Prompt système personnalisé
-				</h2>
+			<!-- System Prompt Section -->
+			<div class="synapse-admin__form-section" style="margin-bottom: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--synapse-admin-border);">
+				<div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+					<i data-lucide="message-square" style="width: 20px; height: 20px; color: var(--synapse-admin-primary); flex-shrink: 0;"></i>
+					<h2 style="font-size: 1.1rem; margin: 0; font-weight: 700; letter-spacing: -0.01em;">
+						Prompt système personnalisé
+					</h2>
+				</div>
 
-				<div class="synapse-admin__form-group">
-					<label for="system_prompt" style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.95rem">
+				<div class="synapse-admin__form-group" style="margin-bottom: 0;">
+					<label for="system_prompt" style="display: block; margin-bottom: 0.75rem; font-weight: 600; font-size: 0.95rem; color: var(--synapse-admin-text);">
 						Instructions personnalisées
 					</label>
 					<textarea id="system_prompt"
 							  name="system_prompt"
-							  rows="8"
-							  style="width: 100%; padding: 0.75rem; border: 1px solid var(--synapse-admin-border); border-radius: 0.375rem; font-size: 0.9rem; font-family: monospace"
+							  rows="10"
+							  style="width: 100%; padding: 1rem; border: 1px solid var(--synapse-admin-border); border-radius: 0.5rem; font-size: 0.9rem; font-family: 'Menlo', 'Monaco', 'Courier New', monospace; line-height: 1.5; resize: vertical;"
 							  placeholder="Entrez ici vos instructions personnalisées...">{{ config.systemPrompt ?? '' }}</textarea>
-					<small style="display: block; margin-top: 0.25rem; color: var(--synapse-admin-text-muted)">
-						Ce prompt s'ajoute au système de base et s'applique à tous les modèles LLM.
+					<small style="display: block; margin-top: 0.5rem; color: var(--synapse-admin-text-muted); line-height: 1.4;">
+						Ce prompt s'ajoute au système de base et s'applique à tous les modèles LLM.<br>
 						Laissez vide pour n'appliquer que le prompt de base.
 					</small>
 				</div>
 			</div>
 
-			<div class="synapse-admin__form-section" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--synapse-admin-border)">
-				<h2 style="font-size: 1rem; margin: 0 0 1rem 0; padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border)">
-					<i data-lucide="bug" style="width: 16px; margin-right: 0.5rem; display: inline"></i>
-					Debug & Observabilité
-				</h2>
+			<!-- Debug Section -->
+			<div class="synapse-admin__form-section" style="margin-bottom: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--synapse-admin-border);">
+				<div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+					<i data-lucide="bug" style="width: 20px; height: 20px; color: var(--synapse-admin-primary); flex-shrink: 0;"></i>
+					<h2 style="font-size: 1.1rem; margin: 0; font-weight: 700; letter-spacing: -0.01em;">
+						Debug & Observabilité
+					</h2>
+				</div>
 
-				<div class="synapse-admin__form-group">
-					<label for="debug_mode" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; font-size: 0.95rem">
-						<input type="checkbox" id="debug_mode" name="debug_mode" value="1" {% if config.debugMode %}checked{% endif %} style="cursor: pointer;">
-						Activer le mode debug global
+				<div class="synapse-admin__form-group" style="margin-bottom: 0;">
+					<label for="debug_mode" style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-weight: 600; font-size: 0.95rem; color: var(--synapse-admin-text);">
+						<input type="checkbox" id="debug_mode" name="debug_mode" value="1" {% if config.debugMode %}checked{% endif %} style="cursor: pointer; width: 18px; height: 18px;">
+						<span>Activer le mode debug global</span>
 					</label>
-					<small style="display: block; margin-top: 0.25rem; color: var(--synapse-admin-text-muted)">
+					<small style="display: block; margin-top: 0.5rem; color: var(--synapse-admin-text-muted); line-height: 1.4; padding-left: 2.25rem;">
 						Quand activé, tous les appels LLM sont enregistrés en base de données pour inspection (logs accessibles dans Debug Logs).
 					</small>
 				</div>
 			</div>
 
 			<!-- Actions -->
-			<div class="synapse-admin__form-actions" style="margin-top: 2rem; display: flex; gap: 0.75rem; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid var(--synapse-admin-border)">
+			<div class="synapse-admin__form-actions" style="display: flex; gap: 1rem; justify-content: flex-end; padding-top: 2rem; border-top: 1px solid var(--synapse-admin-border);">
 				<a href="{{ path('synapse_admin_index') }}"
 				   class="synapse-admin__btn synapse-admin__btn--ghost">
 					<i data-lucide="x" style="width: 16px; height: 16px;"></i>

@@ -59,7 +59,7 @@ class DashboardController extends AbstractController
             'kpis' => [
                 'active_conversations' => $conversationsLast24h,
                 'active_users_24h' => $activeUsersLast24h,
-                'tokens_7d' => $tokenStats['totalTokens'] ?? 0,
+                'tokens_7d' => $tokenStats['total_tokens'] ?? 0,
                 'tokens_cost' => $tokenStats['cost'] ?? 0,
             ],
             'daily_usage' => $dailyUsage,

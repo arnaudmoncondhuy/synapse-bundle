@@ -10,6 +10,13 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+/**
+ * Commande CLI : Met à jour le fichier VERSION du bundle avec le numéro de version dépendant de la date.
+ *
+ * Format : dev 0.YYMMDD (inversé : année-mois-jour)
+ * Utilisation : symfony console synapse:version:update
+ * Fichier cible : racine du projet/VERSION
+ */
 #[AsCommand(
     name: 'synapse:version:update',
     description: 'Updates the application version file with the current inverted date format.',

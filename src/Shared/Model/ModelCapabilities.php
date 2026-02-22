@@ -50,6 +50,13 @@ final class ModelCapabilities
         public readonly ?string $modelId = null,
     ) {}
 
+    /**
+     * Vérifie si le modèle supporte une capacité donnée.
+     *
+     * @param string $capability Capacité à vérifier (valeurs acceptées : 'thinking', 'safety_settings', 'top_k',
+     *                            'context_caching', 'function_calling', 'streaming', 'system_prompt')
+     * @return bool true si supportée, false sinon (y compris pour les capacités inconnues)
+     */
     public function supports(string $capability): bool
     {
         return match ($capability) {
