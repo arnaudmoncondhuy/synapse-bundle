@@ -52,26 +52,10 @@ class TokenAccountingService
         $pricingMap = $this->modelRepo->findAllPricingMap();
         $modelPricing = $pricingMap[$model] ?? ['input' => 0.0, 'output' => 0.0];
 
-        // Tokens
-        // Supporte plusieurs formats :
-        // - format interne : ['prompt'|'prompt_tokens', 'completion'|'completion_tokens', 'thinking'|'thinking_tokens']
-        // - format Vertex/Gemini usageMetadata : ['promptTokenCount', 'candidatesTokenCount', 'thoughtsTokenCount', ...]
-        $promptTokens = $usage['prompt']
-            ?? $usage['prompt_tokens']
-            ?? $usage['promptTokenCount']
-            ?? 0;
-
-        $thinkingTokens = $usage['thinking']
-            ?? $usage['thinking_tokens']
-            ?? $usage['thoughtsTokenCount']
-            ?? 0;
-
-        // Completion tokens :
-        // Note: candidatesTokenCount inclut déjà thinkingTokens dans l'API Gemini
-        $completionTokens = $usage['completion']
-            ?? $usage['completion_tokens']
-            ?? ($usage['candidatesTokenCount'] ?? 0)
-            ?? 0;
+        // Tokens (format normalisé Synapse)
+        $promptTokens     = $usage['prompt_tokens']     ?? 0;
+        $completionTokens = $usage['completion_tokens'] ?? 0;
+        $thinkingTokens   = $usage['thinking_tokens']   ?? 0;
 
         $tokenUsage->setPromptTokens($promptTokens);
         $tokenUsage->setCompletionTokens($completionTokens);
@@ -95,9 +79,9 @@ class TokenAccountingService
 
         // Calculer et stocker le coût
         $currentUsage = [
-            'prompt' => $promptTokens,
-            'completion' => $completionTokens,
-            'thinking' => $thinkingTokens,
+            'prompt_tokens'     => $promptTokens,
+            'completion_tokens' => $completionTokens,
+            'thinking_tokens'   => $thinkingTokens,
         ];
         $metadata['cost'] = $this->calculateCost($currentUsage, $modelPricing);
         $metadata['pricing'] = $modelPricing; // Stocker le tarif utilisé pour l'historique
@@ -109,77 +93,19 @@ class TokenAccountingService
     }
 
     /**
-     * Log l'usage depuis une réponse Gemini
-     *
-     * @param string $module Module concerné
-     * @param string $action Action spécifique
-     * @param string $model Modèle utilisé
-     * @param array $geminiResponse Réponse complète de l'API Gemini
-     * @param string|int|null $userId ID de l'utilisateur
-     * @param string|null $conversationId ID de la conversation
-     */
-    public function logFromGeminiResponse(
-        string $module,
-        string $action,
-        string $model,
-        array $geminiResponse,
-        string|int|null $userId = null,
-        ?string $conversationId = null
-    ): void {
-        $usage = $this->extractUsageFromGeminiResponse($geminiResponse);
-
-        $metadata = [
-            'debug_id' => $geminiResponse['debug_id'] ?? null,
-            'finish_reason' => $geminiResponse['candidates'][0]['finishReason'] ?? null,
-        ];
-
-        $this->logUsage($module, $action, $model, $usage, $userId, $conversationId, $metadata);
-    }
-
-    /**
-     * Extrait l'usage des tokens depuis une réponse Gemini
-     *
-     * @param array $response Réponse Gemini
-     * @return array{prompt: int, completion: int, thinking: int}
-     */
-    private function extractUsageFromGeminiResponse(array $response): array
-    {
-        $usageMetadata = $response['usageMetadata'] ?? [];
-
-        $promptTokens = $usageMetadata['promptTokenCount'] ?? 0;
-        $candidatesTokens = $usageMetadata['candidatesTokenCount'] ?? 0;
-        $thinkingTokens = 0;
-
-        // Gemini 2.5+ : thinking tokens
-        if (isset($usageMetadata['thoughtsTokenCount'])) {
-            $thinkingTokens = $usageMetadata['thoughtsTokenCount'];
-        }
-
-        // Completion tokens = candidates (qui incluent déjà les thoughts dans Gemini)
-        $completionTokens = $candidatesTokens;
-
-        return [
-            'prompt' => $promptTokens,
-            'completion' => $completionTokens,
-            'thinking' => $thinkingTokens,
-        ];
-    }
-
-    /**
      * Calcule le coût estimé d'un usage
      *
-     * @param array $usage Usage détaillé ['prompt' => int, 'completion' => int, 'thinking' => int]
+     * @param array $usage Usage détaillé ['prompt_tokens' => int, 'completion_tokens' => int, 'thinking_tokens' => int]
      * @param array $pricing Tarifs ['input' => float, 'output' => float] ($/1M tokens)
      * @return float Coût en dollars
      */
     public function calculateCost(array $usage, array $pricing): float
     {
-        $promptTokens = $usage['prompt'] ?? $usage['prompt_tokens'] ?? 0;
-        $completionTokens = $usage['completion'] ?? $usage['completion_tokens'] ?? 0;
-        $thinkingTokens = $usage['thinking'] ?? $usage['thinking_tokens'] ?? 0;
+        $promptTokens     = $usage['prompt_tokens']     ?? 0;
+        $completionTokens = $usage['completion_tokens'] ?? 0;
+        $thinkingTokens   = $usage['thinking_tokens']   ?? 0;
 
         $inputCost = ($promptTokens / 1_000_000) * ($pricing['input'] ?? 0);
-        // Version finale : Output = Completion (texte) + Thinking (réflexion)
         $outputCost = (($completionTokens + $thinkingTokens) / 1_000_000) * ($pricing['output'] ?? 0);
 
         return round($inputCost + $outputCost, 6);
