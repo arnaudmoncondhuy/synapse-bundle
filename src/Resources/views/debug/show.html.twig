@@ -267,14 +267,14 @@
 						<div class="turn">
 							<div class="turn-header">
 								<span class="badge">{{ msg.role | upper }}</span>
-								{% if msg.role == 'tool' and msg.tool_call_id %}
+								{% if msg.role == 'tool' and msg.tool_call_id is defined and msg.tool_call_id %}
 									<span class="badge" style="background: #fee2e2; color: #991b1b; margin-left: 8px;">{{ msg.tool_call_id }}</span>
 								{% endif %}
 							</div>
-							{% if msg.content %}
+							{% if msg.content is defined and msg.content %}
 								<p>{{ msg.content }}</p>
 							{% endif %}
-							{% if msg.role == 'assistant' and msg.tool_calls %}
+							{% if msg.role == 'assistant' and msg.tool_calls is defined and msg.tool_calls %}
 								<h4 style="color: #dc2626; margin: 12px 0 8px 0; font-size: 0.95rem;">🔧 Appels de fonction ({{ msg.tool_calls | length }})</h4>
 								{% for tc in msg.tool_calls %}
 									<div style="background: #fef2f2; border-left: 3px solid #dc2626; padding: 10px; margin: 8px 0; border-radius: 4px;">
