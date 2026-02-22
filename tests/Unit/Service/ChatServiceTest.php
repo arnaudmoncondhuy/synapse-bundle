@@ -1,0 +1,353 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service;
+
+use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
+use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ChatService;
+use ArnaudMoncondhuy\SynapseBundle\Core\Chat\LlmClientRegistry;
+use ArnaudMoncondhuy\SynapseBundle\Core\Chat\PromptBuilder;
+use ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapsePrePromptEvent;
+use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+
+class ChatServiceTest extends TestCase
+{
+    private LlmClientRegistry $llmRegistry;
+    private PromptBuilder $promptBuilder;
+    private ConfigProviderInterface $configProvider;
+    private EntityManagerInterface $em;
+    private EventDispatcherInterface $dispatcher;
+    private ChatService $chatService;
+
+    protected function setUp(): void
+    {
+        $this->llmRegistry = $this->createMock(LlmClientRegistry::class);
+        $this->promptBuilder = $this->createMock(PromptBuilder::class);
+        $this->configProvider = $this->createMock(ConfigProviderInterface::class);
+        $this->em = $this->createMock(EntityManagerInterface::class);
+        $this->dispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $this->chatService = new ChatService(
+            $this->llmRegistry,
+            $this->promptBuilder,
+            [],
+            $this->configProvider,
+            $this->em,
+            $this->dispatcher,
+        );
+    }
+
+    /**
+     * Test que ask() retourne un array avec les clés attendues.
+     */
+    public function testAskReturnsArrayWithExpectedKeys(): void
+    {
+        // Arrange
+        $message = 'Hello, how are you?';
+        $options = ['debug' => false];
+
+        $this->dispatcher->method('dispatch')
+            ->willReturnCallback(function (SynapsePrePromptEvent $event) {
+                $event->setPrompt([
+                    ['role' => 'system', 'content' => 'You are helpful'],
+                    ['role' => 'user', 'content' => 'Hello'],
+                ]);
+                $event->setConfig([
+                    'debug_mode' => false,
+                    'streaming_enabled' => false,
+                ]);
+                return $event;
+            });
+
+        // Mock client
+        $mockClient = $this->createMock(\ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface::class);
+        $mockClient->method('generateContent')
+            ->willReturn([
+                'text' => 'I am doing well!',
+                'thinking' => null,
+                'function_calls' => [],
+                'usage' => ['prompt_tokens' => 10, 'completion_tokens' => 5],
+                'safety_ratings' => [],
+                'blocked' => false,
+                'blocked_reason' => null,
+            ]);
+
+        $this->llmRegistry->method('getClient')
+            ->willReturn($mockClient);
+
+        // Act
+        $result = $this->chatService->ask($message, $options);
+
+        // Assert
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('answer', $result);
+    }
+
+    /**
+     * Test que ask() avec reset_conversation et message vide retourne vide.
+     */
+    public function testAskWithResetConversationReturnsEmpty(): void
+    {
+        // Arrange
+        $message = '';
+        $options = ['reset_conversation' => true];
+
+        // Act
+        $result = $this->chatService->ask($message, $options);
+
+        // Assert
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('answer', $result);
+        $this->assertEmpty($result['answer']);
+    }
+
+    /**
+     * Test que ask() dispatche le SynapsePrePromptEvent.
+     */
+    public function testAskDispatchesSynapsePrePromptEvent(): void
+    {
+        // Arrange
+        $message = 'Test message';
+
+        $this->dispatcher->expects($this->once())
+            ->method('dispatch')
+            ->with($this->isInstanceOf(SynapsePrePromptEvent::class))
+            ->willReturnCallback(function (SynapsePrePromptEvent $event) {
+                $event->setPrompt([['role' => 'user', 'content' => 'Test']]);
+                $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+                return $event;
+            });
+
+        $mockClient = $this->createMock(\ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface::class);
+        $mockClient->method('generateContent')
+            ->willReturn([
+                'text' => 'Response',
+                'thinking' => null,
+                'function_calls' => [],
+                'usage' => [],
+                'safety_ratings' => [],
+                'blocked' => false,
+                'blocked_reason' => null,
+            ]);
+
+        $this->llmRegistry->method('getClient')
+            ->willReturn($mockClient);
+
+        // Act
+        $this->chatService->ask($message);
+
+        // Dispatcher.dispatch() was already expected and verified
+    }
+
+    /**
+     * Test que ask() utilise le client LLM enregistré.
+     */
+    public function testAskUsesRegisteredLlmClient(): void
+    {
+        // Arrange
+        $message = 'Hello';
+
+        $this->dispatcher->method('dispatch')
+            ->willReturnCallback(function (SynapsePrePromptEvent $event) {
+                $event->setPrompt([['role' => 'user', 'content' => 'Hello']]);
+                $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+                return $event;
+            });
+
+        $mockClient = $this->createMock(\ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface::class);
+        $mockClient->expects($this->once())
+            ->method('generateContent')
+            ->willReturn([
+                'text' => 'Hi!',
+                'thinking' => null,
+                'function_calls' => [],
+                'usage' => [],
+                'safety_ratings' => [],
+                'blocked' => false,
+                'blocked_reason' => null,
+            ]);
+
+        $this->llmRegistry->expects($this->once())
+            ->method('getClient')
+            ->willReturn($mockClient);
+
+        // Act
+        $this->chatService->ask($message);
+
+        // Client.generateContent() was already expected and verified
+    }
+
+    /**
+     * Test que ask() traite les chunks de manière itérative.
+     */
+    public function testAskAccumulatesChunksIntoAnswer(): void
+    {
+        // Arrange
+        $message = 'Test';
+
+        $this->dispatcher->method('dispatch')
+            ->willReturnCallback(function (SynapsePrePromptEvent $event) {
+                $event->setPrompt([['role' => 'user', 'content' => 'Test']]);
+                $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+                return $event;
+            });
+
+        $mockClient = $this->createMock(\ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface::class);
+        $mockClient->method('generateContent')
+            ->willReturn([
+                'text' => 'This is a complete answer.',
+                'thinking' => null,
+                'function_calls' => [],
+                'usage' => ['prompt_tokens' => 10, 'completion_tokens' => 8],
+                'safety_ratings' => [],
+                'blocked' => false,
+                'blocked_reason' => null,
+            ]);
+
+        $this->llmRegistry->method('getClient')
+            ->willReturn($mockClient);
+
+        // Act
+        $result = $this->chatService->ask($message);
+
+        // Assert
+        $this->assertStringContainsString('answer', $result);
+    }
+
+    /**
+     * Test avec debug mode activé.
+     */
+    public function testAskWithDebugModeEnabled(): void
+    {
+        // Arrange
+        $message = 'Debug test';
+        $options = ['debug' => true];
+
+        $this->dispatcher->method('dispatch')
+            ->willReturnCallback(function (SynapsePrePromptEvent $event) {
+                $event->setPrompt([['role' => 'user', 'content' => 'Debug test']]);
+                $event->setConfig([
+                    'streaming_enabled' => false,
+                    'debug_mode' => false,
+                ]);
+                return $event;
+            });
+
+        $mockClient = $this->createMock(\ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface::class);
+        $mockClient->method('generateContent')
+            ->willReturn([
+                'text' => 'Debug response',
+                'thinking' => null,
+                'function_calls' => [],
+                'usage' => [],
+                'safety_ratings' => [],
+                'blocked' => false,
+                'blocked_reason' => null,
+            ]);
+
+        $this->llmRegistry->method('getClient')
+            ->willReturn($mockClient);
+
+        // Act
+        $result = $this->chatService->ask($message, $options);
+
+        // Assert
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('debug', $result);
+    }
+
+    /**
+     * Test avec callbacks de statut.
+     */
+    public function testAskWithStatusUpdateCallback(): void
+    {
+        // Arrange
+        $message = 'Test';
+        $statusUpdates = [];
+        $onStatusUpdate = function (string $msg, string $step) use (&$statusUpdates) {
+            $statusUpdates[] = ['message' => $msg, 'step' => $step];
+        };
+
+        $this->dispatcher->method('dispatch')
+            ->willReturnCallback(function (SynapsePrePromptEvent $event) {
+                $event->setPrompt([['role' => 'user', 'content' => 'Test']]);
+                $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+                return $event;
+            });
+
+        $mockClient = $this->createMock(\ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface::class);
+        $mockClient->method('generateContent')
+            ->willReturn([
+                'text' => 'Response',
+                'thinking' => null,
+                'function_calls' => [],
+                'usage' => [],
+                'safety_ratings' => [],
+                'blocked' => false,
+                'blocked_reason' => null,
+            ]);
+
+        $this->llmRegistry->method('getClient')
+            ->willReturn($mockClient);
+
+        // Act
+        $this->chatService->ask($message, [], $onStatusUpdate);
+
+        // Assert
+        $this->assertNotEmpty($statusUpdates);
+        $this->assertEquals('thinking', $statusUpdates[0]['step']);
+    }
+
+    /**
+     * Test que le format OpenAI canonical est maintenu dans les prompts.
+     */
+    public function testAskMaintainsOpenAiCanonicalFormat(): void
+    {
+        // Arrange
+        $message = 'Format test';
+        $expectedPrompt = [
+            ['role' => 'system', 'content' => 'System instruction'],
+            ['role' => 'user', 'content' => 'Format test'],
+        ];
+
+        $this->dispatcher->method('dispatch')
+            ->willReturnCallback(function (SynapsePrePromptEvent $event) use ($expectedPrompt) {
+                $event->setPrompt($expectedPrompt);
+                $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+                return $event;
+            });
+
+        $capturedContents = null;
+        $mockClient = $this->createMock(\ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface::class);
+        $mockClient->method('generateContent')
+            ->willReturnCallback(function (array $contents) use (&$capturedContents) {
+                $capturedContents = $contents;
+                return [
+                    'text' => 'Response',
+                    'thinking' => null,
+                    'function_calls' => [],
+                    'usage' => [],
+                    'safety_ratings' => [],
+                    'blocked' => false,
+                    'blocked_reason' => null,
+                ];
+            });
+
+        $this->llmRegistry->method('getClient')
+            ->willReturn($mockClient);
+
+        // Act
+        $this->chatService->ask($message);
+
+        // Assert
+        $this->assertIsArray($capturedContents);
+        // Verify OpenAI format: each item has 'role' and 'content'
+        foreach ($capturedContents as $item) {
+            $this->assertArrayHasKey('role', $item);
+            $this->assertArrayHasKey('content', $item);
+        }
+    }
+}
