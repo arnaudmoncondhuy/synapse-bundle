@@ -36,8 +36,6 @@ class GeminiClient implements LlmClientInterface
     private int    $generationTopK          = 40;
     private ?int   $generationMaxOutputTokens = null;
     private array  $generationStopSequences = [];
-    private bool   $contextCachingEnabled   = false;
-    private ?string $contextCachingId       = null;
 
     public function __construct(
         private HttpClientInterface $httpClient,
@@ -85,7 +83,6 @@ class GeminiClient implements LlmClientInterface
             'thinking_budget'    => ($this->thinkingEnabled && $caps->thinking) ? $this->thinkingBudget : null,
             'safety_enabled'     => $this->safetySettingsEnabled,
             'tools_sent'         => !empty($tools) && $caps->functionCalling,
-            'context_caching'    => $this->contextCachingEnabled && $caps->contextCaching && $this->contextCachingId,
             'system_prompt_sent' => !empty($contents) && ($contents[0]['role'] ?? '') === 'system',
         ];
         $debugOut['raw_request_body'] = $payload;
@@ -142,7 +139,6 @@ class GeminiClient implements LlmClientInterface
             'thinking_budget'    => ($this->thinkingEnabled && $caps->thinking) ? $this->thinkingBudget : null,
             'safety_enabled'     => $this->safetySettingsEnabled,
             'tools_sent'         => !empty($tools) && $caps->functionCalling,
-            'context_caching'    => $this->contextCachingEnabled && $caps->contextCaching && $this->contextCachingId,
             'system_prompt_sent' => !empty($contents) && ($contents[0]['role'] ?? '') === 'system',
         ];
         $debugOut['raw_request_body'] = $payload;
@@ -373,14 +369,6 @@ class GeminiClient implements LlmClientInterface
             $this->generationTemperature     = (float) ($gen['temperature'] ?? $this->generationTemperature);
             $this->generationTopP            = (float) ($gen['top_p'] ?? $this->generationTopP);
             $this->generationTopK            = (int) ($gen['top_k'] ?? $this->generationTopK);
-            $this->generationMaxOutputTokens = $gen['max_output_tokens'] ?? $this->generationMaxOutputTokens;
-            $this->generationStopSequences   = $gen['stop_sequences'] ?? $this->generationStopSequences;
-        }
-
-        // Context Caching
-        if (isset($config['context_caching'])) {
-            $this->contextCachingEnabled = $config['context_caching']['enabled'] ?? $this->contextCachingEnabled;
-            $this->contextCachingId      = $config['context_caching']['cached_content_id'] ?? $this->contextCachingId;
         }
     }
 
@@ -584,10 +572,6 @@ class GeminiClient implements LlmClientInterface
             }
         } else {
             $payload['safetySettings'] = $this->buildSafetySettingsBlockNone();
-        }
-
-        if ($caps->contextCaching && $this->contextCachingEnabled && $this->contextCachingId) {
-            $payload['cachedContent'] = $this->contextCachingId;
         }
 
         if (!empty($tools) && $caps->functionCalling) {

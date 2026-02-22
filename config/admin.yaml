@@ -39,8 +39,6 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api\ResetController:
         tags: ['controller.service_arguments']
 
-    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ConfigController:
-        tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ProvidersController:
         autowire: true

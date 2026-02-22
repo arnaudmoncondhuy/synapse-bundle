@@ -207,21 +207,38 @@
 				<div class="critical-checks">
 					<div class="check-item">
 						<span class="check-icon">{% if report.critical_checks.response_not_empty %}✅{% else %}❌{% endif %}</span>
-						<span>La réponse de l'IA n'est pas vide</span>
+						<span>La réponse de l'IA n'est pas vide (mode synchrone)</span>
 					</div>
 					<div class="check-item">
 						<span class="check-icon">{% if report.critical_checks.debug_saved_in_db %}✅{% else %}❌{% endif %}</span>
 						<span>Le debug est enregistré en base de données (ID: {{ report.debug_id ?? '–' }})</span>
 					</div>
+					{% if report.critical_checks.streaming_enabled %}
+						<div class="check-item">
+							<span class="check-icon">✅</span>
+							<span>Streaming est activé dans le preset</span>
+						</div>
+						<div class="check-item">
+							<span class="check-icon">{% if report.critical_checks.streaming_works %}✅{% else %}⚠️{% endif %}</span>
+							<span>Mode streaming fonctionne (ID: {{ report.debug_id_streaming ?? '–' }})</span>
+						</div>
+					{% endif %}
 				</div>
 			</div>
 
 			<!-- Réponse de test de l'IA -->
 			<div class="section">
 				<h2>💬 Réponse du LLM au message de test</h2>
+				<h3>Mode synchrone</h3>
 				<div class="ai-response">
 					{{ report.ai_response ?? 'Pas de réponse' }}
 				</div>
+				{% if report.critical_checks.streaming_enabled and report.ai_response_streaming %}
+					<h3>Mode streaming</h3>
+					<div class="ai-response">
+						{{ report.ai_response_streaming }}
+					</div>
+				{% endif %}
 			</div>
 
 			<!-- Rapport d'analyse -->
@@ -245,6 +262,7 @@
 			{% if report.usage_test %}
 				<div class="section">
 					<h2>📈 Consommation de tokens</h2>
+					<h3>Mode synchrone</h3>
 					<table class="usage-table">
 						<tr>
 							<th>Métrique</th>
@@ -267,6 +285,42 @@
 							<td>{{ report.usage_test.totalTokenCount ?? 0 }}</td>
 						</tr>
 					</table>
+
+					{% if report.critical_checks.streaming_enabled and report.usage_test_streaming %}
+						<h3>Mode streaming</h3>
+						<table class="usage-table">
+							<tr>
+								<th>Métrique</th>
+								<th>Sync</th>
+								<th>Streaming</th>
+								<th>Écart</th>
+							</tr>
+							<tr>
+								<td>Tokens d'entrée</td>
+								<td>{{ report.usage_test.promptTokenCount ?? 0 }}</td>
+								<td>{{ report.usage_test_streaming.promptTokenCount ?? 0 }}</td>
+								<td style="{% if report.usage_test.promptTokenCount == report.usage_test_streaming.promptTokenCount %}color: #16a34a;{% else %}color: #dc2626;{% endif %}">
+									{% if report.usage_test.promptTokenCount == report.usage_test_streaming.promptTokenCount %}✅ Identique{% else %}⚠️ Différent{% endif %}
+								</td>
+							</tr>
+							<tr>
+								<td>Tokens de sortie</td>
+								<td>{{ report.usage_test.candidatesTokenCount ?? 0 }}</td>
+								<td>{{ report.usage_test_streaming.candidatesTokenCount ?? 0 }}</td>
+								<td style="{% if report.usage_test.candidatesTokenCount == report.usage_test_streaming.candidatesTokenCount %}color: #16a34a;{% else %}color: #f59e0b;{% endif %}">
+									{% if report.usage_test.candidatesTokenCount == report.usage_test_streaming.candidatesTokenCount %}✅ Identique{% else %}⚠️ Peut différer{% endif %}
+								</td>
+							</tr>
+							<tr>
+								<td>Tokens de réflexion</td>
+								<td>{{ report.usage_test.thoughtsTokenCount ?? 0 }}</td>
+								<td>{{ report.usage_test_streaming.thoughtsTokenCount ?? 0 }}</td>
+								<td style="{% if report.usage_test.thoughtsTokenCount == report.usage_test_streaming.thoughtsTokenCount %}color: #16a34a;{% else %}color: #f59e0b;{% endif %}">
+									{% if report.usage_test.thoughtsTokenCount == report.usage_test_streaming.thoughtsTokenCount %}✅ Identique{% else %}⚠️ Peut différer{% endif %}
+								</td>
+							</tr>
+						</table>
+					{% endif %}
 				</div>
 			{% endif %}
 
@@ -276,7 +330,12 @@
 				<div class="actions">
 					{% if report.debug_id %}
 						<a href="{{ path('synapse_debug_show', {id: report.debug_id}) }}" class="btn btn-primary">
-							📋 Voir le debug complet
+							📋 Debug synchrone
+						</a>
+					{% endif %}
+					{% if report.critical_checks.streaming_enabled and report.debug_id_streaming %}
+						<a href="{{ path('synapse_debug_show', {id: report.debug_id_streaming}) }}" class="btn btn-primary">
+							📋 Debug streaming
 						</a>
 					{% endif %}
 					<a href="{{ path('synapse_admin_presets') }}" class="btn btn-secondary">

@@ -28,8 +28,7 @@ class DebugLogSubscriber implements EventSubscriberInterface
     public function __construct(
         private SynapseDebugLoggerInterface $debugLogger,
         private CacheInterface $cache,
-    ) {
-    }
+    ) {}
 
     public static function getSubscribedEvents(): array
     {
@@ -54,6 +53,7 @@ class DebugLogSubscriber implements EventSubscriberInterface
         }
 
         // Extract preset config parameters for display
+        $safetySettings = $config['safety_settings'] ?? [];
         $presetConfig = [
             'model'              => $config['model'] ?? null,
             'provider'           => $config['provider'] ?? null,
@@ -63,10 +63,11 @@ class DebugLogSubscriber implements EventSubscriberInterface
             'max_output_tokens'  => $config['generation_config']['max_output_tokens'] ?? null,
             'thinking_enabled'   => $config['thinking']['enabled'] ?? false,
             'thinking_budget'    => $config['thinking']['budget'] ?? null,
-            'safety_enabled'     => $config['safety_settings']['enabled'] ?? false,
+            'safety_enabled'     => $safetySettings['enabled'] ?? false,
+            'safety_thresholds'  => $safetySettings['thresholds'] ?? [],
+            'safety_default_threshold' => $safetySettings['default_threshold'] ?? null,
             'tools_sent'         => !empty($prompt['toolDefinitions']),
             'streaming_enabled'  => $config['streaming_enabled'] ?? false,
-            'context_caching'    => $config['context_caching'] ?? false,
         ];
 
         $this->debugAccumulator = [

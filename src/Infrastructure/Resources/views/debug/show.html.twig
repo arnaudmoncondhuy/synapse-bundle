@@ -184,10 +184,6 @@
 							<td>{% if pc.tools_sent %}✅ Oui{% else %}❌ Non{% endif %}</td>
 						</tr>
 						<tr>
-							<td>Context Caching</td>
-							<td>{% if pc['context_caching'] is defined and pc['context_caching'] %}✅ Oui{% else %}❌ Non{% endif %}</td>
-						</tr>
-						<tr>
 							<td>Streaming (SSE)</td>
 							<td>{% if pc['streaming_enabled'] is defined %}{% if pc.streaming_enabled %}✅ Oui{% else %}❌ Non{% endif %}{% else %}❌ Non{% endif %}</td>
 						</tr>

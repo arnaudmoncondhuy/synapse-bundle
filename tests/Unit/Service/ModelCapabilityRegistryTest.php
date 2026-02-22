@@ -43,7 +43,6 @@ class ModelCapabilityRegistryTest extends TestCase
         $this->assertIsBool($capabilities->thinking);
         $this->assertIsBool($capabilities->safetySettings);
         $this->assertIsBool($capabilities->topK);
-        $this->assertIsBool($capabilities->contextCaching);
         $this->assertIsBool($capabilities->functionCalling);
         $this->assertIsBool($capabilities->streaming);
         $this->assertIsBool($capabilities->systemPrompt);
@@ -132,18 +131,6 @@ class ModelCapabilityRegistryTest extends TestCase
         // Assert
         $this->assertIsString($capabilities->model);
         $this->assertEquals('gemini-2.5-flash', $capabilities->model);
-    }
-
-    /**
-     * Test context_caching est désactivé par défaut.
-     */
-    public function testContextCachingDefaultDisabled(): void
-    {
-        // Act
-        $capabilities = $this->registry->getCapabilities('unknown');
-
-        // Assert
-        $this->assertFalse($capabilities->contextCaching);
     }
 
     /**

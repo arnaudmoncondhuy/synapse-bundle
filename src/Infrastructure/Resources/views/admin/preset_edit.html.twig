@@ -254,29 +254,6 @@
 				</div>
 			</div>
 		</div>
-
-		{# ── Context Caching ───────────────────────────────────────────────── #}
-		<div class="synapse-admin__card" id="section-caching">
-			<div class="synapse-admin__card-header">
-				<span class="synapse-admin__card-title">Context Caching (Gemini)</span>
-			</div>
-			<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--2">
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">
-						<input type="checkbox" name="context_caching_enabled" value="1"
-						       {% if preset.contextCachingEnabled %}checked{% endif %}>
-						Activer le context caching
-					</label>
-				</div>
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">ID du cached content</label>
-					<input type="text" name="context_caching_id"
-					       value="{{ preset.contextCachingId }}"
-					       class="synapse-admin__input"
-					       placeholder="projects/…/cachedContents/…">
-				</div>
-			</div>
-		</div>
 		</details>
 
 
@@ -323,15 +300,13 @@ function updateFormVisibility() {
 	const caps = modelCapabilities[modelId] || {
 		thinking: false,
 		safety_settings: false,
-		top_k: true,
-		context_caching: false
+		top_k: true
 	};
 
 	const sections = {
 		'section-thinking': caps.thinking,
 		'section-safety': caps.safety_settings,
-		'section-top-k': caps.top_k,
-		'section-caching': caps.context_caching
+		'section-top-k': caps.top_k
 	};
 
 	for (const [id, visible] of Object.entries(sections)) {
@@ -377,15 +352,13 @@ function updateCapsBadges(modelId, caps) {
 		{ key: 'thinking', label: 'Thinking', icon: 'brain' },
 		{ key: 'function_calling', label: 'Tool Calls', icon: 'wrench' },
 		{ key: 'safety_settings', label: 'Safety Filters', icon: 'shield' },
-		{ key: 'streaming', label: 'Streaming', icon: 'activity' },
-		{ key: 'context_caching', label: 'Context Caching', icon: 'database' }
+		{ key: 'streaming', label: 'Streaming', icon: 'activity' }
 	];
 
 	let hasCapabilities = false;
 	for (const { key, label, icon } of capabilities) {
 		const capKey = key === 'function_calling' ? 'functionCalling' :
-		               key === 'safety_settings' ? 'safetySettings' :
-		               key === 'context_caching' ? 'contextCaching' : key;
+		               key === 'safety_settings' ? 'safetySettings' : key;
 
 		if (caps[capKey]) {
 			const pill = document.createElement('span');

@@ -30,8 +30,7 @@ abstract class AbstractAdminController extends AbstractController
         protected TokenUsageRepository $tokenUsageRepository,
         protected SynapsePresetRepository $synapsePresetRepository,
         protected EncryptionServiceInterface $encryption,
-    ) {
-    }
+    ) {}
 
     /**
      * Dashboard : Vue d'ensemble (KPIs, État système).
@@ -47,7 +46,7 @@ abstract class AbstractAdminController extends AbstractController
         // Calcul des coûts (combine tchat + appels IA automatisés)
         $globalStats = $this->tokenUsageRepository->getGlobalStats($start, $end);
         $cost = ($globalStats['prompt_tokens'] / 1_000_000 * self::PRICE_INPUT_PER_1M) +
-                ($globalStats['completion_tokens'] / 1_000_000 * self::PRICE_OUTPUT_PER_1M);
+            ($globalStats['completion_tokens'] / 1_000_000 * self::PRICE_OUTPUT_PER_1M);
 
         return $this->render($this->getTemplatePath('dashboard'), [
             'module_color' => $this->getModuleColor(),
@@ -80,7 +79,7 @@ abstract class AbstractAdminController extends AbstractController
 
         // Calcul des coûts (Gemini 2.5 Flash)
         $cost = ($globalStats['prompt_tokens'] / 1_000_000 * self::PRICE_INPUT_PER_1M) +
-                ($globalStats['completion_tokens'] / 1_000_000 * self::PRICE_OUTPUT_PER_1M);
+            ($globalStats['completion_tokens'] / 1_000_000 * self::PRICE_OUTPUT_PER_1M);
 
         return $this->render($this->getTemplatePath('analytics'), [
             'module_color' => $this->getModuleColor(),
@@ -135,11 +134,6 @@ abstract class AbstractAdminController extends AbstractController
             $stopSeqStr = $request->request->get('generation_stop_sequences', '');
             $stopSequences = array_filter(array_map('trim', explode(',', $stopSeqStr)));
             $config->setGenerationStopSequences($stopSequences);
-
-            // Context Caching
-            $config->setContextCachingEnabled($request->request->getBoolean('context_caching_enabled'));
-            $cachingId = $request->request->get('context_caching_id', '');
-            $config->setContextCachingId('' !== $cachingId ? $cachingId : null);
 
             // Note: system_prompt, retention_days, context_language are now managed in SettingsController
             // They are stored in SynapseConfig (global settings) instead of SynapsePreset.

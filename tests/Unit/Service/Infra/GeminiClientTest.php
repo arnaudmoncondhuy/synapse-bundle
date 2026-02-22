@@ -8,6 +8,7 @@ use ArnaudMoncondhuy\SynapseBundle\Core\Client\GeminiClient;
 use ArnaudMoncondhuy\SynapseBundle\Core\Client\GoogleAuthService;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Model\ModelCapabilities;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -35,6 +36,9 @@ class GeminiClientTest extends TestCase
                 'vertex_project_id' => 'test-project',
                 'vertex_region' => 'europe-west1',
             ]);
+
+        $this->capabilityRegistry->method('getCapabilities')
+            ->willReturn(new ModelCapabilities('gemini-2.5-flash', 'gemini'));
 
         $this->geminiClient = new GeminiClient(
             $this->httpClient,
@@ -245,6 +249,12 @@ class GeminiClientTest extends TestCase
                 $this->anything()
             )
             ->willReturn($mockResponse);
+
+        $this->capabilityRegistry->method('getCapabilities')
+            ->willReturnMap([
+                ['gemini-2.5-flash', new ModelCapabilities('gemini-2.5-flash', 'gemini')],
+                ['gemini-2.5-pro', new ModelCapabilities('gemini-2.5-pro', 'gemini')],
+            ]);
 
         // Act
         $result = $this->geminiClient->generateContent(

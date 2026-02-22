@@ -18,7 +18,6 @@ Un bundle Symfony pour intégrer facilement des assistants IA dans votre applica
 - 🎨 **Interface Admin** : Dashboard, analytiques, gestion des presets et modèles
 - 🎯 **Personas** : Personnalités IA prédéfinies ou custom
 - 💭 **Thinking Mode** : Support natif du raisonnement Chain-of-Thought (Gemini 2.5+)
-- 💰 **Context Caching** : Optimisation des coûts (~90% d'économie sur les tokens)
 - 📊 **Token Tracking** : Suivi de la consommation et calcul des coûts
 - 🧩 **Modes flexibles** : Standalone ou intégration dans votre design system
 
@@ -118,7 +117,7 @@ Le bundle gère les prompts en 3 couches :
 #### Google Vertex AI (Gemini)
 - Modèles : `gemini-2.5-flash`, `gemini-2.5-pro`, etc.
 - Région : `europe-west1`, `europe-west4`, `us-central1`, etc.
-- Capacités : streaming, thinking natif, context caching, safety settings
+- Capacités : streaming, thinking natif, safety settings
 
 #### OVH AI Endpoints (OpenAI-compatible)
 - Endpoint customizable (défaut : `https://oai.endpoints.kepler.ai.cloud.ovh.net/v1`)

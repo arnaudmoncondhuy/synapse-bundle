@@ -9,7 +9,7 @@ use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseProviderRepository;
 use ArnaudMoncondhuy\SynapseBundle\Core\DatabaseConfigProvider;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry;
-use ArnaudMoncondhuy\SynapseBundle\Core\SmartPresetFactory;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,7 +31,7 @@ class PresetsController extends AbstractController
         private ModelCapabilityRegistry $capabilityRegistry,
         private DatabaseConfigProvider $configProvider,
         private EntityManagerInterface $em,
-        private SmartPresetFactory $smartPresetFactory,
+
     ) {}
 
     /**
@@ -90,7 +90,7 @@ class PresetsController extends AbstractController
             'models_by_provider' => $this->getModelsByProvider(),
             'model_capabilities' => $this->getFullModelsCapabilities(),
             'safety_thresholds'  => $this->getSafetyThresholds(),
-            'smart_presets'      => $this->smartPresetFactory->getAvailablePresets(),
+
             'is_new'    => true,
         ]);
     }
@@ -119,7 +119,7 @@ class PresetsController extends AbstractController
             'models_by_provider' => $this->getModelsByProvider(),
             'model_capabilities' => $this->getFullModelsCapabilities(),
             'safety_thresholds'  => $this->getSafetyThresholds(),
-            'smart_presets'      => $this->smartPresetFactory->getAvailablePresets(),
+
             'is_new'    => false,
         ]);
     }
@@ -165,8 +165,6 @@ class PresetsController extends AbstractController
         $clone->setThinkingBudget($source->getThinkingBudget());
         $clone->setReasoningEffort($source->getReasoningEffort());
         $clone->setStreamingEnabled($source->isStreamingEnabled());
-        $clone->setContextCachingEnabled($source->isContextCachingEnabled());
-        $clone->setContextCachingId($source->getContextCachingId());
         $clone->setIsActive(false); // Clone starts inactive
 
         $this->em->persist($clone);
@@ -212,10 +210,6 @@ class PresetsController extends AbstractController
         $modelName = $data['model'] ?? 'gemini-2.5-flash';
         $preset->setModel($modelName);
 
-        // Apply smart preset if selected
-        if (!empty($data['smart_preset'])) {
-            $data = $this->smartPresetFactory->applyPreset($data['smart_preset'], $data);
-        }
 
         // Récupération des capacités du modèle pour nettoyer les données non supportées
         $caps = $this->capabilityRegistry->getCapabilities($modelName);
@@ -271,16 +265,6 @@ class PresetsController extends AbstractController
 
         // Streaming Mode (checkbox non envoyé = false)
         $preset->setStreamingEnabled(!empty($data['streaming_enabled']));
-
-        // Context Caching
-        $cachingEnabled = (bool) ($data['context_caching_enabled'] ?? false);
-        if ($caps->contextCaching && $cachingEnabled) {
-            $preset->setContextCachingEnabled(true);
-            $preset->setContextCachingId(!empty($data['context_caching_id']) ? $data['context_caching_id'] : null);
-        } else {
-            $preset->setContextCachingEnabled(false);
-            $preset->setContextCachingId(null);
-        }
     }
 
     private function getModelsByProvider(): array
@@ -303,8 +287,8 @@ class PresetsController extends AbstractController
                 'thinking' => $caps->thinking,
                 'safety_settings' => $caps->safetySettings,
                 'top_k' => $caps->topK,
-                'context_caching' => $caps->contextCaching,
                 'function_calling' => $caps->functionCalling,
+
             ];
         }
         return $result;

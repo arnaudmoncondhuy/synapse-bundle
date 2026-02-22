@@ -36,10 +36,6 @@ interface ConfigProviderInterface
      *                       'max_output_tokens' => ?int,
      *                       'stop_sequences' => array,
      *                   ],
-     *                   'context_caching' => [
-     *                       'enabled' => bool,
-     *                       'cached_content_id' => ?string,
-     *                   ],
      *               ]
      */
     public function getConfig(): array;

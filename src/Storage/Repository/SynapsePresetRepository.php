@@ -96,7 +96,6 @@ class SynapsePresetRepository extends ServiceEntityRepository
         $preset->setGenerationTopK(40);
         $preset->setThinkingEnabled(true);
         $preset->setThinkingBudget(1024);
-        $preset->setContextCachingEnabled(false);
 
         return $preset;
     }

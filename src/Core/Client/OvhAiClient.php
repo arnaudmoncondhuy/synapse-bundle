@@ -44,8 +44,7 @@ class OvhAiClient implements LlmClientInterface
         private HttpClientInterface $httpClient,
         private ConfigProviderInterface $configProvider,
         private ModelCapabilityRegistry $capabilityRegistry,
-    ) {
-    }
+    ) {}
 
     public function getProviderName(): string
     {
@@ -314,8 +313,8 @@ class OvhAiClient implements LlmClientInterface
 
         // Skip truly empty chunks (no text, no thinking, no usage, no tool data)
         $hasContent = $normalized['text'] !== null
-                   || $normalized['thinking'] !== null
-                   || !empty($normalized['usage']);
+            || $normalized['thinking'] !== null
+            || !empty($normalized['usage']);
         return $hasContent ? $normalized : null;
     }
 
@@ -348,7 +347,7 @@ class OvhAiClient implements LlmClientInterface
      */
     private function toOpenAiTools(array $tools): array
     {
-        return array_map(fn (array $tool) => [
+        return array_map(fn(array $tool) => [
             'type'     => 'function',
             'function' => [
                 'name'        => $tool['name'],
@@ -496,7 +495,7 @@ class OvhAiClient implements LlmClientInterface
             $this->topP          = (float) ($gen['top_p'] ?? $this->topP);
             $this->maxTokens     = $gen['max_output_tokens'] ?? $this->maxTokens;
             $this->stopSequences = $gen['stop_sequences'] ?? $this->stopSequences;
-            // top_k, safety_settings, context_caching ignorés pour OVH
+            // top_k, safety_settings ignorés pour OVH
         }
 
         // Réflexion/Thinking (stocké séparément dans config)

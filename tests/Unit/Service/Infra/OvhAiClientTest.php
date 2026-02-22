@@ -64,8 +64,6 @@ class OvhAiClientTest extends TestCase
         ];
 
         $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('toStream')
-            ->willReturn(fopen('php://memory', 'r'));
 
         $this->httpClient->expects($this->once())
             ->method('request')
@@ -100,8 +98,6 @@ class OvhAiClientTest extends TestCase
         ];
 
         $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('toStream')
-            ->willReturn(fopen('php://memory', 'r'));
 
         $this->httpClient->method('request')
             ->willReturn($mockResponse);
@@ -127,8 +123,6 @@ class OvhAiClientTest extends TestCase
         $contents = [['role' => 'user', 'content' => 'Test']];
 
         $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('toStream')
-            ->willReturn(fopen('php://memory', 'r'));
 
         $this->httpClient->method('request')
             ->willReturn($mockResponse);
@@ -140,30 +134,6 @@ class OvhAiClientTest extends TestCase
 
         // Assert
         $this->assertFalse($debugOut['actual_request_params']['safety_enabled']);
-    }
-
-    /**
-     * Test que OVH n'a pas de context caching.
-     */
-    public function testOvhContextCachingDisabled(): void
-    {
-        // Arrange
-        $contents = [['role' => 'user', 'content' => 'Test']];
-
-        $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('toStream')
-            ->willReturn(fopen('php://memory', 'r'));
-
-        $this->httpClient->method('request')
-            ->willReturn($mockResponse);
-
-        $debugOut = [];
-
-        // Act
-        $this->ovhClient->streamGenerateContent($contents, [], null, $debugOut);
-
-        // Assert
-        $this->assertFalse($debugOut['actual_request_params']['context_caching']);
     }
 
     /**
@@ -184,8 +154,6 @@ class OvhAiClientTest extends TestCase
         ];
 
         $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('toStream')
-            ->willReturn(fopen('php://memory', 'r'));
 
         $this->httpClient->method('request')
             ->willReturn($mockResponse);
@@ -193,7 +161,8 @@ class OvhAiClientTest extends TestCase
         $debugOut = [];
 
         // Act
-        $this->ovhClient->streamGenerateContent($contents, $tools, null, $debugOut);
+        $generator = $this->ovhClient->streamGenerateContent($contents, $tools, null, $debugOut);
+        iterator_to_array($generator);
 
         // Assert
         // Les tools doivent être dans le debug output
@@ -209,8 +178,6 @@ class OvhAiClientTest extends TestCase
         $contents = [['role' => 'user', 'content' => 'Test']];
 
         $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('toStream')
-            ->willReturn(fopen('php://memory', 'r'));
 
         $this->httpClient->method('request')
             ->willReturn($mockResponse);
@@ -235,8 +202,6 @@ class OvhAiClientTest extends TestCase
         $customModel = 'gpt-4-turbo';
 
         $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('toStream')
-            ->willReturn(fopen('php://memory', 'r'));
 
         $this->httpClient->expects($this->once())
             ->method('request')
@@ -245,7 +210,8 @@ class OvhAiClientTest extends TestCase
         $debugOut = [];
 
         // Act
-        $this->ovhClient->streamGenerateContent($contents, [], $customModel, $debugOut);
+        $generator = $this->ovhClient->streamGenerateContent($contents, [], $customModel, $debugOut);
+        iterator_to_array($generator);
 
         // Assert
         $this->assertEquals($customModel, $debugOut['actual_request_params']['model']);
@@ -260,8 +226,6 @@ class OvhAiClientTest extends TestCase
         $contents = [['role' => 'user', 'content' => 'Test']];
 
         $mockResponse = $this->createMock(ResponseInterface::class);
-        $mockResponse->method('toStream')
-            ->willReturn(fopen('php://memory', 'r'));
 
         $this->httpClient->method('request')
             ->willReturn($mockResponse);

@@ -4,7 +4,6 @@ models:
     thinking: true
     safety_settings: true
     top_k: true
-    context_caching: true
     function_calling: true
     streaming: true
     system_prompt: true
@@ -16,7 +15,6 @@ models:
     thinking: true
     safety_settings: true
     top_k: true
-    context_caching: true
     function_calling: true
     streaming: true
     system_prompt: true
@@ -28,7 +26,6 @@ models:
     thinking: true
     safety_settings: true
     top_k: true
-    context_caching: true
     function_calling: true
     streaming: true
     system_prompt: true
@@ -40,7 +37,6 @@ models:
     thinking: true
     safety_settings: true
     top_k: true
-    context_caching: true
     function_calling: true
     streaming: true
     system_prompt: true
@@ -52,7 +48,6 @@ models:
     thinking: true
     safety_settings: true
     top_k: true
-    context_caching: true
     function_calling: true
     streaming: true
     system_prompt: true

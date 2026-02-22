@@ -102,10 +102,10 @@ class SynapsePreset
     private float $generationTopP = 0.95;
 
     /**
-     * Top K (1 - 100) - Filtrage tokens
+     * Top K (1 - 100) - Filtrage tokens (nullable si non supporté par le modèle)
      */
-    #[ORM\Column(type: Types::INTEGER, options: ['default' => 40])]
-    private int $generationTopK = 40;
+    #[ORM\Column(type: Types::INTEGER, nullable: true, options: ['default' => 40])]
+    private ?int $generationTopK = 40;
 
     /**
      * Nombre maximum de tokens de sortie
@@ -138,20 +138,6 @@ class SynapsePreset
      */
     #[ORM\Column(type: Types::STRING, length: 20, options: ['default' => 'high'])]
     private string $reasoningEffort = 'high';
-
-    // Context Caching
-
-    /**
-     * Activer le context caching
-     */
-    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    private bool $contextCachingEnabled = false;
-
-    /**
-     * ID du cached content (Vertex AI)
-     */
-    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
-    private ?string $contextCachingId = null;
 
     /**
      * Activer le streaming (SSE). Si désactivé, mode synchrone pour debug facile
@@ -315,12 +301,12 @@ class SynapsePreset
         return $this;
     }
 
-    public function getGenerationTopK(): int
+    public function getGenerationTopK(): ?int
     {
         return $this->generationTopK;
     }
 
-    public function setGenerationTopK(int $generationTopK): self
+    public function setGenerationTopK(?int $generationTopK): self
     {
         $this->generationTopK = $generationTopK;
         return $this;
@@ -378,28 +364,6 @@ class SynapsePreset
     public function setReasoningEffort(string $reasoningEffort): self
     {
         $this->reasoningEffort = $reasoningEffort;
-        return $this;
-    }
-
-    public function isContextCachingEnabled(): bool
-    {
-        return $this->contextCachingEnabled;
-    }
-
-    public function setContextCachingEnabled(bool $contextCachingEnabled): self
-    {
-        $this->contextCachingEnabled = $contextCachingEnabled;
-        return $this;
-    }
-
-    public function getContextCachingId(): ?string
-    {
-        return $this->contextCachingId;
-    }
-
-    public function setContextCachingId(?string $contextCachingId): self
-    {
-        $this->contextCachingId = $contextCachingId;
         return $this;
     }
 
@@ -469,14 +433,6 @@ class SynapsePreset
             'budget'            => $this->thinkingBudget,
             'reasoning_effort'  => $this->reasoningEffort,
         ];
-
-        // Context Caching
-        if ($this->contextCachingEnabled && $this->contextCachingId !== null) {
-            $config['context_caching'] = [
-                'enabled'           => true,
-                'cached_content_id' => $this->contextCachingId,
-            ];
-        }
 
         // Streaming Mode
         $config['streaming_enabled'] = $this->streamingEnabled;

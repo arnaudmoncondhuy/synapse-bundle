@@ -36,8 +36,6 @@ services:
     # ── Registre des capacités par modèle ────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry: ~
 
-    # ── Smart Preset Factory ───────────────────────────────────────────────────
-    ArnaudMoncondhuy\SynapseBundle\Core\SmartPresetFactory: ~
 
     # ── Default implementations (can be overridden by user) ──────────────────
     ArnaudMoncondhuy\SynapseBundle\Core\DatabaseConfigProvider:

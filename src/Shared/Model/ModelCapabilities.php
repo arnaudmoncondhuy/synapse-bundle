@@ -28,9 +28,6 @@ final class ModelCapabilities
         /** Supporte le paramètre topK */
         public readonly bool $topK = false,
 
-        /** Supporte le context caching (Vertex AI) */
-        public readonly bool $contextCaching = false,
-
         /** Supporte le function calling / tool use */
         public readonly bool $functionCalling = true,
 
@@ -54,7 +51,7 @@ final class ModelCapabilities
      * Vérifie si le modèle supporte une capacité donnée.
      *
      * @param string $capability Capacité à vérifier (valeurs acceptées : 'thinking', 'safety_settings', 'top_k',
-     *                            'context_caching', 'function_calling', 'streaming', 'system_prompt')
+     *                            'function_calling', 'streaming', 'system_prompt')
      * @return bool true si supportée, false sinon (y compris pour les capacités inconnues)
      */
     public function supports(string $capability): bool
@@ -63,7 +60,6 @@ final class ModelCapabilities
             'thinking'        => $this->thinking,
             'safety_settings' => $this->safetySettings,
             'top_k'           => $this->topK,
-            'context_caching' => $this->contextCaching,
             'function_calling' => $this->functionCalling,
             'streaming'       => $this->streaming,
             'system_prompt'   => $this->systemPrompt,
