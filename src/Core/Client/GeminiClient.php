@@ -86,7 +86,7 @@ class GeminiClient implements LlmClientInterface
             'safety_enabled'     => $this->safetySettingsEnabled,
             'tools_sent'         => !empty($tools) && $caps->functionCalling,
             'context_caching'    => $this->contextCachingEnabled && $caps->contextCaching && $this->contextCachingId,
-            'system_prompt_sent' => !empty($systemInstruction),
+            'system_prompt_sent' => !empty($contents) && ($contents[0]['role'] ?? '') === 'system',
         ];
         $debugOut['raw_request_body'] = $payload;
 
@@ -143,7 +143,7 @@ class GeminiClient implements LlmClientInterface
             'safety_enabled'     => $this->safetySettingsEnabled,
             'tools_sent'         => !empty($tools) && $caps->functionCalling,
             'context_caching'    => $this->contextCachingEnabled && $caps->contextCaching && $this->contextCachingId,
-            'system_prompt_sent' => !empty($systemInstruction),
+            'system_prompt_sent' => !empty($contents) && ($contents[0]['role'] ?? '') === 'system',
         ];
         $debugOut['raw_request_body'] = $payload;
 
