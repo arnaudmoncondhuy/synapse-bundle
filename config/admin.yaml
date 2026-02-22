@@ -21,6 +21,11 @@ services:
         autoconfigure: true
         tags: ['controller.service_arguments']
 
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\DashboardController:
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
+
     ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api\ChatApiController:
         autowire: true
         autoconfigure: true
@@ -63,6 +68,16 @@ services:
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\DebugLogsController:
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\AnalyticsController:
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ConversationController:
         autowire: true
         autoconfigure: true
         tags: ['controller.service_arguments']
