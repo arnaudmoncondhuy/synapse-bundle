@@ -3,6 +3,17 @@ services:
         autowire: true
         autoconfigure: true
 
+    # ── Controllers & Core Services ──────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Core\Controller\:
+        resource: '../src/Core/Controller/'
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseBundle\Core\Manager\:
+        resource: '../src/Core/Manager/'
+
+    ArnaudMoncondhuy\SynapseBundle\Core\Accounting\:
+        resource: '../src/Core/Accounting/'
+
     # ── Infra : Google Vertex AI ──────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Core\Client\GeminiAuthService:
         # $serviceAccountJsonPath defaults to null — credentials injected at runtime from DB

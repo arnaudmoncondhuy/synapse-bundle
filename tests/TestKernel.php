@@ -24,6 +24,7 @@ class TestKernel extends Kernel
             new FrameworkBundle(),
             new TwigBundle(),
             new StimulusBundle(),
+            new \Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
             new SynapseBundle(),
         ];
     }
@@ -45,7 +46,25 @@ class TestKernel extends Kernel
         ]);
 
         $container->loadFromExtension('twig', [
-            'default_path' => __DIR__.'/../templates',
+            'default_path' => __DIR__ . '/../templates',
+        ]);
+
+        $container->loadFromExtension('doctrine', [
+            'dbal' => [
+                'url' => 'sqlite:///:memory:',
+            ],
+            'orm' => [
+                'auto_mapping' => true,
+                'mappings' => [
+                    'SynapseBundle' => [
+                        'type' => 'attribute',
+                        'is_bundle' => false,
+                        'dir' => __DIR__ . '/../src/Storage/Entity',
+                        'prefix' => 'ArnaudMoncondhuy\SynapseBundle\Storage\Entity',
+                        'alias' => 'SynapseBundle',
+                    ],
+                ],
+            ],
         ]);
 
         // Synapse Bundle Configuration
@@ -56,16 +75,16 @@ class TestKernel extends Kernel
 
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
-        $routes->import(__DIR__.'/../config/routes.yaml');
+        $routes->import(__DIR__ . '/../config/routes.yaml');
     }
 
     public function getCacheDir(): string
     {
-        return sys_get_temp_dir().'/synapse-bundle/cache/'.$this->getEnvironment();
+        return sys_get_temp_dir() . '/synapse-bundle/cache/' . $this->getEnvironment();
     }
 
     public function getLogDir(): string
     {
-        return sys_get_temp_dir().'/synapse-bundle/log/'.$this->getEnvironment();
+        return sys_get_temp_dir() . '/synapse-bundle/log/' . $this->getEnvironment();
     }
 }

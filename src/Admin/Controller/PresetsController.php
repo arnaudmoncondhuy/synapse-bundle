@@ -84,13 +84,16 @@ class PresetsController extends AbstractController
             return $this->redirectToRoute('synapse_admin_presets');
         }
 
+        // Initialize new preset with defaults from active config
+        $activeConfig = $this->configProvider->getConfig();
+        $preset->setProviderName($activeConfig['provider'] ?? 'gemini');
+        $preset->setModel($activeConfig['model'] ?? 'gemini-2.5-flash');
+
         return $this->render('@Synapse/admin/preset_edit.html.twig', [
             'preset'    => $preset,
             'providers' => $this->providerRepo->findAllOrdered(),
             'models_by_provider' => $this->getModelsByProvider(),
             'model_capabilities' => $this->getFullModelsCapabilities(),
-            'safety_thresholds'  => $this->getSafetyThresholds(),
-
             'is_new'    => true,
         ]);
     }
@@ -118,8 +121,6 @@ class PresetsController extends AbstractController
             'providers' => $this->providerRepo->findAllOrdered(),
             'models_by_provider' => $this->getModelsByProvider(),
             'model_capabilities' => $this->getFullModelsCapabilities(),
-            'safety_thresholds'  => $this->getSafetyThresholds(),
-
             'is_new'    => false,
         ]);
     }
@@ -150,21 +151,16 @@ class PresetsController extends AbstractController
         $clone->setName($source->getName() . ' (copie)');
         $clone->setProviderName($source->getProviderName());
         $clone->setModel($source->getModel());
-        $clone->setSafetyEnabled($source->isSafetyEnabled());
-        $clone->setSafetyDefaultThreshold($source->getSafetyDefaultThreshold());
-        $clone->setSafetyHateSpeech($source->getSafetyHateSpeech());
-        $clone->setSafetyDangerousContent($source->getSafetyDangerousContent());
-        $clone->setSafetyHarassment($source->getSafetyHarassment());
-        $clone->setSafetySexuallyExplicit($source->getSafetySexuallyExplicit());
         $clone->setGenerationTemperature($source->getGenerationTemperature());
         $clone->setGenerationTopP($source->getGenerationTopP());
         $clone->setGenerationTopK($source->getGenerationTopK());
         $clone->setGenerationMaxOutputTokens($source->getGenerationMaxOutputTokens());
         $clone->setGenerationStopSequences($source->getGenerationStopSequences());
-        $clone->setThinkingEnabled($source->isThinkingEnabled());
-        $clone->setThinkingBudget($source->getThinkingBudget());
-        $clone->setReasoningEffort($source->getReasoningEffort());
         $clone->setStreamingEnabled($source->isStreamingEnabled());
+
+        // Clone provider-specific options (safety_settings, thinking, etc.)
+        $clone->setProviderOptions($source->getProviderOptions());
+
         $clone->setIsActive(false); // Clone starts inactive
 
         $this->em->persist($clone);
@@ -201,47 +197,37 @@ class PresetsController extends AbstractController
 
     /**
      * Applique les données du formulaire à l'entité preset.
+     *
+     * Mode hybride: Lit JSON providerOptions depuis le champ caché.
+     * Le Controller est 100% agnostique aux options spécifiques des fournisseurs.
      */
     private function applyFormData(SynapsePreset $preset, array $data): void
     {
-        $preset->setName($data['name'] ?? 'Preset');
-        $preset->setProviderName($data['provider_name'] ?? 'gemini');
+        // Get defaults from active config
+        $activeConfig = $this->configProvider->getConfig();
+        $defaultProvider = $activeConfig['provider'] ?? 'gemini';
+        $defaultModel = $activeConfig['model'] ?? 'gemini-2.5-flash';
 
-        $modelName = $data['model'] ?? 'gemini-2.5-flash';
+        $preset->setName($data['name'] ?? 'Preset');
+        $preset->setProviderName($data['provider_name'] ?? $defaultProvider);
+
+        $modelName = $data['model'] ?? $defaultModel;
         $preset->setModel($modelName);
 
-
-        // Récupération des capacités du modèle pour nettoyer les données non supportées
-        $caps = $this->capabilityRegistry->getCapabilities($modelName);
-
+        // Parse JSON providerOptions (from hidden field synchronized by JS)
         $providerOptions = [];
-
-        // Safety Settings
-        $safetyEnabled = (bool) ($data['safety_enabled'] ?? false);
-        if ($caps->safetySettings && $safetyEnabled) {
-            $providerOptions['safety_settings'] = [
-                'enabled'           => true,
-                'default_threshold' => $data['safety_default_threshold'] ?? 'BLOCK_MEDIUM_AND_ABOVE',
-                'thresholds'        => array_filter([
-                    'hate_speech'       => !empty($data['safety_hate_speech']) ? $data['safety_hate_speech'] : null,
-                    'dangerous_content' => !empty($data['safety_dangerous_content']) ? $data['safety_dangerous_content'] : null,
-                    'harassment'        => !empty($data['safety_harassment']) ? $data['safety_harassment'] : null,
-                    'sexually_explicit' => !empty($data['safety_sexually_explicit']) ? $data['safety_sexually_explicit'] : null,
-                ]),
-            ];
-        }
-
-        // Thinking / Reasoning
-        $thinkingEnabled = (bool) ($data['thinking_enabled'] ?? false);
-        if ($caps->thinking && $thinkingEnabled) {
-            $providerOptions['thinking'] = [
-                'enabled'          => true,
-                'budget'           => (int) ($data['thinking_budget'] ?? 1024),
-                'reasoning_effort' => $data['reasoning_effort'] ?? 'high',
-            ];
+        if (!empty($data['provider_options'])) {
+            try {
+                $providerOptions = json_decode($data['provider_options'], associative: true) ?? [];
+            } catch (\Throwable) {
+                $providerOptions = [];
+            }
         }
 
         $preset->setProviderOptions($providerOptions);
+
+        // Get model capabilities for generation config validation
+        $caps = $this->capabilityRegistry->getCapabilities($modelName);
 
         // Generation Config
         $preset->setGenerationTemperature((float) ($data['generation_temperature'] ?? 1.0));
@@ -293,13 +279,4 @@ class PresetsController extends AbstractController
         return $result;
     }
 
-    private function getSafetyThresholds(): array
-    {
-        return [
-            'BLOCK_NONE'             => 'Aucun filtre',
-            'BLOCK_ONLY_HIGH'        => 'Bloquer seulement haute probabilité',
-            'BLOCK_MEDIUM_AND_ABOVE' => 'Bloquer moyenne et haute (Recommandé)',
-            'BLOCK_LOW_AND_ABOVE'    => 'Bloquer toute probabilité (Très strict)',
-        ];
-    }
 }

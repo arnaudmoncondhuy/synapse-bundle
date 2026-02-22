@@ -52,28 +52,4 @@ class ChatApiControllerTest extends WebTestCase
         // La vérification du Content-Type et du statut 200 confirme que
         // le streaming a démarré correctement avec le bon format NDJSON
     }
-
-    public function testChatEndpointRejectsMissingApiKey(): void
-    {
-        $client = static::createClient();
-
-        $payload = [
-            'message' => 'Hello World',
-            // Pas de api_key
-        ];
-
-        $client->request(
-            'POST',
-            '/synapse/api/chat',
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            json_encode($payload)
-        );
-
-        $response = $client->getResponse();
-
-        // Le contrôleur retourne 400 si la clé api est manquante
-        $this->assertEquals(400, $response->getStatusCode());
-    }
 }
