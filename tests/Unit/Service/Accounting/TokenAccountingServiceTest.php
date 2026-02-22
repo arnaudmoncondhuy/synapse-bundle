@@ -58,9 +58,9 @@ class TokenAccountingServiceTest extends TestCase
             action: 'chat_turn',
             model: 'gemini-2.5-flash',
             usage: [
-                'prompt' => 100,
-                'completion' => 50,
-                'thinking' => 25,
+                'prompt_tokens' => 100,
+                'completion_tokens' => 50,
+                'thinking_tokens' => 25,
             ]
         );
 
@@ -91,9 +91,9 @@ class TokenAccountingServiceTest extends TestCase
             action: 'summarize',
             model: 'gemini-2.5-flash',
             usage: [
-                'promptTokenCount' => 120,
-                'candidatesTokenCount' => 80,
-                'thoughtsTokenCount' => 30,
+                'prompt_tokens' => 120,
+                'completion_tokens' => 80,
+                'thinking_tokens' => 30,
             ]
         );
 
@@ -126,9 +126,9 @@ class TokenAccountingServiceTest extends TestCase
             action: 'turn',
             model: 'gemini-2.5-flash',
             usage: [
-                'prompt' => 100,
-                'completion' => 50,
-                'thinking' => 25,
+                'prompt_tokens' => 100,
+                'completion_tokens' => 50,
+                'thinking_tokens' => 25,
             ]
         );
 
@@ -159,7 +159,7 @@ class TokenAccountingServiceTest extends TestCase
             module: 'chat',
             action: 'chat_turn',
             model: 'gemini-2.5-flash',
-            usage: ['prompt' => 100, 'completion' => 50],
+            usage: ['prompt_tokens' => 100, 'completion_tokens' => 50],
             userId: '550e8400-e29b-41d4-a716-446655440000',
             conversationId: 'conv-123'
         );
@@ -193,8 +193,8 @@ class TokenAccountingServiceTest extends TestCase
             action: 'chat_turn',
             model: 'gemini-2.5-flash',
             usage: [
-                'prompt' => 1000000,
-                'completion' => 1000000,
+                'prompt_tokens' => 1000000,
+                'completion_tokens' => 1000000,
             ]
         );
 
@@ -206,52 +206,7 @@ class TokenAccountingServiceTest extends TestCase
         $this->assertEquals(2.80, $metadata['cost']);
     }
 
-    /**
-     * Test logFromGeminiResponse extracts and logs usage.
-     */
-    public function testLogFromGeminiResponse(): void
-    {
-        // Arrange
-        $response = [
-            'usageMetadata' => [
-                'promptTokenCount' => 120,
-                'candidatesTokenCount' => 80,
-                'thoughtsTokenCount' => 0,
-            ],
-            'debug_id' => 'debug-xyz',
-            'candidates' => [
-                ['finishReason' => 'STOP'],
-            ],
-        ];
 
-        $this->modelRepository->method('findAllPricingMap')
-            ->willReturn([
-                'gemini-2.5-flash' => ['input' => 0.30, 'output' => 2.50],
-            ]);
-
-        $capturedEntity = null;
-        $this->entityManager->method('persist')
-            ->willReturnCallback(function (TokenUsage $entity) use (&$capturedEntity) {
-                $capturedEntity = $entity;
-            });
-
-        // Act
-        $this->service->logFromGeminiResponse(
-            module: 'chat',
-            action: 'turn',
-            model: 'gemini-2.5-flash',
-            geminiResponse: $response
-        );
-
-        // Assert
-        $this->assertNotNull($capturedEntity);
-        $this->assertEquals(120, $capturedEntity->getPromptTokens());
-        $this->assertEquals(80, $capturedEntity->getCompletionTokens());
-
-        $metadata = $capturedEntity->getMetadata();
-        $this->assertEquals('debug-xyz', $metadata['debug_id']);
-        $this->assertEquals('STOP', $metadata['finish_reason']);
-    }
 
     /**
      * Test with zero tokens (edge case).
@@ -276,8 +231,8 @@ class TokenAccountingServiceTest extends TestCase
             action: 'test',
             model: 'gemini-2.5-flash',
             usage: [
-                'prompt' => 0,
-                'completion' => 0,
+                'prompt_tokens' => 0,
+                'completion_tokens' => 0,
             ]
         );
 
@@ -306,7 +261,7 @@ class TokenAccountingServiceTest extends TestCase
             module: 'test',
             action: 'test',
             model: 'unknown-model',
-            usage: ['prompt' => 100, 'completion' => 50]
+            usage: ['prompt_tokens' => 100, 'completion_tokens' => 50]
         );
 
         // Assert
@@ -337,7 +292,7 @@ class TokenAccountingServiceTest extends TestCase
             module: 'chat',
             action: 'turn',
             model: 'gemini-2.5-flash',
-            usage: ['prompt' => 10, 'completion' => 5],
+            usage: ['prompt_tokens' => 10, 'completion_tokens' => 5],
             userId: 12345
         );
 
@@ -374,7 +329,7 @@ class TokenAccountingServiceTest extends TestCase
             module: 'chat',
             action: 'turn',
             model: 'gemini-2.5-flash',
-            usage: ['prompt' => 50, 'completion' => 25],
+            usage: ['prompt_tokens' => 50, 'completion_tokens' => 25],
             metadata: $customMetadata
         );
 

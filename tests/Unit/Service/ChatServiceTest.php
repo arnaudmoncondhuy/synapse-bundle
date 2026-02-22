@@ -117,15 +117,15 @@ class ChatServiceTest extends TestCase
         // Arrange
         $message = 'Test message';
 
-        $this->dispatcher->expects($this->once())
-            ->method('dispatch')
-            ->with($this->isInstanceOf(SynapsePrePromptEvent::class))
-            ->willReturnCallback(function (SynapsePrePromptEvent $event) {
-                $event->setPrompt([
-                    'contents' => [['role' => 'user', 'content' => 'Test']],
-                    'toolDefinitions' => [],
-                ]);
-                $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+        $this->dispatcher->method('dispatch')
+            ->willReturnCallback(function ($event) {
+                if ($event instanceof SynapsePrePromptEvent) {
+                    $event->setPrompt([
+                        'contents' => [['role' => 'user', 'content' => 'Test']],
+                        'toolDefinitions' => [],
+                    ]);
+                    $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+                }
                 return $event;
             });
 
@@ -232,7 +232,9 @@ class ChatServiceTest extends TestCase
         $result = $this->chatService->ask($message);
 
         // Assert
-        $this->assertStringContainsString('answer', $result);
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('answer', $result);
+        $this->assertStringContainsString('answer', $result['answer']);
     }
 
     /**
@@ -253,7 +255,7 @@ class ChatServiceTest extends TestCase
                     ]);
                     $event->setConfig([
                         'streaming_enabled' => false,
-                        'debug_mode' => false,
+                        'debug_mode' => true,
                     ]);
                 }
                 return $event;
@@ -279,7 +281,8 @@ class ChatServiceTest extends TestCase
 
         // Assert
         $this->assertIsArray($result);
-        $this->assertArrayHasKey('debug', $result);
+        $this->assertArrayHasKey('debug_id', $result);
+        $this->assertNotNull($result['debug_id']);
     }
 
     /**
@@ -345,9 +348,11 @@ class ChatServiceTest extends TestCase
         ];
 
         $this->dispatcher->method('dispatch')
-            ->willReturnCallback(function (SynapsePrePromptEvent $event) use ($expectedPrompt) {
-                $event->setPrompt($expectedPrompt);
-                $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+            ->willReturnCallback(function ($event) use ($expectedPrompt) {
+                if ($event instanceof SynapsePrePromptEvent) {
+                    $event->setPrompt($expectedPrompt);
+                    $event->setConfig(['streaming_enabled' => false, 'debug_mode' => false]);
+                }
                 return $event;
             });
 

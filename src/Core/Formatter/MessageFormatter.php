@@ -19,8 +19,7 @@ class MessageFormatter implements MessageFormatterInterface
 {
     public function __construct(
         private ?EncryptionServiceInterface $encryptionService = null,
-    ) {
-    }
+    ) {}
     /**
      * Convertit les entités Message vers le format OpenAI canonical
      *
@@ -42,9 +41,12 @@ class MessageFormatter implements MessageFormatterInterface
                 if (isset($entity['role']) && (isset($entity['content']) || isset($entity['parts']))) {
                     // Decrypt content if needed
                     $decrypted = $entity;
-                    if (!empty($entity['content']) && $this->encryptionService !== null && is_string($entity['content'])) {
-                        if ($this->encryptionService->isEncrypted($entity['content'])) {
-                            $decrypted['content'] = $this->encryptionService->decrypt($entity['content']);
+                    if ($this->encryptionService !== null) {
+                        if (!empty($decrypted['content']) && is_string($decrypted['content']) && $this->encryptionService->isEncrypted($decrypted['content'])) {
+                            $decrypted['content'] = $this->encryptionService->decrypt($decrypted['content']);
+                        }
+                        if (isset($decrypted['parts'][0]['text']) && is_string($decrypted['parts'][0]['text']) && $this->encryptionService->isEncrypted($decrypted['parts'][0]['text'])) {
+                            $decrypted['parts'][0]['text'] = $this->encryptionService->decrypt($decrypted['parts'][0]['text']);
                         }
                     }
                     $messages[] = $decrypted;

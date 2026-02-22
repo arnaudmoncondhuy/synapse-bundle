@@ -183,8 +183,8 @@ class LlmClientRegistryTest extends TestCase
     public function testExceptionMessageListsAvailableProviders(): void
     {
         // Arrange
-        $geminiClient = $this->createMock(LlmClientInterface::class);
-        $geminiClient->method('getProviderName')->willReturn('gemini');
+        $abcClient = $this->createMock(LlmClientInterface::class);
+        $abcClient->method('getProviderName')->willReturn('abc');
 
         $ovhClient = $this->createMock(LlmClientInterface::class);
         $ovhClient->method('getProviderName')->willReturn('ovh');
@@ -193,14 +193,14 @@ class LlmClientRegistryTest extends TestCase
             ->willReturn(['provider' => 'nonexistent']);
 
         $this->registry = new LlmClientRegistry(
-            [$geminiClient, $ovhClient],
+            [$abcClient, $ovhClient],
             $this->configProvider,
             'gemini'
         );
 
         // Act & Assert
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('gemini');
+        $this->expectExceptionMessage('abc');
         $this->expectExceptionMessage('ovh');
 
         $this->registry->getClient();
@@ -219,7 +219,10 @@ class LlmClientRegistryTest extends TestCase
         $ovhClient->method('getProviderName')->willReturn('ovh');
 
         $this->configProvider->method('getConfig')
-            ->willReturn(['provider' => 'gemini']);
+            ->willReturnOnConsecutiveCalls(
+                ['provider' => 'gemini'],
+                ['provider' => 'ovh']
+            );
 
         $this->registry = new LlmClientRegistry(
             [$geminiClient, $ovhClient],
@@ -228,10 +231,6 @@ class LlmClientRegistryTest extends TestCase
 
         // Act
         $client1 = $this->registry->getClient();
-
-        $this->configProvider->method('getConfig')
-            ->willReturn(['provider' => 'ovh']);
-
         $client2 = $this->registry->getClient();
 
         // Assert

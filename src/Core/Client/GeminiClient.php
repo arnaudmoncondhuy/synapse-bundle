@@ -606,7 +606,7 @@ class GeminiClient implements LlmClientInterface
     private function buildVertexHeaders(): array
     {
         return [
-            'Authorization' => 'Bearer ' . $this->googleAuthService->getAccessToken(),
+            'Authorization' => 'Bearer ' . $this->geminiAuthService->getAccessToken(),
             'Content-Type'  => 'application/json',
         ];
     }
