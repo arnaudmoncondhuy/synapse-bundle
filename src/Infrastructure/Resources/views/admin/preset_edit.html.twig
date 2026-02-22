@@ -264,6 +264,62 @@ const PROVIDER_SCHEMAS = {
 				],
 				defaultValue: 'BLOCK_MEDIUM_AND_ABOVE',
 				dependsOn: 'safety_settings.enabled'
+			},
+			{
+				name: 'safety_settings.thresholds.hate_speech',
+				type: 'select',
+				label: 'Filtre - Discours haineux',
+				help: 'Seuil pour les contenus haineux',
+				options: [
+					{ value: '', label: 'Non défini' },
+					{ value: 'BLOCK_NONE', label: 'Aucun filtre' },
+					{ value: 'BLOCK_ONLY_HIGH', label: 'Bloquer haute probabilité' },
+					{ value: 'BLOCK_MEDIUM_AND_ABOVE', label: 'Bloquer moyenne et haute' },
+					{ value: 'BLOCK_LOW_AND_ABOVE', label: 'Bloquer toute probabilité' }
+				],
+				dependsOn: 'safety_settings.enabled'
+			},
+			{
+				name: 'safety_settings.thresholds.dangerous_content',
+				type: 'select',
+				label: 'Filtre - Contenu dangereux',
+				help: 'Seuil pour les contenus dangereux',
+				options: [
+					{ value: '', label: 'Non défini' },
+					{ value: 'BLOCK_NONE', label: 'Aucun filtre' },
+					{ value: 'BLOCK_ONLY_HIGH', label: 'Bloquer haute probabilité' },
+					{ value: 'BLOCK_MEDIUM_AND_ABOVE', label: 'Bloquer moyenne et haute' },
+					{ value: 'BLOCK_LOW_AND_ABOVE', label: 'Bloquer toute probabilité' }
+				],
+				dependsOn: 'safety_settings.enabled'
+			},
+			{
+				name: 'safety_settings.thresholds.harassment',
+				type: 'select',
+				label: 'Filtre - Harcèlement',
+				help: 'Seuil pour les contenus harcelants',
+				options: [
+					{ value: '', label: 'Non défini' },
+					{ value: 'BLOCK_NONE', label: 'Aucun filtre' },
+					{ value: 'BLOCK_ONLY_HIGH', label: 'Bloquer haute probabilité' },
+					{ value: 'BLOCK_MEDIUM_AND_ABOVE', label: 'Bloquer moyenne et haute' },
+					{ value: 'BLOCK_LOW_AND_ABOVE', label: 'Bloquer toute probabilité' }
+				],
+				dependsOn: 'safety_settings.enabled'
+			},
+			{
+				name: 'safety_settings.thresholds.sexually_explicit',
+				type: 'select',
+				label: 'Filtre - Contenu explicite',
+				help: 'Seuil pour les contenus explicites',
+				options: [
+					{ value: '', label: 'Non défini' },
+					{ value: 'BLOCK_NONE', label: 'Aucun filtre' },
+					{ value: 'BLOCK_ONLY_HIGH', label: 'Bloquer haute probabilité' },
+					{ value: 'BLOCK_MEDIUM_AND_ABOVE', label: 'Bloquer moyenne et haute' },
+					{ value: 'BLOCK_LOW_AND_ABOVE', label: 'Bloquer toute probabilité' }
+				],
+				dependsOn: 'safety_settings.enabled'
 			}
 		]
 	},
