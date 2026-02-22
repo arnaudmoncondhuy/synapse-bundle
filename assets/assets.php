@@ -20,4 +20,10 @@ return [
         'path' => 'styles/synapse.css',
         'entrypoint' => true,
     ],
+    'synapse/controllers/synapse_chat_controller.js' => [
+        'path' => 'controllers/synapse_chat_controller.js',
+    ],
+    'synapse/controllers/synapse_sidebar_controller.js' => [
+        'path' => 'controllers/synapse_sidebar_controller.js',
+    ],
 ];

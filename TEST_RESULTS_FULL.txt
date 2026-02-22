@@ -1,0 +1,233 @@
+PHPUnit 13.0.5 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.18
+Configuration: /home/ubuntu/stacks/synapse-bundle/phpunit.xml.dist
+
+Time: 00:01.437, Memory: 30.00 MB
+
+There were 19 errors:
+
+1) ArnaudMoncondhuy\SynapseBundle\Tests\Functional\Api\ChatApiControllerTest::testChatEndpointIsReachableAndReturnsNdjson
+Symfony\Component\DependencyInjection\Exception\InvalidArgumentException: Service id "ArnaudMoncondhuy\SynapseBundle\Storage\Repository\TokenUsageRepository" looks like a FQCN but no corresponding class or interface exists. To resolve this ambiguity, please rename this service to a non-FQCN (e.g. using dots), or create the missing class or interface.
+
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/dependency-injection/Compiler/ResolveClassPass.php:41
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/dependency-injection/Compiler/Compiler.php:73
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/dependency-injection/ContainerBuilder.php:816
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/http-kernel/Kernel.php:488
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/http-kernel/Kernel.php:732
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/http-kernel/Kernel.php:120
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/framework-bundle/Test/KernelTestCase.php:76
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/framework-bundle/Test/WebTestCase.php:44
+/home/ubuntu/stacks/synapse-bundle/tests/Functional/Api/ChatApiControllerTest.php:13
+
+2) ArnaudMoncondhuy\SynapseBundle\Tests\Functional\Api\ChatApiControllerTest::testChatEndpointRejectsMissingApiKey
+Symfony\Component\DependencyInjection\Exception\InvalidArgumentException: Service id "ArnaudMoncondhuy\SynapseBundle\Storage\Repository\TokenUsageRepository" looks like a FQCN but no corresponding class or interface exists. To resolve this ambiguity, please rename this service to a non-FQCN (e.g. using dots), or create the missing class or interface.
+
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/dependency-injection/Compiler/ResolveClassPass.php:41
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/dependency-injection/Compiler/Compiler.php:73
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/dependency-injection/ContainerBuilder.php:816
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/http-kernel/Kernel.php:488
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/http-kernel/Kernel.php:732
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/http-kernel/Kernel.php:120
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/framework-bundle/Test/KernelTestCase.php:76
+/home/ubuntu/stacks/synapse-bundle/vendor/symfony/framework-bundle/Test/WebTestCase.php:44
+/home/ubuntu/stacks/synapse-bundle/tests/Functional/Api/ChatApiControllerTest.php:58
+
+3) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Accounting\TokenAccountingServiceTest::testLogUsageWithInternalFormat
+Error: Class "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository" not found
+
+/home/ubuntu/stacks/synapse-bundle/src/Storage/Repository/SynapseModelRepository.php:14
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Accounting/TokenAccountingServiceTest.php:21
+
+4) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Accounting\TokenAccountingServiceTest::testLogUsageWithVertexFormat
+Error: Class "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository" not found
+
+/home/ubuntu/stacks/synapse-bundle/src/Storage/Repository/SynapseModelRepository.php:14
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Accounting/TokenAccountingServiceTest.php:21
+
+5) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Accounting\TokenAccountingServiceTest::testLogUsageCalculatesTotalTokens
+Error: Class "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository" not found
+
+/home/ubuntu/stacks/synapse-bundle/src/Storage/Repository/SynapseModelRepository.php:14
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Accounting/TokenAccountingServiceTest.php:21
+
+6) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Accounting\TokenAccountingServiceTest::testLogUsageWithUserAndConversationId
+Error: Class "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository" not found
+
+/home/ubuntu/stacks/synapse-bundle/src/Storage/Repository/SynapseModelRepository.php:14
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Accounting/TokenAccountingServiceTest.php:21
+
+7) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Accounting\TokenAccountingServiceTest::testLogUsageStoresCostInMetadata
+Error: Class "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository" not found
+
+/home/ubuntu/stacks/synapse-bundle/src/Storage/Repository/SynapseModelRepository.php:14
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Accounting/TokenAccountingServiceTest.php:21
+
+8) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Accounting\TokenAccountingServiceTest::testLogFromGeminiResponse
+Error: Class "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository" not found
+
+/home/ubuntu/stacks/synapse-bundle/src/Storage/Repository/SynapseModelRepository.php:14
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Accounting/TokenAccountingServiceTest.php:21
+
+9) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Accounting\TokenAccountingServiceTest::testLogUsageWithZeroTokens
+Error: Class "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository" not found
+
+/home/ubuntu/stacks/synapse-bundle/src/Storage/Repository/SynapseModelRepository.php:14
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Accounting/TokenAccountingServiceTest.php:21
+
+10) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Accounting\TokenAccountingServiceTest::testLogUsageWithUnknownModel
+Error: Class "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository" not found
+
+/home/ubuntu/stacks/synapse-bundle/src/Storage/Repository/SynapseModelRepository.php:14
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Accounting/TokenAccountingServiceTest.php:21
+
+11) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Accounting\TokenAccountingServiceTest::testLogUsageConvertsIntUserIdToString
+Error: Class "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository" not found
+
+/home/ubuntu/stacks/synapse-bundle/src/Storage/Repository/SynapseModelRepository.php:14
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Accounting/TokenAccountingServiceTest.php:21
+
+12) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Accounting\TokenAccountingServiceTest::testLogUsagePreservesProvidedMetadata
+Error: Class "Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository" not found
+
+/home/ubuntu/stacks/synapse-bundle/src/Storage/Repository/SynapseModelRepository.php:14
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Accounting/TokenAccountingServiceTest.php:21
+
+13) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\ChatServiceTest::testAskAccumulatesChunksIntoAnswer
+TypeError: PHPUnit\Framework\Assert::assertStringContainsString(): Argument #2 ($haystack) must be of type string, array given, called in /home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/ChatServiceTest.php on line 235
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/ChatServiceTest.php:235
+
+14) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\ChatServiceTest::testAskMaintainsOpenAiCanonicalFormat
+TypeError: ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\ChatServiceTest::{closure:ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\ChatServiceTest::testAskMaintainsOpenAiCanonicalFormat():348}(): Argument #1 ($event) must be of type ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapsePrePromptEvent, ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseChunkReceivedEvent given, called in /home/ubuntu/stacks/synapse-bundle/vendor/phpunit/phpunit/src/Framework/MockObject/Runtime/Stub/ReturnCallback.php on line 34
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/ChatServiceTest.php:348
+/home/ubuntu/stacks/synapse-bundle/src/Core/Chat/ChatService.php:137
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/ChatServiceTest.php:374
+
+15) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Infra\GeminiClientTest::testGenerateContentHandlesHttpException
+RuntimeException: Gemini API Error: Network error
+
+/home/ubuntu/stacks/synapse-bundle/src/Core/Client/GeminiClient.php:740
+/home/ubuntu/stacks/synapse-bundle/src/Core/Client/GeminiClient.php:103
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Infra/GeminiClientTest.php:284
+
+Caused by
+Exception: Network error
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Infra/GeminiClientTest.php:281
+
+16) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Infra\OvhAiClientTest::testStreamGenerateContentAcceptsOpenAiFormat
+Error: Typed property ArnaudMoncondhuy\SynapseBundle\Shared\Model\ModelCapabilities::$systemPrompt must not be accessed before initialization
+
+/home/ubuntu/stacks/synapse-bundle/src/Core/Client/OvhAiClient.php:87
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Infra/OvhAiClientTest.php:83
+
+17) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Infra\OvhAiClientTest::testOvhSupportsToolsIfCapabilityEnabled
+Error: Typed property ArnaudMoncondhuy\SynapseBundle\Shared\Model\ModelCapabilities::$functionCalling must not be accessed before initialization
+
+/home/ubuntu/stacks/synapse-bundle/src/Core/Client/OvhAiClient.php:385
+/home/ubuntu/stacks/synapse-bundle/src/Core/Client/OvhAiClient.php:72
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Infra/OvhAiClientTest.php:165
+
+18) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Infra\OvhAiClientTest::testStreamGenerateContentWithCustomModel
+Error: Typed property ArnaudMoncondhuy\SynapseBundle\Shared\Model\ModelCapabilities::$systemPrompt must not be accessed before initialization
+
+/home/ubuntu/stacks/synapse-bundle/src/Core/Client/OvhAiClient.php:87
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Infra/OvhAiClientTest.php:214
+
+19) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Infra\OvhAiClientTest::testOvhAcceptsOpenAiParameters
+TypeError: PHPUnit\Framework\Assert::assertArrayHasKey(): Argument #2 ($array) must be of type ArrayAccess|array, null given, called in /home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Infra/OvhAiClientTest.php on line 239
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Infra/OvhAiClientTest.php:239
+
+--
+
+There were 17 failures:
+
+1) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\ChatServiceTest::testAskDispatchesSynapsePrePromptEvent
+Symfony\Contracts\EventDispatcher\EventDispatcherInterface::dispatch(ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseChunkReceivedEvent Object (...), null): object was not expected to be called more than once.
+
+/home/ubuntu/stacks/synapse-bundle/src/Core/Chat/ChatService.php:137
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/ChatServiceTest.php:148
+
+2) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\ChatServiceTest::testAskWithDebugModeEnabled
+Failed asserting that an array has the key 'debug'.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/ChatServiceTest.php:282
+
+3) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Formatter\MessageFormatterTest::testEntitiesToApiFormatConvertsApiFormat
+Failed asserting that actual size 0 matches expected size 1.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Formatter/MessageFormatterTest.php:49
+
+4) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Formatter\MessageFormatterTest::testEntitiesToApiFormatWithSerializedArray
+Failed asserting that actual size 0 matches expected size 1.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Formatter/MessageFormatterTest.php:73
+
+5) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Formatter\MessageFormatterTest::testEntitiesToApiFormatDecryptsSerializedContent
+Failed asserting that actual size 0 matches expected size 1.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Formatter/MessageFormatterTest.php:108
+
+6) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Formatter\MessageFormatterTest::testEntitiesToApiFormatDecryptsSerializedArray
+Failed asserting that actual size 0 matches expected size 1.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Formatter/MessageFormatterTest.php:141
+
+7) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Formatter\MessageFormatterTest::testEntitiesToApiFormatSkipsDecryptionForPlaintext
+Failed asserting that actual size 0 matches expected size 1.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Formatter/MessageFormatterTest.php:172
+
+8) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Formatter\MessageFormatterTest::testEntitiesToApiFormatWithoutEncryptionService
+Failed asserting that actual size 0 matches expected size 1.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Formatter/MessageFormatterTest.php:193
+
+9) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Formatter\MessageFormatterTest::testEntitiesToApiFormatWithMultipleSerializedMessages
+Failed asserting that actual size 0 matches expected size 3.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Formatter/MessageFormatterTest.php:220
+
+10) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Formatter\MessageFormatterTest::testEntitiesToApiFormatWithMultipleEncryptedMessages
+Failed asserting that actual size 0 matches expected size 2.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Formatter/MessageFormatterTest.php:290
+
+11) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Formatter\MessageFormatterTest::testEntitiesToApiFormatWithCapitalizedRoles
+Failed asserting that null matches expected 'USER'.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Formatter/MessageFormatterTest.php:311
+
+12) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Formatter\MessageFormatterTest::testEntitiesToApiFormatFiltersInvalidObjects
+Failed asserting that actual size 0 matches expected size 1.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Formatter/MessageFormatterTest.php:340
+
+13) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Infra\OvhAiClientTest::testOvhIsOpenAiPassthrough
+Failed asserting that an array has the key 'raw_request_body'.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Infra/OvhAiClientTest.php:112
+
+14) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Infra\OvhAiClientTest::testOvhSafetyDisabledByDefault
+Failed asserting that null is false.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Infra/OvhAiClientTest.php:136
+
+15) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Infra\OvhAiClientTest::testDefaultModelIsGptOss20b
+Failed asserting that null is of type array.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/Infra/OvhAiClientTest.php:192
+
+16) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\LlmClientRegistryTest::testExceptionMessageListsAvailableProviders
+Failed asserting that exception of type "RuntimeException" is thrown.
+
+17) ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\LlmClientRegistryTest::testRegistryStoresUniqueClientInstances
+Failed asserting that two variables reference the same object.
+
+/home/ubuntu/stacks/synapse-bundle/tests/Unit/Service/LlmClientRegistryTest.php:239
+
+ERRORS!
+Tests: 261, Assertions: 482, Errors: 19, Failures: 17, Warnings: 6, PHPUnit Deprecations: 2, PHPUnit Notices: 30.

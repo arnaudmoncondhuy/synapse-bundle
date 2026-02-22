@@ -7,6 +7,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Infra;
 use ArnaudMoncondhuy\SynapseBundle\Core\Client\OvhAiClient;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Model\ModelCapabilities;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
@@ -32,6 +33,9 @@ class OvhAiClientTest extends TestCase
                 'api_key' => 'test-api-key',
                 'endpoint' => 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1',
             ]);
+
+        $this->capabilityRegistry->method('getCapabilities')
+            ->willReturn(new ModelCapabilities('Gpt-oss-20b', 'ovh'));
 
         $this->ovhClient = new OvhAiClient(
             $this->httpClient,
@@ -105,7 +109,8 @@ class OvhAiClientTest extends TestCase
         $debugOut = [];
 
         // Act
-        $this->ovhClient->streamGenerateContent($contents, [], null, $debugOut);
+        $generator = $this->ovhClient->streamGenerateContent($contents, [], null, $debugOut);
+        iterator_to_array($generator);
 
         // Assert
         // OVH doit envoyer le contenu directement (passthrough)
@@ -130,7 +135,8 @@ class OvhAiClientTest extends TestCase
         $debugOut = [];
 
         // Act
-        $this->ovhClient->streamGenerateContent($contents, [], null, $debugOut);
+        $generator = $this->ovhClient->streamGenerateContent($contents, [], null, $debugOut);
+        iterator_to_array($generator);
 
         // Assert
         $this->assertFalse($debugOut['actual_request_params']['safety_enabled']);
@@ -185,7 +191,8 @@ class OvhAiClientTest extends TestCase
         $debugOut = [];
 
         // Act
-        $this->ovhClient->streamGenerateContent($contents, [], null, $debugOut);
+        $generator = $this->ovhClient->streamGenerateContent($contents, [], null, $debugOut);
+        iterator_to_array($generator);
 
         // Assert
         // Sans spécifier de modèle, il doit utiliser le modèle configuré
@@ -233,7 +240,8 @@ class OvhAiClientTest extends TestCase
         $debugOut = [];
 
         // Act
-        $this->ovhClient->streamGenerateContent($contents, [], null, $debugOut);
+        $generator = $this->ovhClient->streamGenerateContent($contents, [], null, $debugOut);
+        iterator_to_array($generator);
 
         // Assert
         $this->assertArrayHasKey('temperature', $debugOut['actual_request_params']);

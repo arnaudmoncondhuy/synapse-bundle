@@ -74,9 +74,9 @@
 										Configuration
 									</p>
 									<div style="display: flex; gap: 0.5rem">
-										{% if caps.thinking and preset.thinkingEnabled %}<span title="Thinking / Réflexion interne active"><i data-lucide="brain" style="width: 14px; color: var(--synapse-admin-success)"></i></span>{% endif %}
+										{% if caps.thinking and preset.providerOptions.thinking.enabled|default(false) %}<span title="Réflexion active"><i data-lucide="brain" style="width: 14px; color: var(--synapse-admin-success)"></i></span>{% endif %}
 										{% if caps.functionCalling %}<span title="Tool calls / Appels d'outils supportés"><i data-lucide="wrench" style="width: 14px; color: var(--synapse-admin-success)"></i></span>{% endif %}
-										{% if caps.safetySettings and preset.safetyEnabled %}<span title="Safety / Filtres de sécurité actifs"><i data-lucide="shield" style="width: 14px; color: var(--synapse-admin-success)"></i></span>{% endif %}
+										{% if caps.safetySettings and preset.providerOptions.safety_settings.enabled|default(false) %}<span title="Safety / Filtres de sécurité actifs"><i data-lucide="shield" style="width: 14px; color: var(--synapse-admin-success)"></i></span>{% endif %}
 										{% if caps.streaming and preset.streamingEnabled %}<span title="Streaming / Réponses en temps réel"><i data-lucide="activity" style="width: 14px; color: var(--synapse-admin-success)"></i></span>{% endif %}
 									</div>
 								</div>
@@ -86,12 +86,18 @@
 										<strong style="margin-left: 0.25rem; color: var(--synapse-admin-text-main)">{{ preset.generationTemperature }}</strong>
 									</div>
 									<div style="background: var(--synapse-admin-bg-main); padding: 0.5rem; border-radius: 0.375rem">
-										<span style="color: var(--synapse-admin-text-muted)">Thinking:</span>
+										<span style="color: var(--synapse-admin-text-muted)">Réflexion:</span>
 										<strong style="margin-left: 0.25rem; color: var(--synapse-admin-text-main)">
-											{% if preset.thinkingEnabled and caps.thinking %}
-												{{ preset.thinkingBudget }}t
+											{% if preset.providerOptions.thinking.enabled|default(false) and caps.thinking %}
+												{% if preset.providerName == 'gemini' %}
+													{{ preset.providerOptions.thinking.budget|default(1024) }}t
+												{% elseif preset.providerName == 'ovh' %}
+													{{ (preset.providerOptions.thinking.reasoning_effort|default('high'))|capitalize }}
+												{% else %}
+													Oui
+												{% endif %}
 											{% else %}
-												—
+												Non
 											{% endif %}
 										</strong>
 									</div>

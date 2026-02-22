@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api;
 
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmAuthenticationException;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmException;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmQuotaException;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmRateLimitException;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmServiceUnavailableException;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ChatService;
@@ -203,25 +208,20 @@ class ChatApiController extends AbstractController
                 $errorMessage = $e->getMessage();
 
                 // Enrich error message for common failures
-                if (str_contains($e::class, 'TimeoutException') || str_contains($errorMessage, 'timeout') || str_contains($errorMessage, 'Timeout')) {
-                    $errorMessage = "⏱️ Timeout API : L'IA n'a pas répondu à temps. Veuillez réessayer.";
-                } elseif (str_contains($e::class, 'ConnectException') || str_contains($errorMessage, 'Connection') || str_contains($errorMessage, 'connect')) {
-                    $errorMessage = "🌐 Erreur de connexion : Impossible de contacter le service IA. Vérifiez votre connexion.";
-                } elseif (str_contains($errorMessage, 'Service Account') || str_contains($errorMessage, 'credentials')) {
-                    $errorMessage = "🔑 Erreur d'authentification : Configuration Google Cloud invalide. Contactez l'administrateur.";
-                } elseif (str_contains($errorMessage, 'access_token') || str_contains($errorMessage, 'OAuth') || str_contains($errorMessage, '401')) {
-                    $errorMessage = "🔐 Erreur d'authentification : Token d'accès expiré ou invalide. Contactez l'administrateur.";
-                } elseif (str_contains($errorMessage, '429') || str_contains($errorMessage, 'quota') || str_contains($errorMessage, 'rate limit')) {
-                    $errorMessage = "⚠️ Quota dépassé : Trop de requêtes. Veuillez réessayer dans quelques minutes.";
-                } elseif (str_contains($errorMessage, '500') || str_contains($errorMessage, '503') || str_contains($errorMessage, 'unavailable')) {
-                    $errorMessage = "🔧 Service indisponible : L'API Google est temporairement indisponible. Veuillez réessayer.";
-                } elseif (str_contains($errorMessage, 'Gemini API Error')) {
-                    // Already formatted by GeminiClient, prefix with emoji
-                    $errorMessage = "🤖 " . $errorMessage;
-                } elseif (str_contains($errorMessage, 'Decryption failed') || str_contains($errorMessage, 'libsodium')) {
-                    $errorMessage = "🔒 Erreur de chiffrement : Impossible de lire les messages. Contactez l'administrateur.";
+                if ($e instanceof LlmAuthenticationException) {
+                    $errorMessage = "🔑 Erreur d'authentification : Les identifiants de l'IA sont incorrects ou expirés.";
+                } elseif ($e instanceof LlmQuotaException) {
+                    $errorMessage = "⚠️ Quota dépassé : La limite de consommation de l'IA a été atteinte.";
+                } elseif ($e instanceof LlmRateLimitException) {
+                    $errorMessage = "⏳ Trop de requêtes : Veuillez patienter un instant avant de réessayer.";
+                } elseif ($e instanceof LlmServiceUnavailableException) {
+                    $errorMessage = "🔧 Service indisponible : Le service IA est temporairement inaccessible.";
+                } elseif ($e instanceof LlmException) {
+                    $errorMessage = "🤖 Erreur IA : " . $e->getMessage();
+                } elseif (str_contains($errorMessage, 'timeout') || str_contains($errorMessage, 'Timeout')) {
+                    $errorMessage = "⏱️ Timeout : L'IA a mis trop de temps à répondre.";
                 } else {
-                    $errorMessage = "❌ Erreur : " . $errorMessage;
+                    $errorMessage = "❌ Erreur système : Une erreur inattendue est survenue.";
                 }
 
                 $sendEvent('error', $errorMessage);

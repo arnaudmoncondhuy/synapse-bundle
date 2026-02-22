@@ -6,6 +6,11 @@ namespace ArnaudMoncondhuy\SynapseBundle\Core\Client;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmAuthenticationException;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmException;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmQuotaException;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmRateLimitException;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmServiceUnavailableException;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Util\TextUtil;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
@@ -61,14 +66,14 @@ class GeminiClient implements LlmClientInterface
         array $contents,
         array $tools = [],
         ?string $model = null,
-        ?array $thinkingConfigOverride = null,
+        array $options = [],
         array &$debugOut = [],
     ): array {
         $this->applyDynamicConfig();
 
         $effectiveModel = $model ?? $this->model;
         $url = $this->buildVertexUrl(self::VERTEX_URL, $effectiveModel);
-        $payload = $this->buildPayload($contents, $tools, $effectiveModel, $thinkingConfigOverride);
+        $payload = $this->buildPayload($contents, $tools, $effectiveModel, $options['thinking'] ?? null);
 
         // Capture les paramètres réellement envoyés (après filtrage par ModelCapabilityRegistry)
         $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
@@ -728,8 +733,10 @@ class GeminiClient implements LlmClientInterface
     private function handleException(\Throwable $e): void
     {
         $message = $e->getMessage();
+        $statusCode = null;
 
         if ($e instanceof HttpExceptionInterface) {
+            $statusCode = $e->getResponse()->getStatusCode();
             try {
                 $errorBody = $e->getResponse()->getContent(false);
                 $message .= ' || Google Error: ' . $errorBody;
@@ -737,6 +744,13 @@ class GeminiClient implements LlmClientInterface
             }
         }
 
-        throw new \RuntimeException('Gemini API Error: ' . $message, 0, $e);
+        $fullMsg = 'Gemini API Error: ' . $message;
+
+        throw match ($statusCode) {
+            401, 403 => new LlmAuthenticationException($fullMsg, 0, $e),
+            429      => new LlmRateLimitException($fullMsg, 0, $e),
+            500, 503 => new LlmServiceUnavailableException($fullMsg, 0, $e),
+            default  => (str_contains(strtolower($message), 'quota') ? new LlmQuotaException($fullMsg, 0, $e) : new LlmException($fullMsg, 0, $e)),
+        };
     }
 }

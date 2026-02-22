@@ -214,23 +214,34 @@ class PresetsController extends AbstractController
         // Récupération des capacités du modèle pour nettoyer les données non supportées
         $caps = $this->capabilityRegistry->getCapabilities($modelName);
 
+        $providerOptions = [];
+
         // Safety Settings
         $safetyEnabled = (bool) ($data['safety_enabled'] ?? false);
         if ($caps->safetySettings && $safetyEnabled) {
-            $preset->setSafetyEnabled(true);
-            $preset->setSafetyDefaultThreshold($data['safety_default_threshold'] ?? 'BLOCK_MEDIUM_AND_ABOVE');
-            $preset->setSafetyHateSpeech(!empty($data['safety_hate_speech']) ? $data['safety_hate_speech'] : null);
-            $preset->setSafetyDangerousContent(!empty($data['safety_dangerous_content']) ? $data['safety_dangerous_content'] : null);
-            $preset->setSafetyHarassment(!empty($data['safety_harassment']) ? $data['safety_harassment'] : null);
-            $preset->setSafetySexuallyExplicit(!empty($data['safety_sexually_explicit']) ? $data['safety_sexually_explicit'] : null);
-        } else {
-            $preset->setSafetyEnabled(false);
-            $preset->setSafetyDefaultThreshold(null);
-            $preset->setSafetyHateSpeech(null);
-            $preset->setSafetyDangerousContent(null);
-            $preset->setSafetyHarassment(null);
-            $preset->setSafetySexuallyExplicit(null);
+            $providerOptions['safety_settings'] = [
+                'enabled'           => true,
+                'default_threshold' => $data['safety_default_threshold'] ?? 'BLOCK_MEDIUM_AND_ABOVE',
+                'thresholds'        => array_filter([
+                    'hate_speech'       => !empty($data['safety_hate_speech']) ? $data['safety_hate_speech'] : null,
+                    'dangerous_content' => !empty($data['safety_dangerous_content']) ? $data['safety_dangerous_content'] : null,
+                    'harassment'        => !empty($data['safety_harassment']) ? $data['safety_harassment'] : null,
+                    'sexually_explicit' => !empty($data['safety_sexually_explicit']) ? $data['safety_sexually_explicit'] : null,
+                ]),
+            ];
         }
+
+        // Thinking / Reasoning
+        $thinkingEnabled = (bool) ($data['thinking_enabled'] ?? false);
+        if ($caps->thinking && $thinkingEnabled) {
+            $providerOptions['thinking'] = [
+                'enabled'          => true,
+                'budget'           => (int) ($data['thinking_budget'] ?? 1024),
+                'reasoning_effort' => $data['reasoning_effort'] ?? 'high',
+            ];
+        }
+
+        $preset->setProviderOptions($providerOptions);
 
         // Generation Config
         $preset->setGenerationTemperature((float) ($data['generation_temperature'] ?? 1.0));
@@ -239,7 +250,7 @@ class PresetsController extends AbstractController
         if ($caps->topK) {
             $preset->setGenerationTopK((int) ($data['generation_top_k'] ?? 40));
         } else {
-            $preset->setGenerationTopK(null); // Force à null si non supporté
+            $preset->setGenerationTopK(null);
         }
 
         $preset->setGenerationMaxOutputTokens(
@@ -250,18 +261,6 @@ class PresetsController extends AbstractController
         $preset->setGenerationStopSequences(
             array_values(array_filter(array_map('trim', explode(',', $stopSeqStr))))
         );
-
-        // Thinking
-        $thinkingEnabled = (bool) ($data['thinking_enabled'] ?? false);
-        if ($caps->thinking && $thinkingEnabled) {
-            $preset->setThinkingEnabled(true);
-            $preset->setThinkingBudget((int) ($data['thinking_budget'] ?? 1024));
-            $preset->setReasoningEffort($data['reasoning_effort'] ?? 'high');
-        } else {
-            $preset->setThinkingEnabled(false);
-            $preset->setThinkingBudget(null);
-            $preset->setReasoningEffort(null);
-        }
 
         // Streaming Mode (checkbox non envoyé = false)
         $preset->setStreamingEnabled(!empty($data['streaming_enabled']));

@@ -30,17 +30,17 @@ namespace ArnaudMoncondhuy\SynapseBundle\Contract;
  * Output (chunks yield par streamGenerateContent) :
  *   [
  *     'text'             => string|null,
- *     'thinking'         => string|null,   // Gemini only, null pour les autres
+ *     'thinking'         => string|null,   // Réflexion brute (si supporté)
  *     'function_calls'   => [['id' => string, 'name' => string, 'args' => array]],
  *     'usage'            => [
- *         'promptTokenCount'     => int,
- *         'candidatesTokenCount' => int,
- *         'thoughtsTokenCount'   => int,
- *         'totalTokenCount'      => int,
+ *         'prompt_tokens'     => int,
+ *         'completion_tokens'   => int,
+ *         'thinking_tokens'   => int,
+ *         'total_tokens'      => int,
  *     ],
- *     'safety_ratings'   => array,         // Gemini only, [] pour les autres
+ *     'safety_ratings'   => array,         // [], ou scores de sécurité si supporté
  *     'blocked'          => bool,
- *     'blocked_reason'   => string|null,   // Raison lisible de bloquage (ex: 'harcèlement', 'discours haineux')
+ *     'blocked_reason'   => string|null,   // Raison lisible de bloquage
  *   ]
  */
 interface LlmClientInterface
@@ -71,17 +71,17 @@ interface LlmClientInterface
      * Génère du contenu en mode synchrone.
      * Retourne le dernier chunk normalisé.
      *
-     * @param array       $contents               Historique au format OpenAI canonical (inclut le message système en tête)
-     * @param array       $tools                  Déclarations d'outils (format Synapse)
-     * @param string|null $model                  Modèle spécifique (override config)
-     * @param array|null  $thinkingConfigOverride Configuration de thinking (Gemini)
-     * @param array       $debugOut               Sortie de debug : sera remplie avec actual_request_params et raw_request_body
+     * @param array       $contents     Historique au format OpenAI canonical (inclut le message système en tête)
+     * @param array       $tools        Déclarations d'outils (format Synapse)
+     * @param string|null $model        Modèle spécifique (override config)
+     * @param array       $options      Options additionnelles (ex: thinking_config, safety_settings)
+     * @param array       $debugOut     Sortie de debug : sera remplie avec actual_request_params et raw_request_body
      */
     public function generateContent(
         array $contents,
         array $tools = [],
         ?string $model = null,
-        ?array $thinkingConfigOverride = null,
+        array $options = [],
         array &$debugOut = [],
     ): array;
 }

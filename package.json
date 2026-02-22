@@ -13,11 +13,16 @@
     "homepage": "https://github.com/arnaudmoncondhuy/synapse-bundle",
     "repository": "https://github.com/arnaudmoncondhuy/synapse-bundle",
     "type": "module",
-    "main": "assets/controllers/chat_controller.js",
+    "main": "assets/controllers/synapse_chat_controller.js",
     "symfony": {
         "controllers": {
-            "chat": {
-                "main": "assets/controllers/chat_controller.js",
+            "synapse-chat": {
+                "main": "assets/controllers/synapse_chat_controller.js",
+                "fetch": "eager",
+                "enabled": true
+            },
+            "synapse-sidebar": {
+                "main": "assets/controllers/synapse_sidebar_controller.js",
                 "fetch": "eager",
                 "enabled": true
             }

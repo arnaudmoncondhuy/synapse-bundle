@@ -49,43 +49,11 @@ class SynapsePreset
     #[ORM\Column(type: Types::STRING, length: 100)]
     private string $model = 'gemini-2.5-flash';
 
-    // Safety Settings
-
     /**
-     * Activer les filtres de sécurité
+     * Options spécifiques au provider (ex: safetySettings, thinkingBudget, reasoningEffort)
      */
-    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    private bool $safetyEnabled = false;
-
-    /**
-     * Seuil par défaut pour toutes les catégories
-     */
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $safetyDefaultThreshold = 'BLOCK_MEDIUM_AND_ABOVE';
-
-    /**
-     * Seuil pour le hate speech
-     */
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $safetyHateSpeech = null;
-
-    /**
-     * Seuil pour le contenu dangereux
-     */
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $safetyDangerousContent = null;
-
-    /**
-     * Seuil pour le harcèlement
-     */
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $safetyHarassment = null;
-
-    /**
-     * Seuil pour le contenu sexuellement explicite
-     */
-    #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
-    private ?string $safetySexuallyExplicit = null;
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $providerOptions = null;
 
     // Generation Config
 
@@ -118,26 +86,6 @@ class SynapsePreset
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $generationStopSequences = null;
-
-    // Thinking Config
-
-    /**
-     * Activer le thinking natif (Gemini 2.5+)
-     */
-    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
-    private bool $thinkingEnabled = true;
-
-    /**
-     * Budget thinking (0 - 24576 tokens)
-     */
-    #[ORM\Column(type: Types::INTEGER, options: ['default' => 1024])]
-    private int $thinkingBudget = 1024;
-
-    /**
-     * Effort de réflexion pour OVH (high, medium, low, minimal)
-     */
-    #[ORM\Column(type: Types::STRING, length: 20, options: ['default' => 'high'])]
-    private string $reasoningEffort = 'high';
 
     /**
      * Activer le streaming (SSE). Si désactivé, mode synchrone pour debug facile
@@ -213,69 +161,14 @@ class SynapsePreset
         return $this;
     }
 
-    public function isSafetyEnabled(): bool
+    public function getProviderOptions(): ?array
     {
-        return $this->safetyEnabled;
+        return $this->providerOptions;
     }
 
-    public function setSafetyEnabled(bool $safetyEnabled): self
+    public function setProviderOptions(?array $providerOptions): self
     {
-        $this->safetyEnabled = $safetyEnabled;
-        return $this;
-    }
-
-    public function getSafetyDefaultThreshold(): ?string
-    {
-        return $this->safetyDefaultThreshold;
-    }
-
-    public function setSafetyDefaultThreshold(?string $safetyDefaultThreshold): self
-    {
-        $this->safetyDefaultThreshold = $safetyDefaultThreshold;
-        return $this;
-    }
-
-    public function getSafetyHateSpeech(): ?string
-    {
-        return $this->safetyHateSpeech;
-    }
-
-    public function setSafetyHateSpeech(?string $safetyHateSpeech): self
-    {
-        $this->safetyHateSpeech = $safetyHateSpeech;
-        return $this;
-    }
-
-    public function getSafetyDangerousContent(): ?string
-    {
-        return $this->safetyDangerousContent;
-    }
-
-    public function setSafetyDangerousContent(?string $safetyDangerousContent): self
-    {
-        $this->safetyDangerousContent = $safetyDangerousContent;
-        return $this;
-    }
-
-    public function getSafetyHarassment(): ?string
-    {
-        return $this->safetyHarassment;
-    }
-
-    public function setSafetyHarassment(?string $safetyHarassment): self
-    {
-        $this->safetyHarassment = $safetyHarassment;
-        return $this;
-    }
-
-    public function getSafetySexuallyExplicit(): ?string
-    {
-        return $this->safetySexuallyExplicit;
-    }
-
-    public function setSafetySexuallyExplicit(?string $safetySexuallyExplicit): self
-    {
-        $this->safetySexuallyExplicit = $safetySexuallyExplicit;
+        $this->providerOptions = $providerOptions;
         return $this;
     }
 
@@ -334,39 +227,6 @@ class SynapsePreset
         return $this;
     }
 
-    public function isThinkingEnabled(): bool
-    {
-        return $this->thinkingEnabled;
-    }
-
-    public function setThinkingEnabled(bool $thinkingEnabled): self
-    {
-        $this->thinkingEnabled = $thinkingEnabled;
-        return $this;
-    }
-
-    public function getThinkingBudget(): int
-    {
-        return $this->thinkingBudget;
-    }
-
-    public function setThinkingBudget(int $thinkingBudget): self
-    {
-        $this->thinkingBudget = $thinkingBudget;
-        return $this;
-    }
-
-    public function getReasoningEffort(): string
-    {
-        return $this->reasoningEffort;
-    }
-
-    public function setReasoningEffort(string $reasoningEffort): self
-    {
-        $this->reasoningEffort = $reasoningEffort;
-        return $this;
-    }
-
     public function isStreamingEnabled(): bool
     {
         return $this->streamingEnabled;
@@ -386,11 +246,6 @@ class SynapsePreset
     /**
      * Convertit le preset en tableau pour ChatService / LLM clients
      *
-     * Note : les credentials du provider (provider_credentials) sont ajoutés
-     * par DatabaseConfigProvider après fusion avec SynapseProvider.
-     * Les settings globaux (retention, context, system_prompt) sont ajoutés par
-     * DatabaseConfigProvider depuis SynapseConfig.
-     *
      * @return array Configuration formatée pour les services LLM
      */
     public function toArray(): array
@@ -398,18 +253,6 @@ class SynapsePreset
         $config = [
             'provider'  => $this->providerName,
             'model'     => $this->model,
-        ];
-
-        // Safety Settings
-        $config['safety_settings'] = [
-            'enabled'           => $this->safetyEnabled,
-            'default_threshold' => $this->safetyDefaultThreshold,
-            'thresholds'        => array_filter([
-                'hate_speech'       => $this->safetyHateSpeech,
-                'dangerous_content' => $this->safetyDangerousContent,
-                'harassment'        => $this->safetyHarassment,
-                'sexually_explicit' => $this->safetySexuallyExplicit,
-            ]),
         ];
 
         // Generation Config
@@ -427,15 +270,13 @@ class SynapsePreset
             $config['generation_config']['stop_sequences'] = $this->generationStopSequences;
         }
 
-        // Thinking Config
-        $config['thinking'] = [
-            'enabled'           => $this->thinkingEnabled,
-            'budget'            => $this->thinkingBudget,
-            'reasoning_effort'  => $this->reasoningEffort,
-        ];
-
         // Streaming Mode
         $config['streaming_enabled'] = $this->streamingEnabled;
+
+        // Provider Options (Fusion directe)
+        if ($this->providerOptions !== null) {
+            $config = array_merge($config, $this->providerOptions);
+        }
 
         return $config;
     }

@@ -39,7 +39,7 @@ class MessageFormatter implements MessageFormatterInterface
             // Handle serialized entities (Doctrine converts to arrays in closure context)
             if (is_array($entity)) {
                 // If it looks like already-formatted message data, try to reconstruct
-                if (isset($entity['role']) && isset($entity['content'])) {
+                if (isset($entity['role']) && (isset($entity['content']) || isset($entity['parts']))) {
                     // Decrypt content if needed
                     $decrypted = $entity;
                     if (!empty($entity['content']) && $this->encryptionService !== null && is_string($entity['content'])) {

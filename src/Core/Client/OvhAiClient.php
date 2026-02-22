@@ -6,6 +6,11 @@ namespace ArnaudMoncondhuy\SynapseBundle\Core\Client;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmAuthenticationException;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmException;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmQuotaException;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmRateLimitException;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmServiceUnavailableException;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -185,7 +190,7 @@ class OvhAiClient implements LlmClientInterface
         array $contents,
         array $tools = [],
         ?string $model = null,
-        ?array $thinkingConfigOverride = null,
+        array $options = [],
         array &$debugOut = [],
     ): array {
         $this->applyDynamicConfig();
@@ -510,8 +515,10 @@ class OvhAiClient implements LlmClientInterface
     private function handleException(\Throwable $e): void
     {
         $message = $e->getMessage();
+        $statusCode = null;
 
         if ($e instanceof HttpExceptionInterface) {
+            $statusCode = $e->getResponse()->getStatusCode();
             try {
                 $errorBody = $e->getResponse()->getContent(false);
                 $message .= ' || OVH Error: ' . $errorBody;
@@ -519,6 +526,13 @@ class OvhAiClient implements LlmClientInterface
             }
         }
 
-        throw new \RuntimeException('OVH AI API Error: ' . $message, 0, $e);
+        $fullMsg = 'OVH AI API Error: ' . $message;
+
+        throw match ($statusCode) {
+            401, 403 => new LlmAuthenticationException($fullMsg, 0, $e),
+            429      => new LlmRateLimitException($fullMsg, 0, $e),
+            500, 503 => new LlmServiceUnavailableException($fullMsg, 0, $e),
+            default  => (str_contains(strtolower($message), 'quota') ? new LlmQuotaException($fullMsg, 0, $e) : new LlmException($fullMsg, 0, $e)),
+        };
     }
 }

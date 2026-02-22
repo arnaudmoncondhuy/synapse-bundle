@@ -112,7 +112,7 @@
 					       value="{{ preset.generationTopK }}"
 					       min="1" max="100"
 					       class="synapse-admin__input">
-					<p class="synapse-admin__help">Ignoré pour les modèles OVH.</p>
+					<p class="synapse-admin__help">Paramètre de filtrage pour certains modèles.</p>
 				</div>
 				<div class="synapse-admin__form-row">
 					<label class="synapse-admin__label">Max Output Tokens</label>
@@ -147,28 +147,28 @@
 				<div class="synapse-admin__form-row">
 					<label class="synapse-admin__label">
 						<input type="checkbox" name="thinking_enabled" value="1"
-						       {% if preset.thinkingEnabled %}checked{% endif %}>
+						       {% if preset.providerOptions.thinking.enabled|default(false) %}checked{% endif %}>
 						Activer le thinking
 					</label>
-					<p class="synapse-admin__help">Gemini: réflexion interne. OVH: reasoning effort.</p>
+					<p class="synapse-admin__help" id="thinking-help">Activation de la réflexion interne ou du raisonnement approfondi.</p>
 				</div>
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">Budget thinking (Gemini)</label>
+				<div class="synapse-admin__form-row" id="row-thinking-budget">
+					<label class="synapse-admin__label">Budget de réflexion (tokens)</label>
 					<input type="number" name="thinking_budget"
-					       value="{{ preset.thinkingBudget }}"
+					       value="{{ preset.providerOptions.thinking.budget|default(1024) }}"
 					       min="128" max="24576"
 					       class="synapse-admin__input">
 					<p class="synapse-admin__help">0–24576 tokens alloués à la réflexion interne.</p>
 				</div>
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">Effort de reasoning (OVH)</label>
+				<div class="synapse-admin__form-row" id="row-reasoning-effort">
+					<label class="synapse-admin__label">Niveau d'effort de réflexion</label>
 					<select name="reasoning_effort" class="synapse-admin__select">
-						<option value="high" {% if preset.reasoningEffort == 'high' %}selected{% endif %}>Élevé (high)</option>
-						<option value="medium" {% if preset.reasoningEffort == 'medium' %}selected{% endif %}>Moyen (medium)</option>
-						<option value="low" {% if preset.reasoningEffort == 'low' %}selected{% endif %}>Faible (low)</option>
-						<option value="minimal" {% if preset.reasoningEffort == 'minimal' %}selected{% endif %}>Minimal</option>
+						<option value="high" {% if preset.providerOptions.thinking.reasoning_effort|default('high') == 'high' %}selected{% endif %}>Élevé (high)</option>
+						<option value="medium" {% if preset.providerOptions.thinking.reasoning_effort|default('') == 'medium' %}selected{% endif %}>Moyen (medium)</option>
+						<option value="low" {% if preset.providerOptions.thinking.reasoning_effort|default('') == 'low' %}selected{% endif %}>Faible (low)</option>
+						<option value="minimal" {% if preset.providerOptions.thinking.reasoning_effort|default('') == 'minimal' %}selected{% endif %}>Minimal</option>
 					</select>
-					<p class="synapse-admin__help">OVH Gpt-oss-20b: contrôle l'effort de réflexion.</p>
+					<p class="synapse-admin__help">Contrôle l'effort de réflexion pour les modèles supportés.</p>
 				</div>
 			</div>
 		</div>
@@ -176,13 +176,13 @@
 		{# ── Safety Settings ───────────────────────────────────────────────── #}
 		<div class="synapse-admin__card" id="section-safety">
 			<div class="synapse-admin__card-header">
-				<span class="synapse-admin__card-title">Filtres de sécurité (Gemini)</span>
+				<span class="synapse-admin__card-title">Filtres de sécurité</span>
 			</div>
 			<div class="synapse-admin__card-body">
 				<div class="synapse-admin__form-row" style="margin-bottom: 1rem">
 					<label class="synapse-admin__label">
 						<input type="checkbox" name="safety_enabled" value="1"
-						       {% if preset.safetyEnabled %}checked{% endif %}>
+						       {% if preset.providerOptions.safety_settings.enabled|default(false) %}checked{% endif %}>
 						Activer les filtres de sécurité
 					</label>
 				</div>
@@ -191,7 +191,7 @@
 						<label class="synapse-admin__label">Seuil par défaut</label>
 						<select name="safety_default_threshold" class="synapse-admin__select">
 							{% for value, label in safety_thresholds %}
-								<option value="{{ value }}" {% if preset.safetyDefaultThreshold == value %}selected{% endif %}>{{ label }}</option>
+								<option value="{{ value }}" {% if preset.providerOptions.safety_settings.default_threshold|default('') == value %}selected{% endif %}>{{ label }}</option>
 							{% endfor %}
 						</select>
 					</div>
@@ -200,7 +200,7 @@
 						<select name="safety_hate_speech" class="synapse-admin__select">
 							<option value="">Par défaut</option>
 							{% for value, label in safety_thresholds %}
-								<option value="{{ value }}" {% if preset.safetyHateSpeech == value %}selected{% endif %}>{{ label }}</option>
+								<option value="{{ value }}" {% if preset.providerOptions.safety_settings.thresholds.hate_speech|default('') == value %}selected{% endif %}>{{ label }}</option>
 							{% endfor %}
 						</select>
 					</div>
@@ -209,7 +209,7 @@
 						<select name="safety_dangerous_content" class="synapse-admin__select">
 							<option value="">Par défaut</option>
 							{% for value, label in safety_thresholds %}
-								<option value="{{ value }}" {% if preset.safetyDangerousContent == value %}selected{% endif %}>{{ label }}</option>
+								<option value="{{ value }}" {% if preset.providerOptions.safety_settings.thresholds.dangerous_content|default('') == value %}selected{% endif %}>{{ label }}</option>
 							{% endfor %}
 						</select>
 					</div>
@@ -218,7 +218,7 @@
 						<select name="safety_harassment" class="synapse-admin__select">
 							<option value="">Par défaut</option>
 							{% for value, label in safety_thresholds %}
-								<option value="{{ value }}" {% if preset.safetyHarassment == value %}selected{% endif %}>{{ label }}</option>
+								<option value="{{ value }}" {% if preset.providerOptions.safety_settings.thresholds.harassment|default('') == value %}selected{% endif %}>{{ label }}</option>
 							{% endfor %}
 						</select>
 					</div>
@@ -227,7 +227,7 @@
 						<select name="safety_sexually_explicit" class="synapse-admin__select">
 							<option value="">Par défaut</option>
 							{% for value, label in safety_thresholds %}
-								<option value="{{ value }}" {% if preset.safetySexuallyExplicit == value %}selected{% endif %}>{{ label }}</option>
+								<option value="{{ value }}" {% if preset.providerOptions.safety_settings.thresholds.sexually_explicit|default('') == value %}selected{% endif %}>{{ label }}</option>
 							{% endfor %}
 						</select>
 					</div>
@@ -314,6 +314,14 @@ function updateFormVisibility() {
 		if (el) {
 			el.style.display = visible ? '' : 'none';
 			
+			// Filtrage fin à l'intérieur de la section thinking
+			if (id === 'section-thinking' && visible) {
+				const rowBudget = document.getElementById('row-thinking-budget');
+				const rowEffort = document.getElementById('row-reasoning-effort');
+				if (rowBudget) rowBudget.style.display = caps.provider === 'gemini' ? '' : 'none';
+				if (rowEffort) rowEffort.style.display = caps.provider === 'ovh' ? '' : 'none';
+			}
+
 			// Si la section contient des champs obligatoires désactivés, on enlève le 'required' pour ne pas bloquer le form
 			const inputs = el.querySelectorAll('input, select, textarea');
 			inputs.forEach(input => {

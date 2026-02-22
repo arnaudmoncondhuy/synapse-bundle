@@ -82,7 +82,7 @@ class GeminiClientTest extends TestCase
         $debugOut = [];
 
         // Act
-        $result = $this->geminiClient->generateContent($contents, [], null, null, $debugOut);
+        $result = $this->geminiClient->generateContent($contents, [], null, [], $debugOut);
 
         // Assert
         $this->assertIsArray($result);
@@ -211,7 +211,7 @@ class GeminiClientTest extends TestCase
         $debugOut = [];
 
         // Act
-        $this->geminiClient->generateContent($contents, [], null, null, $debugOut);
+        $this->geminiClient->generateContent($contents, [], null, [], $debugOut);
 
         // Assert
         $this->assertArrayHasKey('actual_request_params', $debugOut);
@@ -280,8 +280,11 @@ class GeminiClientTest extends TestCase
         $this->httpClient->method('request')
             ->willThrowException(new \Exception('Network error'));
 
-        // Act
-        $result = $this->geminiClient->generateContent($contents);
+        // Act & Assert
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Gemini API Error: Network error');
+
+        $this->geminiClient->generateContent($contents);
 
         // Assert
         // Une exception devrait être loggée, et un chunk vide retourné
@@ -317,7 +320,7 @@ class GeminiClientTest extends TestCase
         $debugOut = [];
 
         // Act
-        $this->geminiClient->generateContent($contents, [], null, null, $debugOut);
+        $this->geminiClient->generateContent($contents, [], null, [], $debugOut);
 
         // Assert
         // Le système doit être extrait des contents et traité
