@@ -27,8 +27,7 @@ class DashboardController extends AbstractController
         private SynapseProviderRepository $providerRepo,
         private SynapsePresetRepository $presetRepo,
         private SynapseConfigRepository $configRepo,
-    ) {
-    }
+    ) {}
 
     #[Route('', name: 'synapse_admin_index')]
     #[Route('/dashboard', name: 'synapse_admin_dashboard')]
@@ -42,16 +41,14 @@ class DashboardController extends AbstractController
         // Usage tokens (7 derniers jours)
         $last7days = new \DateTimeImmutable('-7 days');
         $now = new \DateTimeImmutable();
-        $tokenStats = $this->tokenUsageRepo->getGlobalStats($last7days, $now, [
-            'default' => ['input' => 0.30, 'output' => 2.50], // Gemini 2.5 Flash
-        ]);
+        $tokenStats = $this->tokenUsageRepo->getGlobalStats($last7days, $now);
 
         // Usage quotidien (30 derniers jours pour le graphique)
         $last30days = new \DateTimeImmutable('-30 days');
         $dailyUsage = $this->tokenUsageRepo->getDailyUsage($last30days, $now);
 
         // Active providers (enabled and configured)
-        $activeProviders = array_filter($this->providerRepo->findAll(), function($provider) {
+        $activeProviders = array_filter($this->providerRepo->findAll(), function ($provider) {
             return $provider->isEnabled() && $provider->isConfigured();
         });
 

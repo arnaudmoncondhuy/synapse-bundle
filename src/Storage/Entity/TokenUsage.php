@@ -200,6 +200,7 @@ class TokenUsage
      */
     public function calculateTotalTokens(): self
     {
+        // Total = Prompt + Completion + Thinking
         $this->totalTokens = $this->promptTokens + $this->completionTokens + $this->thinkingTokens;
         return $this;
     }
@@ -271,9 +272,9 @@ class TokenUsage
     public function calculateCost(array $pricing): float
     {
         $inputCost = ($this->promptTokens / 1_000_000) * ($pricing['input'] ?? 0);
-        $outputCost = ($this->completionTokens / 1_000_000) * ($pricing['output'] ?? 0);
-        $thinkingCost = ($this->thinkingTokens / 1_000_000) * ($pricing['output'] ?? 0); // Thinking facturé comme output
+        // Chez Vertex, Thinking + Completion = Total Output
+        $outputCost = (($this->completionTokens + $this->thinkingTokens) / 1_000_000) * ($pricing['output'] ?? 0);
 
-        return $inputCost + $outputCost + $thinkingCost;
+        return $inputCost + $outputCost;
     }
 }

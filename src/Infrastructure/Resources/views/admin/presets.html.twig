@@ -74,10 +74,11 @@
 										Configuration
 									</p>
 									<div style="display: flex; gap: 0.5rem">
-										{% if caps.thinking %}<i data-lucide="brain" title="Thinking" style="width: 14px; color: var(--synapse-admin-success)"></i>{% endif %}
-										{% if caps.functionCalling %}<i data-lucide="wrench" title="Tool calls" style="width: 14px; color: var(--synapse-admin-success)"></i>{% endif %}
-										{% if caps.safetySettings %}<i data-lucide="shield" title="Safety" style="width: 14px; color: var(--synapse-admin-success)"></i>{% endif %}
-										{% if caps.streaming %}<i data-lucide="activity" title="Streaming" style="width: 14px; color: var(--synapse-admin-success)"></i>{% endif %}
+										{% if caps.thinking and preset.thinkingEnabled %}<span title="Thinking / Réflexion interne active"><i data-lucide="brain" style="width: 14px; color: var(--synapse-admin-success)"></i></span>{% endif %}
+										{% if caps.functionCalling %}<span title="Tool calls / Appels d'outils supportés"><i data-lucide="wrench" style="width: 14px; color: var(--synapse-admin-success)"></i></span>{% endif %}
+										{% if caps.safetySettings and preset.safetyEnabled %}<span title="Safety / Filtres de sécurité actifs"><i data-lucide="shield" style="width: 14px; color: var(--synapse-admin-success)"></i></span>{% endif %}
+										{% if caps.streaming and preset.streamingEnabled %}<span title="Streaming / Réponses en temps réel"><i data-lucide="activity" style="width: 14px; color: var(--synapse-admin-success)"></i></span>{% endif %}
+										{% if caps.contextCaching and preset.contextCachingEnabled %}<span title="Context Caching / Mise en cache du contexte active"><i data-lucide="database" style="width: 14px; color: var(--synapse-admin-success)"></i></span>{% endif %}
 									</div>
 								</div>
 								<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.9rem">
@@ -98,20 +99,46 @@
 								</div>
 							</div>
 
-							<!-- Metadata -->
-							<div class="synapse-admin__card-body" style="padding: 0.75rem 1.5rem; background: var(--synapse-admin-bg-main); font-size: 0.8rem; color: var(--synapse-admin-text-muted)">
-								Mis à jour le {{ preset.updatedAt|date('d/m/Y à H:i') }}
+							<!-- Pricing -->
+							{% set currency_symbol = (preset.providerName|lower == 'gemini') ? '$' : '€' %}
+							<div class="synapse-admin__card-body" style="padding: 1rem 1.5rem; background: var(--synapse-admin-bg-main); font-size: 0.85rem; border-bottom: 1px solid var(--synapse-admin-border)">
+								<div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+									<div>
+										<span style="display: block; font-size: 0.7rem; font-weight: 600; color: var(--synapse-admin-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem">
+											Tarif Input
+										</span>
+										<span style="color: var(--synapse-admin-text-main); font-weight: 600">
+											{% if caps.pricingInput is not null %}
+												{{ caps.pricingInput|number_format(2, ',', ' ') }}{{ currency_symbol }} <small style="color: var(--synapse-admin-text-muted); font-weight: normal">/ 1M</small>
+											{% else %}
+												—
+											{% endif %}
+										</span>
+									</div>
+									<div>
+										<span style="display: block; font-size: 0.7rem; font-weight: 600; color: var(--synapse-admin-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem">
+											Tarif Output
+										</span>
+										<span style="color: var(--synapse-admin-text-main); font-weight: 600">
+											{% if caps.pricingOutput is not null %}
+												{{ caps.pricingOutput|number_format(2, ',', ' ') }}{{ currency_symbol }} <small style="color: var(--synapse-admin-text-muted); font-weight: normal">/ 1M</small>
+											{% else %}
+												—
+											{% endif %}
+										</span>
+									</div>
+								</div>
 							</div>
 
 							<!-- Actions -->
-							<div class="synapse-admin__card-footer" style="padding: 1rem 1.5rem; display: flex; gap: 0.5rem">
+							<div class="synapse-admin__card-footer" style="padding: 1rem 1.25rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
 								{% if not preset.isActive %}
 									<form method="post"
 									      action="{{ path('synapse_admin_presets_activate', {id: preset.id}) }}"
-									      style="flex: 1;">
+									      style="display: contents">
 										<button type="submit"
-										        class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--primary"
-										        style="width: 100%">
+										        class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline-primary"
+										        style="padding-left: 0.8rem; padding-right: 0.8rem; gap: 0.4rem;">
 											<i data-lucide="play" style="width: 14px; height: 14px;"></i>
 											Activer
 										</button>
@@ -119,26 +146,26 @@
 								{% endif %}
 								<a href="{{ path('synapse_admin_presets_edit', {id: preset.id}) }}"
 								   class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--ghost"
-								   style="flex: 1;">
+								   style="padding-left: 0.8rem; padding-right: 0.8rem; gap: 0.4rem;">
 									<i data-lucide="pencil" style="width: 14px; height: 14px;"></i>
 									Modifier
 								</a>
 								<form method="post"
 								      action="{{ path('synapse_admin_presets_test', {id: preset.id}) }}"
-								      style="flex: 1;">
+								      style="display: contents">
 									<button type="submit"
 									        class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--ghost"
-									        style="width: 100%">
+									        style="padding-left: 0.8rem; padding-right: 0.8rem; gap: 0.4rem;">
 										<i data-lucide="flask-conical" style="width: 14px; height: 14px;"></i>
 										Tester
 									</button>
 								</form>
 								<form method="post"
 								      action="{{ path('synapse_admin_presets_clone', {id: preset.id}) }}"
-								      style="flex: 1;">
+								      style="display: contents">
 									<button type="submit"
 									        class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--ghost"
-									        style="width: 100%">
+									        style="padding-left: 0.8rem; padding-right: 0.8rem; gap: 0.4rem;">
 										<i data-lucide="copy" style="width: 14px; height: 14px;"></i>
 										Dupliquer
 									</button>
@@ -149,9 +176,9 @@
 									      style="display: contents"
 									      onsubmit="return confirm('Supprimer le preset « {{ preset.name }} » ?')">
 										<button type="submit"
-										        class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--danger"
+										        class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--outline-danger"
 										        title="Supprimer"
-										        style="padding: 0.5rem;">
+										        style="padding: 0.5rem; height: 35px; min-width: 35px; width: 35px;">
 											<i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
 										</button>
 									</form>

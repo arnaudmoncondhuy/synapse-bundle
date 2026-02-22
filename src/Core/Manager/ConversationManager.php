@@ -37,8 +37,9 @@ class ConversationManager
         private ?PermissionCheckerInterface $permissionChecker = null,
         private ?string $conversationClass = null,
         private ?string $messageClass = null,
-    ) {
-    }
+        private ?\ArnaudMoncondhuy\SynapseBundle\Core\Accounting\TokenAccountingService $accountingService = null,
+        private ?\ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseModelRepository $modelRepo = null,
+    ) {}
 
     /**
      * Récupère le repository de conversations (injecté ou résolu dynamiquement)
@@ -131,6 +132,26 @@ class ConversationManager
         }
         if (isset($metadata['metadata'])) {
             $message->setMetadata($metadata['metadata']);
+        }
+
+        // Enregistrer le modèle et calculer le coût
+        $model = $metadata['model'] ?? null;
+        if ($model) {
+            $message->setMetadataValue('model', $model);
+
+            // Calculer le coût si le service est disponible
+            if ($this->accountingService && $this->modelRepo) {
+                $pricingMap = $this->modelRepo->findAllPricingMap();
+                $modelPricing = $pricingMap[$model] ?? ['input' => 0.0, 'output' => 0.0];
+                $usage = [
+                    'prompt' => $message->getPromptTokens() ?? 0,
+                    'completion' => $message->getCompletionTokens() ?? 0,
+                    'thinking' => $message->getThinkingTokens() ?? 0,
+                ];
+                $cost = $this->accountingService->calculateCost($usage, $modelPricing);
+                $message->setMetadataValue('cost', $cost);
+                $message->setMetadataValue('pricing', $modelPricing);
+            }
         }
 
         // Calculer total tokens

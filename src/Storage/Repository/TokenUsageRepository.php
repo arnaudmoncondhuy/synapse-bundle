@@ -50,20 +50,26 @@ class TokenUsageRepository extends ServiceEntityRepository
     {
         $connection = $this->getEntityManager()->getConnection();
 
+        $isPostgreSql = str_contains($connection->getDatabasePlatform()::class, 'PostgreSQL');
+        $modelExpression = $isPostgreSql ? "metadata->>'model'" : "JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.model'))";
+
         // Requête UNION ALL pour agréger TokenUsage + Message
         $sql = <<<SQL
             SELECT
-                COUNT(*) as request_count,
-                COALESCE(SUM(prompt_tokens), 0) as prompt_tokens,
-                COALESCE(SUM(completion_tokens), 0) as completion_tokens,
-                COALESCE(SUM(thinking_tokens), 0) as thinking_tokens,
-                COALESCE(SUM(total_tokens), 0) as total_tokens
+                prompt_tokens,
+                completion_tokens,
+                thinking_tokens,
+                total_tokens,
+                model,
+                metadata
             FROM (
                 SELECT
                     prompt_tokens,
                     completion_tokens,
                     thinking_tokens,
-                    total_tokens
+                    total_tokens,
+                    model,
+                    metadata
                 FROM synapse_token_usage
                 WHERE created_at >= :start AND created_at <= :end
 
@@ -73,28 +79,46 @@ class TokenUsageRepository extends ServiceEntityRepository
                     COALESCE(prompt_tokens, 0) as prompt_tokens,
                     COALESCE(completion_tokens, 0) as completion_tokens,
                     COALESCE(thinking_tokens, 0) as thinking_tokens,
-                    COALESCE(total_tokens, 0) as total_tokens
+                    COALESCE(total_tokens, 0) as total_tokens,
+                    $modelExpression as model,
+                    metadata
                 FROM {$this->messageTableName}
                 WHERE created_at >= :start AND created_at <= :end
             ) AS combined
         SQL;
 
-        $result = $connection->executeQuery($sql, [
+        $results = $connection->executeQuery($sql, [
             'start' => $start->format('Y-m-d H:i:s'),
             'end' => $end->format('Y-m-d H:i:s'),
-        ])->fetchAssociative();
+        ])->fetchAllAssociative();
 
         $stats = [
-            'request_count' => (int) $result['request_count'],
-            'prompt_tokens' => (int) $result['prompt_tokens'],
-            'completion_tokens' => (int) $result['completion_tokens'],
-            'thinking_tokens' => (int) $result['thinking_tokens'],
-            'total_tokens' => (int) $result['total_tokens'],
+            'request_count' => 0,
+            'prompt_tokens' => 0,
+            'completion_tokens' => 0,
+            'thinking_tokens' => 0,
+            'total_tokens' => 0,
+            'cost' => 0.0,
         ];
 
-        // Calcul du coût si pricing fourni
-        if (!empty($pricing)) {
-            $stats['cost'] = $this->calculateCost($stats, $pricing);
+        foreach ($results as $row) {
+            $stats['request_count']++;
+            $stats['prompt_tokens'] += (int) $row['prompt_tokens'];
+            $stats['completion_tokens'] += (int) $row['completion_tokens'];
+            $stats['thinking_tokens'] += (int) $row['thinking_tokens'];
+            $stats['total_tokens'] += (int) $row['total_tokens'];
+
+            $metadata = json_decode($row['metadata'] ?? '{}', true);
+            if (isset($metadata['cost'])) {
+                $stats['cost'] += (float) $metadata['cost'];
+            } else {
+                // Fallback: calcul basé sur pricing fourni ou défaut
+                $model = $row['model'] ?? 'default';
+                $rowPricing = $pricing[$model] ?? ($pricing['default'] ?? ['input' => 0.30, 'output' => 2.50]);
+                $stats['cost'] += $this->calculateCost($row, [
+                    'default' => $rowPricing
+                ]);
+            }
         }
 
         return $stats;
@@ -292,20 +316,37 @@ class TokenUsageRepository extends ServiceEntityRepository
      */
     public function getUsageByModel(\DateTimeInterface $start, \DateTimeInterface $end): array
     {
-        $results = $this->createQueryBuilder('t')
-            ->select(
-                't.model',
-                'COUNT(t.id) as count',
-                'COALESCE(SUM(t.totalTokens), 0) as total_tokens'
-            )
-            ->where('t.createdAt >= :start')
-            ->andWhere('t.createdAt <= :end')
-            ->setParameter('start', $start)
-            ->setParameter('end', $end)
-            ->groupBy('t.model')
-            ->orderBy('total_tokens', 'DESC')
-            ->getQuery()
-            ->getResult();
+        $connection = $this->getEntityManager()->getConnection();
+        $isPostgreSql = str_contains($connection->getDatabasePlatform()::class, 'PostgreSQL');
+        $modelExpression = $isPostgreSql ? "metadata->>'model'" : "JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.model'))";
+
+        $sql = <<<SQL
+            SELECT
+                model,
+                COUNT(*) as count,
+                COALESCE(SUM(total_tokens), 0) as total_tokens
+            FROM (
+                SELECT total_tokens, model
+                FROM synapse_token_usage
+                WHERE created_at >= :start AND created_at <= :end
+
+                UNION ALL
+
+                SELECT
+                    COALESCE(total_tokens, 0) as total_tokens,
+                    $modelExpression as model
+                FROM {$this->messageTableName}
+                WHERE created_at >= :start AND created_at <= :end
+            ) AS combined
+            WHERE model IS NOT NULL
+            GROUP BY model
+            ORDER BY total_tokens DESC
+        SQL;
+
+        $results = $connection->executeQuery($sql, [
+            'start' => $start->format('Y-m-d H:i:s'),
+            'end' => $end->format('Y-m-d H:i:s'),
+        ])->fetchAllAssociative();
 
         $usage = [];
         foreach ($results as $result) {
@@ -330,7 +371,8 @@ class TokenUsageRepository extends ServiceEntityRepository
         $defaultPricing = $pricing['default'] ?? ['input' => 0.30, 'output' => 2.50];
 
         $inputCost = ($stats['prompt_tokens'] / 1_000_000) * $defaultPricing['input'];
-        $outputCost = (($stats['completion_tokens'] + $stats['thinking_tokens']) / 1_000_000) * $defaultPricing['output'];
+        // Version finale : Output = Completion (texte) + Thinking (réflexion)
+        $outputCost = (($stats['completion_tokens'] + ($stats['thinking_tokens'] ?? 0)) / 1_000_000) * $defaultPricing['output'];
 
         return round($inputCost + $outputCost, 6);
     }

@@ -225,6 +225,7 @@ abstract class Message
      */
     public function calculateTotalTokens(): self
     {
+        // Total = Prompt + Completion + Thinking
         $this->totalTokens = ($this->promptTokens ?? 0)
             + ($this->completionTokens ?? 0)
             + ($this->thinkingTokens ?? 0);

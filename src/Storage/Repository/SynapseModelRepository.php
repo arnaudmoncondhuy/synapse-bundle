@@ -47,4 +47,26 @@ class SynapseModelRepository extends ServiceEntityRepository
 
         return $grouped;
     }
+
+    /**
+     * Retourne une map [model_id => ['input' => x, 'output' => y]] des tarifs.
+     *
+     * @return array<string, array{input: float, output: float}>
+     */
+    public function findAllPricingMap(): array
+    {
+        $models = $this->findAll();
+        $map = [];
+
+        foreach ($models as $model) {
+            if ($model->getPricingInput() !== null && $model->getPricingOutput() !== null) {
+                $map[$model->getModelId()] = [
+                    'input' => $model->getPricingInput(),
+                    'output' => $model->getPricingOutput(),
+                ];
+            }
+        }
+
+        return $map;
+    }
 }

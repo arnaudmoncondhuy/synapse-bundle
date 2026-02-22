@@ -51,6 +51,13 @@ class PresetsController extends AbstractController
             ];
         }
 
+        // Sort: Active first
+        usort($presetsWithCaps, function ($a, $b) {
+            if ($a['entity']->isActive()) return -1;
+            if ($b['entity']->isActive()) return 1;
+            return 0;
+        });
+
         return $this->render('@Synapse/admin/presets.html.twig', [
             'presets'   => $presetsWithCaps,
             'providers' => $providers,

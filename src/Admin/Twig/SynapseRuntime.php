@@ -19,8 +19,8 @@ class SynapseRuntime implements RuntimeExtensionInterface
     public function __construct(
         private ChatService $chatService,
         private Environment $twig,
-    ) {
-    }
+        private string $version = 'dev',
+    ) {}
 
     /**
      * Rend le widget de chat.
@@ -44,5 +44,19 @@ class SynapseRuntime implements RuntimeExtensionInterface
 
         // 3. Render the component
         return $this->twig->render('@Synapse/chat/component.html.twig', $context);
+    }
+
+    /**
+     * Retourne la version actuelle injectée par le conteneur ou lue dynamiquement.
+     */
+    public function getVersion(): string
+    {
+        // Try dynamic read first to bypass cache if needed
+        $versionFile = dirname(__DIR__, 3) . '/VERSION';
+        if (is_file($versionFile)) {
+            return trim(file_get_contents($versionFile));
+        }
+
+        return $this->version;
     }
 }

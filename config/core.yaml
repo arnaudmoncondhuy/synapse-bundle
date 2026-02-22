@@ -45,6 +45,7 @@ services:
             $presetRepo: '@ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository'
             $globalConfigRepo: '@ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseConfigRepository'
             $providerRepo: '@ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseProviderRepository'
+            $encryptionService: '@?ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface'
 
     ArnaudMoncondhuy\SynapseBundle\Core\Impl\SessionConversationHandler: ~
 

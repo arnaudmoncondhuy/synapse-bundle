@@ -10,27 +10,13 @@ use ArnaudMoncondhuy\SynapseBundle\Core\Accounting\TokenAccountingService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 
-class TokenAccountingServiceTest extends TestCase
-{
     private EntityManagerInterface $entityManager;
-    private TokenUsageRepository $repository;
+    private \ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseModelRepository $modelRepo;
     private TokenAccountingService $service;
 
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->repository = $this->createMock(TokenUsageRepository::class);
-
-        $this->service = new TokenAccountingService(
-            $this->entityManager,
-            $this->repository,
-            true, // enabled
-            [
-                'gemini-2.5-flash' => ['input' => 0.30, 'output' => 2.50],
-                'gemini-2.5-pro' => ['input' => 1.25, 'output' => 10.00],
-            ]
-        );
-    }
 
     public function testLogUsage(): void
     {

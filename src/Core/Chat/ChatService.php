@@ -40,8 +40,7 @@ class ChatService
         private ConfigProviderInterface $configProvider,
         private EntityManagerInterface $em,
         private EventDispatcherInterface $dispatcher,
-    ) {
-    }
+    ) {}
 
     /**
      * Traite un message utilisateur et retourne la réponse de l'IA (après exécution d'outils si nécessaire).
@@ -261,12 +260,11 @@ class ChatService
             'debug_id' => $debugId,
             'usage'    => $finalUsageMetadata,
             'safety'   => $finalSafetyRatings,
+            'model'    => $config['model'] ?? ($config['provider'] ?? 'unknown'),
         ];
     }
 
-    public function resetConversation(): void
-    {
-    }
+    public function resetConversation(): void {}
 
     public function getConversationHistory(): array
     {

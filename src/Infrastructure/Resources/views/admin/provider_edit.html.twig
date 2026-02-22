@@ -68,14 +68,22 @@
 					</div>
 					<div class="synapse-admin__form-row">
 						<label class="synapse-admin__label">Service Account JSON <span class="synapse-admin__required">*</span></label>
+						{% set has_json = creds.service_account_json is not empty %}
 						<textarea name="service_account_json"
 						          class="synapse-admin__textarea synapse-admin__textarea--code"
 						          rows="12"
-						          placeholder='{"type": "service_account", "project_id": "...", "private_key": "...", ...}'>{{ creds.service_account_json|default('') }}</textarea>
-						<p class="synapse-admin__help">
-							Collez le contenu complet du fichier JSON du Service Account Google Cloud.
-							Ce fichier est généré depuis <strong>IAM → Comptes de service → Clés</strong>.
-						</p>
+						          placeholder='{"type": "service_account", "project_id": "...", "private_key": "...", ...}'></textarea>
+						{% if has_json %}
+							<p class="synapse-admin__help">
+								<i data-lucide="shield-check"></i>
+								Un Service Account JSON est déjà configuré. Laissez ce champ vide pour le conserver, ou collez un nouveau JSON pour le remplacer.
+							</p>
+						{% else %}
+							<p class="synapse-admin__help">
+								Collez le contenu complet du fichier JSON du Service Account Google Cloud.
+								Ce fichier est généré depuis <strong>IAM → Comptes de service → Clés</strong>.
+							</p>
+						{% endif %}
 					</div>
 				</div>
 			</div>
@@ -94,10 +102,17 @@
 					<div class="synapse-admin__form-row">
 						<label class="synapse-admin__label">API Key (Bearer Token) <span class="synapse-admin__required">*</span></label>
 						<input type="password" name="api_key"
-						       value="{{ creds.api_key|default('') }}"
+						       value=""
 						       class="synapse-admin__input"
-						       placeholder="ovh_...">
-						<p class="synapse-admin__help">Token d'authentification OVH AI Endpoints.</p>
+						       placeholder="{% if creds.api_key is not empty %}Clé configurée — laisser vide pour conserver{% else %}ovh_...{% endif %}">
+						{% if creds.api_key is not empty %}
+							<p class="synapse-admin__help">
+								<i data-lucide="shield-check"></i>
+								Une API Key est déjà configurée. Laissez ce champ vide pour la conserver, ou entrez une nouvelle clé pour la remplacer.
+							</p>
+						{% else %}
+							<p class="synapse-admin__help">Token d'authentification OVH AI Endpoints.</p>
+						{% endif %}
 					</div>
 					<div class="synapse-admin__form-row">
 						<label class="synapse-admin__label">Endpoint URL</label>

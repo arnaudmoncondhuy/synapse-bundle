@@ -134,6 +134,7 @@
 }
 
 @media (max-width: 768px) {
+
     .synapse-admin__grid--2,
     .synapse-admin__grid--3 {
         grid-template-columns: 1fr;
@@ -209,8 +210,13 @@
 
 .synapse-admin__btn--primary {
     background: linear-gradient(135deg, var(--synapse-admin-primary) 0%, var(--synapse-admin-primary-dark) 100%);
-    color: white;
+    color: #ffffff !important;
     box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.3), 0 2px 4px -2px rgba(139, 92, 246, 0.2);
+}
+
+.synapse-admin__btn--primary i,
+.synapse-admin__btn--primary span {
+    color: #ffffff !important;
 }
 
 .synapse-admin__btn--primary:hover {
@@ -220,14 +226,43 @@
 
 .synapse-admin__btn--ghost {
     background: transparent;
-    color: var(--synapse-admin-text-muted);
-    border: 1px solid var(--synapse-admin-border);
+    color: var(--synapse-admin-text-main);
+    border: 1px solid #d1d5db;
+    /* Gris plus marqué pour l'effet outline */
+}
+
+.synapse-admin__btn--ghost:hover,
+.synapse-admin__btn--outline-primary:hover,
+.synapse-admin__btn--outline-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .synapse-admin__btn--ghost:hover {
-    background: var(--synapse-admin-bg-main);
+    background: var(--synapse-admin-border-light);
+    border-color: var(--synapse-admin-text-light);
+}
+
+.synapse-admin__btn--outline-primary {
+    background: transparent;
     color: var(--synapse-admin-primary);
-    border-color: var(--synapse-admin-primary-light);
+    border: 1px solid var(--synapse-admin-primary-fade);
+}
+
+.synapse-admin__btn--outline-primary:hover {
+    background: var(--synapse-admin-primary-light);
+    border-color: var(--synapse-admin-primary);
+}
+
+.synapse-admin__btn--outline-danger {
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.synapse-admin__btn--outline-danger:hover {
+    background: #fee2e2;
+    border-color: #ef4444;
 }
 
 .synapse-admin__btn--danger {
@@ -343,7 +378,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-.synapse-admin__smart-preset-input:checked + .synapse-admin__smart-preset-content {
+.synapse-admin__smart-preset-input:checked+.synapse-admin__smart-preset-content {
     border-color: var(--synapse-admin-primary);
     background: var(--synapse-admin-primary-light);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
@@ -511,7 +546,7 @@
     margin-bottom: 1.5rem;
 }
 
-.synapse-admin__details-section > .synapse-admin__card {
+.synapse-admin__details-section>.synapse-admin__card {
     margin-bottom: 0;
     border-radius: 0 0 var(--synapse-admin-radius) var(--synapse-admin-radius);
     border-top: none;

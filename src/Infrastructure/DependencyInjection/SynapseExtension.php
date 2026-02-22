@@ -139,6 +139,11 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $container->setParameter('synapse.admin.default_color', $config['admin']['default_color'] ?? '#8b5cf6');
         $container->setParameter('synapse.admin.default_icon', $config['admin']['default_icon'] ?? 'robot');
 
+        // ── Version ──────────────────────────────────────────────────────────
+        $versionFile = __DIR__ . '/../../../VERSION';
+        $version = is_file($versionFile) ? trim(file_get_contents($versionFile)) : 'dev';
+        $container->setParameter('synapse.version', $version);
+
         // ── UI ────────────────────────────────────────────────────────────────
         $container->setParameter('synapse.ui.sidebar_enabled', $config['ui']['sidebar_enabled'] ?? true);
         $container->setParameter('synapse.ui.layout_mode', $config['ui']['layout_mode'] ?? 'standalone');
@@ -206,6 +211,10 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
 
         $container->registerForAutoconfiguration(ConversationHandlerInterface::class)
             ->addTag('synapse.conversation_handler');
+
+        // ── Twig Globals ──────────────────────────────────────────────────────
+        $container->getDefinition(SynapseRuntime::class)
+            ->setArgument('$version', '%synapse.version%');
     }
 
     public function getAlias(): string

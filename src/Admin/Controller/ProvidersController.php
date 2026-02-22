@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
+use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseProvider;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseProviderRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository;
@@ -28,6 +29,7 @@ class ProvidersController extends AbstractController
         private SynapsePresetRepository $presetRepo,
         private EntityManagerInterface $em,
         private HttpClientInterface $httpClient,
+        private ?EncryptionServiceInterface $encryptionService = null,
     ) {
     }
 
@@ -94,21 +96,26 @@ class ProvidersController extends AbstractController
             $provider->setIsEnabled((bool) ($data['is_enabled'] ?? false));
 
             // Credentials selon le type de provider
-            $credentials = $provider->getCredentials();
+            $currentCredentials = $provider->getCredentials();
 
             match ($provider->getName()) {
                 'gemini' => $credentials = [
                     'project_id'           => trim($data['project_id'] ?? ''),
                     'region'               => trim($data['region'] ?? 'europe-west1'),
-                    'service_account_json' => trim($data['service_account_json'] ?? ''),
+                    'service_account_json' => !empty(trim($data['service_account_json'] ?? ''))
+                        ? trim($data['service_account_json'])
+                        : ($currentCredentials['service_account_json'] ?? ''),
                 ],
                 'ovh' => $credentials = [
-                    'api_key'  => trim($data['api_key'] ?? ''),
+                    'api_key'  => !empty(trim($data['api_key'] ?? ''))
+                        ? trim($data['api_key'])
+                        : ($currentCredentials['api_key'] ?? ''),
                     'endpoint' => trim($data['endpoint'] ?? 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1'),
                 ],
                 default => $credentials = json_decode($data['credentials_raw'] ?? '{}', true) ?? [],
             };
 
+            $credentials = $this->encryptCredentials($credentials);
             $provider->setCredentials($credentials);
 
             $this->em->flush();
@@ -149,7 +156,7 @@ class ProvidersController extends AbstractController
 
     private function testGemini(SynapseProvider $provider): void
     {
-        $creds = $provider->getCredentials();
+        $creds = $this->decryptCredentials($provider->getCredentials());
         $projectId = $creds['project_id'] ?? '';
         $region = $creds['region'] ?? 'europe-west1';
 
@@ -176,7 +183,7 @@ class ProvidersController extends AbstractController
 
     private function testOvh(SynapseProvider $provider): void
     {
-        $creds = $provider->getCredentials();
+        $creds = $this->decryptCredentials($provider->getCredentials());
         $apiKey = $creds['api_key'] ?? '';
         $endpoint = $creds['endpoint'] ?? 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1';
 
@@ -200,6 +207,48 @@ class ProvidersController extends AbstractController
         } catch (\Exception $e) {
             throw new \Exception('Impossible de se connecter à OVH: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Chiffre les champs sensibles des credentials avant la sauvegarde en base.
+     *
+     * Utilisé la méthode isEncrypted() pour détecter les valeurs déjà chiffrées
+     * et éviter le double-chiffrement lors de la migration progressive.
+     */
+    private function encryptCredentials(array $credentials): array
+    {
+        if ($this->encryptionService === null) {
+            return $credentials;
+        }
+
+        foreach (['api_key', 'service_account_json', 'private_key'] as $key) {
+            if (!empty($credentials[$key]) && !$this->encryptionService->isEncrypted($credentials[$key])) {
+                $credentials[$key] = $this->encryptionService->encrypt($credentials[$key]);
+            }
+        }
+
+        return $credentials;
+    }
+
+    /**
+     * Déchiffre les champs sensibles des credentials avant usage.
+     *
+     * Utilisé pour les tests de connexion provider et pour afficher les valeurs
+     * qui ont besoin d'être testées.
+     */
+    private function decryptCredentials(array $credentials): array
+    {
+        if ($this->encryptionService === null) {
+            return $credentials;
+        }
+
+        foreach (['api_key', 'service_account_json', 'private_key'] as $key) {
+            if (!empty($credentials[$key]) && $this->encryptionService->isEncrypted($credentials[$key])) {
+                $credentials[$key] = $this->encryptionService->decrypt($credentials[$key]);
+            }
+        }
+
+        return $credentials;
     }
 
     private function getGeminiRegions(): array

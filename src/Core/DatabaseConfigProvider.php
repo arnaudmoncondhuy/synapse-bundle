@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Core;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
+use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapsePreset;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseConfigRepository;
@@ -33,7 +34,8 @@ class DatabaseConfigProvider implements ConfigProviderInterface
         private SynapsePresetRepository $presetRepo,
         private SynapseConfigRepository $globalConfigRepo,
         private SynapseProviderRepository $providerRepo,
-        private ?CacheInterface $cache = null
+        private ?CacheInterface $cache = null,
+        private ?EncryptionServiceInterface $encryptionService = null,
     ) {
     }
 
@@ -85,12 +87,12 @@ class DatabaseConfigProvider implements ConfigProviderInterface
         $globalConfig = $this->globalConfigRepo->getGlobalConfig();
         $config = array_merge($config, $globalConfig->toArray());
 
-        // Merge provider credentials from SynapseProvider
+        // Merge provider credentials from SynapseProvider (décryptées)
         $providerName = $config['provider'];
         $provider = $this->providerRepo->findByName($providerName);
 
         if ($provider !== null && $provider->isEnabled()) {
-            $config['provider_credentials'] = $provider->getCredentials();
+            $config['provider_credentials'] = $this->decryptCredentials($provider->getCredentials());
         } else {
             $config['provider_credentials'] = [];
         }
@@ -109,6 +111,27 @@ class DatabaseConfigProvider implements ConfigProviderInterface
     }
 
     /**
+     * Déchiffre les champs sensibles des credentials après la lecture depuis la base.
+     *
+     * Les credentials sont stockés chiffrés en base et déchiffrés lors de la lecture.
+     * Le cache stocke les données déjà déchiffrées (déchiffrées une fois, mises en cache).
+     */
+    private function decryptCredentials(array $credentials): array
+    {
+        if ($this->encryptionService === null) {
+            return $credentials;
+        }
+
+        foreach (['api_key', 'service_account_json', 'private_key'] as $key) {
+            if (!empty($credentials[$key]) && $this->encryptionService->isEncrypted($credentials[$key])) {
+                $credentials[$key] = $this->encryptionService->decrypt($credentials[$key]);
+            }
+        }
+
+        return $credentials;
+    }
+
+    /**
      * Charge et fusionne la configuration depuis la BDD.
      */
     private function loadConfig(): array
@@ -121,12 +144,12 @@ class DatabaseConfigProvider implements ConfigProviderInterface
         $globalConfig = $this->globalConfigRepo->getGlobalConfig();
         $config = array_merge($config, $globalConfig->toArray());
 
-        // Merge provider credentials from SynapseProvider
+        // Merge provider credentials from SynapseProvider (décryptées)
         $providerName = $config['provider'];
         $provider = $this->providerRepo->findByName($providerName);
 
         if ($provider !== null && $provider->isEnabled()) {
-            $config['provider_credentials'] = $provider->getCredentials();
+            $config['provider_credentials'] = $this->decryptCredentials($provider->getCredentials());
         } else {
             $config['provider_credentials'] = [];
         }

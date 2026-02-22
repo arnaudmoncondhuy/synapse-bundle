@@ -18,8 +18,7 @@ class AnalyticsController extends AbstractController
 {
     public function __construct(
         private TokenUsageRepository $tokenUsageRepo
-    ) {
-    }
+    ) {}
 
     /**
      * Vue analytics avec graphiques
@@ -34,9 +33,7 @@ class AnalyticsController extends AbstractController
         $end = new \DateTimeImmutable();
 
         // Stats globales
-        $globalStats = $this->tokenUsageRepo->getGlobalStats($start, $end, [
-            'default' => ['input' => 0.30, 'output' => 2.50],
-        ]);
+        $globalStats = $this->tokenUsageRepo->getGlobalStats($start, $end);
 
         // Usage quotidien (pour graphique)
         $dailyUsage = $this->tokenUsageRepo->getDailyUsage($start, $end);

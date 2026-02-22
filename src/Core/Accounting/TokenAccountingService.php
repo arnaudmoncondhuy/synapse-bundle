@@ -19,9 +19,9 @@ use Doctrine\ORM\EntityManagerInterface;
 class TokenAccountingService
 {
     public function __construct(
+        private \ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseModelRepository $modelRepo,
         private EntityManagerInterface $em
-    ) {
-    }
+    ) {}
 
     /**
      * Log l'usage de tokens pour une action IA
@@ -48,6 +48,10 @@ class TokenAccountingService
         $tokenUsage->setAction($action);
         $tokenUsage->setModel($model);
 
+        // Récupérer le tarif actuel pour ce modèle
+        $pricingMap = $this->modelRepo->findAllPricingMap();
+        $modelPricing = $pricingMap[$model] ?? ['input' => 0.0, 'output' => 0.0];
+
         // Tokens
         // Supporte plusieurs formats :
         // - format interne : ['prompt'|'prompt_tokens', 'completion'|'completion_tokens', 'thinking'|'thinking_tokens']
@@ -63,11 +67,10 @@ class TokenAccountingService
             ?? 0;
 
         // Completion tokens :
-        // - soit explicitement fourni
-        // - soit dérivé du format Vertex : candidates + thoughts
+        // Note: candidatesTokenCount inclut déjà thinkingTokens dans l'API Gemini
         $completionTokens = $usage['completion']
             ?? $usage['completion_tokens']
-            ?? (($usage['candidatesTokenCount'] ?? 0) + $thinkingTokens)
+            ?? ($usage['candidatesTokenCount'] ?? 0)
             ?? 0;
 
         $tokenUsage->setPromptTokens($promptTokens);
@@ -86,9 +89,20 @@ class TokenAccountingService
         }
 
         // Métadonnées
-        if ($metadata !== null) {
-            $tokenUsage->setMetadata($metadata);
+        if ($metadata === null) {
+            $metadata = [];
         }
+
+        // Calculer et stocker le coût
+        $currentUsage = [
+            'prompt' => $promptTokens,
+            'completion' => $completionTokens,
+            'thinking' => $thinkingTokens,
+        ];
+        $metadata['cost'] = $this->calculateCost($currentUsage, $modelPricing);
+        $metadata['pricing'] = $modelPricing; // Stocker le tarif utilisé pour l'historique
+
+        $tokenUsage->setMetadata($metadata);
 
         $this->em->persist($tokenUsage);
         $this->em->flush();
@@ -141,8 +155,8 @@ class TokenAccountingService
             $thinkingTokens = $usageMetadata['thoughtsTokenCount'];
         }
 
-        // Completion tokens = candidates + thoughts
-        $completionTokens = $candidatesTokens + $thinkingTokens;
+        // Completion tokens = candidates (qui incluent déjà les thoughts dans Gemini)
+        $completionTokens = $candidatesTokens;
 
         return [
             'prompt' => $promptTokens,
@@ -154,7 +168,7 @@ class TokenAccountingService
     /**
      * Calcule le coût estimé d'un usage
      *
-     * @param array $usage Usage détaillé
+     * @param array $usage Usage détaillé ['prompt' => int, 'completion' => int, 'thinking' => int]
      * @param array $pricing Tarifs ['input' => float, 'output' => float] ($/1M tokens)
      * @return float Coût en dollars
      */
@@ -165,6 +179,7 @@ class TokenAccountingService
         $thinkingTokens = $usage['thinking'] ?? $usage['thinking_tokens'] ?? 0;
 
         $inputCost = ($promptTokens / 1_000_000) * ($pricing['input'] ?? 0);
+        // Version finale : Output = Completion (texte) + Thinking (réflexion)
         $outputCost = (($completionTokens + $thinkingTokens) / 1_000_000) * ($pricing['output'] ?? 0);
 
         return round($inputCost + $outputCost, 6);

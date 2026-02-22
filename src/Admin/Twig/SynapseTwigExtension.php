@@ -24,8 +24,7 @@ class SynapseTwigExtension extends AbstractExtension
         private SynapseLayoutResolver $layoutResolver,
         private SynapsePresetRepository $presetRepository,
         private ?EncryptionServiceInterface $encryptionService = null,
-    ) {
-    }
+    ) {}
 
     public function getFilters(): array
     {
@@ -42,12 +41,15 @@ class SynapseTwigExtension extends AbstractExtension
 
             // Retourne la liste des personas disponibles (pour créer un sélecteur par exemple)
             new TwigFunction('synapse_get_personas', [$this->personaRegistry, 'getAll']),
-            
+
             // Résout dynamiquement le layout admin à utiliser (standalone ou module)
             new TwigFunction('synapse_admin_layout', [$this->layoutResolver, 'getAdminLayout']),
 
             // Récupère le preset actif (Entité)
-            new TwigFunction('synapse_config', [$this->presetRepository, 'findActive']),
+            new TwigFunction('synapse_config', [$this, 'findActive']),
+
+            // Retourne la version actuelle du bundle
+            new TwigFunction('synapse_version', [SynapseRuntime::class, 'getVersion']),
         ];
     }
 
@@ -94,7 +96,7 @@ class SynapseTwigExtension extends AbstractExtension
         // Regex assouplie : supporte les blocs sur une seule ligne ou sans langage spécifique
         $html = preg_replace_callback(
             '/```(\w+)?\s*([\s\S]*?)```/m',
-            function($matches) {
+            function ($matches) {
                 $content = trim($matches[2]);
                 return '<pre><code>' . $content . '</code></pre>';
             },
@@ -107,12 +109,12 @@ class SynapseTwigExtension extends AbstractExtension
         // On cherche 2+ boutons consécutifs (séparés ou non par des espaces/sauts de ligne)
         // Note: C'est plus complexe en regex pcre qu'en JS, on simplifie pour l'instant :
         // Si on trouve plusieurs liens côte à côte, on pourrait les wrapper, mais Twig nl2br va arriver ensuite.
-        
+
         // 6. Blocs de boutons consécutifs
         // On cherche des motifs <a class="synapse-btn-action">...</a> suivis éventuellement de sauts de ligne, répétés
         // Pattern complexe, on tente une approche simple : si on a une suite de boutons, on les wrap.
         // (?:\s*<a class="synapse-btn-action".*?<\/a>\s*){2,}
-        
+
         $html = preg_replace_callback(
             '/(?:<a class="synapse-btn-action"[^>]*>.*?<\/a>\s*(\r\n|\r|\n)?\s*){2,}/s',
             function ($matches) {

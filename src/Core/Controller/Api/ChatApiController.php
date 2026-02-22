@@ -28,8 +28,7 @@ class ChatApiController extends AbstractController
         private ChatService $chatService,
         private ?ConversationManager $conversationManager = null,
         private ?MessageFormatter $messageFormatter = null,
-    ) {
-    }
+    ) {}
 
     /**
      * Traite une nouvelle requête de chat et retourne un flux d'événements.
@@ -85,7 +84,7 @@ class ChatApiController extends AbstractController
 
             // Helper to send NDJSON event
             $sendEvent = function (string $type, mixed $payload): void {
-                echo json_encode(['type' => $type, 'payload' => $payload], JSON_INVALID_UTF8_IGNORE | JSON_THROW_ON_ERROR)."\n";
+                echo json_encode(['type' => $type, 'payload' => $payload], JSON_INVALID_UTF8_IGNORE | JSON_THROW_ON_ERROR) . "\n";
                 // Force flush explicitly
                 if (ob_get_length() > 0) {
                     ob_flush();
@@ -94,7 +93,7 @@ class ChatApiController extends AbstractController
             };
 
             // Send padding to bypass browser/proxy buffering (approx 2KB)
-            echo ":".str_repeat(' ', 2048)."\n";
+            echo ":" . str_repeat(' ', 2048) . "\n";
             flush();
 
             if (empty($message) && !($options['reset_conversation'] ?? false)) {
@@ -154,6 +153,7 @@ class ChatApiController extends AbstractController
                             'completion_tokens' => $usage['candidatesTokenCount'] ?? 0,
                             'thinking_tokens' => $usage['thoughtsTokenCount'] ?? 0,
                             'safety_ratings' => $result['safety'] ?? null,
+                            'model' => $result['model'] ?? null,
                             'metadata' => ['debug_id' => $result['debug_id'] ?? null],
                         ];
                         $this->conversationManager->saveMessage($conversation, MessageRole::MODEL, $result['answer'], $metadata);
