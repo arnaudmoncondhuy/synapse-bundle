@@ -267,7 +267,7 @@
 						<div class="turn">
 							<div class="turn-header">
 								<span class="badge">{{ msg.role | upper }}</span>
-								{% if msg.tool_call_id %}
+								{% if msg.role == 'tool' and msg.tool_call_id %}
 									<span class="badge" style="background: #fee2e2; color: #991b1b; margin-left: 8px;">{{ msg.tool_call_id }}</span>
 								{% endif %}
 							</div>
