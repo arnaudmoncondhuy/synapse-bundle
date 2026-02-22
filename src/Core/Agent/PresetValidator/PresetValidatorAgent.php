@@ -24,7 +24,7 @@ class PresetValidatorAgent implements AgentInterface
     public function __construct(
         private ChatService $chatService,
         private DebugLogRepository $debugLogRepo,
-        private \ArnaudMoncondhuy\SynapseBundle\Service\ModelCapabilityRegistry $capabilityRegistry,
+        private \ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry $capabilityRegistry,
     ) {}
 
     public function getName(): string
