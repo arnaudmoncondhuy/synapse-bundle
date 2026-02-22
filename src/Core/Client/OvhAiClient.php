@@ -105,8 +105,13 @@ class OvhAiClient implements LlmClientInterface
             $toolCallsAccumulator = []; // index => ['id' => '', 'name' => '', 'args' => '']
             $buffer = '';
             $rawApiChunks = []; // Capturer tous les chunks bruts de l'API pour le debug
+            $streamingComplete = false;
 
             foreach ($this->httpClient->stream($response) as $chunk) {
+                if ($streamingComplete) {
+                    break;
+                }
+
                 try {
                     $buffer .= $chunk->getContent();
                 } catch (\Throwable $e) {
@@ -125,7 +130,8 @@ class OvhAiClient implements LlmClientInterface
                         if (!empty($toolCallsAccumulator)) {
                             yield $this->buildToolCallChunk($toolCallsAccumulator);
                         }
-                        continue;
+                        $streamingComplete = true;
+                        break;
                     }
 
                     if ($line === '' || !str_starts_with($line, 'data: ')) {
