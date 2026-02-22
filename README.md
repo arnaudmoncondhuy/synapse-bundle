@@ -1,24 +1,35 @@
 # SynapseBundle
 
-Un bundle Symfony réutilisable pour l'intégration d'assistants IA avec Google Gemini.
+Un bundle Symfony pour intégrer facilement des assistants IA dans votre application, avec support multi-providers (Google Gemini, OVH AI Endpoints) et interface d'administration complète.
+
+> **📣 Février 2026** : Standardisation sur le format OpenAI pour 100% d'agnostisme LLM.
+> Si vous avez créé un client personnalisé, consultez [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) et le [Changelog](docs/changelog.md#-breaking-changes---standardisation-openai) pour les breaking changes.
 
 ## ✨ Fonctionnalités
 
-- 🤖 **Intégration Vertex AI** : Support complet de Google Gemini (2.0+)
-- 🔧 **Function Calling** : Système extensible d'outils IA
-- 📡 **Streaming NDJSON** : Réponses en temps réel
-- 💾 **Persistance** : Historique des conversations en base de données
-- 🔒 **Sécurité** : Chiffrement server-side (Sodium), filtres de contenu
-- 🎨 **UI Moderne** : Templates Twig prêts à l'emploi (design Gemini)
-- 🧩 **Dual-Mode** : Standalone ou intégration dans modules existants
-- 🎯 **Thinking Mode** : Support du raisonnement Chain-of-Thought
-- 💰 **Context Caching** : Optimisation des coûts (~90% d'économie)
+- 🤖 **Multi-providers** : Google Vertex AI (Gemini 2.5+) et OVH AI Endpoints (OpenAI-compatible)
+- 🔧 **Function Calling** : Système extensible pour ajouter des outils IA personnalisés
+- 📡 **Streaming** : Réponses en temps réel via NDJSON
+- 💾 **Persistance** : Historique des conversations en base de données (Doctrine)
+- 🔒 **Sécurité** :
+  - Chiffrement des messages (XSalsa20-Poly1305)
+  - Chiffrement des credentials des providers
+  - Filtres de sécurité configurables
+- 🎨 **Interface Admin** : Dashboard, analytiques, gestion des presets et modèles
+- 🎯 **Personas** : Personnalités IA prédéfinies ou custom
+- 💭 **Thinking Mode** : Support natif du raisonnement Chain-of-Thought (Gemini 2.5+)
+- 💰 **Context Caching** : Optimisation des coûts (~90% d'économie sur les tokens)
+- 📊 **Token Tracking** : Suivi de la consommation et calcul des coûts
+- 🧩 **Modes flexibles** : Standalone ou intégration dans votre design system
 
 ## 📋 Prérequis
 
-- PHP 8.4+
-- Symfony 7.0+
-- Compte Google Cloud avec Vertex AI activé
+- **PHP** : 8.2 ou supérieur
+- **Symfony** : 7.0 ou supérieur
+- **Extension PHP** : `sodium` (pour le chiffrement)
+- **Provider LLM** :
+  - Google Cloud avec Vertex AI activé (pour Gemini), OU
+  - Compte OVH avec accès aux AI Endpoints
 
 ## 🚀 Installation
 
@@ -26,209 +37,109 @@ Un bundle Symfony réutilisable pour l'intégration d'assistants IA avec Google 
 composer require arnaudmoncondhuy/synapse-bundle
 ```
 
-## ⚙️ Configuration
-
-### Configuration Minimale
+## ⚙️ Configuration minimale
 
 ```yaml
 # config/packages/synapse.yaml
 synapse:
-    vertex:
-        project_id: '%env(VERTEX_PROJECT_ID)%'
-        region: 'europe-west1'
-    model: 'gemini-2.5-flash'
+    persistence:
+        enabled: true
+        handler: doctrine
+        conversation_class: App\Entity\Conversation
+        message_class: App\Entity\Message
+
+    admin:
+        enabled: true
 ```
 
-### Configuration Complète (Optionnelle)
+Pour plus d'options, voir [Configuration](docs/configuration.md).
 
-```yaml
-synapse:
-    vertex:
-        project_id: '%env(VERTEX_PROJECT_ID)%'
-        region: 'europe-west1'
-    
-    model: 'gemini-2.5-flash'
-    
-    # Prompt système personnalisé
-    system_prompt: |
-        Tu es un assistant IA serviable et précis.
-        Date actuelle: {DATE}
-        Utilisateur: {PRENOM} {NOM} ({EMAIL})
-    
-    # Filtres de sécurité
-    safety:
-        enabled: true
-        default_threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-        hate_speech: 'BLOCK_MEDIUM_AND_ABOVE'
-        dangerous_content: 'BLOCK_MEDIUM_AND_ABOVE'
-        harassment: 'BLOCK_MEDIUM_AND_ABOVE'
-        sexually_explicit: 'BLOCK_ONLY_HIGH'
-    
-    # Paramètres de génération
-    generation:
-        temperature: 1.0
-        top_p: 0.95
-        top_k: 40
-        max_output_tokens: 8192
-    
-    # Thinking Mode (Gemini 2.0+)
-    thinking:
-        enabled: true
-        budget: 8192
-    
-    # Context Caching
-    context_caching:
-        enabled: true
-    
-    # Rétention des données
-    retention_days: 90
-    
-    # Détection des risques
-    risk_detection_enabled: true
-```
+## 📖 Usage rapide
 
-## 📖 Usage
-
-### 1. Interface Chat (Plug-and-Play)
+### 1. Widget de chat (Plug-and-play)
 
 ```twig
-{# templates/chat/index.html.twig #}
+{# templates/page.html.twig #}
 {{ include('@Synapse/chat/component.html.twig') }}
 ```
 
-### 2. Avec Historique
-
-```twig
-{{ include('@Synapse/chat/component.html.twig', {
-    'history': conversation.messages
-}) }}
-```
-
-### 3. Interface Admin
-
-#### Mode Standalone
-
-```twig
-{% extends '@Synapse/admin/layout.html.twig' %}
-
-{% block admin_content %}
-    <h1>Mon contenu admin</h1>
-{% endblock %}
-```
-
-#### Mode Intégration Module
-
-```twig
-{% extends '@Synapse/admin/layout_module.html.twig' %}
-
-{% block admin_header_icon %}shield-check{% endblock %}
-{% block admin_header_color %}#ff6b6b{% endblock %}
-
-{% block admin_content %}
-    {# Votre contenu qui s'intègre dans module_base.html.twig #}
-{% endblock %}
-```
-
-### 4. Créer des Outils (Tools)
-
-Les outils sont automatiquement détectés via l'interface `AiToolInterface` :
+### 2. Utilisation programmatique (ChatService)
 
 ```php
-<?php
-
-namespace App\Tool;
-
-use Arnaudmoncondhuy\SynapseBundle\Interface\AiToolInterface;
-
-class DateTool implements AiToolInterface
+// Dans un controller ou service
+class MyController extends AbstractController
 {
-    public function getName(): string
-    {
-        return 'get_current_date';
-    }
+    public function __construct(
+        private ChatService $chatService
+    ) {}
 
-    public function getDescription(): string
+    public function askAction(Request $request): JsonResponse
     {
-        return 'Retourne la date et l\'heure actuelles au format français';
-    }
+        $result = $this->chatService->ask(
+            message: $request->get('message'),
+            options: ['stateless' => true]
+        );
 
-    public function getParameters(): array
-    {
-        return []; // Pas de paramètres requis
-    }
-
-    public function execute(array $arguments): array
-    {
-        return [
-            'date' => (new \DateTime())->format('d/m/Y H:i:s'),
-            'timezone' => date_default_timezone_get(),
-        ];
+        return $this->json(['answer' => $result['answer']]);
     }
 }
 ```
 
-L'outil sera automatiquement disponible pour l'IA !
+### 3. Interface d'administration
 
-## 🎨 Personnalisation de l'Interface
+Accès à `/synapse/admin` pour :
+- Gérer les providers LLM et leurs credentials
+- Créer et tester des presets de configuration
+- Visualiser les conversations et analytics
+- Configurer les paramètres globaux
+- Consulter les logs de debug
 
-### Variables CSS Overridables
+## 📚 Documentation complète
 
-```css
-/* assets/styles/synapse-custom.css */
-:root {
-    --custom-synapse-primary: #ff6b6b;
-    --custom-synapse-primary-dark: #ee5a52;
-    --custom-synapse-radius: 0.5rem;
-    --custom-synapse-bg-sidebar: #1a1a2e;
-}
-```
+La documentation est organisée dans le dossier `docs/` :
 
-### Surcharge de Templates
-
-```twig
-{% extends '@Synapse/admin/layout.html.twig' %}
-
-{# Changer le branding #}
-{% block admin_branding %}
-    <div class="synapse-admin__brand">
-        <img src="/mon-logo.png" alt="Mon App">
-    </div>
-{% endblock %}
-
-{# Ajouter du CSS custom #}
-{% block admin_custom_styles %}
-    <link rel="stylesheet" href="{{ asset('synapse-custom.css') }}">
-{% endblock %}
-```
-
-## 📚 Documentation Complète
-
-- **[VIEWS_INTEGRATION.md](VIEWS_INTEGRATION.md)** : Guide complet d'intégration des vues
-- **[USAGE.md](USAGE.md)** : Utilisation avancée et exemples
-- **[CONFIGURATION.md](CONFIGURATION.md)** : Référence complète de la configuration
+- **[Configuration](docs/configuration.md)** — Référence complète de `synapse.yaml`, variables d'environnement, configuration des providers
+- **[Usage](docs/usage.md)** — Guide d'utilisation : ChatService, création d'outils IA, events Symfony, personas
+- **[Intégration des vues](docs/views.md)** — Templates Twig, layouts admin, personnalisation CSS
+- **[Changelog](docs/changelog.md)** — Historique des versions
 
 ## 🏗️ Architecture
 
-### Couches de Prompts
+### Couches de prompts
 
 Le bundle gère les prompts en 3 couches :
 
-1. **Technical Prompt** (Interne) : Règles de formatage et de réflexion native (via Gemini `thinkingConfig`)
-2. **System Prompt** (Applicatif) : Votre contexte métier (Date, Rôle, etc.)
-3. **User Prompt** : La demande de l'utilisateur
+1. **Technical Prompt** (Interne) : Règles de formatage et de réflexion native (via la config `thinking`)
+2. **System Prompt** (Applicatif) : Contexte métier configuré dans l'admin ou le code
+3. **User Prompt** : Demande directe de l'utilisateur
 
-### Sécurité
+### Providers supportés
 
-- **Chiffrement** : Messages chiffrés en base (Sodium)
-- **Filtres de contenu** : Protection contre contenus inappropriés
-- **Détection de risques** : Système "Ange Gardien" pour modération
-- **Rétention** : Suppression automatique des anciennes conversations
+#### Google Vertex AI (Gemini)
+- Modèles : `gemini-2.5-flash`, `gemini-2.5-pro`, etc.
+- Région : `europe-west1`, `europe-west4`, `us-central1`, etc.
+- Capacités : streaming, thinking natif, context caching, safety settings
 
-### Performance
+#### OVH AI Endpoints (OpenAI-compatible)
+- Endpoint customizable (défaut : `https://oai.endpoints.kepler.ai.cloud.ovh.net/v1`)
+- Supports models OpenAI-compatible
+- Capacités : streaming, reasoning (thinking)
 
-- **Context Caching** : Réutilisation du contexte (~90% d'économie)
-- **Streaming** : Réponses progressives (NDJSON)
-- **Thinking Mode** : Raisonnement optimisé (Gemini 2.0+)
+### Outils IA (Function Calling)
+
+Créez des outils personnalisés en implémentant `AiToolInterface` :
+
+```php
+class MaFonctionTool implements AiToolInterface
+{
+    public function getName(): string { return 'ma_fonction'; }
+    public function getDescription(): string { return 'Description pour le LLM'; }
+    public function getInputSchema(): array { return [...]; }
+    public function execute(array $parameters): mixed { return [...]; }
+}
+```
+
+Les outils sont automatiquement découverts et disponibles pour le LLM.
 
 ## 🧪 Tests
 
@@ -236,28 +147,19 @@ Le bundle gère les prompts en 3 couches :
 vendor/bin/phpunit
 ```
 
-## 📊 Monitoring
-
-L'interface admin propose :
-
-- **Dashboard** : Vue d'ensemble (conversations, risques, coûts)
-- **Analytics** : Analyse détaillée de l'usage et des coûts
-- **Ange Gardien** : Modération et alertes de sécurité
-- **Configuration** : Paramétrage complet du modèle
-
 ## 🤝 Contribution
 
 Les contributions sont les bienvenues ! Merci de :
 
 1. Fork le projet
-2. Créer une branche (`git checkout -b feature/amazing-feature`)
-3. Commit vos changements (`git commit -m 'Add amazing feature'`)
-4. Push vers la branche (`git push origin feature/amazing-feature`)
+2. Créer une branche (`git checkout -b feature/ma-feature`)
+3. Commit vos changements (`git commit -m 'Add ma feature'`)
+4. Push vers la branche (`git push origin feature/ma-feature`)
 5. Ouvrir une Pull Request
 
 ## 📝 Changelog
 
-Voir [CHANGELOG.md](CHANGELOG.md) pour l'historique des versions.
+Voir [Changelog](docs/changelog.md) pour l'historique des versions.
 
 ## 📄 Licence
 
@@ -268,7 +170,7 @@ MIT - Voir [LICENSE](LICENSE) pour plus de détails.
 - **Design Chat** : Inspiré de l'interface Google Gemini
 - **Icons** : [Lucide Icons](https://lucide.dev/)
 - **Framework** : [Symfony](https://symfony.com/)
-- **IA** : [Google Vertex AI](https://cloud.google.com/vertex-ai)
+- **LLM Providers** : [Google Vertex AI](https://cloud.google.com/vertex-ai), [OVH AI Endpoints](https://docs.ovh.com/gb/en/ai-endpoints/)
 
 ---
 
