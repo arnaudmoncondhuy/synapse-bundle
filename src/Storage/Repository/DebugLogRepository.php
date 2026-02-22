@@ -39,15 +39,13 @@ class DebugLogRepository extends ServiceEntityRepository
     }
 
     /**
-     * Supprime les logs de debug antérieurs à une date donnée
+     * Supprime tous les logs de debug
      */
-    public function deleteOlderThan(\DateTimeImmutable $before): int
+    public function clearAll(): mixed
     {
         return $this->createQueryBuilder('d')
             ->delete()
-            ->where('d.createdAt < :before')
-            ->setParameter('before', $before)
             ->getQuery()
-            ->executeStatement();
+            ->execute();
     }
 }

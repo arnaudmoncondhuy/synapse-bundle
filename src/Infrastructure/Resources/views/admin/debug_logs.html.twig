@@ -9,6 +9,17 @@
 			<i data-lucide="bug"></i>
 			Debug Logs
 		</h1>
+
+		{% if logs|length > 0 %}
+		<div class="synapse-admin__page-actions">
+			<form action="{{ path('synapse_admin_debug_logs_clear') }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir vider tous les logs de debug ?');">
+				<button type="submit" class="synapse-admin__btn synapse-admin__btn--danger">
+					<i data-lucide="trash-2"></i>
+					Vider les logs
+				</button>
+			</form>
+		</div>
+		{% endif %}
 	</div>
 
 	{% if logs %}

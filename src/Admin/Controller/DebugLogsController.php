@@ -19,8 +19,7 @@ class DebugLogsController extends AbstractController
 {
     public function __construct(
         private DebugLogRepository $debugLogRepo,
-    ) {
-    }
+    ) {}
 
     /**
      * Liste les logs de debug récents
@@ -33,5 +32,18 @@ class DebugLogsController extends AbstractController
         return $this->render('@Synapse/admin/debug_logs.html.twig', [
             'logs' => $debugLogs,
         ]);
+    }
+
+    /**
+     * Vide tous les logs de debug
+     */
+    #[Route('/clear', name: 'synapse_admin_debug_logs_clear', methods: ['POST'])]
+    public function clear(): Response
+    {
+        $count = $this->debugLogRepo->clearAll();
+
+        $this->addFlash('success', sprintf('%d logs de debug ont été supprimés.', $count));
+
+        return $this->redirectToRoute('synapse_admin_debug_logs');
     }
 }
