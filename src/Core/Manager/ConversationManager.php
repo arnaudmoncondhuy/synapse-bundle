@@ -144,9 +144,9 @@ class ConversationManager
                 $pricingMap = $this->modelRepo->findAllPricingMap();
                 $modelPricing = $pricingMap[$model] ?? ['input' => 0.0, 'output' => 0.0];
                 $usage = [
-                    'prompt' => $message->getPromptTokens() ?? 0,
-                    'completion' => $message->getCompletionTokens() ?? 0,
-                    'thinking' => $message->getThinkingTokens() ?? 0,
+                    'prompt_tokens'     => $message->getPromptTokens() ?? 0,
+                    'completion_tokens' => $message->getCompletionTokens() ?? 0,
+                    'thinking_tokens'   => $message->getThinkingTokens() ?? 0,
                 ];
                 $cost = $this->accountingService->calculateCost($usage, $modelPricing);
                 $message->setMetadataValue('cost', $cost);

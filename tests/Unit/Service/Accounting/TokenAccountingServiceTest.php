@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Accounting;
 
 use ArnaudMoncondhuy\SynapseBundle\Core\Accounting\TokenAccountingService;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseModel;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\TokenUsage;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseModelRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
 
 class TokenAccountingServiceTest extends TestCase
@@ -18,7 +20,12 @@ class TokenAccountingServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->modelRepository = $this->createMock(SynapseModelRepository::class);
+        // Use reflection to create a mock that avoids the abstract parent class issue
+        $this->modelRepository = $this->getMockBuilder(SynapseModelRepository::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAllPricingMap'])
+            ->getMock();
+
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
 
         $this->service = new TokenAccountingService(

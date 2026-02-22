@@ -258,10 +258,10 @@ class OvhAiClient implements LlmClientInterface
                 $reasoningTokens = $u['completion_tokens_details']['reasoning_tokens'] ?? 0;
             }
             $normalized['usage'] = [
-                'promptTokenCount'     => $u['prompt_tokens'] ?? 0,
-                'candidatesTokenCount' => $u['completion_tokens'] ?? 0,
-                'thoughtsTokenCount'   => $reasoningTokens,
-                'totalTokenCount'      => $u['total_tokens'] ?? 0,
+                'prompt_tokens'     => $u['prompt_tokens'] ?? 0,
+                'completion_tokens' => $u['completion_tokens'] ?? 0,
+                'thinking_tokens'   => $reasoningTokens,
+                'total_tokens'      => $u['total_tokens'] ?? 0,
             ];
         }
 
@@ -415,10 +415,10 @@ class OvhAiClient implements LlmClientInterface
                 $reasoningTokens = $u['completion_tokens_details']['reasoning_tokens'] ?? 0;
             }
             $normalized['usage'] = [
-                'promptTokenCount'     => $u['prompt_tokens'] ?? 0,
-                'candidatesTokenCount' => $u['completion_tokens'] ?? 0,
-                'thoughtsTokenCount'   => $reasoningTokens,
-                'totalTokenCount'      => $u['total_tokens'] ?? 0,
+                'prompt_tokens'     => $u['prompt_tokens'] ?? 0,
+                'completion_tokens' => $u['completion_tokens'] ?? 0,
+                'thinking_tokens'   => $reasoningTokens,
+                'total_tokens'      => $u['total_tokens'] ?? 0,
             ];
         }
 

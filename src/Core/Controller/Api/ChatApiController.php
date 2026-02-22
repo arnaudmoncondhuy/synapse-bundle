@@ -154,12 +154,12 @@ class ChatApiController extends AbstractController
                     if (!empty($result['answer'])) {
                         $usage = $result['usage'] ?? [];
                         $metadata = [
-                            'prompt_tokens' => $usage['promptTokenCount'] ?? 0,
-                            'completion_tokens' => $usage['candidatesTokenCount'] ?? 0,
-                            'thinking_tokens' => $usage['thoughtsTokenCount'] ?? 0,
-                            'safety_ratings' => $result['safety'] ?? null,
-                            'model' => $result['model'] ?? null,
-                            'metadata' => ['debug_id' => $result['debug_id'] ?? null],
+                            'prompt_tokens'     => $usage['prompt_tokens'] ?? 0,
+                            'completion_tokens' => $usage['completion_tokens'] ?? 0,
+                            'thinking_tokens'   => $usage['thinking_tokens'] ?? 0,
+                            'safety_ratings'    => $result['safety'] ?? null,
+                            'model'             => $result['model'] ?? null,
+                            'metadata'          => ['debug_id' => $result['debug_id'] ?? null],
                         ];
                         $this->conversationManager->saveMessage($conversation, MessageRole::MODEL, $result['answer'], $metadata);
                     }

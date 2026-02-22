@@ -297,19 +297,19 @@
 						</tr>
 						<tr>
 							<td>Tokens d'entrée</td>
-							<td>{{ debug.usage.promptTokenCount ?? 0 }}</td>
+							<td>{{ debug.usage.prompt_tokens ?? 0 }}</td>
 						</tr>
 						<tr>
 							<td>Tokens de sortie</td>
-							<td>{{ debug.usage.candidatesTokenCount ?? 0 }}</td>
+							<td>{{ debug.usage.completion_tokens ?? 0 }}</td>
 						</tr>
 						<tr>
 							<td>Tokens de réflexion</td>
-							<td>{{ debug.usage.thoughtsTokenCount ?? 0 }}</td>
+							<td>{{ debug.usage.thinking_tokens ?? 0 }}</td>
 						</tr>
 						<tr>
 							<td><strong>Total</strong></td>
-							<td><strong>{{ debug.usage.totalTokenCount ?? 0 }}</strong></td>
+							<td><strong>{{ debug.usage.total_tokens ?? 0 }}</strong></td>
 						</tr>
 					</table>
 				{% else %}

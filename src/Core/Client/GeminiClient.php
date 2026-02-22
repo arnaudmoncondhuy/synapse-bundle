@@ -233,10 +233,10 @@ class GeminiClient implements LlmClientInterface
         if (isset($rawChunk['usageMetadata'])) {
             $u = $rawChunk['usageMetadata'];
             $normalized['usage'] = [
-                'promptTokenCount'     => $u['promptTokenCount'] ?? 0,
-                'candidatesTokenCount' => $u['candidatesTokenCount'] ?? 0,
-                'thoughtsTokenCount'   => $u['thoughtsTokenCount'] ?? 0,
-                'totalTokenCount'      => $u['totalTokenCount'] ?? 0,
+                'prompt_tokens'     => $u['promptTokenCount'] ?? 0,
+                'completion_tokens' => $u['candidatesTokenCount'] ?? 0,
+                'thinking_tokens'   => $u['thoughtsTokenCount'] ?? 0,
+                'total_tokens'      => $u['totalTokenCount'] ?? 0,
             ];
         }
 
