@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Entity;
 
+use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Message;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\ConversationStatus;
@@ -18,6 +19,18 @@ class ConversationTest extends TestCase
     private function createConversation(): Conversation
     {
         return new class extends Conversation {
+            private ?ConversationOwnerInterface $owner = null;
+
+            public function getOwner(): ?ConversationOwnerInterface
+            {
+                return $this->owner;
+            }
+
+            public function setOwner(ConversationOwnerInterface $owner): self
+            {
+                $this->owner = $owner;
+                return $this;
+            }
         };
     }
 

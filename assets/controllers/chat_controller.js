@@ -21,6 +21,16 @@ export default class extends Controller {
         this.historyLoaded = false;
         this.inputTarget.focus();
 
+        // Bind methods for manual event listeners
+        this.onKeydown = this.handleKeydown.bind(this);
+        this.onInput = this.autoResize.bind(this);
+
+        // Manual event listeners to avoid Stimulus debug logs on every keystroke
+        if (this.hasInputTarget) {
+            this.inputTarget.addEventListener('keydown', this.onKeydown);
+            this.inputTarget.addEventListener('input', this.onInput);
+        }
+
         // Check for debug mode in URL
         const urlParams = new URLSearchParams(window.location.search);
         this.isDebugMode = urlParams.has('debug') || this.debugValue;
@@ -31,6 +41,13 @@ export default class extends Controller {
 
         // Load marked async (for streaming)
         this.loadMarked();
+    }
+
+    disconnect() {
+        if (this.hasInputTarget) {
+            this.inputTarget.removeEventListener('keydown', this.onKeydown);
+            this.inputTarget.removeEventListener('input', this.onInput);
+        }
     }
 
     // History is now rendered server-side via Twig
