@@ -4,84 +4,84 @@ services:
         autoconfigure: true
 
     # ── UI Layout Resolution ──────────────────────────────────────────────────
-    ArnaudMoncondhuy\SynapseBundle\Service\SynapseLayoutResolver:
+    ArnaudMoncondhuy\SynapseBundle\Admin\Layout\SynapseLayoutResolver:
         arguments:
             $layoutMode: '%synapse.ui.layout_mode%'
 
     # ── Twig Integration ──────────────────────────────────────────────────────
-    ArnaudMoncondhuy\SynapseBundle\Twig\SynapseRuntime:
+    ArnaudMoncondhuy\SynapseBundle\Admin\Twig\SynapseRuntime:
         tags: ['twig.runtime']
 
-    ArnaudMoncondhuy\SynapseBundle\Twig\SynapseExtension:
+    ArnaudMoncondhuy\SynapseBundle\Admin\Twig\SynapseExtension:
         tags: ['twig.extension']
 
     # ── Controllers ───────────────────────────────────────────────────────────
-    ArnaudMoncondhuy\SynapseBundle\Controller\ChatUiController:
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ChatUiController:
         autowire: true
         autoconfigure: true
         tags: ['controller.service_arguments']
 
-    ArnaudMoncondhuy\SynapseBundle\Controller\Api\ChatApiController:
+    ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api\ChatApiController:
         autowire: true
         autoconfigure: true
         tags: ['controller.service_arguments']
 
-    ArnaudMoncondhuy\SynapseBundle\Controller\Api\ConversationApiController:
+    ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api\ConversationApiController:
         autowire: true
         autoconfigure: true
         tags: ['controller.service_arguments']
 
-    ArnaudMoncondhuy\SynapseBundle\Controller\Api\ResetController:
+    ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api\ResetController:
         tags: ['controller.service_arguments']
 
-    ArnaudMoncondhuy\SynapseBundle\Controller\Api\DebugController:
+    ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api\DebugController:
         tags: ['controller.service_arguments']
 
-    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\ConfigController:
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ConfigController:
         tags: ['controller.service_arguments']
 
-    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\ProvidersController:
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ProvidersController:
         autowire: true
         autoconfigure: true
         tags: ['controller.service_arguments']
 
-    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\ModelsController:
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ModelsController:
         autowire: true
         autoconfigure: true
         tags: ['controller.service_arguments']
 
-    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\PresetsController:
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\PresetsController:
         autowire: true
         autoconfigure: true
         tags: ['controller.service_arguments']
 
-    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\PresetTestController:
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\PresetTestController:
         autowire: true
         autoconfigure: true
         tags: ['controller.service_arguments']
 
-    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\SettingsController:
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\SettingsController:
         autowire: true
         autoconfigure: true
         tags: ['controller.service_arguments']
 
-    ArnaudMoncondhuy\SynapseBundle\Controller\Admin\DebugLogsController:
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\DebugLogsController:
         autowire: true
         autoconfigure: true
         tags: ['controller.service_arguments']
 
     # ── Accounting (Admin feature) ────────────────────────────────────────────
-    ArnaudMoncondhuy\SynapseBundle\Service\Accounting\TokenAccountingService: ~
+    ArnaudMoncondhuy\SynapseBundle\Core\Accounting\TokenAccountingService: ~
 
     # ── Debug Logging (Admin override) ─────────────────────────────────────────
     # When admin is enabled, use DoctrineAdminLogger instead of MonologDebugLogger
     # This allows the admin dashboard to see lightweight metadata in the database
-    ArnaudMoncondhuy\SynapseBundle\Service\Logger\DoctrineAdminLogger:
+    ArnaudMoncondhuy\SynapseBundle\Storage\Logger\DoctrineAdminLogger:
         arguments:
             $em: '@doctrine.orm.entity_manager'
-            $repository: '@ArnaudMoncondhuy\SynapseBundle\Repository\DebugLogRepository'
+            $repository: '@ArnaudMoncondhuy\SynapseBundle\Storage\Repository\DebugLogRepository'
         public: false
 
     # Override the default interface alias to use DoctrineAdminLogger when admin is enabled
     ArnaudMoncondhuy\SynapseBundle\Contract\SynapseDebugLoggerInterface:
-        alias: ArnaudMoncondhuy\SynapseBundle\Service\Logger\DoctrineAdminLogger
+        alias: ArnaudMoncondhuy\SynapseBundle\Storage\Logger\DoctrineAdminLogger

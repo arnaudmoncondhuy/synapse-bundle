@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Infra;
 
-use ArnaudMoncondhuy\SynapseBundle\Service\Infra\GeminiClient;
+use ArnaudMoncondhuy\SynapseBundle\Core\Client\GeminiClient;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 
-use ArnaudMoncondhuy\SynapseBundle\Entity\Conversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
 
 /**
  * Interface pour la politique de rétention des conversations

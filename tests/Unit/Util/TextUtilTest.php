@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Util;
 
-use ArnaudMoncondhuy\SynapseBundle\Util\TextUtil;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Util\TextUtil;
 use PHPUnit\Framework\TestCase;
 
 class TextUtilTest extends TestCase

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Formatter;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
-use ArnaudMoncondhuy\SynapseBundle\Service\Formatter\MessageFormatter;
+use ArnaudMoncondhuy\SynapseBundle\Core\Formatter\MessageFormatter;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

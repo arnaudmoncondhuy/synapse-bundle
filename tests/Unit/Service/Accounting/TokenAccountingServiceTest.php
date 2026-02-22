@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Accounting;
 
-use ArnaudMoncondhuy\SynapseBundle\Entity\TokenUsage;
-use ArnaudMoncondhuy\SynapseBundle\Repository\TokenUsageRepository;
-use ArnaudMoncondhuy\SynapseBundle\Service\Accounting\TokenAccountingService;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\TokenUsage;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\TokenUsageRepository;
+use ArnaudMoncondhuy\SynapseBundle\Core\Accounting\TokenAccountingService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 

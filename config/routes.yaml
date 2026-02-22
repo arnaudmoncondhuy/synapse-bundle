@@ -1,3 +1,7 @@
-synapse_bundle:
-    resource: '@SynapseBundle/src/Controller/'
+synapse_admin:
+    resource: '@SynapseBundle/src/Admin/Controller/'
+    type: attribute
+
+synapse_api:
+    resource: '@SynapseBundle/src/Core/Controller/Api/'
     type: attribute

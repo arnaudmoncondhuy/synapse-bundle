@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
-use ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry;
-use ArnaudMoncondhuy\SynapseBundle\Service\PromptBuilder;
+use ArnaudMoncondhuy\SynapseBundle\Core\PersonaRegistry;
+use ArnaudMoncondhuy\SynapseBundle\Core\Chat\PromptBuilder;
 use PHPUnit\Framework\TestCase;
 
 class PromptBuilderTest extends TestCase

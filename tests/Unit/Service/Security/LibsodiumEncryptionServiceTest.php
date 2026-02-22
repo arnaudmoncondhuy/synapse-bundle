@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Security;
 
-use ArnaudMoncondhuy\SynapseBundle\Service\Security\LibsodiumEncryptionService;
+use ArnaudMoncondhuy\SynapseBundle\Security\LibsodiumEncryptionService;
 use PHPUnit\Framework\TestCase;
 
 class LibsodiumEncryptionServiceTest extends TestCase

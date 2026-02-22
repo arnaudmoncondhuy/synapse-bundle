@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 
-use ArnaudMoncondhuy\SynapseBundle\Entity\SynapsePreset;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapsePreset;
 
 /**
  * Interface pour fournir la configuration dynamique au GeminiClient.

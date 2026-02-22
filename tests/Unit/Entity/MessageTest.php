@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Entity;
 
-use ArnaudMoncondhuy\SynapseBundle\Entity\Conversation;
-use ArnaudMoncondhuy\SynapseBundle\Entity\Message;
-use ArnaudMoncondhuy\SynapseBundle\Enum\MessageRole;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Message;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole;
 use PHPUnit\Framework\TestCase;
 
 class MessageTest extends TestCase
