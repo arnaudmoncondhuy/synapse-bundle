@@ -12,7 +12,7 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Admin\Twig\SynapseRuntime:
         tags: ['twig.runtime']
 
-    ArnaudMoncondhuy\SynapseBundle\Admin\Twig\SynapseExtension:
+    ArnaudMoncondhuy\SynapseBundle\Admin\Twig\SynapseTwigExtension:
         tags: ['twig.extension']
 
     # ── Controllers ───────────────────────────────────────────────────────────

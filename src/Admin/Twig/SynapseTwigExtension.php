@@ -15,12 +15,12 @@ use Twig\TwigFunction;
  *
  * Expose les fonctions utilisables directement dans les templates `.html.twig`.
  */
-class SynapseExtension extends AbstractExtension
+class SynapseTwigExtension extends AbstractExtension
 {
     public function __construct(
-        private \ArnaudMoncondhuy\SynapseBundle\Service\PersonaRegistry $personaRegistry,
-        private \ArnaudMoncondhuy\SynapseBundle\Service\SynapseLayoutResolver $layoutResolver,
-        private \ArnaudMoncondhuy\SynapseBundle\Repository\SynapsePresetRepository $presetRepository,
+        private \ArnaudMoncondhuy\SynapseBundle\Shared\Service\PersonaRegistry $personaRegistry,
+        private \ArnaudMoncondhuy\SynapseBundle\Admin\Layout\SynapseLayoutResolver $layoutResolver,
+        private \ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository $presetRepository,
         private ?EncryptionServiceInterface $encryptionService = null,
     ) {
     }
