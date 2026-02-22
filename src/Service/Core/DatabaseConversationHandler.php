@@ -24,9 +24,9 @@ class DatabaseConversationHandler implements ConversationHandlerInterface
     }
 
     /**
-     * Charge l'historique depuis la BDD et formate pour Gemini
+     * Charge l'historique depuis la BDD et formate en OpenAI canonical
      *
-     * @return array Historique formaté pour l'API Gemini
+     * @return array Historique formaté en OpenAI canonical
      */
     public function loadHistory(): array
     {
@@ -38,7 +38,7 @@ class DatabaseConversationHandler implements ConversationHandlerInterface
 
         $messages = $this->conversationManager->getMessages($conversation);
 
-        // Formater pour Gemini (format parts)
+        // Formater en OpenAI canonical format
         $history = [];
         foreach ($messages as $message) {
             // Ne pas inclure les messages système dans l'historique
@@ -47,10 +47,8 @@ class DatabaseConversationHandler implements ConversationHandlerInterface
             }
 
             $history[] = [
-                'role' => $this->convertRoleToGemini($message->getRole()),
-                'parts' => [
-                    ['text' => $message->getDecryptedContent()],
-                ],
+                'role'    => $this->convertRoleToOpenAi($message->getRole()),
+                'content' => $message->getDecryptedContent(),
             ];
         }
 
@@ -85,17 +83,17 @@ class DatabaseConversationHandler implements ConversationHandlerInterface
     }
 
     /**
-     * Convertit un MessageRole vers le format Gemini
+     * Convertit un MessageRole vers le format OpenAI canonical
      *
      * @param MessageRole $role Rôle de notre enum
-     * @return string Rôle Gemini ('user', 'model', 'function')
+     * @return string Rôle OpenAI ('user', 'assistant', 'tool')
      */
-    private function convertRoleToGemini(MessageRole $role): string
+    private function convertRoleToOpenAi(MessageRole $role): string
     {
         return match ($role) {
             MessageRole::USER => 'user',
-            MessageRole::MODEL => 'model',
-            MessageRole::FUNCTION => 'function',
+            MessageRole::MODEL => 'assistant',
+            MessageRole::FUNCTION => 'tool',
             MessageRole::SYSTEM => 'user', // Fallback (ne devrait pas arriver)
         };
     }

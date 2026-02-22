@@ -323,6 +323,7 @@ class OvhAiClient implements LlmClientInterface
         foreach ($toolCallsAccumulator as $tc) {
             $args = json_decode($tc['args'], true) ?? [];
             $chunk['function_calls'][] = [
+                'id'   => $tc['id'],
                 'name' => $tc['name'],
                 'args' => $args,
             ];
@@ -334,17 +335,10 @@ class OvhAiClient implements LlmClientInterface
     }
 
     /**
-     * Convertit les messages Synapse canonical en messages OpenAI.
+     * Format messages for OpenAI API.
      *
-     * Mapping des rôles :
-     *   - 'user'     → 'user'
-     *   - 'model'    → 'assistant'
-     *   - 'function' → 'tool'
-     *
-     * Mapping des parts :
-     *   - text           → content
-     *   - functionCall   → tool_calls (avec IDs séquentiels)
-     *   - functionResponse → role tool avec tool_call_id
+     * Messages are already in OpenAI canonical format internally,
+     * so this is mainly a passthrough with system instruction prepending.
      */
     private function toOpenAiMessages(string $systemInstruction, array $contents, bool $includeSystem): array
     {
@@ -354,78 +348,9 @@ class OvhAiClient implements LlmClientInterface
             $messages[] = ['role' => 'system', 'content' => $systemInstruction];
         }
 
-        // Maps function names → tool_call_ids for matching function responses to their calls
-        $toolCallIdMap = [];
-
-        foreach ($contents as $message) {
-            $role = $message['role'] ?? '';
-            $parts = $message['parts'] ?? [];
-
-            switch ($role) {
-                case 'user':
-                    $text = implode('', array_column(
-                        array_filter($parts, fn ($p) => isset($p['text'])),
-                        'text'
-                    ));
-                    $messages[] = ['role' => 'user', 'content' => $text];
-                    break;
-
-                case 'model':
-                    $textParts = [];
-                    $toolCalls = [];
-                    $tcIndex = count($toolCallIdMap); // Keep IDs globally unique
-
-                    foreach ($parts as $part) {
-                        if (isset($part['text'])) {
-                            $textParts[] = $part['text'];
-                        } elseif (isset($part['functionCall'])) {
-                            $fcName = $part['functionCall']['name'];
-                            $fcArgs = $part['functionCall']['args'] ?? [];
-
-                            // Generate a deterministic-ish tool_call_id
-                            $tcId = 'call_' . substr(md5($fcName . $tcIndex), 0, 12);
-                            $toolCallIdMap[$fcName] = $tcId;
-                            $tcIndex++;
-
-                            $toolCalls[] = [
-                                'id'       => $tcId,
-                                'type'     => 'function',
-                                'function' => [
-                                    'name'      => $fcName,
-                                    'arguments' => json_encode($fcArgs, JSON_UNESCAPED_UNICODE),
-                                ],
-                            ];
-                        }
-                    }
-
-                    $assistantMsg = [
-                        'role'    => 'assistant',
-                        'content' => !empty($textParts) ? implode('', $textParts) : null,
-                    ];
-                    if (!empty($toolCalls)) {
-                        $assistantMsg['tool_calls'] = $toolCalls;
-                    }
-                    $messages[] = $assistantMsg;
-                    break;
-
-                case 'function':
-                    foreach ($parts as $part) {
-                        if (isset($part['functionResponse'])) {
-                            $fnName   = $part['functionResponse']['name'];
-                            $response = $part['functionResponse']['response'] ?? [];
-
-                            // Match to the tool_call_id used when the call was made
-                            $tcId = $toolCallIdMap[$fnName] ?? ('call_' . $fnName);
-
-                            $messages[] = [
-                                'role'         => 'tool',
-                                'tool_call_id' => $tcId,
-                                'content'      => is_string($response) ? $response : json_encode($response, JSON_UNESCAPED_UNICODE),
-                            ];
-                        }
-                    }
-                    break;
-            }
+        // Messages are already in OpenAI canonical format — pass through directly
+        foreach ($contents as $msg) {
+            $messages[] = $msg;
         }
 
         return $messages;

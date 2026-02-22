@@ -11,9 +11,9 @@ use ArnaudMoncondhuy\SynapseBundle\Entity\Message;
 use ArnaudMoncondhuy\SynapseBundle\Enum\MessageRole;
 
 /**
- * Formateur de messages pour l'API Gemini
+ * Formateur de messages pour le format OpenAI canonical
  *
- * Convertit entre le format des entités Doctrine et le format attendu par l'API Gemini.
+ * Convertit entre le format des entités Doctrine et le format OpenAI canonical.
  */
 class MessageFormatter implements MessageFormatterInterface
 {
@@ -22,14 +22,13 @@ class MessageFormatter implements MessageFormatterInterface
     ) {
     }
     /**
-     * Convertit les entités Message vers le format Gemini
+     * Convertit les entités Message vers le format OpenAI canonical
      *
-     * Format Gemini:
+     * Format OpenAI:
      * [
-     *   {
-     *     "role": "user",
-     *     "parts": [{"text": "Hello"}]
-     *   }
+     *   { "role": "user", "content": "Hello" },
+     *   { "role": "assistant", "content": "Hi!", "tool_calls": [...] },
+     *   { "role": "tool", "tool_call_id": "...", "content": "..." }
      * ]
      */
     public function entitiesToApiFormat(array $messageEntities): array
@@ -39,13 +38,13 @@ class MessageFormatter implements MessageFormatterInterface
         foreach ($messageEntities as $entity) {
             // Handle serialized entities (Doctrine converts to arrays in closure context)
             if (is_array($entity)) {
-                // If it looks like serialized message data, try to reconstruct
-                if (isset($entity['role']) && isset($entity['parts'])) {
+                // If it looks like already-formatted message data, try to reconstruct
+                if (isset($entity['role']) && isset($entity['content'])) {
                     // Decrypt content if needed
                     $decrypted = $entity;
-                    if (!empty($entity['parts'][0]['text']) && $this->encryptionService !== null) {
-                        if ($this->encryptionService->isEncrypted($entity['parts'][0]['text'])) {
-                            $decrypted['parts'][0]['text'] = $this->encryptionService->decrypt($entity['parts'][0]['text']);
+                    if (!empty($entity['content']) && $this->encryptionService !== null && is_string($entity['content'])) {
+                        if ($this->encryptionService->isEncrypted($entity['content'])) {
+                            $decrypted['content'] = $this->encryptionService->decrypt($entity['content']);
                         }
                     }
                     $messages[] = $decrypted;
@@ -60,11 +59,12 @@ class MessageFormatter implements MessageFormatterInterface
             $role = $entity->getRole();
             $content = $entity->getDecryptedContent();
 
+            // Map internal roles to OpenAI roles
+            $mappedRole = $this->mapRoleToOpenAi($role);
+
             $messages[] = [
-                'role' => strtolower($role->value),
-                'parts' => [
-                    ['text' => $content]
-                ]
+                'role'    => $mappedRole,
+                'content' => $content,
             ];
         }
 
@@ -72,7 +72,20 @@ class MessageFormatter implements MessageFormatterInterface
     }
 
     /**
-     * Convertit le format Gemini vers des entités Message
+     * Map internal MessageRole enum to OpenAI role strings
+     */
+    private function mapRoleToOpenAi(MessageRole $role): string
+    {
+        return match ($role) {
+            MessageRole::USER => 'user',
+            MessageRole::MODEL => 'assistant',
+            MessageRole::FUNCTION => 'tool',
+            MessageRole::SYSTEM => 'system',
+        };
+    }
+
+    /**
+     * Convertit le format OpenAI canonical vers des entités Message
      *
      * Utile pour l'import de conversations ou les tests.
      * Les entités retournées ne sont PAS persistées.
@@ -82,7 +95,7 @@ class MessageFormatter implements MessageFormatterInterface
         $entities = [];
 
         foreach ($messages as $msg) {
-            if (!isset($msg['role']) || !isset($msg['parts'])) {
+            if (!isset($msg['role']) || !isset($msg['content'])) {
                 continue;
             }
 
@@ -91,12 +104,26 @@ class MessageFormatter implements MessageFormatterInterface
 
             $entity = new $messageClass();
             $entity->setConversation($conversation);
-            $entity->setRole(MessageRole::from($msg['role']));
-            $entity->setContent($msg['parts'][0]['text'] ?? '');
+            $entity->setRole($this->mapRoleFromOpenAi($msg['role']));
+            $entity->setContent($msg['content'] ?? '');
 
             $entities[] = $entity;
         }
 
         return $entities;
+    }
+
+    /**
+     * Map OpenAI role strings to internal MessageRole enum
+     */
+    private function mapRoleFromOpenAi(string $role): MessageRole
+    {
+        return match ($role) {
+            'user' => MessageRole::USER,
+            'assistant' => MessageRole::MODEL,
+            'tool' => MessageRole::FUNCTION,
+            'system' => MessageRole::SYSTEM,
+            default => MessageRole::USER,
+        };
     }
 }

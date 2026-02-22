@@ -50,14 +50,14 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
         if ($isStateless) {
             // Stateless mode: only current message
             if (!empty($message)) {
-                $contents[] = ['role' => 'user', 'parts' => [['text' => $message]]];
+                $contents[] = ['role' => 'user', 'content' => $message];
             }
         } else {
             // Stateful mode: load history + add current message
             $rawHistory = $options['history'] ?? [];
             $contents = $this->sanitizeHistoryForNewTurn($rawHistory);
             if (!empty($message)) {
-                $contents[] = ['role' => 'user', 'parts' => [['text' => TextUtil::sanitizeUtf8($message)]]];
+                $contents[] = ['role' => 'user', 'content' => TextUtil::sanitizeUtf8($message)];
             }
         }
 
@@ -84,7 +84,7 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
     /**
      * Sanitize history before sending to LLM.
      *
-     * Removes empty messages and ensures UTF-8 validity.
+     * Expects OpenAI canonical format and ensures UTF-8 validity.
      */
     private function sanitizeHistoryForNewTurn(array $history): array
     {
@@ -92,26 +92,36 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
 
         foreach ($history as $message) {
             $role = $message['role'] ?? '';
-            $parts = $message['parts'] ?? [];
 
-            if (empty($parts)) {
+            // Validate known roles
+            if (!in_array($role, ['user', 'assistant', 'tool'], true)) {
                 continue;
             }
 
-            $cleanParts = [];
-            foreach ($parts as $part) {
-                if (isset($part['text'])) {
-                    $part['text'] = TextUtil::sanitizeUtf8($part['text']);
-                    $cleanParts[] = $part;
-                } elseif (isset($part['functionCall']) || isset($part['functionResponse'])) {
-                    $cleanParts[] = $part;
-                }
-            }
+            if ($role === 'user' || $role === 'assistant') {
+                $content = $message['content'] ?? '';
 
-            if (!empty($cleanParts)) {
+                // Skip user messages with non-string content
+                if ($role === 'user' && !is_string($content)) {
+                    continue;
+                }
+
+                $entry = [
+                    'role'    => $role,
+                    'content' => is_string($content) ? TextUtil::sanitizeUtf8($content) : $content,
+                ];
+
+                // Preserve tool_calls for assistant messages
+                if (!empty($message['tool_calls'])) {
+                    $entry['tool_calls'] = $message['tool_calls'];
+                }
+
+                $sanitized[] = $entry;
+            } elseif ($role === 'tool') {
                 $sanitized[] = [
-                    'role'  => $role,
-                    'parts' => $cleanParts,
+                    'role'         => 'tool',
+                    'tool_call_id' => $message['tool_call_id'] ?? '',
+                    'content'      => TextUtil::sanitizeUtf8($message['content'] ?? ''),
                 ];
             }
         }

@@ -125,7 +125,8 @@ class ChatService
                 $chunks = [$response];
             }
 
-            $modelParts = [];
+            $modelText = '';
+            $modelToolCalls = [];
 
             // ── CAPTURE RAW DATA FROM FIRST TURN ──
             if ($turn === 0 && !empty($debugOut)) {
@@ -140,10 +141,10 @@ class ChatService
                 // Accumulate text
                 if (!empty($chunk['text'])) {
                     $fullTextAccumulator .= $chunk['text'];
+                    $modelText .= $chunk['text'];
                     if ($onToken) {
                         $onToken($chunk['text']);
                     }
-                    $modelParts[] = ['text' => $chunk['text']];
                 }
 
                 // Handle thinking (add to model parts for history)
@@ -170,63 +171,63 @@ class ChatService
                     $label = $categoryLabels[$chunk['blocked_category'] ?? 'unknown'] ?? ($chunk['blocked_category'] ?? 'unknown');
                     $blockedMsg = "⚠️ Ma réponse a été bloquée par les filtres de sécurité (catégorie : {$label}). Veuillez reformuler votre demande.";
                     $fullTextAccumulator .= $blockedMsg;
+                    $modelText .= $blockedMsg;
                     if ($onToken) {
                         $onToken($blockedMsg);
                     }
                 }
 
-                // Collect function calls for later processing
+                // Collect function calls in OpenAI format
                 if (!empty($chunk['function_calls'])) {
                     $hasToolCalls = true;
                     foreach ($chunk['function_calls'] as $fc) {
-                        $modelParts[] = ['functionCall' => ['name' => $fc['name'], 'args' => (object)($fc['args'] ?? [])]];
+                        $modelToolCalls[] = [
+                            'id'       => $fc['id'],
+                            'type'     => 'function',
+                            'function' => [
+                                'name'      => $fc['name'],
+                                'arguments' => json_encode($fc['args'] ?? [], JSON_UNESCAPED_UNICODE),
+                            ],
+                        ];
                     }
                 }
             }
 
-            // ── ADD MODEL RESPONSE TO HISTORY ──
-            if (!empty($modelParts)) {
-                $prompt['contents'][] = ['role' => 'model', 'parts' => $modelParts];
+            // ── ADD MODEL RESPONSE TO HISTORY (OpenAI format) ──
+            if ($modelText !== '' || !empty($modelToolCalls)) {
+                $entry = ['role' => 'assistant', 'content' => $modelText ?: null];
+                if (!empty($modelToolCalls)) {
+                    $entry['tool_calls'] = $modelToolCalls;
+                }
+                $prompt['contents'][] = $entry;
             }
 
             // ── PROCESS TOOL CALLS ──
-            if ($hasToolCalls) {
-                // Extract tool calls from chunks
-                $toolCalls = [];
-                foreach ($chunks as $chunk) {
-                    $toolCalls = array_merge($toolCalls, $chunk['function_calls'] ?? []);
-                }
+            if ($hasToolCalls && !empty($modelToolCalls)) {
+                // Dispatch ToolCallRequestedEvent
+                $toolEvent = $this->dispatcher->dispatch(new SynapseToolCallRequestedEvent($modelToolCalls));
+                $toolResults = $toolEvent->getResults();
 
-                if (!empty($toolCalls)) {
-                    // Dispatch ToolCallRequestedEvent
-                    $toolEvent = $this->dispatcher->dispatch(new SynapseToolCallRequestedEvent($toolCalls));
-                    $toolResults = $toolEvent->getResults();
+                // Add tool responses to prompt for next iteration (one message per tool)
+                foreach ($modelToolCalls as $tc) {
+                    $toolName = $tc['function']['name'];
+                    $toolResult = $toolResults[$toolName] ?? null;
 
-                    // Add tool responses to prompt for next iteration
-                    $functionResponseParts = [];
-                    foreach ($toolCalls as $toolCall) {
-                        $toolName = $toolCall['name'];
-                        $toolResult = $toolResults[$toolName] ?? null;
-
-                        if ($onStatusUpdate) {
-                            $onStatusUpdate("Exécution de l'outil: {$toolName}...", 'tool:' . $toolName);
-                        }
-
-                        if (null !== $toolResult) {
-                            $functionResponseParts[] = [
-                                'functionResponse' => [
-                                    'name'     => $toolName,
-                                    'response' => is_array($toolResult) ? $toolResult : ['content' => $toolResult],
-                                ],
-                            ];
-                        }
+                    if ($onStatusUpdate) {
+                        $onStatusUpdate("Exécution de l'outil: {$toolName}...", 'tool:' . $toolName);
                     }
 
-                    if (!empty($functionResponseParts)) {
-                        $prompt['contents'][] = ['role' => 'function', 'parts' => $functionResponseParts];
-                        continue; // Loop back for model to process results
+                    if (null !== $toolResult) {
+                        $prompt['contents'][] = [
+                            'role'         => 'tool',
+                            'tool_call_id' => $tc['id'],
+                            'content'      => is_string($toolResult) ? $toolResult : json_encode($toolResult, JSON_UNESCAPED_UNICODE),
+                        ];
                     }
                 }
+
+                // Continue loop back for model to process results
+                continue;
             }
 
             // No tool calls → end of exchange

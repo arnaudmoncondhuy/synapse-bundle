@@ -11,14 +11,16 @@ namespace ArnaudMoncondhuy\SynapseBundle\Contract;
  * sans modifier ChatService.
  *
  * ═══════════════════════════════════════════════════════
- * FORMAT INTERNE SYNAPSE (canonical)
+ * FORMAT INTERNE SYNAPSE (OpenAI canonical)
  * ═══════════════════════════════════════════════════════
  *
  * Input $contents :
  *   [
- *     ['role' => 'user'|'model', 'parts' => [['text' => '...']]],
- *     ['role' => 'model', 'parts' => [['functionCall' => ['name' => '...', 'args' => [...]]]]],
- *     ['role' => 'function', 'parts' => [['functionResponse' => ['name' => '...', 'response' => [...]]]]],
+ *     ['role' => 'user',      'content' => '...'],
+ *     ['role' => 'assistant', 'content' => '...', 'tool_calls' => [
+ *         ['id' => '...', 'type' => 'function', 'function' => ['name' => '...', 'arguments' => '...']]
+ *     ]],
+ *     ['role' => 'tool', 'tool_call_id' => '...', 'content' => '...'],
  *   ]
  *
  * Chaque client est responsable de convertir ce format vers l'API de son provider.
@@ -27,7 +29,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Contract;
  *   [
  *     'text'             => string|null,
  *     'thinking'         => string|null,   // Gemini only, null pour les autres
- *     'function_calls'   => [['name' => string, 'args' => array]],
+ *     'function_calls'   => [['id' => string, 'name' => string, 'args' => array]],
  *     'usage'            => [
  *         'promptTokenCount'     => int,
  *         'candidatesTokenCount' => int,

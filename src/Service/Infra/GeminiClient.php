@@ -264,6 +264,7 @@ class GeminiClient implements LlmClientInterface
                 $textParts[] = $part['text'];
             } elseif (isset($part['functionCall'])) {
                 $normalized['function_calls'][] = [
+                    'id'   => 'call_' . substr(md5($part['functionCall']['name'] . count($normalized['function_calls'])), 0, 12),
                     'name' => $part['functionCall']['name'],
                     'args' => $part['functionCall']['args'] ?? [],
                 ];
@@ -408,6 +409,102 @@ class GeminiClient implements LlmClientInterface
         );
     }
 
+    /**
+     * Convert OpenAI canonical format messages to Gemini format.
+     * This is needed because the system uses OpenAI format internally,
+     * but Vertex AI expects Gemini format.
+     *
+     * @param array $openAiMessages Messages in format:
+     *   ['role' => 'user'|'assistant'|'tool', 'content' => ..., 'tool_calls' => [...], 'tool_call_id' => ...]
+     * @return array Messages in Gemini format:
+     *   ['role' => 'user'|'model'|'function', 'parts' => [...]]
+     */
+    private function toGeminiMessages(array $openAiMessages): array
+    {
+        $geminiMessages = [];
+
+        foreach ($openAiMessages as $msg) {
+            $role = $msg['role'] ?? '';
+
+            if ($role === 'user') {
+                $content = $msg['content'] ?? '';
+                $geminiMessages[] = [
+                    'role'  => 'user',
+                    'parts' => [['text' => (string)$content]],
+                ];
+            } elseif ($role === 'assistant') {
+                $parts = [];
+
+                // Add text content if present
+                if (!empty($msg['content'])) {
+                    $parts[] = ['text' => $msg['content']];
+                }
+
+                // Add function calls if present
+                foreach ($msg['tool_calls'] ?? [] as $tc) {
+                    $args = json_decode($tc['function']['arguments'] ?? '{}', true) ?? [];
+                    $parts[] = [
+                        'functionCall' => [
+                            'name' => $tc['function']['name'],
+                            'args' => !empty($args) ? $args : (object)[],
+                        ],
+                    ];
+                }
+
+                if (!empty($parts)) {
+                    $geminiMessages[] = [
+                        'role'  => 'model',
+                        'parts' => $parts,
+                    ];
+                }
+            } elseif ($role === 'tool') {
+                // Find the function name from the corresponding tool_call_id in previous assistant messages
+                $toolName = $this->resolveFunctionName($geminiMessages, $msg['tool_call_id'] ?? '');
+
+                if (!empty($toolName)) {
+                    $response = json_decode($msg['content'] ?? '{}', true);
+                    if (!is_array($response)) {
+                        $response = ['content' => $msg['content']];
+                    }
+
+                    $geminiMessages[] = [
+                        'role'  => 'function',
+                        'parts' => [
+                            [
+                                'functionResponse' => [
+                                    'name'     => $toolName,
+                                    'response' => !empty($response) ? $response : (object)[],
+                                ],
+                            ],
+                        ],
+                    ];
+                }
+            }
+        }
+
+        return $geminiMessages;
+    }
+
+    /**
+     * Resolve function name from tool_call_id by searching previous assistant messages.
+     */
+    private function resolveFunctionName(array $geminiMessages, string $toolCallId): string
+    {
+        // Search backwards through messages to find the corresponding tool call
+        // This is a simplified approach — we'll just use the tool_call_id as a hint
+        // In practice, for Gemini which doesn't use IDs, we can extract the last function call name
+        foreach (array_reverse($geminiMessages) as $msg) {
+            if (($msg['role'] ?? '') === 'model') {
+                foreach ($msg['parts'] ?? [] as $part) {
+                    if (isset($part['functionCall'])) {
+                        return $part['functionCall']['name'];
+                    }
+                }
+            }
+        }
+        return '';
+    }
+
     private function buildPayload(
         string $systemInstruction,
         array $contents,
@@ -417,13 +514,16 @@ class GeminiClient implements LlmClientInterface
     ): array {
         $caps = $this->capabilityRegistry->getCapabilities($effectiveModel);
 
+        // Convert OpenAI format to Gemini format for the API
+        $geminiContents = $this->toGeminiMessages($contents);
+
         $payload = [
             'systemInstruction' => [
                 'parts' => [
                     ['text' => $systemInstruction],
                 ],
             ],
-            'contents' => $contents,
+            'contents' => $geminiContents,
         ];
 
         $generationConfig = $this->buildGenerationConfig($effectiveModel, $thinkingConfigOverride);
@@ -456,18 +556,6 @@ class GeminiClient implements LlmClientInterface
                 ];
             } else {
                 $payload['tools'] = $tools;
-            }
-        }
-
-        // Normalize empty Map fields
-        foreach ($payload['contents'] as &$message) {
-            foreach ($message['parts'] as &$part) {
-                if (isset($part['functionCall']['args']) && is_array($part['functionCall']['args']) && empty($part['functionCall']['args'])) {
-                    $part['functionCall']['args'] = (object) [];
-                }
-                if (isset($part['functionResponse']['response']) && is_array($part['functionResponse']['response']) && empty($part['functionResponse']['response'])) {
-                    $part['functionResponse']['response'] = (object) [];
-                }
             }
         }
 
