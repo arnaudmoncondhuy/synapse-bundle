@@ -87,6 +87,12 @@
 								</a>
 							</li>
 							<li class="synapse-admin__nav-item">
+								<a href="{{ path('synapse_admin_tools') }}" class="{% if app.request.attributes.get('_route') == 'synapse_admin_tools' %}active{% endif %}">
+									<i data-lucide="wrench"></i>
+									Outils
+								</a>
+							</li>
+							<li class="synapse-admin__nav-item">
 								<a href="{{ path('synapse_admin_presets') }}" class="{% if app.request.attributes.get('_route') starts with 'synapse_admin_presets' %}active{% endif %}">
 									<i data-lucide="sliders-horizontal"></i>
 									Presets

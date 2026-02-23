@@ -1,0 +1,67 @@
+{% extends '@Synapse/admin/layout.html.twig' %}
+
+{% block admin_title %}Outils IA (Tools) — Synapse Admin{% endblock %}
+
+{% block admin_content %}
+<div class="synapse-admin__page">
+	<div class="synapse-admin__page-header">
+		<h1 class="synapse-admin__page-title">
+			<i data-lucide="wrench"></i>
+			Outils IA (Tools)
+		</h1>
+		<p class="synapse-admin__page-subtitle">
+			Liste des outils disponibles pour les modèles IA. Cliquez sur un outil pour voir ses détails techniques et son schéma de paramètres.
+		</p>
+	</div>
+
+	{% if tools is empty %}
+		<div class="synapse-admin__empty-state">
+			<i data-lucide="info"></i>
+			<p>Aucun outil n'est actuellement exposé au bundle Synapse.</p>
+			<p style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--synapse-admin-text-muted)">
+				Implémentez <code>AiToolInterface</code> dans votre application pour ajouter des outils.
+			</p>
+		</div>
+	{% else %}
+		<div class="synapse-admin__card">
+			<div class="synapse-admin__table-container">
+				<table class="synapse-admin__table">
+					<thead>
+						<tr>
+							<th>Nom de l'outil</th>
+							<th>Description</th>
+							<th>Classe PHP</th>
+							<th style="text-align: right;">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for tool in tools %}
+							<tr>
+								<td style="font-family: monospace; font-weight: 600; color: var(--synapse-admin-primary);">
+									{{ tool.name }}
+								</td>
+								<td style="font-size: 0.9rem; color: var(--synapse-admin-text-secondary); max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+									{{ tool.description }}
+								</td>
+								<td style="font-size: 0.85rem; color: var(--synapse-admin-text-muted); font-family: monospace;">
+									{{ tool.class|split('\\')|last }}
+								</td>
+								<td style="text-align: right;">
+									<a href="{{ path('synapse_admin_tools_show', {name: tool.name}) }}" class="synapse-admin__btn synapse-admin__btn--sm synapse-admin__btn--ghost">
+										<i data-lucide="eye"></i>
+										Détails
+									</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	{% endif %}
+</div>
+
+<script>
+	if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+</script>
+{% endblock %}

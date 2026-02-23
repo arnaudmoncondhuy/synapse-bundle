@@ -18,9 +18,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class ToolExecutionSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private iterable $tools,
-    ) {
-    }
+        private \ArnaudMoncondhuy\SynapseBundle\Core\Chat\ToolRegistry $toolRegistry,
+    ) {}
 
     /**
      * Décrit l'événement écouté : SynapseToolCallRequestedEvent avec priorité normale (0).
@@ -59,17 +58,16 @@ class ToolExecutionSubscriber implements EventSubscriberInterface
      */
     private function executeTool(string $name, array $args): mixed
     {
-        foreach ($this->tools as $tool) {
-            if ($tool->getName() === $name) {
-                $result = $tool->execute($args);
+        $tool = $this->toolRegistry->get($name);
+        if ($tool) {
+            $result = $tool->execute($args);
 
-                // Ensure result is serializable
-                if (is_string($result) || is_array($result) || is_object($result)) {
-                    return $result;
-                }
-
-                return (string) $result;
+            // Ensure result is serializable
+            if (is_string($result) || is_array($result) || is_object($result)) {
+                return $result;
             }
+
+            return (string) $result;
         }
 
         return null;

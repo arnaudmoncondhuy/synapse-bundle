@@ -60,6 +60,11 @@ services:
         autoconfigure: true
         tags: ['controller.service_arguments']
 
+    ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ToolsController:
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
+
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\SettingsController:
         autowire: true
         autoconfigure: true

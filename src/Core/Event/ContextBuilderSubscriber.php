@@ -7,6 +7,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Core\Event;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapsePrePromptEvent;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\PromptBuilder;
+use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ToolRegistry;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Util\TextUtil;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -23,8 +24,8 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
     public function __construct(
         private PromptBuilder $promptBuilder,
         private ConfigProviderInterface $configProvider,
-    ) {
-    }
+        private ToolRegistry $toolRegistry,
+    ) {}
 
     /**
      * Décrit l'événement écouté : SynapsePrePromptEvent avec haute priorité (100).
@@ -85,7 +86,7 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
         // System instruction is now the first message in contents (OpenAI canonical format)
         $prompt = [
             'contents'        => array_merge([$systemMessage], $contents),
-            'toolDefinitions' => $options['tools'] ?? [],
+            'toolDefinitions' => $options['tools'] ?? $this->toolRegistry->getDefinitions(),
         ];
 
         // Set on event

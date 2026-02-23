@@ -37,7 +37,7 @@ class ChatService
     public function __construct(
         private LlmClientRegistry $llmRegistry,
         private PromptBuilder $promptBuilder,
-        private iterable $tools,
+        private ToolRegistry $toolRegistry,
         private ConfigProviderInterface $configProvider,
         private EntityManagerInterface $em,
         private EventDispatcherInterface $dispatcher,

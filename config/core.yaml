@@ -47,6 +47,11 @@ services:
     # ── Registre des capacités par modèle ────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry: ~
 
+    # ── Registre des outils ──────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Core\Chat\ToolRegistry:
+        arguments:
+            $tools: !tagged_iterator synapse.tool
+
 
     # ── Default implementations (can be overridden by user) ──────────────────
     ArnaudMoncondhuy\SynapseBundle\Core\DatabaseConfigProvider:
@@ -98,7 +103,7 @@ services:
         arguments:
             $llmRegistry: '@ArnaudMoncondhuy\SynapseBundle\Core\Chat\LlmClientRegistry'
             $promptBuilder: '@ArnaudMoncondhuy\SynapseBundle\Core\Chat\PromptBuilder'
-            $tools: !tagged_iterator synapse.tool
+            $toolRegistry: '@ArnaudMoncondhuy\SynapseBundle\Core\Chat\ToolRegistry'
             $configProvider: '@ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface'
             $em: '@doctrine.orm.entity_manager'
             $dispatcher: '@event_dispatcher'
@@ -159,7 +164,7 @@ services:
 
     ArnaudMoncondhuy\SynapseBundle\Core\Event\ToolExecutionSubscriber:
         arguments:
-            $tools: !tagged_iterator synapse.tool
+            $toolRegistry: '@ArnaudMoncondhuy\SynapseBundle\Core\Chat\ToolRegistry'
         autowire: true
         autoconfigure: true
         public: false

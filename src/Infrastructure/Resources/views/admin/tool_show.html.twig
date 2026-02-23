@@ -1,0 +1,69 @@
+{% extends '@Synapse/admin/layout.html.twig' %}
+
+{% block admin_title %}Détails de l'outil {{ tool.name }} — Synapse Admin{% endblock %}
+
+{% block admin_content %}
+<div class="synapse-admin__page">
+	<div class="synapse-admin__page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+		<div>
+			<nav style="margin-bottom: 1rem;">
+				<a href="{{ path('synapse_admin_tools') }}" style="display: flex; align-items: center; gap: 0.5rem; color: var(--synapse-admin-text-muted); text-decoration: none; font-size: 0.9rem;">
+					<i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i>
+					Retour à la liste des outils
+				</a>
+			</nav>
+			<h1 class="synapse-admin__page-title">
+				<i data-lucide="wrench"></i>
+				Outil : {{ tool.name }}
+			</h1>
+			<p class="synapse-admin__page-subtitle">
+				Détail technique et schéma d'interface de l'outil.
+			</p>
+		</div>
+		<span class="synapse-admin__badge synapse-admin__badge--primary" style="margin-top: 2rem;">Actif</span>
+	</div>
+
+	<div class="synapse-admin__grid synapse-admin__grid--1">
+		<div class="synapse-admin__card">
+			<div class="synapse-admin__card-header">
+				<h3 style="margin: 0; font-size: 1.1rem;">Informations générales</h3>
+			</div>
+			<div class="synapse-admin__card-body">
+				<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+					<div>
+						<h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--synapse-admin-text-muted); margin-bottom: 0.5rem;">Nom technique</h4>
+						<p style="font-family: monospace; font-size: 1.1rem; color: var(--synapse-admin-primary);">{{ tool.name }}</p>
+					</div>
+					<div>
+						<h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--synapse-admin-text-muted); margin-bottom: 0.5rem;">Classe d'implémentation</h4>
+						<p style="font-family: monospace; font-size: 0.9rem; color: var(--synapse-admin-text-main);">{{ tool.class }}</p>
+					</div>
+				</div>
+
+				<div style="margin-top: 2rem;">
+					<h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--synapse-admin-text-muted); margin-bottom: 0.5rem;">Description pour le LLM</h4>
+					<div style="padding: 1rem; background: var(--synapse-admin-bg-main); border-radius: 0.5rem; border-left: 4px solid var(--synapse-admin-primary); line-height: 1.6;">
+						{{ tool.description }}
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin__card">
+			<div class="synapse-admin__card-header">
+				<h3 style="margin: 0; font-size: 1.1rem;">Interface Entry Schema (JSON)</h3>
+			</div>
+			<div class="synapse-admin__card-body">
+				<p style="font-size: 0.9rem; color: var(--synapse-admin-text-secondary); margin-bottom: 1rem;">
+					Voici le schéma que le modèle doit respecter pour appeler cet outil.
+				</p>
+				<pre style="background: #1e1e1e; color: #d4d4d4; padding: 1.5rem; border-radius: 0.5rem; font-size: 0.9rem; overflow-x: auto; border: 1px solid var(--synapse-admin-border);">{{ tool.schema|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+</script>
+{% endblock %}
