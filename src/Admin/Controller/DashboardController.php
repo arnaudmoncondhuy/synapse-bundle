@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Message;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\ConversationRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\MessageRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\TokenUsageRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseProviderRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseConfigRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -21,8 +24,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class DashboardController extends AbstractController
 {
     public function __construct(
-        private ConversationRepository $conversationRepo,
-        private MessageRepository $messageRepo,
+        private EntityManagerInterface $em,
         private TokenUsageRepository $tokenUsageRepo,
         private SynapseProviderRepository $providerRepo,
         private SynapsePresetRepository $presetRepo,
@@ -33,10 +35,11 @@ class DashboardController extends AbstractController
     #[Route('/dashboard', name: 'synapse_admin_dashboard')]
     public function dashboard(): Response
     {
-        // KPIs période 24h
+        // KPI : Conversations
+        $conversationRepo = $this->em->getRepository(Conversation::class);
         $last24h = new \DateTimeImmutable('-24 hours');
-        $conversationsLast24h = $this->conversationRepo->countActiveLast24h();
-        $activeUsersLast24h = $this->conversationRepo->countActiveUsersSince($last24h);
+        $conversationsLast24h = $conversationRepo->countActiveLast24h();
+        $activeUsersLast24h = $conversationRepo->countActiveUsersSince($last24h);
 
         // Usage tokens (7 derniers jours)
         $last7days = new \DateTimeImmutable('-7 days');

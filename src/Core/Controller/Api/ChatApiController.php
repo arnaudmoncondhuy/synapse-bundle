@@ -43,7 +43,7 @@ class ChatApiController extends AbstractController
      *
      * Mécanismes clés :
      * 1. Désactivation du Symfony Profiler pour éviter la pollution du JSON.
-     * 2. Clôture immédiate de la session (session_write_close) pour éviter le verrouillage (Session Blocking) pendant les longs appels API.
+     * 2. Clôture immédiate de la session (session_write_close) pour éviter le verrouillage (Session Blocking) si d'autres parties de l'application utilisent les sessions PHP.
      *
      * @param Request       $request  la requête HTTP contenant le message JSON
      * @param Profiler|null $profiler le profiler Symfony (injecté si disponible)
@@ -53,9 +53,7 @@ class ChatApiController extends AbstractController
     #[Route('/chat', name: 'synapse_api_chat', methods: ['POST'])]
     public function chat(Request $request, ?Profiler $profiler): StreamedResponse
     {
-        // 1. Suppression de '_stateless' pour que l'historique de conversation fonctionne.
-
-        // 2. On désactive le profiler pour ne pas casser le flux JSON
+        // 1. On désactive le profiler pour ne pas casser le flux JSON
         if ($profiler) {
             $profiler->disable();
         }

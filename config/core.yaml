@@ -56,8 +56,6 @@ services:
             $providerRepo: '@ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseProviderRepository'
             $encryptionService: '@?ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface'
 
-    ArnaudMoncondhuy\SynapseBundle\Core\Impl\SessionConversationHandler: ~
-
     ArnaudMoncondhuy\SynapseBundle\Core\Impl\DefaultContextProvider: ~
 
     ArnaudMoncondhuy\SynapseBundle\Core\Context\UserAwareContextProvider:
@@ -75,9 +73,6 @@ services:
     # ── Interface aliases (use default implementations) ───────────────────────
     ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface:
         alias: ArnaudMoncondhuy\SynapseBundle\Core\DatabaseConfigProvider
-
-    ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface:
-        alias: ArnaudMoncondhuy\SynapseBundle\Core\DatabaseConversationHandler
 
     ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface:
         alias: ArnaudMoncondhuy\SynapseBundle\Core\Impl\DefaultContextProvider

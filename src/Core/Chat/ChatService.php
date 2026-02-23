@@ -41,6 +41,7 @@ class ChatService
         private ConfigProviderInterface $configProvider,
         private EntityManagerInterface $em,
         private EventDispatcherInterface $dispatcher,
+        private ?\ArnaudMoncondhuy\SynapseBundle\Core\Manager\ConversationManager $conversationManager = null,
     ) {}
 
     /**
@@ -260,20 +261,48 @@ class ChatService
 
     /**
      * Réinitialise l'historique de conversation actuel.
-     * Appelé typiquement lors d'un appel ask() avec l'option reset_conversation = true.
-     * Stub actuellement vide — l'historique est géré par le ConversationHandler via les events.
+     * Supprime la conversation en base de données si elle existe.
      */
-    public function resetConversation(): void {}
+    public function resetConversation(): void
+    {
+        if ($this->conversationManager) {
+            $conversation = $this->conversationManager->getCurrentConversation();
+            if ($conversation) {
+                $this->conversationManager->deleteConversation($conversation);
+                $this->conversationManager->setCurrentConversation(null);
+            }
+        }
+    }
 
     /**
-     * Récupère l'historique de conversation complet au format Synapse.
-     * Retourne les messages au format OpenAI : [{role, content, tool_calls?, tool_call_id?}, ...].
-     * Stub actuellement vide — l'historique est géré par le ConversationHandler via les events.
+     * Récupère l'historique de conversation complet au format OpenAI.
      *
      * @return array<int, array{role: string, content: string|null, tool_calls?: array, tool_call_id?: string}> Messages au format OpenAI
      */
     public function getConversationHistory(): array
     {
-        return [];
+        if (!$this->conversationManager) {
+            return [];
+        }
+
+        $conversation = $this->conversationManager->getCurrentConversation();
+        if (!$conversation) {
+            return [];
+        }
+
+        return $this->conversationManager->getHistoryArray($conversation);
+    }
+
+    /**
+     * Convertit un MessageRole vers le format OpenAI canonical
+     */
+    private function convertRoleToOpenAi(\ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole $role): string
+    {
+        return match ($role) {
+            \ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole::USER => 'user',
+            \ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole::MODEL => 'assistant',
+            \ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole::FUNCTION => 'tool',
+            \ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole::SYSTEM => 'user',
+        };
     }
 }

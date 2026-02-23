@@ -6,13 +6,12 @@ namespace ArnaudMoncondhuy\SynapseBundle\Infrastructure\DependencyInjection;
 
 use ArnaudMoncondhuy\SynapseBundle\Admin\Twig\SynapseRuntime;
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
-use ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface;
-use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationHandlerInterface;
-use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\ConversationRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\MessageRepository;
 use ArnaudMoncondhuy\SynapseBundle\Core\Manager\ConversationManager;
 use ArnaudMoncondhuy\SynapseBundle\Security\LibsodiumEncryptionService;
+use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -109,7 +108,6 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
 
         // ── Persistence ───────────────────────────────────────────────────────
         $container->setParameter('synapse.persistence.enabled', $config['persistence']['enabled'] ?? false);
-        $container->setParameter('synapse.persistence.handler', $config['persistence']['handler'] ?? 'session');
         $container->setParameter('synapse.persistence.conversation_class', $config['persistence']['conversation_class'] ?? null);
         $container->setParameter('synapse.persistence.message_class', $config['persistence']['message_class'] ?? null);
 
@@ -163,21 +161,7 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
             );
         }
 
-        // ── Repository aliases (doctrine persistence) ─────────────────────────
-        if ($config['persistence']['enabled'] && $config['persistence']['handler'] === 'doctrine') {
-            if (!empty($config['persistence']['conversation_repository'])) {
-                $container->setAlias(
-                    ConversationRepository::class,
-                    $config['persistence']['conversation_repository']
-                )->setPublic(true);
-            }
-            if (!empty($config['persistence']['message_repository'])) {
-                $container->setAlias(
-                    MessageRepository::class,
-                    $config['persistence']['message_repository']
-                )->setPublic(true);
-            }
-        }
+
 
 
         // ── Chargement des services ───────────────────────────────────────────
@@ -191,19 +175,19 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
             $loader->load('admin.yaml');
         }
 
-        // ── ConversationManager (si persistence activée avec entités concrètes) ──
-        // Doit être fait APRÈS le chargement des YAML car core.yaml contient une découverte PSR-4 
-        // qui écraserait sinon cette définition manuelle.
-        if ($config['persistence']['enabled'] && !empty($config['persistence']['conversation_class'])) {
-            $container
-                ->register(ConversationManager::class)
-                ->setAutowired(true)
-                ->setPublic(false)
-                ->setArguments([
-                    '$conversationRepo'  => null,
-                    '$conversationClass' => $config['persistence']['conversation_class'],
-                    '$messageClass'      => $config['persistence']['message_class'] ?? null,
-                ]);
+        // ── ConversationManager Configuration ────────────────────────────────
+        if ($container->hasDefinition(ConversationManager::class)) {
+            $managerDef = $container->getDefinition(ConversationManager::class);
+
+            if ($config['persistence']['enabled'] && !empty($config['persistence']['conversation_class'])) {
+                $managerDef->setArgument('$conversationClass', $config['persistence']['conversation_class']);
+                $managerDef->setArgument('$messageClass', $config['persistence']['message_class'] ?? null);
+            }
+
+            // Explicitly set encryption service if enabled to avoid autowiring gaps for optional params
+            if ($config['encryption']['enabled']) {
+                $managerDef->setArgument('$encryptionService', new Reference(EncryptionServiceInterface::class));
+            }
         }
 
         // ── Auto-configuration (Tags automatiques) ────────────────────────────
@@ -212,9 +196,6 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
 
         $container->registerForAutoconfiguration(ContextProviderInterface::class)
             ->addTag('synapse.context_provider');
-
-        $container->registerForAutoconfiguration(ConversationHandlerInterface::class)
-            ->addTag('synapse.conversation_handler');
 
         // ── Twig Globals ──────────────────────────────────────────────────────
         if ($config['admin']['enabled'] ?? false) {

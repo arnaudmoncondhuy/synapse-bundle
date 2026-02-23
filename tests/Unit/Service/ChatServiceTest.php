@@ -9,6 +9,9 @@ use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ChatService;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\LlmClientRegistry;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\PromptBuilder;
 use ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapsePrePromptEvent;
+use ArnaudMoncondhuy\SynapseBundle\Core\Manager\ConversationManager;
+use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -20,6 +23,7 @@ class ChatServiceTest extends TestCase
     private ConfigProviderInterface $configProvider;
     private EntityManagerInterface $em;
     private EventDispatcherInterface $dispatcher;
+    private ConversationManager $conversationManager;
     private ChatService $chatService;
 
     protected function setUp(): void
@@ -29,6 +33,7 @@ class ChatServiceTest extends TestCase
         $this->configProvider = $this->createMock(ConfigProviderInterface::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
         $this->dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->conversationManager = $this->createMock(ConversationManager::class);
 
         $this->chatService = new ChatService(
             $this->llmRegistry,
@@ -37,6 +42,7 @@ class ChatServiceTest extends TestCase
             $this->configProvider,
             $this->em,
             $this->dispatcher,
+            $this->conversationManager,
         );
     }
 
@@ -390,5 +396,56 @@ class ChatServiceTest extends TestCase
             $this->assertArrayHasKey('role', $item);
             $this->assertArrayHasKey('content', $item);
         }
+    }
+
+    /**
+     * Test que resetConversation appelle bien le manager.
+     */
+    public function testResetConversationCallsManager(): void
+    {
+        // Arrange
+        $mockConversation = $this->createMock(Conversation::class);
+        $this->conversationManager->expects($this->once())
+            ->method('getCurrentConversation')
+            ->willReturn($mockConversation);
+
+        $this->conversationManager->expects($this->once())
+            ->method('deleteConversation')
+            ->with($mockConversation);
+
+        $this->conversationManager->expects($this->once())
+            ->method('setCurrentConversation')
+            ->with(null);
+
+        // Act
+        $this->chatService->resetConversation();
+    }
+
+    /**
+     * Test que getConversationHistory retourne l'historique formaté.
+     */
+    public function testGetConversationHistoryReturnsFormattedHistory(): void
+    {
+        // Arrange
+        $mockConversation = $this->createMock(Conversation::class);
+        $expectedHistory = [
+            ['role' => 'user', 'content' => 'Hello'],
+            ['role' => 'assistant', 'content' => 'Hi!'],
+        ];
+
+        $this->conversationManager->expects($this->once())
+            ->method('getCurrentConversation')
+            ->willReturn($mockConversation);
+
+        $this->conversationManager->expects($this->once())
+            ->method('getHistoryArray')
+            ->with($mockConversation)
+            ->willReturn($expectedHistory);
+
+        // Act
+        $history = $this->chatService->getConversationHistory();
+
+        // Assert
+        $this->assertEquals($expectedHistory, $history);
     }
 }

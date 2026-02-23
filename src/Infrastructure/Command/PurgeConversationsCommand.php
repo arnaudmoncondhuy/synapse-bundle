@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Infrastructure\Command;
 
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\ConversationRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -26,7 +28,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class PurgeConversationsCommand extends Command
 {
     public function __construct(
-        private ConversationRepository $conversationRepo,
+        private EntityManagerInterface $em,
         private int $defaultRetentionDays = 30
     ) {
         parent::__construct();
@@ -48,7 +50,8 @@ class PurgeConversationsCommand extends Command
                 InputOption::VALUE_NONE,
                 'Simulation : affiche les conversations à supprimer sans les supprimer'
             )
-            ->setHelp(<<<HELP
+            ->setHelp(
+                <<<HELP
             Cette commande supprime définitivement (hard delete) les conversations
             plus anciennes que la durée de rétention spécifiée.
 
@@ -96,7 +99,9 @@ class PurgeConversationsCommand extends Command
 
         // Récupérer les conversations à supprimer
         $io->section('🔍 Recherche des conversations à purger...');
-        $conversations = $this->conversationRepo->findOlderThan($days);
+        /** @var ConversationRepository $conversationRepo */
+        $conversationRepo = $this->em->getRepository(Conversation::class);
+        $conversations = $conversationRepo->findOlderThan($days);
 
         if (empty($conversations)) {
             $io->success('✅ Aucune conversation à purger.');
@@ -125,10 +130,9 @@ class PurgeConversationsCommand extends Command
             $io->section('🗑️  Suppression en cours...');
             $io->progressStart($count);
 
-            $deleted = 0;
             foreach ($conversations as $conversation) {
                 try {
-                    $this->conversationRepo->hardDelete([$conversation]);
+                    $conversationRepo->hardDelete([$conversation]);
                     $deleted++;
                 } catch (\Exception $e) {
                     $io->error(sprintf(
