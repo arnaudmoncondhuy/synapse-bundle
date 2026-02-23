@@ -1,155 +1,116 @@
 {% extends '@Synapse/admin/layout.html.twig' %}
 
-{% block admin_title %}{{ provider.label }} — Providers — Synapse Admin{% endblock %}
+{% block admin_title %}
+	{{ provider.label }}
+	— Providers — Synapse Admin
+{% endblock %}
 
 {% block admin_content %}
-<div class="synapse-admin__page">
-	<div class="synapse-admin__page-header">
-		<div>
-			<a href="{{ path('synapse_admin_providers') }}" class="synapse-admin__back-link">
-				<i data-lucide="arrow-left"></i>
-				Retour aux providers
-			</a>
-			<h1 class="synapse-admin__page-title">
-				<i data-lucide="plug"></i>
-				{{ provider.label }}
-			</h1>
+	<div class="synapse-admin__page">
+		<div class="synapse-admin__page-header">
+			<div>
+				<a href="{{ path('synapse_admin_providers') }}" class="synapse-admin__back-link">
+					<i data-lucide="arrow-left"></i>
+					Retour aux providers
+				</a>
+				<h1 class="synapse-admin__page-title">
+					<i data-lucide="plug"></i>
+					{{ provider.label }}
+				</h1>
+			</div>
 		</div>
+
+		<form method="post" action="{{ path('synapse_admin_providers_edit', {id: provider.id}) }}">
+			<div class="synapse-admin__card">
+				<div class="synapse-admin__card-header">
+					<span class="synapse-admin__card-title">Informations générales</span>
+				</div>
+				<div class="synapse-admin__card-body">
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">Nom affiché</label>
+						<input type="text" name="label" value="{{ provider.label }}" class="synapse-admin__input" required>
+					</div>
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">
+							<input type="checkbox" name="is_enabled" value="1" {% if provider.isEnabled %} checked {% endif %}>
+							Provider activé
+						</label>
+						<p class="synapse-admin__help">Un provider désactivé ne peut pas être utilisé dans les presets.</p>
+					</div>
+				</div>
+			</div>
+
+			{# ── Credentials dynamiques ────────────────────────────────────────── #}
+			{% if fields is defined and fields is not empty %}
+				<div class="synapse-admin__card">
+					<div class="synapse-admin__card-header">
+						<span class="synapse-admin__card-title">Configuration des accès</span>
+					</div>
+					<div class="synapse-admin__card-body">
+						{% set creds = provider.credentials %}
+						{% foreach fields as name, config %}
+						<div class="synapse-admin__form-row">
+							<label class="synapse-admin__label">
+								{{ config.label }}
+								{% if config.required|default(false) %}
+									<span class="synapse-admin__required">*</span>
+								{% endif %}
+							</label>
+
+							{% if config.type == 'select' %}
+								<select name="{{ name }}" class="synapse-admin__select" {% if config.required|default(false) %} required {% endif %}>
+									{% for value, label in config.options %}
+										<option value="{{ value }}" {% if creds[name]|default(config.value|default('')) == value %} selected {% endif %}>
+											{{ label }}
+										</option>
+									{% endfor %}
+								</select>
+							{% elseif config.type == 'textarea' %}
+								<textarea name="{{ name }}" class="synapse-admin__textarea {% if config.is_code|default(false) %}synapse-admin__textarea--code{% endif %}" rows="8" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) and creds[name] is empty %} required {% endif %}></textarea>
+								{% if creds[name] is not empty %}
+									<p class="synapse-admin__help">
+										<i data-lucide="shield-check"></i>
+										Valeur déjà configurée. Laissez vide pour conserver, ou remplissez pour modifier.
+									</p>
+								{% endif %}
+							{% elseif config.type == 'password' %}
+								<input type="password" name="{{ name }}" class="synapse-admin__input" placeholder="{% if creds[name] is not empty %}Valeur configurée — laisser vide pour conserver{% else %}{{ config.placeholder|default('') }}{% endif %}" {% if config.required|default(false) and creds[name] is empty %} required {% endif %}>
+							{% else %}
+								<input type="text" name="{{ name }}" value="{{ creds[name]|default(config.value|default('')) }}" class="synapse-admin__input" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) %} required {% endif %}>
+							{% endif %}
+
+							{% if config.help is defined %}
+								<p class="synapse-admin__help">{{ config.help|raw }}</p>
+							{% endif %}
+						</div>
+						{% endforeach %}
+					</div>
+				</div>
+
+				{# ── Fallback (JSON brut) ───────────────────────────────────────────── #}
+			{% else %}
+				<div class="synapse-admin__card">
+					<div class="synapse-admin__card-header">
+						<span class="synapse-admin__card-title">Credentials (JSON)</span>
+					</div>
+					<div class="synapse-admin__card-body">
+						<div class="synapse-admin__form-row">
+							<label class="synapse-admin__label">Données JSON</label>
+							<textarea name="credentials_raw" class="synapse-admin__textarea synapse-admin__textarea--code" rows="10">{{ provider.credentials|json_encode(constant('JSON_PRETTY_PRINT')) }}</textarea>
+						</div>
+					</div>
+				</div>
+			{% endif %}
+
+			<div class="synapse-admin__form-actions">
+				<button type="submit" class="synapse-admin__btn synapse-admin__btn--primary">
+					<i data-lucide="save"></i>
+					Enregistrer
+				</button>
+				<a href="{{ path('synapse_admin_providers') }}" class="synapse-admin__btn synapse-admin__btn--ghost">
+					Annuler
+				</a>
+			</div>
+		</form>
 	</div>
-
-	<form method="post" action="{{ path('synapse_admin_providers_edit', {id: provider.id}) }}">
-		<div class="synapse-admin__card">
-			<div class="synapse-admin__card-header">
-				<span class="synapse-admin__card-title">Informations générales</span>
-			</div>
-			<div class="synapse-admin__card-body">
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">Nom affiché</label>
-					<input type="text" name="label" value="{{ provider.label }}"
-					       class="synapse-admin__input" required>
-				</div>
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">
-						<input type="checkbox" name="is_enabled" value="1"
-						       {% if provider.isEnabled %}checked{% endif %}>
-						Provider activé
-					</label>
-					<p class="synapse-admin__help">Un provider désactivé ne peut pas être utilisé dans les presets.</p>
-				</div>
-			</div>
-		</div>
-
-		{# ── Credentials Gemini ──────────────────────────────────────────────── #}
-		{% if provider.name == 'gemini' %}
-			{% set creds = provider.credentials %}
-			<div class="synapse-admin__card">
-				<div class="synapse-admin__card-header">
-					<span class="synapse-admin__card-title">
-						<i data-lucide="zap" style="color: #4285f4"></i>
-						Credentials Google Vertex AI
-					</span>
-				</div>
-				<div class="synapse-admin__card-body">
-					<div class="synapse-admin__form-row">
-						<label class="synapse-admin__label">Project ID Google Cloud <span class="synapse-admin__required">*</span></label>
-						<input type="text" name="project_id" value="{{ creds.project_id|default('') }}"
-						       class="synapse-admin__input" placeholder="my-gcp-project">
-						<p class="synapse-admin__help">Identifiant de votre projet Google Cloud Platform.</p>
-					</div>
-					<div class="synapse-admin__form-row">
-						<label class="synapse-admin__label">Région Vertex AI <span class="synapse-admin__required">*</span></label>
-						<select name="region" class="synapse-admin__select">
-							{% for value, label in gemini_regions %}
-								<option value="{{ value }}" {% if creds.region|default('europe-west1') == value %}selected{% endif %}>
-									{{ label }}
-								</option>
-							{% endfor %}
-						</select>
-					</div>
-					<div class="synapse-admin__form-row">
-						<label class="synapse-admin__label">Service Account JSON <span class="synapse-admin__required">*</span></label>
-						{% set has_json = creds.service_account_json is not empty %}
-						<textarea name="service_account_json"
-						          class="synapse-admin__textarea synapse-admin__textarea--code"
-						          rows="12"
-						          placeholder='{"type": "service_account", "project_id": "...", "private_key": "...", ...}'></textarea>
-						{% if has_json %}
-							<p class="synapse-admin__help">
-								<i data-lucide="shield-check"></i>
-								Un Service Account JSON est déjà configuré. Laissez ce champ vide pour le conserver, ou collez un nouveau JSON pour le remplacer.
-							</p>
-						{% else %}
-							<p class="synapse-admin__help">
-								Collez le contenu complet du fichier JSON du Service Account Google Cloud.
-								Ce fichier est généré depuis <strong>IAM → Comptes de service → Clés</strong>.
-							</p>
-						{% endif %}
-					</div>
-				</div>
-			</div>
-
-		{# ── Credentials OVH ─────────────────────────────────────────────────── #}
-		{% elseif provider.name == 'ovh' %}
-			{% set creds = provider.credentials %}
-			<div class="synapse-admin__card">
-				<div class="synapse-admin__card-header">
-					<span class="synapse-admin__card-title">
-						<i data-lucide="cloud" style="color: #0050d8"></i>
-						Credentials OVH AI Endpoints
-					</span>
-				</div>
-				<div class="synapse-admin__card-body">
-					<div class="synapse-admin__form-row">
-						<label class="synapse-admin__label">API Key (Bearer Token) <span class="synapse-admin__required">*</span></label>
-						<input type="password" name="api_key"
-						       value=""
-						       class="synapse-admin__input"
-						       placeholder="{% if creds.api_key is not empty %}Clé configurée — laisser vide pour conserver{% else %}ovh_...{% endif %}">
-						{% if creds.api_key is not empty %}
-							<p class="synapse-admin__help">
-								<i data-lucide="shield-check"></i>
-								Une API Key est déjà configurée. Laissez ce champ vide pour la conserver, ou entrez une nouvelle clé pour la remplacer.
-							</p>
-						{% else %}
-							<p class="synapse-admin__help">Token d'authentification OVH AI Endpoints.</p>
-						{% endif %}
-					</div>
-					<div class="synapse-admin__form-row">
-						<label class="synapse-admin__label">Endpoint URL</label>
-						<input type="text" name="endpoint"
-						       value="{{ creds.endpoint|default('https://oai.endpoints.kepler.ai.cloud.ovh.net/v1') }}"
-						       class="synapse-admin__input">
-						<p class="synapse-admin__help">URL de base de l'API. Laisser la valeur par défaut sauf cas particulier.</p>
-					</div>
-				</div>
-			</div>
-
-		{# ── Credentials personnalisés ────────────────────────────────────────── #}
-		{% else %}
-			<div class="synapse-admin__card">
-				<div class="synapse-admin__card-header">
-					<span class="synapse-admin__card-title">Credentials (JSON)</span>
-				</div>
-				<div class="synapse-admin__card-body">
-					<div class="synapse-admin__form-row">
-						<label class="synapse-admin__label">Données JSON</label>
-						<textarea name="credentials_raw"
-						          class="synapse-admin__textarea synapse-admin__textarea--code"
-						          rows="10">{{ provider.credentials|json_encode(constant('JSON_PRETTY_PRINT')) }}</textarea>
-					</div>
-				</div>
-			</div>
-		{% endif %}
-
-		<div class="synapse-admin__form-actions">
-			<button type="submit" class="synapse-admin__btn synapse-admin__btn--primary">
-				<i data-lucide="save"></i>
-				Enregistrer
-			</button>
-			<a href="{{ path('synapse_admin_providers') }}" class="synapse-admin__btn synapse-admin__btn--ghost">
-				Annuler
-			</a>
-		</div>
-	</form>
-</div>
 {% endblock %}

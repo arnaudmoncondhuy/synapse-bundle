@@ -71,6 +71,7 @@ class ModelCapabilityRegistry
         'function_calling' => true,
         'streaming'       => true,
         'system_prompt'   => true,
+        'context_window'  => null,
         'pricing_input'   => null,
         'pricing_output'  => null,
     ];
@@ -91,6 +92,7 @@ class ModelCapabilityRegistry
             functionCalling: $data['function_calling'] ?? true,
             streaming: $data['streaming'] ?? true,
             systemPrompt: $data['system_prompt'] ?? true,
+            contextWindow: isset($data['context_window']) ? (int) $data['context_window'] : null,
             pricingInput: isset($data['pricing_input']) ? (float) $data['pricing_input'] : null,
             pricingOutput: isset($data['pricing_output']) ? (float) $data['pricing_output'] : null,
             modelId: $data['model_id'] ?? null,

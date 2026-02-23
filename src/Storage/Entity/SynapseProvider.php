@@ -11,9 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Provider LLM enregistré dans Synapse.
  *
  * Stocke les credentials par provider (API key, service account JSON, endpoint...).
- * Les credentials sont opaque (JSON) — chaque provider a sa propre structure :
- *   - gemini : {"project_id":"...", "region":"...", "service_account_json":"..."}
- *   - ovh    : {"api_key":"...", "endpoint":"..."}
+ * Les credentials sont opaques (JSON) — chaque provider gère sa propre structure.
  *
  * Cette entité est gérée depuis l'admin Synapse — aucune valeur ne doit
  * figurer en dur dans synapse.yaml.
@@ -43,14 +41,7 @@ class SynapseProvider
     #[ORM\Column(type: Types::STRING, length: 100)]
     private string $label = '';
 
-    /**
      * Credentials du provider (JSON opaque, spécifique au provider).
-     *
-     * Structure Gemini :
-     *   {"project_id": "...", "region": "europe-west1", "service_account_json": "{ ... JSON content ... }"}
-     *
-     * Structure OVH :
-     *   {"api_key": "...", "endpoint": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1"}
      */
     #[ORM\Column(type: Types::JSON)]
     private array $credentials = [];
@@ -137,15 +128,11 @@ class SynapseProvider
     }
 
     /**
-     * Vérifie si les credentials minimaux sont configurés.
+     * Vérifie si des credentials sont configurés.
+     * La validation spécifique est faite par le client LLM correspondant.
      */
     public function isConfigured(): bool
     {
-        return match ($this->name) {
-            'gemini' => !empty($this->credentials['service_account_json'])
-                && !empty($this->credentials['project_id']),
-            'ovh'    => !empty($this->credentials['api_key']),
-            default  => !empty($this->credentials),
-        };
+        return !empty($this->credentials);
     }
 }

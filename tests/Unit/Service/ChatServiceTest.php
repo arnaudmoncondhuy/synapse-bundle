@@ -116,10 +116,12 @@ class ChatServiceTest extends TestCase
     {
         // Arrange
         $message = 'Test message';
+        $prePromptEventDispatched = false;
 
         $this->dispatcher->method('dispatch')
-            ->willReturnCallback(function ($event) {
+            ->willReturnCallback(function ($event) use (&$prePromptEventDispatched) {
                 if ($event instanceof SynapsePrePromptEvent) {
+                    $prePromptEventDispatched = true;
                     $event->setPrompt([
                         'contents' => [['role' => 'user', 'content' => 'Test']],
                         'toolDefinitions' => [],
@@ -145,9 +147,12 @@ class ChatServiceTest extends TestCase
             ->willReturn($mockClient);
 
         // Act
-        $this->chatService->ask($message);
+        $result = $this->chatService->ask($message);
 
-        // Dispatcher.dispatch() was already expected and verified
+        // Assert
+        $this->assertTrue($prePromptEventDispatched, 'SynapsePrePromptEvent should be dispatched');
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('answer', $result);
     }
 
     /**

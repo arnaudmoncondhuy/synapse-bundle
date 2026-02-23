@@ -721,6 +721,67 @@ class GeminiClient implements LlmClientInterface
         return array_map(fn($cat) => ['category' => $cat, 'threshold' => 'BLOCK_NONE'], $categories);
     }
 
+    public function getCredentialFields(): array
+    {
+        return [
+            'project_id' => [
+                'label'       => 'Project ID Google Cloud',
+                'type'        => 'text',
+                'help'        => 'Identifiant de votre projet Google Cloud Platform.',
+                'placeholder' => 'my-gcp-project',
+                'required'    => true,
+            ],
+            'region' => [
+                'label'    => 'Région Vertex AI',
+                'type'     => 'select',
+                'required' => true,
+                'options'  => [
+                    'europe-west1'    => 'Europe West 1 (Belgique)',
+                    'europe-west4'    => 'Europe West 4 (Pays-Bas)',
+                    'us-central1'     => 'US Central 1 (Iowa)',
+                    'us-east1'        => 'US East 1 (Caroline du Sud)',
+                    'asia-east1'      => 'Asia East 1 (Taiwan)',
+                    'asia-northeast1' => 'Asia Northeast 1 (Tokyo)',
+                ],
+            ],
+            'service_account_json' => [
+                'label'       => 'Service Account JSON',
+                'type'        => 'textarea',
+                'help'        => 'Collez le contenu complet du fichier JSON du Service Account Google Cloud. Ce fichier est généré depuis IAM → Comptes de service → Clés.',
+                'placeholder' => '{"type": "service_account", "project_id": "...", "private_key": "...", ...}',
+                'required'    => true,
+                'is_code'     => true,
+            ],
+        ];
+    }
+
+    public function validateCredentials(array $credentials): void
+    {
+        $projectId = $credentials['project_id'] ?? '';
+        if (empty($projectId)) {
+            throw new \Exception('Project ID manquant');
+        }
+
+        $jsonStr = $credentials['service_account_json'] ?? '';
+        if (empty($jsonStr)) {
+            throw new \Exception('Service Account JSON manquant');
+        }
+
+        $json = json_decode($jsonStr, true);
+        if (!is_array($json) || empty($json['project_id'])) {
+            throw new \Exception('Service Account JSON invalide');
+        }
+
+        if ($json['project_id'] !== $projectId) {
+            throw new \Exception('Project ID ne correspond pas au JSON');
+        }
+    }
+
+    public function getDefaultLabel(): string
+    {
+        return 'Google Vertex AI';
+    }
+
     /**
      * Transforme toute exception en RuntimeException avec contexte API.
      * Pour les HttpExceptionInterface, enrichit le message avec la réponse d'erreur Google.

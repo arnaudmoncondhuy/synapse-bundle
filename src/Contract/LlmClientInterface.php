@@ -84,4 +84,38 @@ interface LlmClientInterface
         array $options = [],
         array &$debugOut = [],
     ): array;
+    /**
+     * Retourne la définition des champs nécessaires pour configurer ce provider.
+     * Utilisé pour générer dynamiquement le formulaire d'administration.
+     *
+     * Format : [
+     *   'field_name' => [
+     *      'label' => '...',
+     *      'type' => 'text'|'password'|'textarea'|'select',
+     *      'help' => '...',
+     *      'placeholder' => '...',
+     *      'required' => bool,
+     *      'options' => ['value' => 'label', ...] // Si type select
+     *      'is_code' => bool // Si type textarea, active l'édition en mode code
+     *   ],
+     *   ...
+     * ]
+     *
+     * @return array<string, array>
+     */
+    public function getCredentialFields(): array;
+
+    /**
+     * Valide les credentials fournis.
+     * Lève une exception si invalide.
+     *
+     * @param array $credentials
+     * @throws \InvalidArgumentException|\Exception
+     */
+    public function validateCredentials(array $credentials): void;
+
+    /**
+     * Retourne le nom lisible du provider (ex: 'Google Vertex AI').
+     */
+    public function getDefaultLabel(): string;
 }

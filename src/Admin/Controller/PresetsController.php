@@ -224,6 +224,9 @@ class PresetsController extends AbstractController
             }
         }
 
+        // Validate provider options
+        $providerOptions = $this->validateProviderOptions($providerOptions, $preset->getProviderName());
+
         $preset->setProviderOptions($providerOptions);
 
         // Get model capabilities for generation config validation
@@ -277,6 +280,63 @@ class PresetsController extends AbstractController
             ];
         }
         return $result;
+    }
+
+    /**
+     * Valide et assainit les options du provider selon sa configuration
+     */
+    private function validateProviderOptions(array $options, string $providerName): array
+    {
+        // Énumérations valides
+        $validBlockLevels = ['BLOCK_NONE', 'BLOCK_ONLY_HIGH', 'BLOCK_MEDIUM_AND_ABOVE', 'BLOCK_LOW_AND_ABOVE'];
+        $validReasoningEfforts = ['low', 'medium', 'high'];
+
+        if ($providerName === 'gemini') {
+            // Valider thinking.budget
+            if (isset($options['thinking']['budget']) && !empty($options['thinking']['budget'])) {
+                $budget = (int) $options['thinking']['budget'];
+                // Plage: 128–24576
+                if ($budget < 128 || $budget > 24576) {
+                    $options['thinking']['budget'] = 1024; // Réinitialiser à la valeur par défaut
+                }
+            }
+
+            // Valider safety_settings.default_threshold
+            if (isset($options['safety_settings']['default_threshold']) && !empty($options['safety_settings']['default_threshold'])) {
+                if (!in_array($options['safety_settings']['default_threshold'], $validBlockLevels, true)) {
+                    unset($options['safety_settings']['default_threshold']);
+                }
+            }
+
+            // Valider les 4 filtres de sécurité spécifiques
+            $safetyFilters = ['hate_speech', 'dangerous_content', 'harassment', 'sexually_explicit'];
+            foreach ($safetyFilters as $filter) {
+                if (isset($options['safety_settings']['thresholds'][$filter]) && !empty($options['safety_settings']['thresholds'][$filter])) {
+                    $value = $options['safety_settings']['thresholds'][$filter];
+                    // Autoriser les valeurs vides ou valides
+                    if ($value !== '' && !in_array($value, $validBlockLevels, true)) {
+                        unset($options['safety_settings']['thresholds'][$filter]);
+                    }
+                }
+            }
+        } elseif ($providerName === 'ovh') {
+            // Valider thinking.reasoning_effort
+            if (isset($options['thinking']['reasoning_effort']) && !empty($options['thinking']['reasoning_effort'])) {
+                if (!in_array($options['thinking']['reasoning_effort'], $validReasoningEfforts, true)) {
+                    unset($options['thinking']['reasoning_effort']);
+                }
+            }
+
+            // Supprimer les champs Gemini qui ne doivent pas être là
+            if (isset($options['thinking']['budget'])) {
+                unset($options['thinking']['budget']);
+            }
+            if (isset($options['safety_settings'])) {
+                unset($options['safety_settings']);
+            }
+        }
+
+        return $options;
     }
 
 }

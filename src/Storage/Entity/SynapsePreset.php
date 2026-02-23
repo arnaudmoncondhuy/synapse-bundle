@@ -37,17 +37,15 @@ class SynapsePreset
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $isActive = false;
 
-    /**
-     * Provider LLM actif pour ce preset ('gemini', 'ovh', etc.)
+     * Provider LLM actif pour ce preset.
      */
     #[ORM\Column(type: Types::STRING, length: 50)]
-    private string $providerName = 'gemini';
+    private string $providerName = '';
 
-    /**
-     * Modèle LLM à utiliser (dépend du provider actif)
+     * Modèle LLM à utiliser (dépend du provider actif).
      */
     #[ORM\Column(type: Types::STRING, length: 100)]
-    private string $model = 'gemini-2.5-flash';
+    private string $model = '';
 
     /**
      * Options spécifiques au provider (ex: safetySettings, thinkingBudget, reasoningEffort)

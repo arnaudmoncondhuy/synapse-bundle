@@ -512,6 +512,58 @@ class OvhAiClient implements LlmClientInterface
         }
     }
 
+    public function getCredentialFields(): array
+    {
+        return [
+            'api_key' => [
+                'label'    => 'API Key (Bearer Token)',
+                'type'     => 'password',
+                'help'     => 'Token d\'authentification OVH AI Endpoints.',
+                'placeholder' => 'ovh_...',
+                'required' => true,
+            ],
+            'endpoint' => [
+                'label'    => 'Endpoint URL',
+                'type'     => 'text',
+                'help'     => 'URL de base de l\'API. Laisser la valeur par défaut sauf cas particulier.',
+                'value'    => 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1',
+                'required' => true,
+            ],
+        ];
+    }
+
+    public function validateCredentials(array $credentials): void
+    {
+        $apiKey = $credentials['api_key'] ?? '';
+        $endpoint = $credentials['endpoint'] ?? 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1';
+
+        if (empty($apiKey)) {
+            throw new \Exception('API Key manquante');
+        }
+
+        // Test de connexion: faire un appel à la liste des modèles (gratuit)
+        try {
+            $response = $this->httpClient->request('GET', rtrim($endpoint, '/') . '/models', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Accept' => 'application/json',
+                ],
+                'timeout' => 10,
+            ]);
+
+            if ($response->getStatusCode() !== 200) {
+                throw new \Exception('Erreur HTTP ' . $response->getStatusCode() . ': ' . $response->getContent(false));
+            }
+        } catch (\Exception $e) {
+            throw new \Exception('Impossible de se connecter à OVH: ' . $e->getMessage());
+        }
+    }
+
+    public function getDefaultLabel(): string
+    {
+        return 'OVH AI Endpoints';
+    }
+
     private function handleException(\Throwable $e): void
     {
         $message = $e->getMessage();

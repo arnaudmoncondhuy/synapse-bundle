@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Storage\Repository;
 
+use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapsePreset;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -17,8 +18,11 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class SynapsePresetRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
+    public function __construct(
+        ManagerRegistry $registry,
+        private SynapseProviderRepository $providerRepo,
+        private ModelCapabilityRegistry $capabilityRegistry,
+    ) {
         parent::__construct($registry, SynapsePreset::class);
     }
 
@@ -87,15 +91,29 @@ class SynapsePresetRepository extends ServiceEntityRepository
         $preset = new SynapsePreset();
         $preset->setName('Preset par défaut');
         $preset->setIsActive(true);
-        $preset->setProviderName('gemini');
-        $preset->setModel('gemini-2.5-flash');
-        $preset->setSafetyEnabled(false);
-        $preset->setSafetyDefaultThreshold('BLOCK_MEDIUM_AND_ABOVE');
+
+        // Trouver le premier provider actif
+        $enabledProviders = $this->providerRepo->findEnabled();
+        $providerName = '';
+        $modelName = '';
+
+        if (!empty($enabledProviders)) {
+            $provider = $enabledProviders[0];
+            $providerName = $provider->getName();
+
+            // Trouver le premier modèle pour ce provider
+            $models = $this->capabilityRegistry->getModelsForProvider($providerName);
+            if (!empty($models)) {
+                $modelName = $models[0];
+            }
+        }
+
+        $preset->setProviderName($providerName);
+        $preset->setModel($modelName);
+
         $preset->setGenerationTemperature(1.0);
         $preset->setGenerationTopP(0.95);
         $preset->setGenerationTopK(40);
-        $preset->setThinkingEnabled(true);
-        $preset->setThinkingBudget(1024);
 
         return $preset;
     }

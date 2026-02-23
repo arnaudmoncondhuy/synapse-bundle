@@ -4,52 +4,67 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Functional\Api;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ChatService;
+use ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api\ChatApiController;
+use ArnaudMoncondhuy\SynapseBundle\Core\Formatter\MessageFormatter;
+use ArnaudMoncondhuy\SynapseBundle\Core\Manager\ConversationManager;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class ChatApiControllerTest extends WebTestCase
+class ChatApiControllerTest extends TestCase
 {
-    public function testChatEndpointIsReachableAndReturnsNdjson(): void
+    private ChatApiController $controller;
+
+    protected function setUp(): void
     {
-        $client = static::createClient();
+        $chatService = $this->createMock(ChatService::class);
+        $conversationManager = $this->createMock(ConversationManager::class);
+        $messageFormatter = $this->createMock(MessageFormatter::class);
 
-        $payload = [
-            'message' => 'Hello World',
-            'api_key' => 'test-api-key', // Clé factice pour passer la validation du contrôleur
-            'options' => [
-                'debug' => true,
-            ],
-        ];
+        $this->controller = new ChatApiController(
+            $chatService,
+            $conversationManager,
+            $messageFormatter
+        );
+    }
 
-        $client->request(
-            'POST',
+    public function testChatEndpointReturnsStreamedResponse(): void
+    {
+        $request = Request::create(
             '/synapse/api/chat',
+            'POST',
+            [],
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
-            json_encode($payload)
+            json_encode(['message' => 'test'])
         );
 
-        $response = $client->getResponse();
+        $response = $this->controller->chat($request, null);
 
-        // On s'attend à un code 200 (le streaming démarre)
-        $this->assertEquals(200, $response->getStatusCode(), 'L\'endpoint devrait répondre 200 OK');
+        $this->assertInstanceOf(StreamedResponse::class, $response);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertStringContainsString('application/x-ndjson', $response->headers->get('Content-Type') ?? '');
+    }
 
-        // On vérifie le Content-Type spécifique NDJSON
-        $this->assertStringContainsString(
-            'application/x-ndjson',
-            $response->headers->get('Content-Type'),
-            'Le Content-Type devrait être application/x-ndjson'
+    public function testChatEndpointSetsCorrectHeaders(): void
+    {
+        $request = Request::create(
+            '/synapse/api/chat',
+            'POST',
+            [],
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['message' => 'test'])
         );
 
-        // StreamedResponse ne stocke pas le contenu dans le client Symfony en test,
-        // Nous vérifions simplement le Content-Type correct et le statut
-        // En environnement réel, le streaming NDJSON contient une série d'événements JSON
-        // Format attendu de chaque ligne NDJSON :
-        // {"type":"chunk","data":{"text":"...","blocked":false,"blocked_reason":null}}
-        // {"type":"done","data":{"usage":{"prompt_tokens":100,"completion_tokens":50}}}
-        // {"type":"error","data":{"error":"..."}}
+        $response = $this->controller->chat($request, null);
 
-        // La vérification du Content-Type et du statut 200 confirme que
-        // le streaming a démarré correctement avec le bon format NDJSON
+        $this->assertEquals('application/x-ndjson', $response->headers->get('Content-Type'));
+        $this->assertEquals('no', $response->headers->get('X-Accel-Buffering'));
+        $this->assertStringContainsString('no-cache', $response->headers->get('Cache-Control') ?? '');
+        $this->assertEquals('disabled', $response->headers->get('X-Debug-Token'));
     }
 }

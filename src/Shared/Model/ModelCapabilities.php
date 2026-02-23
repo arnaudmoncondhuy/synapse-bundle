@@ -37,6 +37,9 @@ class ModelCapabilities
         /** Supporte un system prompt / instruction système */
         public readonly bool $systemPrompt = true,
 
+        /** Taille de la fenêtre de contexte maximale en tokens */
+        public readonly ?int $contextWindow = null,
+
         /** Prix par défaut par million de tokens (Input) */
         public readonly ?float $pricingInput = null,
 

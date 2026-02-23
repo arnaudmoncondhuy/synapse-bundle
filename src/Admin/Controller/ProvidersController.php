@@ -8,6 +8,7 @@ use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseProvider;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseProviderRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository;
+use ArnaudMoncondhuy\SynapseBundle\Core\Chat\LlmClientRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -29,9 +30,9 @@ class ProvidersController extends AbstractController
         private SynapsePresetRepository $presetRepo,
         private EntityManagerInterface $em,
         private HttpClientInterface $httpClient,
+        private LlmClientRegistry $clientRegistry,
         private ?EncryptionServiceInterface $encryptionService = null,
-    ) {
-    }
+    ) {}
 
     /**
      * Liste des providers
@@ -41,15 +42,18 @@ class ProvidersController extends AbstractController
     {
         $providers = $this->providerRepo->findAllOrdered();
 
-        // S'assurer que les providers par défaut existent
-        $existingNames = array_map(fn ($p) => $p->getName(), $providers);
-        $defaultProviders = ['gemini' => 'Google Vertex AI', 'ovh' => 'OVH AI Endpoints'];
+        // S'assurer que les providers enregistrés dans le registre existent en DB
+        $existingNames = array_map(fn($p) => $p->getName(), $providers);
+        $availableProviders = $this->clientRegistry->getAvailableProviders();
         $changed = false;
 
-        foreach ($defaultProviders as $name => $label) {
+        foreach ($availableProviders as $name) {
             if (!in_array($name, $existingNames, true)) {
+                $client = $this->clientRegistry->getClientByProvider($name);
                 $provider = new SynapseProvider();
-                $provider->setName($name)->setLabel($label)->setIsEnabled(false);
+                $provider->setName($name)
+                    ->setLabel($client->getDefaultLabel())
+                    ->setIsEnabled(false);
                 $this->em->persist($provider);
                 $providers[] = $provider;
                 $changed = true;
@@ -95,25 +99,24 @@ class ProvidersController extends AbstractController
             $provider->setLabel($data['label'] ?? $provider->getLabel());
             $provider->setIsEnabled((bool) ($data['is_enabled'] ?? false));
 
-            // Credentials selon le type de provider
+            // Credentials dynamiques selon le client LLM
+            $client = $this->clientRegistry->getClientByProvider($provider->getName());
+            $fields = $client->getCredentialFields();
             $currentCredentials = $provider->getCredentials();
+            $credentials = [];
 
-            match ($provider->getName()) {
-                'gemini' => $credentials = [
-                    'project_id'           => trim($data['project_id'] ?? ''),
-                    'region'               => trim($data['region'] ?? 'europe-west1'),
-                    'service_account_json' => !empty(trim($data['service_account_json'] ?? ''))
-                        ? trim($data['service_account_json'])
-                        : ($currentCredentials['service_account_json'] ?? ''),
-                ],
-                'ovh' => $credentials = [
-                    'api_key'  => !empty(trim($data['api_key'] ?? ''))
-                        ? trim($data['api_key'])
-                        : ($currentCredentials['api_key'] ?? ''),
-                    'endpoint' => trim($data['endpoint'] ?? 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1'),
-                ],
-                default => $credentials = json_decode($data['credentials_raw'] ?? '{}', true) ?? [],
-            };
+            if ($provider->getName() === 'custom' || empty($fields)) {
+                $credentials = json_decode($data['credentials_raw'] ?? '{}', true) ?? [];
+            } else {
+                foreach ($fields as $fieldName => $fieldConfig) {
+                    $value = trim($data[$fieldName] ?? '');
+                    if (empty($value) && !empty($currentCredentials[$fieldName])) {
+                        // Conserver la valeur existante (utile pour les passwords/fichiers volumineux)
+                        $value = $currentCredentials[$fieldName];
+                    }
+                    $credentials[$fieldName] = $value;
+                }
+            }
 
             $credentials = $this->encryptCredentials($credentials);
             $provider->setCredentials($credentials);
@@ -125,9 +128,11 @@ class ProvidersController extends AbstractController
             return $this->redirectToRoute('synapse_admin_providers');
         }
 
+        $client = $this->clientRegistry->getClientByProvider($provider->getName());
+
         return $this->render('@Synapse/admin/provider_edit.html.twig', [
             'provider' => $provider,
-            'gemini_regions' => $this->getGeminiRegions(),
+            'fields'   => $client->getCredentialFields(),
         ]);
     }
 
@@ -142,11 +147,9 @@ class ProvidersController extends AbstractController
         }
 
         try {
-            match ($provider->getName()) {
-                'gemini' => $this->testGemini($provider),
-                'ovh' => $this->testOvh($provider),
-                default => throw new \Exception('Provider type non supporté'),
-            };
+            $client = $this->clientRegistry->getClientByProvider($provider->getName());
+            $creds = $this->decryptCredentials($provider->getCredentials());
+            $client->validateCredentials($creds);
 
             return new JsonResponse(['success' => true]);
         } catch (\Exception $e) {
@@ -155,79 +158,7 @@ class ProvidersController extends AbstractController
     }
 
     /**
-     * Teste la configuration Gemini en validant le JSON de service account.
-     * Vérifie que le project_id du JSON correspond à celui configuré.
-     *
-     * @param SynapseProvider $provider Provider Gemini à tester
-     * @throws \Exception Si JSON invalide, champs manquants, ou IDs non correspondants
-     */
-    private function testGemini(SynapseProvider $provider): void
-    {
-        $creds = $this->decryptCredentials($provider->getCredentials());
-        $projectId = $creds['project_id'] ?? '';
-        $region = $creds['region'] ?? 'europe-west1';
-
-        if (empty($projectId)) {
-            throw new \Exception('Project ID manquant');
-        }
-
-        // Simple test: vérifier que le service account JSON est valide
-        $jsonStr = $creds['service_account_json'] ?? '';
-        if (empty($jsonStr)) {
-            throw new \Exception('Service Account JSON manquant');
-        }
-
-        $json = json_decode($jsonStr, true);
-        if (!is_array($json) || empty($json['project_id'])) {
-            throw new \Exception('Service Account JSON invalide');
-        }
-
-        // Vérifier que les IDs correspondent
-        if ($json['project_id'] !== $projectId) {
-            throw new \Exception('Project ID ne correspond pas au JSON');
-        }
-    }
-
-    /**
-     * Teste la configuration OVH en faisant un appel à l'endpoint /models.
-     * Vérifie que l'API key est valide et l'endpoint accessible.
-     *
-     * @param SynapseProvider $provider Provider OVH à tester
-     * @throws \Exception Si API key manquante ou connexion impossible
-     */
-    private function testOvh(SynapseProvider $provider): void
-    {
-        $creds = $this->decryptCredentials($provider->getCredentials());
-        $apiKey = $creds['api_key'] ?? '';
-        $endpoint = $creds['endpoint'] ?? 'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1';
-
-        if (empty($apiKey)) {
-            throw new \Exception('API Key manquante');
-        }
-
-        // Test de connexion: faire un appel à la liste des modèles (gratuit)
-        try {
-            $response = $this->httpClient->request('GET', $endpoint . '/models', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $apiKey,
-                    'Accept' => 'application/json',
-                ],
-                'timeout' => 10,
-            ]);
-
-            if ($response->getStatusCode() !== 200) {
-                throw new \Exception('Erreur HTTP ' . $response->getStatusCode() . ': ' . $response->getContent());
-            }
-        } catch (\Exception $e) {
-            throw new \Exception('Impossible de se connecter à OVH: ' . $e->getMessage());
-        }
-    }
-
-    /**
      * Chiffre les champs sensibles des credentials avant la sauvegarde en base.
-     *
-     * Utilisé la méthode isEncrypted() pour détecter les valeurs déjà chiffrées
-     * et éviter le double-chiffrement lors de la migration progressive.
      */
     private function encryptCredentials(array $credentials): array
     {
@@ -235,7 +166,7 @@ class ProvidersController extends AbstractController
             return $credentials;
         }
 
-        foreach (['api_key', 'service_account_json', 'private_key'] as $key) {
+        foreach (['api_key', 'service_account_json', 'private_key', 'token'] as $key) {
             if (!empty($credentials[$key]) && !$this->encryptionService->isEncrypted($credentials[$key])) {
                 $credentials[$key] = $this->encryptionService->encrypt($credentials[$key]);
             }
@@ -246,9 +177,6 @@ class ProvidersController extends AbstractController
 
     /**
      * Déchiffre les champs sensibles des credentials avant usage.
-     *
-     * Utilisé pour les tests de connexion provider et pour afficher les valeurs
-     * qui ont besoin d'être testées.
      */
     private function decryptCredentials(array $credentials): array
     {
@@ -256,29 +184,12 @@ class ProvidersController extends AbstractController
             return $credentials;
         }
 
-        foreach (['api_key', 'service_account_json', 'private_key'] as $key) {
+        foreach (['api_key', 'service_account_json', 'private_key', 'token'] as $key) {
             if (!empty($credentials[$key]) && $this->encryptionService->isEncrypted($credentials[$key])) {
                 $credentials[$key] = $this->encryptionService->decrypt($credentials[$key]);
             }
         }
 
         return $credentials;
-    }
-
-    /**
-     * Retourne les régions Vertex AI disponibles avec leurs labels pour le formulaire.
-     *
-     * @return array<string, string> Mapping région => label (ex: 'europe-west1' => 'Europe West 1 (Belgique)')
-     */
-    private function getGeminiRegions(): array
-    {
-        return [
-            'europe-west1'  => 'Europe West 1 (Belgique)',
-            'europe-west4'  => 'Europe West 4 (Pays-Bas)',
-            'us-central1'   => 'US Central 1 (Iowa)',
-            'us-east1'      => 'US East 1 (Caroline du Sud)',
-            'asia-east1'    => 'Asia East 1 (Taiwan)',
-            'asia-northeast1' => 'Asia Northeast 1 (Tokyo)',
-        ];
     }
 }

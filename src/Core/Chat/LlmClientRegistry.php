@@ -43,22 +43,19 @@ class LlmClientRegistry
         $config = $this->configProvider->getConfig();
         $providerName = $config['provider'] ?? $this->defaultProvider;
 
+        return $this->getClientByProvider($providerName);
+    }
+
+    /**
+     * Retourne un client LLM spécifique par son nom de provider.
+     */
+    public function getClientByProvider(string $providerName): LlmClientInterface
+    {
         if (isset($this->clientMap[$providerName])) {
             return $this->clientMap[$providerName];
         }
 
-        // Fallback sur le provider par défaut YAML
-        if ($providerName !== $this->defaultProvider && isset($this->clientMap[$this->defaultProvider])) {
-            return $this->clientMap[$this->defaultProvider];
-        }
-
-        throw new \RuntimeException(
-            sprintf(
-                'Provider LLM "%s" non disponible. Providers enregistrés : %s',
-                $providerName,
-                implode(', ', array_keys($this->clientMap)) ?: 'aucun'
-            )
-        );
+        throw new \RuntimeException(sprintf('Provider LLM "%s" non disponible.', $providerName));
     }
 
     /**

@@ -382,8 +382,10 @@ function renderDynamicFields(providerName) {
 		fieldEl.className = 'synapse-admin__form-row';
 		fieldEl.id = `field-${fieldDef.name.replace(/\./g, '-')}`;
 		fieldEl.innerHTML = fieldHtml;
-		fieldEl.dataset.fieldName = fieldDef.name;
-		fieldEl.dataset.dependsOn = fieldDef.dependsOn || '';
+		fieldEl.setAttribute('data-field-name', fieldDef.name);
+		if (fieldDef.dependsOn) {
+			fieldEl.setAttribute('data-depends-on', fieldDef.dependsOn);
+		}
 
 		container.appendChild(fieldEl);
 
@@ -461,8 +463,11 @@ function updateJsonFromFields() {
 	}
 
 	// Mettre à jour depuis les champs
-	container.querySelectorAll('[data-field-name]').forEach(input => {
-		const fieldName = input.dataset.fieldName;
+	container.querySelectorAll('[data-field-name]').forEach(fieldRow => {
+		const input = fieldRow.querySelector('input, select');
+		if (!input) return;
+
+		const fieldName = fieldRow.dataset.fieldName;
 		let value;
 
 		if (input.type === 'checkbox') {
@@ -491,10 +496,13 @@ function updateFieldVisibility() {
 		const dependsOn = fieldEl.dataset.dependsOn;
 		if (!dependsOn) return;
 
-		const parentField = container.querySelector(`[data-field-name="${dependsOn}"]`);
-		if (!parentField) return;
+		const parentFieldRow = container.querySelector(`[data-field-name="${dependsOn}"]`);
+		if (!parentFieldRow) return;
 
-		const isVisible = parentField.type === 'checkbox' ? parentField.checked : !!parentField.value;
+		const parentInput = parentFieldRow.querySelector('input, select');
+		if (!parentInput) return;
+
+		const isVisible = parentInput.type === 'checkbox' ? parentInput.checked : !!parentInput.value;
 		fieldEl.style.display = isVisible ? '' : 'none';
 	});
 }

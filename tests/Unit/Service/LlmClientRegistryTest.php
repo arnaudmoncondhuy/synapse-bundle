@@ -73,9 +73,9 @@ class LlmClientRegistryTest extends TestCase
     }
 
     /**
-     * Test fallback au provider par défaut si configuré n'existe pas.
+     * Test exception si provider configuré n'existe pas (plus de fallback automatique).
      */
-    public function testGetClientFallsBackToDefault(): void
+    public function testGetClientThrowsExceptionIfConfiguredNotFound(): void
     {
         // Arrange
         $geminiClient = $this->createMock(LlmClientInterface::class);
@@ -90,11 +90,11 @@ class LlmClientRegistryTest extends TestCase
             'gemini'
         );
 
-        // Act
-        $client = $this->registry->getClient();
+        // Act & Assert
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Provider LLM "unknown_provider" non disponible');
 
-        // Assert
-        $this->assertSame($geminiClient, $client);
+        $this->registry->getClient();
     }
 
     /**
@@ -178,32 +178,24 @@ class LlmClientRegistryTest extends TestCase
     }
 
     /**
-     * Test exception contient liste des providers disponibles.
+     * Test getClientByProvider retourne un client spécifique.
      */
-    public function testExceptionMessageListsAvailableProviders(): void
+    public function testGetClientByProviderReturnsSpecificClient(): void
     {
         // Arrange
-        $abcClient = $this->createMock(LlmClientInterface::class);
-        $abcClient->method('getProviderName')->willReturn('abc');
-
-        $ovhClient = $this->createMock(LlmClientInterface::class);
-        $ovhClient->method('getProviderName')->willReturn('ovh');
-
-        $this->configProvider->method('getConfig')
-            ->willReturn(['provider' => 'nonexistent']);
+        $geminiClient = $this->createMock(LlmClientInterface::class);
+        $geminiClient->method('getProviderName')->willReturn('gemini');
 
         $this->registry = new LlmClientRegistry(
-            [$abcClient, $ovhClient],
-            $this->configProvider,
-            'gemini'
+            [$geminiClient],
+            $this->configProvider
         );
 
-        // Act & Assert
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('abc');
-        $this->expectExceptionMessage('ovh');
+        // Act
+        $client = $this->registry->getClientByProvider('gemini');
 
-        $this->registry->getClient();
+        // Assert
+        $this->assertSame($geminiClient, $client);
     }
 
     /**
