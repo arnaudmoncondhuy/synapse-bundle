@@ -2,7 +2,7 @@
     "name": "arnaudmoncondhuy/synapse-bundle",
     "type": "symfony-bundle",
     "description": "Un bundle Chatbot IA réutilisable pour Symfony avec support multi-fournisseurs.",
-    "license": "MIT",
+    "license": "PolyForm-Noncommercial-1.0.0",
     "authors": [
         {
             "name": "Arnaud Moncondhuy",
