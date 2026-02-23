@@ -1,8 +1,25 @@
+###> php ###
 /vendor/
+composer.phar
+composer.lock
+.env.local
+.env.*.local
+###< php ###
+
+###> dev tools ###
 /.idea/
 /.vscode/
-*.cache
-.phpunit.result.cache
-/node_modules/
-nul
 .claude/settings.local.json
+.phpunit.result.cache
+*.cache
+###< dev tools ###
+
+###> assets ###
+/node_modules/
+###< assets ###
+
+###> system ###
+.DS_Store
+Thumbs.db
+nul
+###< system ###

@@ -68,9 +68,7 @@ class TestKernel extends Kernel
         ]);
 
         // Synapse Bundle Configuration
-        $container->loadFromExtension('synapse', [
-            // 'api_key' => 'fake-api-key', // Removed as it is strictly dynamic now
-        ]);
+        $container->loadFromExtension('synapse', []);
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void
