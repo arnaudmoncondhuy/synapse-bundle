@@ -162,7 +162,7 @@ Voir [Changelog](docs/changelog.md) pour l'historique des versions.
 
 ## 📄 Licence
 
-MIT - Voir [LICENSE](LICENSE) pour plus de détails.
+PolyForm Noncommercial 1.0.0 - Voir [LICENSE](LICENSE) pour plus de détails.
 
 ## 🙏 Crédits
 
