@@ -1,7 +1,7 @@
 {
     "name": "arnaudmoncondhuy/synapse-bundle",
     "type": "symfony-bundle",
-    "description": "A reusable AI Chatbot bundle for Symfony powered by Google Gemini.",
+    "description": "A reusable AI Chatbot bundle for Symfony with multi-provider support.",
     "license": "MIT",
     "authors": [
         {
@@ -20,7 +20,8 @@
         "symfony/uid": "^7.0 || ^8.0",
         "doctrine/orm": "^2.19 || ^3.0",
         "doctrine/doctrine-bundle": "^2.10 || ^3.0",
-        "symfony/yaml": "^8.0"
+        "symfony/yaml": "^7.0 || ^8.0",
+        "symfony/http-client": "^7.0 || ^8.0"
     },
     "autoload": {
         "psr-4": {
