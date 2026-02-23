@@ -126,11 +126,6 @@ class ChatService
             $modelText = '';
             $modelToolCalls = [];
 
-            // ── CAPTURE RAW DATA FROM FIRST TURN ──
-            if ($turn === 0 && !empty($debugOut)) {
-                $firstTurnRawData = $debugOut;
-            }
-
             // ── PROCESS CHUNKS ──
             foreach ($chunks as $chunk) {
                 // Dispatch ChunkReceivedEvent (for debug logging and streaming)
@@ -183,6 +178,12 @@ class ChatService
                         ];
                     }
                 }
+            }
+
+            // ── CAPTURE RAW DATA FROM FIRST TURN ──
+            // Must be done AFTER the loop because $debugOut is populated by the generator during/after iteration
+            if ($turn === 0 && !empty($debugOut)) {
+                $firstTurnRawData = $debugOut;
             }
 
             // ── ADD MODEL RESPONSE TO HISTORY (OpenAI format) ──

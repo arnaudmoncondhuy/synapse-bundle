@@ -179,18 +179,6 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
             }
         }
 
-        // ── ConversationManager (si persistence activée avec entités concrètes) ──
-        if ($config['persistence']['enabled'] && !empty($config['persistence']['conversation_class'])) {
-            $container
-                ->register(ConversationManager::class)
-                ->setAutowired(true)
-                ->setPublic(false)
-                ->setArguments([
-                    '$conversationRepo'  => null,
-                    '$conversationClass' => $config['persistence']['conversation_class'],
-                    '$messageClass'      => $config['persistence']['message_class'] ?? null,
-                ]);
-        }
 
         // ── Chargement des services ───────────────────────────────────────────
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../../config'));
@@ -201,6 +189,21 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         // Load admin services (conditionally, if admin is enabled)
         if ($config['admin']['enabled'] ?? false) {
             $loader->load('admin.yaml');
+        }
+
+        // ── ConversationManager (si persistence activée avec entités concrètes) ──
+        // Doit être fait APRÈS le chargement des YAML car core.yaml contient une découverte PSR-4 
+        // qui écraserait sinon cette définition manuelle.
+        if ($config['persistence']['enabled'] && !empty($config['persistence']['conversation_class'])) {
+            $container
+                ->register(ConversationManager::class)
+                ->setAutowired(true)
+                ->setPublic(false)
+                ->setArguments([
+                    '$conversationRepo'  => null,
+                    '$conversationClass' => $config['persistence']['conversation_class'],
+                    '$messageClass'      => $config['persistence']['message_class'] ?? null,
+                ]);
         }
 
         // ── Auto-configuration (Tags automatiques) ────────────────────────────

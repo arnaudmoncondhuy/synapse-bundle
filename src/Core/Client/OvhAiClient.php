@@ -92,7 +92,7 @@ class OvhAiClient implements LlmClientInterface
             'system_prompt_sent' => $caps->systemPrompt && !empty($contents) && ($contents[0]['role'] ?? '') === 'system',
             'context_caching'    => false,  // OVH n'a pas de context caching
         ];
-        $debugOut['raw_request_body'] = $payload;
+        $debugOut['raw_request_body'] = \ArnaudMoncondhuy\SynapseBundle\Shared\Util\TextUtil::sanitizeArrayUtf8($payload);
 
         try {
             $response = $this->httpClient->request('POST', rtrim($this->endpoint, '/') . '/chat/completions', [
@@ -175,7 +175,7 @@ class OvhAiClient implements LlmClientInterface
             }
 
             // Passer les chunks bruts de l'API au debug (VRAI brut, avant normalisation)
-            $debugOut['raw_api_chunks'] = $rawApiChunks;
+            $debugOut['raw_api_chunks'] = \ArnaudMoncondhuy\SynapseBundle\Shared\Util\TextUtil::sanitizeArrayUtf8($rawApiChunks);
         } catch (\Throwable $e) {
             $this->handleException($e);
         }
@@ -392,7 +392,8 @@ class OvhAiClient implements LlmClientInterface
         }
 
         // Ajouter la réflexion/reasoning si activée (paramètre OVH: reasoning_effort)
-        if ($this->thinkingEnabled) {
+        // L'API rejette le paramètre si le modèle n'a pas de capacités de réflexion (400 Bad Request)
+        if ($this->thinkingEnabled && $caps->thinking) {
             // Les valeurs possibles sont: "high", "medium", "low", "minimal"
             $payload['reasoning_effort'] = $this->reasoningEffort;
         }
@@ -573,7 +574,12 @@ class OvhAiClient implements LlmClientInterface
             $statusCode = $e->getResponse()->getStatusCode();
             try {
                 $errorBody = $e->getResponse()->getContent(false);
-                $message .= ' || OVH Error: ' . $errorBody;
+                $errorData = json_decode($errorBody, true);
+                if (isset($errorData['message'])) {
+                    $message = $errorData['message'];
+                } else {
+                    $message .= ' || OVH Raw Error: ' . $errorBody;
+                }
             } catch (\Throwable) {
             }
         }

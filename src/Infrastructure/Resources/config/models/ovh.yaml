@@ -24,7 +24,7 @@ models:
     pricing_input: 0.08
     pricing_output: 0.40
 
-  qwen-3-32b:
+  Qwen3-32B:
     provider: ovh
     thinking: true
     safety_settings: false
@@ -36,7 +36,7 @@ models:
     pricing_input: 0.08
     pricing_output: 0.23
 
-  llama-3-1-8b-instruct:
+  Llama-3.1-8B-Instruct:
     provider: ovh
     thinking: false
     safety_settings: false
@@ -48,7 +48,7 @@ models:
     pricing_input: 0.10
     pricing_output: 0.10
 
-  mistral-7b-instruct-v0-3:
+  Mistral-7B-Instruct-v0.3:
     provider: ovh
     thinking: false
     safety_settings: false

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Résultat du test de preset - {{ report.preset.name }}</title>
+		<title>Résultat du test de preset -
+			{{ report.preset.name }}</title>
 		<style>
 			* {
 				margin: 0;
@@ -53,7 +54,7 @@
 				border-radius: 8px;
 				padding: 24px;
 				margin-bottom: 20px;
-				box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+				box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 			}
 			.section h2 {
 				font-size: 1.3rem;
@@ -64,7 +65,7 @@
 			}
 			.section h3 {
 				font-size: 1rem;
-				margin: 16px 0 12px 0;
+				margin: 16px 0 12px;
 				color: #374151;
 			}
 			.ai-response {
@@ -185,11 +186,13 @@
 		</style>
 	</head>
 	<body>
-		<div class="container">
+		<div
+			class="container">
 			<!-- En-tête -->
 			<div class="header">
 				<div>
-					<h1>🧪 Test du preset: {{ report.preset.name }}</h1>
+					<h1>🧪 Test du preset:
+						{{ report.preset.name }}</h1>
 					<p style="color: #6b7280; margin-top: 6px;">{{ report.preset.description ?? '–' }}</p>
 				</div>
 				<div class="badge {% if report.all_critical_ok %}success{% else %}warning{% endif %}">
@@ -206,12 +209,19 @@
 				<h2>📋 Vérifications critiques</h2>
 				<div class="critical-checks">
 					<div class="check-item">
-						<span class="check-icon">{% if report.critical_checks.response_not_empty %}✅{% else %}❌{% endif %}</span>
+						<span class="check-icon">
+							{% if report.critical_checks.response_not_empty %}✅{% else %}❌
+							{% endif %}
+						</span>
 						<span>La réponse de l'IA n'est pas vide (mode synchrone)</span>
 					</div>
 					<div class="check-item">
-						<span class="check-icon">{% if report.critical_checks.debug_saved_in_db %}✅{% else %}❌{% endif %}</span>
-						<span>Le debug est enregistré en base de données (ID: {{ report.debug_id ?? '–' }})</span>
+						<span class="check-icon">
+							{% if report.critical_checks.debug_saved_in_db %}✅{% else %}❌
+							{% endif %}
+						</span>
+						<span>Le debug est enregistré en base de données (ID:
+							{{ report.debug_id ?? '–' }})</span>
 					</div>
 					{% if report.critical_checks.streaming_enabled %}
 						<div class="check-item">
@@ -219,8 +229,12 @@
 							<span>Streaming est activé dans le preset</span>
 						</div>
 						<div class="check-item">
-							<span class="check-icon">{% if report.critical_checks.streaming_works %}✅{% else %}⚠️{% endif %}</span>
-							<span>Mode streaming fonctionne (ID: {{ report.debug_id_streaming ?? '–' }})</span>
+							<span class="check-icon">
+								{% if report.critical_checks.streaming_works %}✅{% else %}⚠️
+								{% endif %}
+							</span>
+							<span>Mode streaming fonctionne (ID:
+								{{ report.debug_id_streaming ?? '–' }})</span>
 						</div>
 					{% endif %}
 				</div>
@@ -270,21 +284,36 @@
 						</tr>
 						<tr>
 							<td>Tokens d'entrée</td>
-							<td>{{ report.usage_test.promptTokenCount ?? 0 }}</td>
+							<td>{{ report.usage_test.prompt_tokens ?? 0 }}</td>
 						</tr>
 						<tr>
 							<td>Tokens de sortie</td>
-							<td>{{ report.usage_test.candidatesTokenCount ?? 0 }}</td>
+							<td>{{ report.usage_test.completion_tokens ?? 0 }}</td>
 						</tr>
 						<tr>
 							<td>Tokens de réflexion</td>
-							<td>{{ report.usage_test.thoughtsTokenCount ?? 0 }}</td>
+							<td>{{ report.usage_test.thinking_tokens ?? 0 }}</td>
 						</tr>
 						<tr style="font-weight: 600; background: #f3f4f6;">
-							<td>Total</td>
-							<td>{{ report.usage_test.totalTokenCount ?? 0 }}</td>
+							<td>Total (rapporté par l'API)</td>
+							<td>
+								{{ report.usage_test.total_tokens ?? 0 }}
+								<span title="Equation : Entrée + Sortie + Réflexion = Total" style="cursor:help; margin-left: 8px;">
+									{% if ((report.usage_test.prompt_tokens ?? 0) + (report.usage_test.completion_tokens ?? 0) + (report.usage_test.thinking_tokens ?? 0)) == (report.usage_test.total_tokens ?? 0) %}
+										<span style="color: #16a34a;">Σ ✅</span>
+									{% else %}
+										<span style="color: #dc2626;">Σ ❌</span>
+									{% endif %}
+								</span>
+							</td>
 						</tr>
 					</table>
+					<p style="font-size: 0.85rem; color: #6b7280; margin-top: 8px; font-style: italic;">
+						Note : Pour certains modèles (ex: OVH), les tokens de réflexion sont inclus dans les tokens de sortie.
+												La validation
+						<span style="font-style: normal; font-weight: 600;">Σ ✅</span>
+						certifie que la somme des parties correspond au total facturé.
+					</p>
 
 					{% if report.critical_checks.streaming_enabled and report.usage_test_streaming %}
 						<h3>Mode streaming</h3>
@@ -297,26 +326,43 @@
 							</tr>
 							<tr>
 								<td>Tokens d'entrée</td>
-								<td>{{ report.usage_test.promptTokenCount ?? 0 }}</td>
-								<td>{{ report.usage_test_streaming.promptTokenCount ?? 0 }}</td>
-								<td style="{% if report.usage_test.promptTokenCount == report.usage_test_streaming.promptTokenCount %}color: #16a34a;{% else %}color: #dc2626;{% endif %}">
-									{% if report.usage_test.promptTokenCount == report.usage_test_streaming.promptTokenCount %}✅ Identique{% else %}⚠️ Différent{% endif %}
+								<td>{{ report.usage_test.prompt_tokens ?? 0 }}</td>
+								<td>{{ report.usage_test_streaming.prompt_tokens ?? 0 }}</td>
+								<td style="{% if report.usage_test.prompt_tokens == report.usage_test_streaming.prompt_tokens %}color: #16a34a;{% else %}color: #dc2626;{% endif %}">
+									{% if report.usage_test.prompt_tokens == report.usage_test_streaming.prompt_tokens %}✅ Identique{% else %}⚠️ Différent
+									{% endif %}
 								</td>
 							</tr>
 							<tr>
 								<td>Tokens de sortie</td>
-								<td>{{ report.usage_test.candidatesTokenCount ?? 0 }}</td>
-								<td>{{ report.usage_test_streaming.candidatesTokenCount ?? 0 }}</td>
-								<td style="{% if report.usage_test.candidatesTokenCount == report.usage_test_streaming.candidatesTokenCount %}color: #16a34a;{% else %}color: #f59e0b;{% endif %}">
-									{% if report.usage_test.candidatesTokenCount == report.usage_test_streaming.candidatesTokenCount %}✅ Identique{% else %}⚠️ Peut différer{% endif %}
+								<td>{{ report.usage_test.completion_tokens ?? 0 }}</td>
+								<td>{{ report.usage_test_streaming.completion_tokens ?? 0 }}</td>
+								<td style="{% if report.usage_test.completion_tokens == report.usage_test_streaming.completion_tokens %}color: #16a34a;{% else %}color: #f59e0b;{% endif %}">
+									{% if report.usage_test.completion_tokens == report.usage_test_streaming.completion_tokens %}✅ Identique{% else %}⚠️ Peut différer
+									{% endif %}
 								</td>
 							</tr>
 							<tr>
 								<td>Tokens de réflexion</td>
-								<td>{{ report.usage_test.thoughtsTokenCount ?? 0 }}</td>
-								<td>{{ report.usage_test_streaming.thoughtsTokenCount ?? 0 }}</td>
-								<td style="{% if report.usage_test.thoughtsTokenCount == report.usage_test_streaming.thoughtsTokenCount %}color: #16a34a;{% else %}color: #f59e0b;{% endif %}">
-									{% if report.usage_test.thoughtsTokenCount == report.usage_test_streaming.thoughtsTokenCount %}✅ Identique{% else %}⚠️ Peut différer{% endif %}
+								<td>{{ report.usage_test.thinking_tokens ?? 0 }}</td>
+								<td>{{ report.usage_test_streaming.thinking_tokens ?? 0 }}</td>
+								<td style="{% if report.usage_test.thinking_tokens == report.usage_test_streaming.thinking_tokens %}color: #16a34a;{% else %}color: #f59e0b;{% endif %}">
+									{% if report.usage_test.thinking_tokens == report.usage_test_streaming.thinking_tokens %}✅ Identique{% else %}⚠️ Peut différer
+									{% endif %}
+								</td>
+							</tr>
+							<tr>
+								<td>Total</td>
+								<td>{{ report.usage_test.total_tokens ?? 0 }}</td>
+								<td>{{ report.usage_test_streaming.total_tokens ?? 0 }}</td>
+								<td>
+									<span title="Equation : Entrée + Sortie + Réflexion = Total" style="cursor:help;">
+										{% if ((report.usage_test_streaming.prompt_tokens ?? 0) + (report.usage_test_streaming.completion_tokens ?? 0) + (report.usage_test_streaming.thinking_tokens ?? 0)) == (report.usage_test_streaming.total_tokens ?? 0) %}
+											<span style="color: #16a34a;">Σ ✅</span>
+										{% else %}
+											<span style="color: #dc2626;">Σ ❌</span>
+										{% endif %}
+									</span>
 								</td>
 							</tr>
 						</table>
@@ -347,10 +393,10 @@
 
 		<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 		<script>
-			document.addEventListener('DOMContentLoaded', function() {
-				const rawText = document.getElementById('analysis-raw').textContent;
-				document.getElementById('analysis-rendered').innerHTML = marked.parse(rawText);
-			});
+			document.addEventListener('DOMContentLoaded', function () {
+const rawText = document.getElementById('analysis-raw').textContent;
+document.getElementById('analysis-rendered').innerHTML = marked.parse(rawText);
+});
 		</script>
 	</body>
 </html>

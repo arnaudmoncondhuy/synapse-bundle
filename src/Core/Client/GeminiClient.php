@@ -90,7 +90,7 @@ class GeminiClient implements LlmClientInterface
             'tools_sent'         => !empty($tools) && $caps->functionCalling,
             'system_prompt_sent' => !empty($contents) && ($contents[0]['role'] ?? '') === 'system',
         ];
-        $debugOut['raw_request_body'] = $payload;
+        $debugOut['raw_request_body'] = TextUtil::sanitizeArrayUtf8($payload);
 
         try {
             $response = $this->httpClient->request('POST', $url, [
@@ -146,7 +146,7 @@ class GeminiClient implements LlmClientInterface
             'tools_sent'         => !empty($tools) && $caps->functionCalling,
             'system_prompt_sent' => !empty($contents) && ($contents[0]['role'] ?? '') === 'system',
         ];
-        $debugOut['raw_request_body'] = $payload;
+        $debugOut['raw_request_body'] = TextUtil::sanitizeArrayUtf8($payload);
 
         $rawApiChunks = [];
 
@@ -216,7 +216,7 @@ class GeminiClient implements LlmClientInterface
 
             // Sauvegarder les chunks bruts pour le debug
             if (!empty($rawApiChunks)) {
-                $debugOut['raw_api_chunks'] = $rawApiChunks;
+                $debugOut['raw_api_chunks'] = TextUtil::sanitizeArrayUtf8($rawApiChunks);
             }
         } catch (\Throwable $e) {
             $this->handleException($e);

@@ -147,7 +147,7 @@ abstract class ConversationRepository extends ServiceEntityRepository
 
         if ($owner !== null) {
             $qb->andWhere('c.owner = :owner')
-               ->setParameter('owner', $owner);
+                ->setParameter('owner', $owner);
         }
 
         return $qb->getQuery()->getResult();

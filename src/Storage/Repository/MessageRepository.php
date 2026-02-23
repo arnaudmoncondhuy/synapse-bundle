@@ -6,7 +6,6 @@ namespace ArnaudMoncondhuy\SynapseBundle\Storage\Repository;
 
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Message;
-use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -25,8 +24,8 @@ abstract class MessageRepository extends ServiceEntityRepository
      * Trouve les messages d'une conversation
      *
      * @param Conversation $conversation Conversation
-     * @param int $limit Nombre maximum de résultats (0 = illimité)
-     * @return Message[] Messages ordonnés par date
+     * @param int $limit Nombre maximum de messages (0 = illimité)
+     * @return Message[] Liste des messages
      */
     public function findByConversation(Conversation $conversation, int $limit = 0): array
     {
@@ -43,82 +42,55 @@ abstract class MessageRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve les derniers messages d'une conversation
+     * Compte le nombre total de messages pour aujourd'hui
      *
-     * @param Conversation $conversation Conversation
-     * @param int $limit Nombre de messages
-     * @return Message[] Messages ordonnés par date (plus récents en premier)
+     * @return int Nombre de messages
      */
-    public function findLastMessages(Conversation $conversation, int $limit = 10): array
+    public function countToday(): int
     {
-        return $this->createQueryBuilder('m')
-            ->where('m.conversation = :conversation')
-            ->setParameter('conversation', $conversation)
-            ->orderBy('m.createdAt', 'DESC')
-            ->setMaxResults($limit)
+        $start = new \DateTimeImmutable('today');
+
+        return (int) $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->where('m.createdAt >= :start')
+            ->setParameter('start', $start)
             ->getQuery()
-            ->getResult();
+            ->getSingleScalarResult();
     }
 
     /**
-     * Récupère les statistiques d'usage des tokens depuis une date
+     * Récupère les statistiques d'utilisation des tokens par jour (7 derniers jours)
      *
-     * @param \DateTimeInterface $since Date de début
-     * @return array{prompt_tokens: int, completion_tokens: int, thinking_tokens: int, total_tokens: int}
+     * @return array [date => total_tokens]
      */
-    public function getUsageStatsSince(\DateTimeInterface $since): array
+    public function getTokenUsageStats(): array
     {
-        $result = $this->createQueryBuilder('m')
-            ->select(
-                'COALESCE(SUM(m.promptTokens), 0) as prompt_tokens',
-                'COALESCE(SUM(m.completionTokens), 0) as completion_tokens',
-                'COALESCE(SUM(m.thinkingTokens), 0) as thinking_tokens',
-                'COALESCE(SUM(m.totalTokens), 0) as total_tokens'
-            )
-            ->where('m.createdAt >= :since')
-            ->setParameter('since', $since)
-            ->getQuery()
-            ->getSingleResult();
+        $since = new \DateTimeImmutable('-7 days');
 
-        return [
-            'prompt_tokens' => (int) $result['prompt_tokens'],
-            'completion_tokens' => (int) $result['completion_tokens'],
-            'thinking_tokens' => (int) $result['thinking_tokens'],
-            'total_tokens' => (int) $result['total_tokens'],
-        ];
-    }
-
-    /**
-     * Compte les messages par rôle depuis une date
-     *
-     * @param \DateTimeInterface $since Date de début
-     * @return array<string, int> Nombre de messages par rôle
-     */
-    public function countByRoleSince(\DateTimeInterface $since): array
-    {
         $results = $this->createQueryBuilder('m')
-            ->select('m.role', 'COUNT(m.id) as count')
+            ->select('SUBSTRING(m.createdAt, 1, 10) as day, SUM(m.totalTokens) as total')
             ->where('m.createdAt >= :since')
             ->setParameter('since', $since)
-            ->groupBy('m.role')
+            ->groupBy('day')
+            ->orderBy('day', 'ASC')
             ->getQuery()
-            ->getResult();
+            ->getArrayResult();
 
-        $counts = [];
-        foreach ($results as $result) {
-            $counts[$result['role']->value] = (int) $result['count'];
+        $stats = [];
+        foreach ($results as $row) {
+            $stats[$row['day']] = (int)$row['total'];
         }
 
-        return $counts;
+        return $stats;
     }
 
     /**
-     * Trouve les messages avec feedback négatif
+     * Trouve les messages avec un mauvais feedback
      *
-     * @param int $limit Nombre maximum de résultats
-     * @return Message[] Messages avec feedback négatif
+     * @param int $limit Limite
+     * @return Message[] Messages
      */
-    public function findNegativeFeedback(int $limit = 100): array
+    public function findNegativeFeedback(int $limit = 50): array
     {
         return $this->createQueryBuilder('m')
             ->where('m.feedback = -1')
@@ -129,57 +101,43 @@ abstract class MessageRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve les messages bloqués par les filtres de sécurité
+     * Trouve les messages bloqués par la sécurité
      *
-     * @param \DateTimeInterface|null $since Date de début (optionnel)
-     * @param int $limit Nombre maximum de résultats
-     * @return Message[] Messages bloqués
+     * @param int $limit Limite
+     * @return Message[] Messages
      */
-    public function findBlockedMessages(?\DateTimeInterface $since = null, int $limit = 100): array
-    {
-        $qb = $this->createQueryBuilder('m')
-            ->where('m.blocked = true')
-            ->orderBy('m.createdAt', 'DESC')
-            ->setMaxResults($limit);
-
-        if ($since !== null) {
-            $qb->andWhere('m.createdAt >= :since')
-               ->setParameter('since', $since);
-        }
-
-        return $qb->getQuery()->getResult();
-    }
-
-    /**
-     * Compte les messages avec thinking (Gemini 2.5+)
-     *
-     * @param \DateTimeInterface $since Date de début
-     * @return int Nombre de messages avec thinking
-     */
-    public function countThinkingMessagesSince(\DateTimeInterface $since): int
-    {
-        return (int) $this->createQueryBuilder('m')
-            ->select('COUNT(m.id)')
-            ->where('m.createdAt >= :since')
-            ->andWhere('m.thinkingTokens > 0')
-            ->setParameter('since', $since)
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
-
-    /**
-     * Supprime les messages d'une conversation (hard delete)
-     *
-     * @param Conversation $conversation Conversation dont supprimer les messages
-     * @return int Nombre de messages supprimés
-     */
-    public function deleteByConversation(Conversation $conversation): int
+    public function findBlocked(int $limit = 50): array
     {
         return $this->createQueryBuilder('m')
-            ->delete()
-            ->where('m.conversation = :conversation')
-            ->setParameter('conversation', $conversation)
+            ->where('m.blocked = true')
+            ->orderBy('m.createdAt', 'DESC')
+            ->setMaxResults($limit)
             ->getQuery()
-            ->execute();
+            ->getResult();
+    }
+
+    /**
+     * Calcule la répartition des rôles sur le dernier mois
+     *
+     * @return array [role => count]
+     */
+    public function getRoleDistribution(): array
+    {
+        $since = new \DateTimeImmutable('-30 days');
+
+        $results = $this->createQueryBuilder('m')
+            ->select('m.role, COUNT(m.id) as count')
+            ->where('m.createdAt >= :since')
+            ->setParameter('since', $since)
+            ->groupBy('m.role')
+            ->getQuery()
+            ->getArrayResult();
+
+        $dist = [];
+        foreach ($results as $row) {
+            $dist[$row['role']] = (int)$row['count'];
+        }
+
+        return $dist;
     }
 }

@@ -62,20 +62,27 @@ class PresetValidatorAgent implements AgentInterface
         }
 
         // ── 1a. Appel de test SYNCHRONE avec le preset cible ──
-        $result = $this->chatService->ask(
-            'Dis-moi bonjour en une phrase courte.',
-            [
-                'preset'      => $preset,
-                'debug'       => true,
-                'stateless'   => true,
-                'tools'       => [],
-                'conversation_id' => null,
-            ]
-        );
+        $result = [];
+        $syncError = null;
+        try {
+            $result = $this->chatService->ask(
+                'Dis-moi bonjour en une phrase courte.',
+                [
+                    'preset'      => $preset,
+                    'debug'       => true,
+                    'stateless'   => true,
+                    'tools'       => [],
+                    'conversation_id' => null,
+                ]
+            );
+        } catch (\Throwable $e) {
+            $syncError = $e->getMessage();
+        }
 
         // ── 1b. Appel de test STREAMING avec le preset cible (si streaming_enabled) ──
         $resultStreaming = null;
         $streamingWorks = false;
+        $streamingError = null;
         $presetConfig = $preset->toArray();
         $isStreamingEnabled = $presetConfig['streaming_enabled'] ?? false;
 
@@ -96,6 +103,7 @@ class PresetValidatorAgent implements AgentInterface
             } catch (\Throwable $e) {
                 // Streaming test failed, but that's OK - it's optional
                 $resultStreaming = null;
+                $streamingError = $e->getMessage();
             }
         }
 
@@ -143,8 +151,11 @@ class PresetValidatorAgent implements AgentInterface
             JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
         );
 
-        // Réponse brute : raw_api_response en priorité, sinon derniers chunks
+        // Réponse brute : raw_api_response en priorité, sinon derniers chunks, sinon erreur capturée
         $rawResponse = $debugData['raw_api_response'] ?? $debugData['raw_api_chunks'] ?? [];
+        if (empty($rawResponse) && $syncError !== null) {
+            $rawResponse = ['error_from_api_client' => $syncError];
+        }
         $rawResponseJson = json_encode(
             $rawResponse,
             JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
@@ -170,24 +181,29 @@ class PresetValidatorAgent implements AgentInterface
                     "**Mode synchrone**: Tokens entrée=%d, sortie=%d\n" .
                     "**Mode streaming**: Tokens entrée=%d, sortie=%d\n" .
                     "(Les tokens doivent être identiques ou proches)",
-                $syncUsage['promptTokenCount'] ?? 0,
-                $syncUsage['candidatesTokenCount'] ?? 0,
-                $streamingUsage['promptTokenCount'] ?? 0,
-                $streamingUsage['candidatesTokenCount'] ?? 0,
+                $syncUsage['prompt_tokens'] ?? 0,
+                $syncUsage['completion_tokens'] ?? 0,
+                $streamingUsage['prompt_tokens'] ?? 0,
+                $streamingUsage['completion_tokens'] ?? 0,
             );
         }
 
         $analysisPrompt = sprintf(
             "Tu es un agent de validation du système Synapse LLM. Analyse les données suivantes.\n\n" .
-                "IMPORTANT: Prends d'abord en compte les CAPACITÉS DU MODÈLE testé. Si une capacité (ex: top_k_supported) est false, " .
-                "il est NORMAL et ATTENDU que le paramètre soit ignoré et absent de la requête API, ce N'EST PAS une anomalie.\n\n" .
+                "IMPORTANT: Si la réponse brute contient une erreur de l'API (ex: 400 Bad Request, error_from_api_client), tu dois expliquer pourquoi la requête a échoué en te basant sur le message de l'erreur et les paramètres envoyés.\n\n" .
+                "IMPORTANT: Vérifie activement les INCOHÉRENCES DE CAPACITÉS. Si le preset demande explicitement une option (ex: `\"thinking\": {\"enabled\": true}`) ALORS QUE les capacités du modèle indiquent qu'elle n'est pas supportée (`\"thinking_supported\": false`), signale-le comme une ANOMALIE MAJEURE. Explique que le paramètre est configuré dans le preset mais non supporté par le modèle (ce qui indique une erreur humaine dans le preset ou une erreur dans la configuration du registre yaml des modèles).\n\n" .
+                "IMPORTANT: Prends aussi en compte que si un paramètre n'est à juste titre pas envoyé car non supporté, ce n'est pas une anomalie.\n\n" .
                 "IMPORTANT: Analyse UNIQUEMENT les paramètres configurés dans le preset. Ne mentionne PAS les paramètres absents " .
                 "(ex: si context_caching n'est pas configuré, ne le mentionne pas du tout).\n\n" .
                 "## 0. Capacités du modèle cible\n```json\n%s\n```\n\n" .
                 "## 1. Configuration ATTENDUE du preset\n```json\n%s\n```\n\n" .
                 "## 2. Paramètres NORMALISÉS capturés par Synapse\n```json\n%s\n```\n\n" .
                 "## 3. Requête BRUTE envoyée à l'API\n```json\n%s\n```\n\n" .
-                "## 4. Réponse BRUTE reçue de l'API\n```json\n%s\n```\n%s" .
+                "## 4. Réponse BRUTE reçue de l'API\n```json\n%s\n```\n\n" .
+                "## 5. Vérification mathématique (Équation des tokens)\n" .
+                "- **Mode synchrone** : Entrée(%d) + Sortie(%d) + Réflexion(%d) = Total(%d). Somme égale au total: %s\n" .
+                "- **Mode streaming** : Entrée(%d) + Sortie(%d) + Réflexion(%d) = Total(%d). Somme égale au total: %s\n\n" .
+                "IMPORTANT: Certains fournisseurs (ex: OVH) n'isolent pas les tokens de réflexion et les incluent dans les tokens de sortie. Si l'équation ci-dessus est respectée, le calcul est considéré comme CONFORME même si la réflexion est affichée à 0.\n%s" .
                 "\n\nRetourne un rapport Markdown avec exactement ces 3 sections :\n\n" .
                 "### ✅ Points conformes\n(liste des paramètres correctement transmis, ou ignorés à juste titre car non supportés par le modèle)\n\n" .
                 "### ⚠️ Anomalies détectées\n(écarts non justifiés entre preset attendu et réalité)\n\n" .
@@ -197,6 +213,18 @@ class PresetValidatorAgent implements AgentInterface
             $normalizedParamsJson,
             $rawRequestJson,
             $rawResponseJson,
+            // Sync math
+            $syncUsage['prompt_tokens'] ?? 0,
+            $syncUsage['completion_tokens'] ?? 0,
+            $syncUsage['thinking_tokens'] ?? 0,
+            $syncUsage['total_tokens'] ?? 0,
+            (($syncUsage['prompt_tokens'] ?? 0) + ($syncUsage['completion_tokens'] ?? 0) + ($syncUsage['thinking_tokens'] ?? 0)) === ($syncUsage['total_tokens'] ?? 0) ? '✅ OUI' : '❌ NON',
+            // Streaming math
+            $streamingUsage['prompt_tokens'] ?? 0,
+            $streamingUsage['completion_tokens'] ?? 0,
+            $streamingUsage['thinking_tokens'] ?? 0,
+            $streamingUsage['total_tokens'] ?? 0,
+            (($streamingUsage['prompt_tokens'] ?? 0) + ($streamingUsage['completion_tokens'] ?? 0) + ($streamingUsage['thinking_tokens'] ?? 0)) === ($streamingUsage['total_tokens'] ?? 0) ? '✅ OUI' : '❌ NON',
             $streamingComparisonText,
         );
 

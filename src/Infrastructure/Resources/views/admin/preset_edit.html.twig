@@ -1,642 +1,801 @@
 {% extends '@Synapse/admin/layout.html.twig' %}
 
-{% block admin_title %}{{ is_new ? 'Nouveau preset' : preset.name }} — Presets — Synapse Admin{% endblock %}
+{% block admin_title %}
+	{{ is_new ? 'Nouveau preset' : preset.name }}
+	— Presets — Synapse Admin
+{% endblock %}
 
 {% block admin_content %}
-<div class="synapse-admin__page">
-	<div class="synapse-admin__page-header">
-		<div>
-			<a href="{{ path('synapse_admin_presets') }}" class="synapse-admin__back-link">
-				<i data-lucide="arrow-left"></i>
-				Retour aux presets
-			</a>
-			<h1 class="synapse-admin__page-title">
-				<i data-lucide="sliders-horizontal"></i>
-				{{ is_new ? 'Nouveau preset' : 'Éditer : ' ~ preset.name }}
-			</h1>
+	<div class="synapse-admin__page">
+		<div class="synapse-admin__page-header">
+			<div>
+				<a href="{{ path('synapse_admin_presets') }}" class="synapse-admin__back-link">
+					<i data-lucide="arrow-left"></i>
+					Retour aux presets
+				</a>
+				<h1 class="synapse-admin__page-title">
+					<i data-lucide="sliders-horizontal"></i>
+					{{ is_new ? 'Nouveau preset' : 'Éditer : ' ~ preset.name }}
+				</h1>
+			</div>
 		</div>
+
+		<form
+			method="post" id="preset-form" action="{{ is_new ? path('synapse_admin_presets_new') : path('synapse_admin_presets_edit', {id: preset.id}) }}" style="display: flex; flex-direction: column; gap: 1.5rem;" onsubmit="syncProviderOptionsBeforeSubmit()">
+
+			{# ── Informations de base ──────────────────────────────────────────── #}
+			<div class="synapse-admin__card">
+				<div class="synapse-admin__card-body">
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">Nom du preset
+							<span class="synapse-admin__required">*</span>
+						</label>
+						<input type="text" name="name" value="{{ preset.name }}" class="synapse-admin__input" required placeholder="Ex: Gemini Flash Créatif">
+					</div>
+				</div>
+			</div>
+
+			{# ── Sélection Provider + Modèle ───────────────────────────────────── #}
+			<div class="synapse-admin__card">
+				<div class="synapse-admin__card-header">
+					<span class="synapse-admin__card-title">Provider & Modèle</span>
+				</div>
+				<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--2">
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">Provider
+							<span class="synapse-admin__required">*</span>
+						</label>
+						<select name="provider_name" id="provider-select" class="synapse-admin__select" onchange="updateModelOptions(this.value); renderDynamicFields(this.value)">
+							{% for provider in providers %}
+								<option value="{{ provider.name }}" {% if provider.name == preset.providerName %} selected {% endif %}>
+									{{ provider.label }}
+									{% if not provider.isEnabled %}(désactivé)
+									{% endif %}
+								</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">Modèle
+							<span class="synapse-admin__required">*</span>
+						</label>
+						<select name="model" id="model-select" class="synapse-admin__select" onchange="updateFormVisibility()">
+							{% for provider, models in models_by_provider %}
+								<optgroup label="{{ provider }}" data-provider="{{ provider }}">
+									{% for modelId in models %}
+										<option value="{{ modelId }}" data-provider="{{ provider }}" {% if modelId == preset.model %} selected {% endif %}>
+											{{ modelId }}
+										</option>
+									{% endfor %}
+								</optgroup>
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+			</div>
+
+			{# ── Paramètres de génération ──────────────────────────────────────── #}
+			<div class="synapse-admin__card">
+				<div class="synapse-admin__card-header">
+					<span class="synapse-admin__card-title">Paramètres de génération</span>
+				</div>
+				<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--3">
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">Température</label>
+						<div class="synapse-admin__range-wrapper">
+							<input type="range" name="generation_temperature" min="0" max="2" step="0.1" value="{{ preset.generationTemperature }}" class="synapse-admin__range" oninput="this.nextElementSibling.textContent = this.value">
+							<span class="synapse-admin__range-value">{{ preset.generationTemperature }}</span>
+						</div>
+						<p class="synapse-admin__help">0 = déterministe · 2 = très créatif</p>
+					</div>
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">Top P</label>
+						<div class="synapse-admin__range-wrapper">
+							<input type="range" name="generation_top_p" min="0" max="1" step="0.05" value="{{ preset.generationTopP }}" class="synapse-admin__range" oninput="this.nextElementSibling.textContent = this.value">
+							<span class="synapse-admin__range-value">{{ preset.generationTopP }}</span>
+						</div>
+					</div>
+					<div class="synapse-admin__form-row" id="section-top-k">
+						<label class="synapse-admin__label">Top K</label>
+						<input type="number" name="generation_top_k" value="{{ preset.generationTopK }}" min="1" max="100" class="synapse-admin__input">
+						<p class="synapse-admin__help">Paramètre de filtrage pour certains modèles.</p>
+					</div>
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">Max Output Tokens</label>
+						<input type="number" name="generation_max_output_tokens" value="{{ preset.generationMaxOutputTokens ?: '' }}" class="synapse-admin__input" placeholder="Illimité">
+					</div>
+					<div class="synapse-admin__form-row synapse-admin__col-span-2">
+						<label class="synapse-admin__label">Séquences d'arrêt</label>
+						<input type="text" name="generation_stop_sequences" value="{{ preset.generationStopSequences ? preset.generationStopSequences|join(', ') : '' }}" class="synapse-admin__input" placeholder="Ex: \n, END, STOP (séparés par des virgules)">
+					</div>
+				</div>
+			</div>
+
+			{# ── Model Capabilities Display ────────────────────────── #}
+			<div class="synapse-admin__card" id="model-caps-display" style="background: rgba(0, 102, 204, 0.05); border-left: 4px solid var(--synapse-admin-primary);">
+				<div class="synapse-admin__card-body" style="display: flex; gap: 0.75rem; flex-wrap: wrap;"><!-- Capabilities will be populated by JS --></div>
+			</div>
+
+			{# ── Mode Streaming ────────────────────────────────────────── #}
+			<div class="synapse-admin__card">
+				<div class="synapse-admin__card-header">
+					<span class="synapse-admin__card-title">Mode de Transmission</span>
+				</div>
+				<div class="synapse-admin__card-body">
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">
+							<input type="checkbox" name="streaming_enabled" value="1" {% if preset.streamingEnabled %} checked {% endif %}>
+							Activer le streaming (SSE)
+						</label>
+						<p style="color: #6b7280; font-size: 12px; margin-top: 0.5rem;">
+							✓ Par défaut: réponses en temps réel (chunks SSE)<br/>
+							✗ Désactivé: mode synchrone - réponse complète d'un coup (mieux pour le debug)
+						</p>
+					</div>
+				</div>
+			</div>
+
+			{# ── Provider Options (Champs Dynamiques) ──────────────────────────────────────────── #}
+			<div class="synapse-admin__card" id="provider-options-card">
+				<div class="synapse-admin__card-header">
+					<span class="synapse-admin__card-title">
+						<i data-lucide="sliders-horizontal" style="width: 16px; height: 16px;"></i>
+						Options du Provider
+					</span>
+				</div>
+				<div class="synapse-admin__card-body">
+					<p class="synapse-admin__help" style="margin-bottom: 1.5rem;">
+						Configuration dynamique basée sur le provider sélectionné.
+																																																																	Les changements sont synchronisés automatiquement avec le JSON avancé ci-dessous.
+					</p>
+					{# Conteneur pour champs dynamiques générés par JS #}
+					<div
+						id="dynamic-provider-ui" class="synapse-admin__grid synapse-admin__grid--2" style="gap: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;"><!-- Champs dynamiques injectés ici par JavaScript -->
+					</div>
+				</div>
+			</div>
+
+			{# ── Provider Options (JSON Avancé - Source de Vérité) ──────────────────────────────── #}
+			<div class="synapse-admin__card" id="provider-options-json-card">
+				<div class="synapse-admin__card-header">
+					<span class="synapse-admin__card-title">
+						<i data-lucide="code" style="width: 16px; height: 16px;"></i>
+						JSON Avancé (Source de Vérité)
+					</span>
+				</div>
+				<div class="synapse-admin__card-body">
+					<p class="synapse-admin__help" style="margin-bottom: 1rem;">
+						<strong>Champ caché et synchronisé automatiquement.</strong>
+						Les champs dynamiques ci-dessus mettent à jour ce JSON en temps réel.
+																																																																	Vous pouvez aussi éditer directement le JSON pour des configurations avancées.
+					</p>
+					<div class="synapse-admin__form-row">
+						<label class="synapse-admin__label">providerOptions (JSON)
+							<span class="synapse-admin__required">*</span>
+						</label>
+						<textarea id="provider-options-json" name="provider_options_json" class="synapse-admin__input" rows="14" required style="font-family: 'Monaco', 'Courier New', monospace; font-size: 12px; min-height: 300px;">{{ preset.providerOptions ? preset.providerOptions|json_encode(192) : '{}' }}</textarea>
+						<p class="synapse-admin__help" style="color: #6b7280; margin-top: 0.5rem;">
+							💡 Édition directe du JSON. Les changements aux champs dynamiques mettent à jour ce champ automatiquement.
+						</p>
+						<p class="synapse-admin__help" style="color: #d97706; margin-top: 0.25rem;">
+							⚠️ Syntaxe JSON invalide = sauvegarde refusée.
+						</p>
+					</div>
+					{# Champ caché pour transmission au serveur #}
+					<input type="hidden" name="provider_options" id="provider-options-hidden" value="{{ preset.providerOptions ? preset.providerOptions|json_encode : '{}' }}">
+				</div>
+			</div>
+
+			<div class="synapse-admin__sticky-save">
+				<button type="submit" class="synapse-admin__btn synapse-admin__btn--primary">
+					<i data-lucide="save"></i>
+					{{ is_new ? 'Créer le preset' : 'Enregistrer les modifications' }}
+				</button>
+				<a href="{{ path('synapse_admin_presets') }}" class="synapse-admin__btn synapse-admin__btn--ghost">
+					Annuler
+				</a>
+			</div>
+		</form>
 	</div>
 
-	<form method="post"
-	      id="preset-form"
-	      action="{{ is_new ? path('synapse_admin_presets_new') : path('synapse_admin_presets_edit', {id: preset.id}) }}"
-	      style="display: flex; flex-direction: column; gap: 1.5rem;"
-	      onsubmit="syncProviderOptionsBeforeSubmit()">
-
-		{# ── Informations de base ──────────────────────────────────────────── #}
-		<div class="synapse-admin__card">
-			<div class="synapse-admin__card-body">
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">Nom du preset <span class="synapse-admin__required">*</span></label>
-					<input type="text" name="name" value="{{ preset.name }}"
-					       class="synapse-admin__input" required placeholder="Ex: Gemini Flash Créatif">
-				</div>
-			</div>
-		</div>
-
-		{# ── Sélection Provider + Modèle ───────────────────────────────────── #}
-		<div class="synapse-admin__card">
-			<div class="synapse-admin__card-header">
-				<span class="synapse-admin__card-title">Provider & Modèle</span>
-			</div>
-			<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--2">
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">Provider <span class="synapse-admin__required">*</span></label>
-					<select name="provider_name" id="provider-select" class="synapse-admin__select"
-					        onchange="updateModelOptions(this.value); renderDynamicFields(this.value)">
-						{% for provider in providers %}
-							<option value="{{ provider.name }}"
-							        {% if provider.name == preset.providerName %}selected{% endif %}>
-								{{ provider.label }}
-								{% if not provider.isEnabled %}(désactivé){% endif %}
-							</option>
-						{% endfor %}
-					</select>
-				</div>
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">Modèle <span class="synapse-admin__required">*</span></label>
-					<select name="model" id="model-select" class="synapse-admin__select" onchange="updateFormVisibility()">
-						{% for provider, models in models_by_provider %}
-							<optgroup label="{{ provider }}" data-provider="{{ provider }}">
-								{% for modelId in models %}
-									<option value="{{ modelId }}"
-									        data-provider="{{ provider }}"
-									        {% if modelId == preset.model %}selected{% endif %}>
-										{{ modelId }}
-									</option>
-								{% endfor %}
-							</optgroup>
-						{% endfor %}
-					</select>
-				</div>
-			</div>
-		</div>
-
-		{# ── Model Capabilities Display ────────────────────────── #}
-		<div class="synapse-admin__card" id="model-caps-display" style="background: rgba(0, 102, 204, 0.05); border-left: 4px solid var(--synapse-admin-primary);">
-			<div class="synapse-admin__card-body" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-				<!-- Capabilities will be populated by JS -->
-			</div>
-		</div>
-
-		{# ── Paramètres de génération ──────────────────────────────────────── #}
-		<div class="synapse-admin__card">
-			<div class="synapse-admin__card-header">
-				<span class="synapse-admin__card-title">Paramètres de génération</span>
-			</div>
-			<div class="synapse-admin__card-body synapse-admin__grid synapse-admin__grid--3">
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">Température</label>
-					<div class="synapse-admin__range-wrapper">
-						<input type="range" name="generation_temperature"
-						       min="0" max="2" step="0.1"
-						       value="{{ preset.generationTemperature }}"
-						       class="synapse-admin__range"
-						       oninput="this.nextElementSibling.textContent = this.value">
-						<span class="synapse-admin__range-value">{{ preset.generationTemperature }}</span>
-					</div>
-					<p class="synapse-admin__help">0 = déterministe · 2 = très créatif</p>
-				</div>
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">Top P</label>
-					<div class="synapse-admin__range-wrapper">
-						<input type="range" name="generation_top_p"
-						       min="0" max="1" step="0.05"
-						       value="{{ preset.generationTopP }}"
-						       class="synapse-admin__range"
-						       oninput="this.nextElementSibling.textContent = this.value">
-						<span class="synapse-admin__range-value">{{ preset.generationTopP }}</span>
-					</div>
-				</div>
-				<div class="synapse-admin__form-row" id="section-top-k">
-					<label class="synapse-admin__label">Top K</label>
-					<input type="number" name="generation_top_k"
-					       value="{{ preset.generationTopK }}"
-					       min="1" max="100"
-					       class="synapse-admin__input">
-					<p class="synapse-admin__help">Paramètre de filtrage pour certains modèles.</p>
-				</div>
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">Max Output Tokens</label>
-					<input type="number" name="generation_max_output_tokens"
-					       value="{{ preset.generationMaxOutputTokens ?: '' }}"
-					       class="synapse-admin__input"
-					       placeholder="Illimité">
-				</div>
-				<div class="synapse-admin__form-row synapse-admin__col-span-2">
-					<label class="synapse-admin__label">Séquences d'arrêt</label>
-					<input type="text" name="generation_stop_sequences"
-					       value="{{ preset.generationStopSequences ? preset.generationStopSequences|join(', ') : '' }}"
-					       class="synapse-admin__input"
-					       placeholder="Ex: \n, END, STOP (séparés par des virgules)">
-				</div>
-			</div>
-		</div>
-
-		{# ── Mode Streaming ────────────────────────────────────────── #}
-		<div class="synapse-admin__card">
-			<div class="synapse-admin__card-header">
-				<span class="synapse-admin__card-title">Mode de Transmission</span>
-			</div>
-			<div class="synapse-admin__card-body">
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">
-						<input type="checkbox" name="streaming_enabled" value="1"
-						       {% if preset.streamingEnabled %}checked{% endif %}>
-						Activer le streaming (SSE)
-					</label>
-					<p style="color: #6b7280; font-size: 12px; margin-top: 0.5rem;">
-						✓ Par défaut: réponses en temps réel (chunks SSE)<br/>
-						✗ Désactivé: mode synchrone - réponse complète d'un coup (mieux pour le debug)
-					</p>
-				</div>
-			</div>
-		</div>
-
-		{# ── Provider Options (Champs Dynamiques) ──────────────────────────────────────────── #}
-		<div class="synapse-admin__card">
-			<div class="synapse-admin__card-header">
-				<span class="synapse-admin__card-title">
-					<i data-lucide="sliders-horizontal" style="width: 16px; height: 16px;"></i>
-					Options du Provider
-				</span>
-			</div>
-			<div class="synapse-admin__card-body">
-				<p class="synapse-admin__help" style="margin-bottom: 1.5rem;">
-					Configuration dynamique basée sur le provider sélectionné.
-					Les changements sont synchronisés automatiquement avec le JSON avancé ci-dessous.
-				</p>
-				{# Conteneur pour champs dynamiques générés par JS #}
-				<div id="dynamic-provider-ui" class="synapse-admin__grid synapse-admin__grid--2"
-				     style="gap: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;">
-					<!-- Champs dynamiques injectés ici par JavaScript -->
-				</div>
-			</div>
-		</div>
-
-		{# ── Provider Options (JSON Avancé - Source de Vérité) ──────────────────────────────── #}
-		<div class="synapse-admin__card">
-			<div class="synapse-admin__card-header">
-				<span class="synapse-admin__card-title">
-					<i data-lucide="code" style="width: 16px; height: 16px;"></i>
-					JSON Avancé (Source de Vérité)
-				</span>
-			</div>
-			<div class="synapse-admin__card-body">
-				<p class="synapse-admin__help" style="margin-bottom: 1rem;">
-					<strong>Champ caché et synchronisé automatiquement.</strong>
-					Les champs dynamiques ci-dessus mettent à jour ce JSON en temps réel.
-					Vous pouvez aussi éditer directement le JSON pour des configurations avancées.
-				</p>
-				<div class="synapse-admin__form-row">
-					<label class="synapse-admin__label">providerOptions (JSON) <span class="synapse-admin__required">*</span></label>
-					<textarea
-						id="provider-options-json"
-						name="provider_options_json"
-						class="synapse-admin__input"
-						rows="14"
-						required
-						style="font-family: 'Monaco', 'Courier New', monospace; font-size: 12px; min-height: 300px;">{{ preset.providerOptions ? preset.providerOptions|json_encode(192) : '{}' }}</textarea>
-					<p class="synapse-admin__help" style="color: #6b7280; margin-top: 0.5rem;">
-						💡 Édition directe du JSON. Les changements aux champs dynamiques mettent à jour ce champ automatiquement.
-					</p>
-					<p class="synapse-admin__help" style="color: #d97706; margin-top: 0.25rem;">
-						⚠️ Syntaxe JSON invalide = sauvegarde refusée.
-					</p>
-				</div>
-				{# Champ caché pour transmission au serveur #}
-				<input type="hidden" name="provider_options" id="provider-options-hidden"
-				       value="{{ preset.providerOptions ? preset.providerOptions|json_encode : '{}' }}">
-			</div>
-		</div>
-
-		<div class="synapse-admin__sticky-save">
-			<button type="submit" class="synapse-admin__btn synapse-admin__btn--primary">
-				<i data-lucide="save"></i>
-				{{ is_new ? 'Créer le preset' : 'Enregistrer les modifications' }}
-			</button>
-			<a href="{{ path('synapse_admin_presets') }}" class="synapse-admin__btn synapse-admin__btn--ghost">
-				Annuler
-			</a>
-		</div>
-	</form>
-</div>
-
-<script>
-const modelCapabilities = {{ model_capabilities|json_encode|raw }};
+	<script>
+		const modelCapabilities = {{ model_capabilities|json_encode|raw }};
 
 // ── PROVIDER SCHEMAS (définition des champs dynamiques par provider) ──────────────
 const PROVIDER_SCHEMAS = {
-	'gemini': {
-		fields: [
-			{
-				name: 'thinking.enabled',
-				type: 'checkbox',
-				label: 'Activer le thinking',
-				help: 'Activation de la réflexion interne approfondie'
-			},
-			{
-				name: 'thinking.budget',
-				type: 'number',
-				label: 'Budget de réflexion (tokens)',
-				help: '0–24576 tokens alloués à la réflexion',
-				min: 128,
-				max: 24576,
-				defaultValue: 1024,
-				dependsOn: 'thinking.enabled'
-			},
-			{
-				name: 'safety_settings.enabled',
-				type: 'checkbox',
-				label: 'Activer les filtres de sécurité',
-				help: 'Active les filtres de contenu inapproprié'
-			},
-			{
-				name: 'safety_settings.default_threshold',
-				type: 'select',
-				label: 'Seuil de sécurité par défaut',
-				help: 'Niveau de filtrage par défaut',
-				options: [
-					{ value: 'BLOCK_NONE', label: 'Aucun filtre' },
-					{ value: 'BLOCK_ONLY_HIGH', label: 'Bloquer haute probabilité' },
-					{ value: 'BLOCK_MEDIUM_AND_ABOVE', label: 'Bloquer moyenne et haute' },
-					{ value: 'BLOCK_LOW_AND_ABOVE', label: 'Bloquer toute probabilité' }
-				],
-				defaultValue: 'BLOCK_MEDIUM_AND_ABOVE',
-				dependsOn: 'safety_settings.enabled'
-			},
-			{
-				name: 'safety_settings.thresholds.hate_speech',
-				type: 'select',
-				label: 'Filtre - Discours haineux',
-				help: 'Seuil pour les contenus haineux',
-				options: [
-					{ value: '', label: 'Non défini' },
-					{ value: 'BLOCK_NONE', label: 'Aucun filtre' },
-					{ value: 'BLOCK_ONLY_HIGH', label: 'Bloquer haute probabilité' },
-					{ value: 'BLOCK_MEDIUM_AND_ABOVE', label: 'Bloquer moyenne et haute' },
-					{ value: 'BLOCK_LOW_AND_ABOVE', label: 'Bloquer toute probabilité' }
-				],
-				dependsOn: 'safety_settings.enabled'
-			},
-			{
-				name: 'safety_settings.thresholds.dangerous_content',
-				type: 'select',
-				label: 'Filtre - Contenu dangereux',
-				help: 'Seuil pour les contenus dangereux',
-				options: [
-					{ value: '', label: 'Non défini' },
-					{ value: 'BLOCK_NONE', label: 'Aucun filtre' },
-					{ value: 'BLOCK_ONLY_HIGH', label: 'Bloquer haute probabilité' },
-					{ value: 'BLOCK_MEDIUM_AND_ABOVE', label: 'Bloquer moyenne et haute' },
-					{ value: 'BLOCK_LOW_AND_ABOVE', label: 'Bloquer toute probabilité' }
-				],
-				dependsOn: 'safety_settings.enabled'
-			},
-			{
-				name: 'safety_settings.thresholds.harassment',
-				type: 'select',
-				label: 'Filtre - Harcèlement',
-				help: 'Seuil pour les contenus harcelants',
-				options: [
-					{ value: '', label: 'Non défini' },
-					{ value: 'BLOCK_NONE', label: 'Aucun filtre' },
-					{ value: 'BLOCK_ONLY_HIGH', label: 'Bloquer haute probabilité' },
-					{ value: 'BLOCK_MEDIUM_AND_ABOVE', label: 'Bloquer moyenne et haute' },
-					{ value: 'BLOCK_LOW_AND_ABOVE', label: 'Bloquer toute probabilité' }
-				],
-				dependsOn: 'safety_settings.enabled'
-			},
-			{
-				name: 'safety_settings.thresholds.sexually_explicit',
-				type: 'select',
-				label: 'Filtre - Contenu explicite',
-				help: 'Seuil pour les contenus explicites',
-				options: [
-					{ value: '', label: 'Non défini' },
-					{ value: 'BLOCK_NONE', label: 'Aucun filtre' },
-					{ value: 'BLOCK_ONLY_HIGH', label: 'Bloquer haute probabilité' },
-					{ value: 'BLOCK_MEDIUM_AND_ABOVE', label: 'Bloquer moyenne et haute' },
-					{ value: 'BLOCK_LOW_AND_ABOVE', label: 'Bloquer toute probabilité' }
-				],
-				dependsOn: 'safety_settings.enabled'
-			}
-		]
-	},
-	'ovh': {
-		fields: [
-			{
-				name: 'thinking.enabled',
-				type: 'checkbox',
-				label: 'Activer le thinking',
-				help: 'Activation de la réflexion/raisonnement'
-			},
-			{
-				name: 'thinking.reasoning_effort',
-				type: 'select',
-				label: 'Niveau d\'effort de réflexion',
-				help: 'Intensité du raisonnement',
-				options: [
-					{ value: 'low', label: 'Faible (low)' },
-					{ value: 'medium', label: 'Moyen (medium)' },
-					{ value: 'high', label: 'Élevé (high)' }
-				],
-				defaultValue: 'high',
-				dependsOn: 'thinking.enabled'
-			}
-		]
-	}
-	// Ajoute d'autres providers au besoin
+'gemini': {
+fields: [
+{
+name: 'thinking.enabled',
+type: 'checkbox',
+label: 'Activer le thinking',
+help: 'Activation de la réflexion interne approfondie',
+capability: 'thinking'
+},
+{
+name: 'thinking.budget',
+type: 'number',
+label: 'Budget de réflexion (tokens)',
+help: '0–24576 tokens alloués à la réflexion',
+min: 128,
+max: 24576,
+defaultValue: 1024,
+dependsOn: 'thinking.enabled'
+},
+{
+name: 'safety_settings.enabled',
+type: 'checkbox',
+label: 'Activer les filtres de sécurité',
+help: 'Active les filtres de contenu inapproprié',
+capability: 'safetySettings'
+},
+{
+name: 'safety_settings.default_threshold',
+type: 'select',
+label: 'Seuil de sécurité par défaut',
+help: 'Niveau de filtrage par défaut',
+options: [
+{
+value: 'BLOCK_NONE',
+label: 'Aucun filtre'
+}, {
+value: 'BLOCK_ONLY_HIGH',
+label: 'Bloquer haute probabilité'
+}, {
+value: 'BLOCK_MEDIUM_AND_ABOVE',
+label: 'Bloquer moyenne et haute'
+}, {
+value: 'BLOCK_LOW_AND_ABOVE',
+label: 'Bloquer toute probabilité'
+}
+],
+defaultValue: 'BLOCK_MEDIUM_AND_ABOVE',
+dependsOn: 'safety_settings.enabled'
+}, {
+name: 'safety_settings.thresholds.hate_speech',
+type: 'select',
+label: 'Filtre - Discours haineux',
+help: 'Seuil pour les contenus haineux',
+options: [
+{
+value: '',
+label: 'Non défini'
+},
+{
+value: 'BLOCK_NONE',
+label: 'Aucun filtre'
+},
+{
+value: 'BLOCK_ONLY_HIGH',
+label: 'Bloquer haute probabilité'
+},
+{
+value: 'BLOCK_MEDIUM_AND_ABOVE',
+label: 'Bloquer moyenne et haute'
+}, {
+value: 'BLOCK_LOW_AND_ABOVE',
+label: 'Bloquer toute probabilité'
+}
+],
+dependsOn: 'safety_settings.enabled'
+}, {
+name: 'safety_settings.thresholds.dangerous_content',
+type: 'select',
+label: 'Filtre - Contenu dangereux',
+help: 'Seuil pour les contenus dangereux',
+options: [
+{
+value: '',
+label: 'Non défini'
+},
+{
+value: 'BLOCK_NONE',
+label: 'Aucun filtre'
+},
+{
+value: 'BLOCK_ONLY_HIGH',
+label: 'Bloquer haute probabilité'
+},
+{
+value: 'BLOCK_MEDIUM_AND_ABOVE',
+label: 'Bloquer moyenne et haute'
+}, {
+value: 'BLOCK_LOW_AND_ABOVE',
+label: 'Bloquer toute probabilité'
+}
+],
+dependsOn: 'safety_settings.enabled'
+}, {
+name: 'safety_settings.thresholds.harassment',
+type: 'select',
+label: 'Filtre - Harcèlement',
+help: 'Seuil pour les contenus harcelants',
+options: [
+{
+value: '',
+label: 'Non défini'
+},
+{
+value: 'BLOCK_NONE',
+label: 'Aucun filtre'
+},
+{
+value: 'BLOCK_ONLY_HIGH',
+label: 'Bloquer haute probabilité'
+},
+{
+value: 'BLOCK_MEDIUM_AND_ABOVE',
+label: 'Bloquer moyenne et haute'
+}, {
+value: 'BLOCK_LOW_AND_ABOVE',
+label: 'Bloquer toute probabilité'
+}
+],
+dependsOn: 'safety_settings.enabled'
+}, {
+name: 'safety_settings.thresholds.sexually_explicit',
+type: 'select',
+label: 'Filtre - Contenu explicite',
+help: 'Seuil pour les contenus explicites',
+options: [
+{
+value: '',
+label: 'Non défini'
+},
+{
+value: 'BLOCK_NONE',
+label: 'Aucun filtre'
+},
+{
+value: 'BLOCK_ONLY_HIGH',
+label: 'Bloquer haute probabilité'
+},
+{
+value: 'BLOCK_MEDIUM_AND_ABOVE',
+label: 'Bloquer moyenne et haute'
+}, {
+value: 'BLOCK_LOW_AND_ABOVE',
+label: 'Bloquer toute probabilité'
+}
+],
+dependsOn: 'safety_settings.enabled'
+}
+]
+},
+'ovh': {
+fields: [
+{
+name: 'thinking.enabled',
+type: 'checkbox',
+label: 'Activer le thinking',
+help: 'Activation de la réflexion/raisonnement',
+capability: 'thinking'
+}, {
+name: 'thinking.reasoning_effort',
+type: 'select',
+label: 'Niveau d\'effort de réflexion',
+help: 'Intensité du raisonnement',
+options: [
+{
+value: 'low',
+label: 'Faible (low)'
+}, {
+value: 'medium',
+label: 'Moyen (medium)'
+}, {
+value: 'high',
+label: 'Élevé (high)'
+}
+],
+defaultValue: 'high',
+dependsOn: 'thinking.enabled'
+}
+]
+}
+// Ajoute d'autres providers au besoin
 };
 
 // ── GÉNÉRATEUR DE CHAMPS DYNAMIQUES ────────────────────────────────────────────
 function renderDynamicFields(providerName) {
-	const container = document.getElementById('dynamic-provider-ui');
-	if (!container) return;
+const container = document.getElementById('dynamic-provider-ui');
+if (! container) 
+return;
 
-	container.innerHTML = '';
 
-	const schema = PROVIDER_SCHEMAS[providerName];
-	if (!schema || !schema.fields) {
-		container.innerHTML = '<p style="color: #9ca3af;">Aucun paramètre spécifique pour ce provider.</p>';
-		return;
-	}
 
-	// Parser les données existantes du JSON
-	const jsonTextarea = document.getElementById('provider-options-json');
-	let currentData = {};
-	try {
-		currentData = JSON.parse(jsonTextarea.value || '{}');
-	} catch (e) {
-		currentData = {};
-	}
+container.innerHTML = '';
 
-	// Générer les champs
-	schema.fields.forEach(fieldDef => {
-		const value = getNestedValue(currentData, fieldDef.name);
-		const isChecked = value === true || value === 'true';
-		const fieldValue = value !== undefined ? value : fieldDef.defaultValue;
+const schema = PROVIDER_SCHEMAS[providerName];
+const card = document.getElementById('provider-options-card');
+const jsonCard = document.getElementById('provider-options-json-card');
 
-		const fieldHtml = renderField(fieldDef, fieldValue, isChecked);
-		const fieldEl = document.createElement('div');
-		fieldEl.className = 'synapse-admin__form-row';
-		fieldEl.id = `field-${fieldDef.name.replace(/\./g, '-')}`;
-		fieldEl.innerHTML = fieldHtml;
-		fieldEl.setAttribute('data-field-name', fieldDef.name);
-		if (fieldDef.dependsOn) {
-			fieldEl.setAttribute('data-depends-on', fieldDef.dependsOn);
-		}
+if (! schema || ! schema.fields) {
+if (card) 
+card.style.display = 'none';
 
-		container.appendChild(fieldEl);
 
-		// Ajouter les listeners
-		const input = fieldEl.querySelector('input, select');
-		if (input) {
-			input.addEventListener('change', () => {
-				updateJsonFromFields();
-				updateFieldVisibility();
-			});
-			input.addEventListener('input', () => {
-				updateJsonFromFields();
-			});
-		}
-	});
 
-	// Initialiser la visibilité des champs dépendants
-	updateFieldVisibility();
+if (jsonCard) 
+jsonCard.style.display = 'none';
+
+
+
+container.innerHTML = '<p style="color: #9ca3af;">Aucun paramètre spécifique pour ce provider.</p>';
+return;
+}
+
+// Parser les données existantes du JSON
+const jsonTextarea = document.getElementById('provider-options-json');
+let currentData = {};
+try {
+currentData = JSON.parse(jsonTextarea.value || '{}');
+} catch (e) {
+currentData = {};
+}
+
+// Générer les champs
+const modelId = document.getElementById('model-select').value;
+const caps = modelCapabilities[modelId] || {};
+
+// Pré-filtrage: identifier les champs parents qui sont exclus par capacité
+const excludedCapabilities = [];
+schema.fields.forEach(fieldDef => {
+if (fieldDef.capability && ! caps[fieldDef.capability]) {
+excludedCapabilities.push(fieldDef.name);
+}
+});
+
+schema.fields.forEach(fieldDef => { // Vérification de la capacité propre au champ
+if (fieldDef.capability && ! caps[fieldDef.capability]) {
+return; // Masquer si le modèle ne supporte pas
+}
+
+// Vérification de la dépendance: si le champ dépend d'un parent exclu, on l'exclut aussi
+if (fieldDef.dependsOn && excludedCapabilities.includes(fieldDef.dependsOn)) {
+return; // Le parent n'est pas supporté, l'enfant non plus
+}
+
+const value = getNestedValue(currentData, fieldDef.name);
+const isChecked = value === true || value === 'true';
+const fieldValue = value !== undefined ? value : fieldDef.defaultValue;
+
+const fieldHtml = renderField(fieldDef, fieldValue, isChecked);
+const fieldEl = document.createElement('div');
+fieldEl.className = 'synapse-admin__form-row';
+fieldEl.id = `field-${
+fieldDef.name.replace(/\./g, '-')
+}`;
+fieldEl.innerHTML = fieldHtml;
+fieldEl.setAttribute('data-field-name', fieldDef.name);
+if (fieldDef.dependsOn) {
+fieldEl.setAttribute('data-depends-on', fieldDef.dependsOn);
+}
+
+container.appendChild(fieldEl);
+
+// Ajouter les listeners
+const input = fieldEl.querySelector('input, select');
+if (input) {
+input.addEventListener('change', () => {
+updateJsonFromFields();
+updateFieldVisibility();
+});
+input.addEventListener('input', () => {
+updateJsonFromFields();
+});
+}
+});
+
+// Gérer la visibilité du cadre global
+if (card) {
+const hasVisibleFields = container.children.length > 0;
+card.style.display = hasVisibleFields ? '' : 'none';
+if (jsonCard) 
+jsonCard.style.display = hasVisibleFields ? '' : 'none';
+
+
+
+}
+
+// Initialiser la visibilité des champs dépendants
+updateFieldVisibility();
 }
 
 function renderField(fieldDef, value, isChecked) {
-	let inputHtml = '';
+let inputHtml = '';
 
-	if (fieldDef.type === 'checkbox') {
-		inputHtml = `
+if (fieldDef.type === 'checkbox') {
+inputHtml = `
 			<input type="checkbox"
-				   id="field-${fieldDef.name}"
-				   data-field-name="${fieldDef.name}"
-				   ${isChecked ? 'checked' : ''}>
+				   id="field-${
+fieldDef.name
+}"
+				   data-field-name="${
+fieldDef.name
+}"
+				   ${
+isChecked ? 'checked' : ''
+}>
 		`;
-	} else if (fieldDef.type === 'number') {
-		inputHtml = `
+} else if (fieldDef.type === 'number') {
+inputHtml = `
 			<input type="number"
-				   id="field-${fieldDef.name}"
-				   data-field-name="${fieldDef.name}"
-				   value="${value || fieldDef.defaultValue || ''}"
-				   min="${fieldDef.min || 0}"
-				   max="${fieldDef.max || ''}"
+				   id="field-${
+fieldDef.name
+}"
+				   data-field-name="${
+fieldDef.name
+}"
+				   value="${
+value || fieldDef.defaultValue || ''
+}"
+				   min="${
+fieldDef.min || 0
+}"
+				   max="${
+fieldDef.max || ''
+}"
 				   class="synapse-admin__input">
 		`;
-	} else if (fieldDef.type === 'select') {
-		const options = fieldDef.options.map(opt =>
-			`<option value="${opt.value}" ${opt.value === value ? 'selected' : ''}>${opt.label}</option>`
-		).join('');
-		inputHtml = `
-			<select id="field-${fieldDef.name}"
-					data-field-name="${fieldDef.name}"
+} else if (fieldDef.type === 'select') {
+const options = fieldDef.options.map(opt => `<option value="${
+opt.value
+}" ${
+opt.value === value ? 'selected' : ''
+}>${
+opt.label
+}</option>`).join('');
+inputHtml = `
+			<select id="field-${
+fieldDef.name
+}"
+					data-field-name="${
+fieldDef.name
+}"
 					class="synapse-admin__select">
 				${options}
 			</select>
 		`;
-	}
+}
 
-	return `
-		<label class="synapse-admin__label" for="field-${fieldDef.name}">
-			${fieldDef.label}
+return `
+		<label class="synapse-admin__label" for="field-${
+fieldDef.name
+}">
+			${
+fieldDef.label
+}
 		</label>
 		${inputHtml}
-		<p class="synapse-admin__help">${fieldDef.help}</p>
+		<p class="synapse-admin__help">${
+fieldDef.help
+}</p>
 	`;
 }
 
 // ── SYNCHRONISATION HTML ↔ JSON ────────────────────────────────────────────
 function updateJsonFromFields() {
-	const container = document.getElementById('dynamic-provider-ui');
-	const jsonTextarea = document.getElementById('provider-options-json');
-	const hiddenField = document.getElementById('provider-options-hidden');
+const container = document.getElementById('dynamic-provider-ui');
+const jsonTextarea = document.getElementById('provider-options-json');
+const hiddenField = document.getElementById('provider-options-hidden');
 
-	// Parser le JSON actuel
-	let data = {};
-	try {
-		data = JSON.parse(jsonTextarea.value || '{}');
-	} catch (e) {
-		data = {};
-	}
+// Parser le JSON actuel
+let data = {};
+try {
+data = JSON.parse(jsonTextarea.value || '{}');
+} catch (e) {
+data = {};
+}
 
-	// Mettre à jour depuis les champs
-	container.querySelectorAll('[data-field-name]').forEach(fieldRow => {
-		const input = fieldRow.querySelector('input, select');
-		if (!input) return;
+// Mettre à jour depuis les champs
+container.querySelectorAll('[data-field-name]').forEach(fieldRow => {
+const input = fieldRow.querySelector('input, select');
+if (! input) 
+return;
 
-		const fieldName = fieldRow.dataset.fieldName;
-		let value;
 
-		if (input.type === 'checkbox') {
-			value = input.checked;
-		} else {
-			value = input.value;
-			// Convertir en nombre si type number
-			if (input.type === 'number' && value) {
-				value = parseInt(value, 10);
-			}
-		}
 
-		setNestedValue(data, fieldName, value);
-	});
+const fieldName = fieldRow.dataset.fieldName;
+let value;
 
-	// Mettre à jour les textareas
-	const jsonString = JSON.stringify(data, null, 2);
-	jsonTextarea.value = jsonString;
-	hiddenField.value = JSON.stringify(data);
+if (input.type === 'checkbox') {
+value = input.checked;
+} else {
+value = input.value;
+// Convertir en nombre si type number
+if (input.type === 'number' && value) {
+value = parseInt(value, 10);
+}
+} setNestedValue(data, fieldName, value);
+});
+
+// Mettre à jour les textareas
+const jsonString = JSON.stringify(data, null, 2);
+jsonTextarea.value = jsonString;
+hiddenField.value = JSON.stringify(data);
 }
 
 function updateFieldVisibility() {
-	const container = document.getElementById('dynamic-provider-ui');
+const container = document.getElementById('dynamic-provider-ui');
 
-	container.querySelectorAll('[data-depends-on]').forEach(fieldEl => {
-		const dependsOn = fieldEl.dataset.dependsOn;
-		if (!dependsOn) return;
+container.querySelectorAll('[data-depends-on]').forEach(fieldEl => {
+const dependsOn = fieldEl.dataset.dependsOn;
+if (! dependsOn) 
+return;
 
-		const parentFieldRow = container.querySelector(`[data-field-name="${dependsOn}"]`);
-		if (!parentFieldRow) return;
 
-		const parentInput = parentFieldRow.querySelector('input, select');
-		if (!parentInput) return;
 
-		const isVisible = parentInput.type === 'checkbox' ? parentInput.checked : !!parentInput.value;
-		fieldEl.style.display = isVisible ? '' : 'none';
-	});
+const parentFieldRow = container.querySelector (`[data-field-name="${dependsOn}"]`);
+if (! parentFieldRow) 
+return;
+
+
+
+const parentInput = parentFieldRow.querySelector('input, select');
+if (! parentInput) 
+return;
+
+
+
+const isVisible = parentInput.type === 'checkbox' ? parentInput.checked : !! parentInput.value;
+fieldEl.style.display = isVisible ? '' : 'none';
+});
 }
 
 // ── UTILITAIRES ────────────────────────────────────────────────────────────────
 function getNestedValue(obj, path) {
-	return path.split('.').reduce((current, prop) => current?.[prop], obj);
+return path.split('.').reduce((current, prop) => current ?. [prop], obj);
 }
 
 function setNestedValue(obj, path, value) {
-	const keys = path.split('.');
-	let current = obj;
+const keys = path.split('.');
+let current = obj;
 
-	for (let i = 0; i < keys.length - 1; i++) {
-		const key = keys[i];
-		if (!(key in current) || typeof current[key] !== 'object') {
-			current[key] = {};
-		}
-		current = current[key];
-	}
+for (let i = 0; i < keys.length - 1; i++) {
+const key = keys[i];
+if (!(key in current) || typeof current[key] !== 'object') {
+current[key] = {};
+}
+current = current[key];
+}
 
-	current[keys[keys.length - 1]] = value;
+current[keys[keys.length - 1]] = value;
 }
 
 // ── VALIDATION & SOUMISSION ────────────────────────────────────────────────────
 function syncProviderOptionsBeforeSubmit() {
-	const jsonTextarea = document.getElementById('provider-options-json');
-	const hiddenField = document.getElementById('provider-options-hidden');
+const jsonTextarea = document.getElementById('provider-options-json');
+const hiddenField = document.getElementById('provider-options-hidden');
 
-	try {
-		const parsed = JSON.parse(jsonTextarea.value || '{}');
-		hiddenField.value = JSON.stringify(parsed);
-		return true;
-	} catch (e) {
-		alert('❌ Erreur JSON:\n' + e.message);
-		return false;
-	}
+try {
+const parsed = JSON.parse(jsonTextarea.value || '{}');
+hiddenField.value = JSON.stringify(parsed);
+return true;
+} catch (e) {
+alert('❌ Erreur JSON:\n' + e.message);
+return false;
+}
 }
 
 // ── AUTRES FONCTIONS (MODEL CAPABILITIES) ──────────────────────────────────────
 function updateModelOptions(providerName) {
-	const select = document.getElementById('model-select');
-	const optgroups = select.querySelectorAll('optgroup');
+const select = document.getElementById('model-select');
+const optgroups = select.querySelectorAll('optgroup');
 
-	optgroups.forEach(group => {
-		const isMatch = group.dataset.provider === providerName;
-		group.style.display = isMatch ? '' : 'none';
-	});
+optgroups.forEach(group => {
+const isMatch = group.dataset.provider === providerName;
+group.style.display = isMatch ? '' : 'none';
+});
 
-	const currentModelId = select.value;
-	if (!modelCapabilities[currentModelId] || modelCapabilities[currentModelId].provider !== providerName) {
-		for (const opt of select.querySelectorAll('option')) {
-			if (opt.dataset.provider === providerName) {
-				select.value = opt.value;
-				break;
-			}
-		}
-	}
+const currentModelId = select.value;
+if (! modelCapabilities[currentModelId] || modelCapabilities[currentModelId].provider !== providerName) {
+for (const opt of select.querySelectorAll('option')) {
+if (opt.dataset.provider === providerName) {
+select.value = opt.value;
+break;
+}
+}
+}
 
-	updateFormVisibility();
+updateFormVisibility();
 }
 
 function updateFormVisibility() {
-	const modelId = document.getElementById('model-select').value;
-	const caps = modelCapabilities[modelId] || { top_k: true };
+const modelId = document.getElementById('model-select').value;
+const caps = modelCapabilities[modelId] || {
+top_k: true
+};
 
-	const sections = { 'section-top-k': caps.top_k };
+const sections = {
+'section-top-k': caps.topK
+};
 
-	for (const [id, visible] of Object.entries(sections)) {
-		const el = document.getElementById(id);
-		if (el) {
-			el.style.display = visible ? '' : 'none';
-		}
-	}
+for (const [id, visible] of Object.entries(sections)) {
+const el = document.getElementById(id);
+if (el) {
+el.style.display = visible ? '' : 'none';
+}
+}
 
-	updateCapsBadges(modelId, caps);
+updateCapsBadges(modelId, caps);
 }
 
 function updateCapsBadges(modelId, caps) {
-	const displayEl = document.getElementById('model-caps-display');
-	if (!displayEl) return;
+const displayEl = document.getElementById('model-caps-display');
+if (! displayEl) 
+return;
 
-	const body = displayEl.querySelector('.synapse-admin__card-body');
-	if (!body) return;
 
-	body.innerHTML = '';
 
-	const capabilities = [
-		{ key: 'thinking', label: 'Thinking', icon: 'brain' },
-		{ key: 'function_calling', label: 'Tool Calls', icon: 'wrench' },
-		{ key: 'safety_settings', label: 'Safety Filters', icon: 'shield' },
-		{ key: 'streaming', label: 'Streaming', icon: 'activity' }
-	];
+const body = displayEl.querySelector('.synapse-admin__card-body');
+if (! body) 
+return;
 
-	let hasCapabilities = false;
-	for (const { key, label, icon } of capabilities) {
-		const capKey = key === 'function_calling' ? 'functionCalling' :
-		               key === 'safety_settings' ? 'safetySettings' : key;
 
-		if (caps[capKey]) {
-			const pill = document.createElement('span');
-			pill.className = 'synapse-admin__capability-pill synapse-admin__capability-pill--active';
-			pill.innerHTML = `<i data-lucide="${icon}" style="width: 14px; height: 14px;"></i> ${label}`;
-			body.appendChild(pill);
-			hasCapabilities = true;
-		}
-	}
 
-	if (!hasCapabilities) {
-		body.innerHTML = '<p style="margin: 0; color: var(--synapse-admin-text-secondary); font-size: 0.9rem;">Aucune capacité spéciale</p>';
-	} else if (typeof lucide !== 'undefined') {
-		lucide.createIcons();
-	}
+body.innerHTML = '';
+
+const capabilities = [
+{
+key: 'thinking',
+label: 'Thinking',
+icon: 'brain'
+}, {
+key: 'functionCalling',
+label: 'Tool Calls',
+icon: 'wrench'
+}, {
+key: 'safetySettings',
+label: 'Safety Filters',
+icon: 'shield'
+}, {
+key: 'streaming',
+label: 'Streaming',
+icon: 'activity'
+}
+];
+
+let hasCapabilities = false;
+for (const {key, label, icon}
+of capabilities) {
+if (caps[key]) {
+const pill = document.createElement('span');
+pill.className = 'synapse-admin__capability-pill synapse-admin__capability-pill--active';
+pill.innerHTML = `<i data-lucide="${icon}" style="width: 14px; height: 14px;"></i> ${label}`;
+body.appendChild(pill);
+hasCapabilities = true;
+}
+}
+
+if (! hasCapabilities) {
+body.innerHTML = '<p style="margin: 0; color: var(--synapse-admin-text-secondary); font-size: 0.9rem;">Aucune capacité spéciale</p>';
+} else if (typeof lucide !== 'undefined') {
+lucide.createIcons();
+}
 }
 
 // ── INITIALISATION ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-	const providerSelect = document.getElementById('provider-select');
-	const modelSelect = document.getElementById('model-select');
+const providerSelect = document.getElementById('provider-select');
+const modelSelect = document.getElementById('model-select');
 
-	providerSelect.addEventListener('change', (e) => updateModelOptions(e.target.value));
-	modelSelect.addEventListener('change', () => updateFormVisibility());
-
-	// Écouter les changements du textarea JSON pour mettre à jour les champs
-	const jsonTextarea = document.getElementById('provider-options-json');
-	if (jsonTextarea) {
-		jsonTextarea.addEventListener('change', () => {
-			renderDynamicFields(providerSelect.value);
-		});
-	}
-
-	updateModelOptions(providerSelect.value);
-	updateFormVisibility();
-	renderDynamicFields(providerSelect.value);
+providerSelect.addEventListener('change', (e) => updateModelOptions(e.target.value));
+modelSelect.addEventListener('change', () => {
+updateFormVisibility();
+renderDynamicFields(providerSelect.value);
 });
-</script>
+
+// Écouter les changements du textarea JSON pour mettre à jour les champs
+const jsonTextarea = document.getElementById('provider-options-json');
+if (jsonTextarea) {
+jsonTextarea.addEventListener('change', () => {
+renderDynamicFields(providerSelect.value);
+});
+}
+
+updateModelOptions(providerSelect.value);
+updateFormVisibility();
+renderDynamicFields(providerSelect.value);
+});
+	</script>
 {% endblock %}

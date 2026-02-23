@@ -224,13 +224,13 @@ class PresetsController extends AbstractController
             }
         }
 
+        // Get model capabilities
+        $caps = $this->capabilityRegistry->getCapabilities($modelName);
+
         // Validate provider options
-        $providerOptions = $this->validateProviderOptions($providerOptions, $preset->getProviderName());
+        $providerOptions = $this->validateProviderOptions($providerOptions, $preset->getProviderName(), $caps);
 
         $preset->setProviderOptions($providerOptions);
-
-        // Get model capabilities for generation config validation
-        $caps = $this->capabilityRegistry->getCapabilities($modelName);
 
         // Generation Config
         $preset->setGenerationTemperature((float) ($data['generation_temperature'] ?? 1.0));
@@ -271,49 +271,58 @@ class PresetsController extends AbstractController
         foreach ($this->capabilityRegistry->getKnownModels() as $modelId) {
             $caps = $this->capabilityRegistry->getCapabilities($modelId);
             $result[$modelId] = [
-                'provider' => $caps->provider,
-                'thinking' => $caps->thinking,
-                'safety_settings' => $caps->safetySettings,
-                'top_k' => $caps->topK,
-                'function_calling' => $caps->functionCalling,
-
+                'provider'        => $caps->provider,
+                'thinking'        => $caps->thinking,
+                'safetySettings' => $caps->safetySettings,
+                'topK'           => $caps->topK,
+                'functionCalling' => $caps->functionCalling,
+                'streaming'       => $caps->streaming,
             ];
         }
         return $result;
     }
 
     /**
-     * Valide et assainit les options du provider selon sa configuration
+     * Valide et assainit les options du provider selon sa configuration et les capacités du modèle
      */
-    private function validateProviderOptions(array $options, string $providerName): array
+    private function validateProviderOptions(array $options, string $providerName, \ArnaudMoncondhuy\SynapseBundle\Shared\Model\ModelCapabilities $caps): array
     {
         // Énumérations valides
         $validBlockLevels = ['BLOCK_NONE', 'BLOCK_ONLY_HIGH', 'BLOCK_MEDIUM_AND_ABOVE', 'BLOCK_LOW_AND_ABOVE'];
         $validReasoningEfforts = ['low', 'medium', 'high'];
 
+        // Sécurité globale: si le modèle ne supporte pas le thinking, on le force à false
+        if (!$caps->thinking) {
+            $options['thinking']['enabled'] = false;
+        }
+
+        // Sécurité globale: si le modèle ne supporte pas les safety settings, on les désactive
+        if (!$caps->safetySettings) {
+            unset($options['safety_settings']);
+        }
+
         if ($providerName === 'gemini') {
             // Valider thinking.budget
-            if (isset($options['thinking']['budget']) && !empty($options['thinking']['budget'])) {
+            if ($caps->thinking && isset($options['thinking']['budget']) && !empty($options['thinking']['budget'])) {
                 $budget = (int) $options['thinking']['budget'];
-                // Plage: 128–24576
-                if ($budget < 128 || $budget > 24576) {
-                    $options['thinking']['budget'] = 1024; // Réinitialiser à la valeur par défaut
+                // Plage: 128–24576 (selon modèle)
+                if ($budget < 128 || $budget > 32000) { // On est large, le client Gemini fera le clamp final
+                    $options['thinking']['budget'] = 1024;
                 }
             }
 
-            // Valider safety_settings.default_threshold
-            if (isset($options['safety_settings']['default_threshold']) && !empty($options['safety_settings']['default_threshold'])) {
+            // Valider safety_settings
+            if ($caps->safetySettings && isset($options['safety_settings']['default_threshold']) && !empty($options['safety_settings']['default_threshold'])) {
                 if (!in_array($options['safety_settings']['default_threshold'], $validBlockLevels, true)) {
                     unset($options['safety_settings']['default_threshold']);
                 }
             }
 
-            // Valider les 4 filtres de sécurité spécifiques
+            // Filtres spécifiques Gemini
             $safetyFilters = ['hate_speech', 'dangerous_content', 'harassment', 'sexually_explicit'];
             foreach ($safetyFilters as $filter) {
                 if (isset($options['safety_settings']['thresholds'][$filter]) && !empty($options['safety_settings']['thresholds'][$filter])) {
                     $value = $options['safety_settings']['thresholds'][$filter];
-                    // Autoriser les valeurs vides ou valides
                     if ($value !== '' && !in_array($value, $validBlockLevels, true)) {
                         unset($options['safety_settings']['thresholds'][$filter]);
                     }
@@ -321,22 +330,17 @@ class PresetsController extends AbstractController
             }
         } elseif ($providerName === 'ovh') {
             // Valider thinking.reasoning_effort
-            if (isset($options['thinking']['reasoning_effort']) && !empty($options['thinking']['reasoning_effort'])) {
+            if ($caps->thinking && isset($options['thinking']['reasoning_effort']) && !empty($options['thinking']['reasoning_effort'])) {
                 if (!in_array($options['thinking']['reasoning_effort'], $validReasoningEfforts, true)) {
                     unset($options['thinking']['reasoning_effort']);
                 }
             }
 
-            // Supprimer les champs Gemini qui ne doivent pas être là
-            if (isset($options['thinking']['budget'])) {
-                unset($options['thinking']['budget']);
-            }
-            if (isset($options['safety_settings'])) {
-                unset($options['safety_settings']);
-            }
+            // Nettoyage des champs exclusifs
+            unset($options['thinking']['budget']);
+            unset($options['safety_settings']);
         }
 
         return $options;
     }
-
 }
