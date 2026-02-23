@@ -41,6 +41,7 @@ class SynapseProvider
     #[ORM\Column(type: Types::STRING, length: 100)]
     private string $label = '';
 
+    /**
      * Credentials du provider (JSON opaque, spécifique au provider).
      */
     #[ORM\Column(type: Types::JSON)]

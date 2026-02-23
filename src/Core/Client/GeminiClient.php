@@ -736,8 +736,11 @@ class GeminiClient implements LlmClientInterface
                 'type'     => 'select',
                 'required' => true,
                 'options'  => [
+                    'europe-west9'    => 'Europe West 9 (Paris)',
                     'europe-west1'    => 'Europe West 1 (Belgique)',
                     'europe-west4'    => 'Europe West 4 (Pays-Bas)',
+                    'europe-west3'    => 'Europe West 3 (Francfort)',
+                    'europe-west2'    => 'Europe West 2 (Londres)',
                     'us-central1'     => 'US Central 1 (Iowa)',
                     'us-east1'        => 'US East 1 (Caroline du Sud)',
                     'asia-east1'      => 'Asia East 1 (Taiwan)',

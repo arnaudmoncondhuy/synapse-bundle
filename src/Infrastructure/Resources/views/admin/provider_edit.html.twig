@@ -48,42 +48,42 @@
 					</div>
 					<div class="synapse-admin__card-body">
 						{% set creds = provider.credentials %}
-						{% foreach fields as name, config %}
-						<div class="synapse-admin__form-row">
-							<label class="synapse-admin__label">
-								{{ config.label }}
-								{% if config.required|default(false) %}
-									<span class="synapse-admin__required">*</span>
-								{% endif %}
-							</label>
+						{% for name, config in fields %}
+							<div class="synapse-admin__form-row">
+								<label class="synapse-admin__label">
+									{{ config.label }}
+									{% if config.required|default(false) %}
+										<span class="synapse-admin__required">*</span>
+									{% endif %}
+								</label>
 
-							{% if config.type == 'select' %}
-								<select name="{{ name }}" class="synapse-admin__select" {% if config.required|default(false) %} required {% endif %}>
-									{% for value, label in config.options %}
-										<option value="{{ value }}" {% if creds[name]|default(config.value|default('')) == value %} selected {% endif %}>
-											{{ label }}
-										</option>
-									{% endfor %}
-								</select>
-							{% elseif config.type == 'textarea' %}
-								<textarea name="{{ name }}" class="synapse-admin__textarea {% if config.is_code|default(false) %}synapse-admin__textarea--code{% endif %}" rows="8" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) and creds[name] is empty %} required {% endif %}></textarea>
-								{% if creds[name] is not empty %}
-									<p class="synapse-admin__help">
-										<i data-lucide="shield-check"></i>
-										Valeur déjà configurée. Laissez vide pour conserver, ou remplissez pour modifier.
-									</p>
+								{% if config.type == 'select' %}
+									<select name="{{ name }}" class="synapse-admin__select" {% if config.required|default(false) %} required {% endif %}>
+										{% for value, label in config.options %}
+											<option value="{{ value }}" {% if creds[name]|default(config.value|default('')) == value %} selected {% endif %}>
+												{{ label }}
+											</option>
+										{% endfor %}
+									</select>
+								{% elseif config.type == 'textarea' %}
+									<textarea name="{{ name }}" class="synapse-admin__textarea {% if config.is_code|default(false) %}synapse-admin__textarea--code{% endif %}" rows="8" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) and creds[name] is empty %} required {% endif %}></textarea>
+									{% if creds[name] is not empty %}
+										<p class="synapse-admin__help">
+											<i data-lucide="shield-check"></i>
+											Valeur déjà configurée. Laissez vide pour conserver, ou remplissez pour modifier.
+										</p>
+									{% endif %}
+								{% elseif config.type == 'password' %}
+									<input type="password" name="{{ name }}" class="synapse-admin__input" placeholder="{% if creds[name] is not empty %}Valeur configurée — laisser vide pour conserver{% else %}{{ config.placeholder|default('') }}{% endif %}" {% if config.required|default(false) and creds[name] is empty %} required {% endif %}>
+								{% else %}
+									<input type="text" name="{{ name }}" value="{{ creds[name]|default(config.value|default('')) }}" class="synapse-admin__input" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) %} required {% endif %}>
 								{% endif %}
-							{% elseif config.type == 'password' %}
-								<input type="password" name="{{ name }}" class="synapse-admin__input" placeholder="{% if creds[name] is not empty %}Valeur configurée — laisser vide pour conserver{% else %}{{ config.placeholder|default('') }}{% endif %}" {% if config.required|default(false) and creds[name] is empty %} required {% endif %}>
-							{% else %}
-								<input type="text" name="{{ name }}" value="{{ creds[name]|default(config.value|default('')) }}" class="synapse-admin__input" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) %} required {% endif %}>
-							{% endif %}
 
-							{% if config.help is defined %}
-								<p class="synapse-admin__help">{{ config.help|raw }}</p>
-							{% endif %}
-						</div>
-						{% endforeach %}
+								{% if config.help is defined %}
+									<p class="synapse-admin__help">{{ config.help|raw }}</p>
+								{% endif %}
+							</div>
+						{% endfor %}
 					</div>
 				</div>
 
