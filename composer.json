@@ -1,12 +1,12 @@
 {
     "name": "arnaudmoncondhuy/synapse-bundle",
     "type": "symfony-bundle",
-    "description": "A reusable AI Chatbot bundle for Symfony with multi-provider support.",
+    "description": "Un bundle Chatbot IA réutilisable pour Symfony avec support multi-fournisseurs.",
     "license": "MIT",
     "authors": [
         {
             "name": "Arnaud Moncondhuy",
-            "email": "arnaud@makerlab.com"
+            "email": "arnaudmoncondhuy@gmail.com"
         }
     ],
     "require": {
