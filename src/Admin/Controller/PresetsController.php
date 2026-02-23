@@ -260,7 +260,9 @@ class PresetsController extends AbstractController
         $result = [];
         foreach ($this->capabilityRegistry->getKnownModels() as $modelId) {
             $caps = $this->capabilityRegistry->getCapabilities($modelId);
-            $result[$caps->provider][] = $modelId;
+            if ($caps->type !== 'embedding') {
+                $result[$caps->provider][] = $modelId;
+            }
         }
         return $result;
     }
@@ -272,6 +274,8 @@ class PresetsController extends AbstractController
             $caps = $this->capabilityRegistry->getCapabilities($modelId);
             $result[$modelId] = [
                 'provider'        => $caps->provider,
+                'type'            => $caps->type,
+                'dimensions'      => $caps->dimensions,
                 'thinking'        => $caps->thinking,
                 'safetySettings' => $caps->safetySettings,
                 'topK'           => $caps->topK,
@@ -291,9 +295,9 @@ class PresetsController extends AbstractController
         $validBlockLevels = ['BLOCK_NONE', 'BLOCK_ONLY_HIGH', 'BLOCK_MEDIUM_AND_ABOVE', 'BLOCK_LOW_AND_ABOVE'];
         $validReasoningEfforts = ['low', 'medium', 'high'];
 
-        // Sécurité globale: si le modèle ne supporte pas le thinking, on le force à false
+        // Sécurité globale: si le modèle ne supporte pas le thinking, on le retire
         if (!$caps->thinking) {
-            $options['thinking']['enabled'] = false;
+            unset($options['thinking']);
         }
 
         // Sécurité globale: si le modèle ne supporte pas les safety settings, on les désactive

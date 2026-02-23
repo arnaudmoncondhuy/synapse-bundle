@@ -53,6 +53,24 @@ class SynapseConfig
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $debugMode = false;
 
+    /**
+     * Provider d'embedding par défaut pour le système.
+     */
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    private ?string $embeddingProvider = null;
+
+    /**
+     * Modèle d'embedding par défaut pour le système.
+     */
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    private ?string $embeddingModel = null;
+
+    /**
+     * Dimension d'embedding souhaitée (utile si le modèle supporte plusieurs dimensions).
+     */
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $embeddingDimension = null;
+
     // Getters et Setters
 
     public function getId(): ?int
@@ -101,6 +119,39 @@ class SynapseConfig
     public function setDebugMode(bool $debugMode): self
     {
         $this->debugMode = $debugMode;
+        return $this;
+    }
+
+    public function getEmbeddingProvider(): ?string
+    {
+        return $this->embeddingProvider;
+    }
+
+    public function setEmbeddingProvider(?string $embeddingProvider): self
+    {
+        $this->embeddingProvider = $embeddingProvider;
+        return $this;
+    }
+
+    public function getEmbeddingModel(): ?string
+    {
+        return $this->embeddingModel;
+    }
+
+    public function setEmbeddingModel(?string $embeddingModel): self
+    {
+        $this->embeddingModel = $embeddingModel;
+        return $this;
+    }
+
+    public function getEmbeddingDimension(): ?int
+    {
+        return $this->embeddingDimension;
+    }
+
+    public function setEmbeddingDimension(?int $embeddingDimension): self
+    {
+        $this->embeddingDimension = $embeddingDimension;
         return $this;
     }
 

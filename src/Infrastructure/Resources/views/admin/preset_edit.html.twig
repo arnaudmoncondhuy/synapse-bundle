@@ -75,7 +75,7 @@
 			</div>
 
 			{# ── Paramètres de génération ──────────────────────────────────────── #}
-			<div class="synapse-admin__card">
+			<div class="synapse-admin__card" id="generation-params-card">
 				<div class="synapse-admin__card-header">
 					<span class="synapse-admin__card-title">Paramètres de génération</span>
 				</div>
@@ -117,7 +117,7 @@
 			</div>
 
 			{# ── Mode Streaming ────────────────────────────────────────── #}
-			<div class="synapse-admin__card">
+			<div class="synapse-admin__card" id="transmission-mode-card">
 				<div class="synapse-admin__card-header">
 					<span class="synapse-admin__card-title">Mode de Transmission</span>
 				</div>
@@ -146,7 +146,7 @@
 				<div class="synapse-admin__card-body">
 					<p class="synapse-admin__help" style="margin-bottom: 1.5rem;">
 						Configuration dynamique basée sur le provider sélectionné.
-																																																																	Les changements sont synchronisés automatiquement avec le JSON avancé ci-dessous.
+																																																																																																																							Les changements sont synchronisés automatiquement avec le JSON avancé ci-dessous.
 					</p>
 					{# Conteneur pour champs dynamiques générés par JS #}
 					<div
@@ -167,7 +167,7 @@
 					<p class="synapse-admin__help" style="margin-bottom: 1rem;">
 						<strong>Champ caché et synchronisé automatiquement.</strong>
 						Les champs dynamiques ci-dessus mettent à jour ce JSON en temps réel.
-																																																																	Vous pouvez aussi éditer directement le JSON pour des configurations avancées.
+																																																																																																																							Vous pouvez aussi éditer directement le JSON pour des configurations avancées.
 					</p>
 					<div class="synapse-admin__form-row">
 						<label class="synapse-admin__label">providerOptions (JSON)
@@ -362,6 +362,19 @@ dependsOn: 'safety_settings.enabled'
 }
 ]
 },
+'gemini-embedding': {
+fields: [
+{
+name: 'output_dimensionality',
+type: 'number',
+label: 'Dimension de sortie',
+help: 'Nombre de dimensions pour le vecteur (optionnel pour certain modèles)',
+min: 1,
+max: 3072,
+defaultValue: 768
+}
+]
+},
 'ovh': {
 fields: [
 {
@@ -405,7 +418,10 @@ return;
 
 container.innerHTML = '';
 
-const schema = PROVIDER_SCHEMAS[providerName];
+const modelId = document.getElementById('model-select').value;
+const caps = modelCapabilities[modelId] || {};
+
+let schema = PROVIDER_SCHEMAS[providerName];
 const card = document.getElementById('provider-options-card');
 const jsonCard = document.getElementById('provider-options-json-card');
 
@@ -433,9 +449,12 @@ currentData = JSON.parse(jsonTextarea.value || '{}');
 currentData = {};
 }
 
+// Synchronisation du champ caché à l'initialisation
+const hiddenField = document.getElementById('provider-options-hidden');
+if (hiddenField && jsonTextarea) {
+hiddenField.value = jsonTextarea.value;
+}
 // Générer les champs
-const modelId = document.getElementById('model-select').value;
-const caps = modelCapabilities[modelId] || {};
 
 // Pré-filtrage: identifier les champs parents qui sont exclus par capacité
 const excludedCapabilities = [];
@@ -717,6 +736,7 @@ el.style.display = visible ? '' : 'none';
 }
 }
 
+// Les Preset LLM sont exclusivement des modèles de Chat. On ne masque plus ces cartes.
 updateCapsBadges(modelId, caps);
 }
 

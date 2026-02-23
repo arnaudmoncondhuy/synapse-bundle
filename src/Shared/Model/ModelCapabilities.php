@@ -19,6 +19,12 @@ class ModelCapabilities
         /** Provider auquel appartient ce modèle */
         public readonly string $provider,
 
+        /** Type du modèle (chat, embedding, etc) */
+        public readonly string $type = 'chat',
+
+        /** Dimensions proposées pour les embeddings */
+        public readonly array $dimensions = [],
+
         /** Supporte le mode thinking étendu (budget de tokens de réflexion) */
         public readonly bool $thinking = false,
 

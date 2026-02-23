@@ -32,12 +32,12 @@
 			{% endblock %}
 		</title>
 
-	{% block admin_stylesheets %}
-		<link rel="stylesheet" href="{{ asset('synapse/styles/admin/synapse-variables.css') }}">
-		<link rel="stylesheet" href="{{ asset('synapse/styles/admin/synapse-admin.css') }}">
-		<link rel="stylesheet" href="{{ asset('synapse/styles/admin/synapse-admin-enhancements.css') }}">
-		{% block admin_custom_styles %}{% endblock %}
-	{% endblock %}
+		{% block admin_stylesheets %}
+			<link rel="stylesheet" href="{{ asset('synapse/styles/admin/synapse-variables.css') }}">
+			<link rel="stylesheet" href="{{ asset('synapse/styles/admin/synapse-admin.css') }}">
+			<link rel="stylesheet" href="{{ asset('synapse/styles/admin/synapse-admin-enhancements.css') }}">
+			{% block admin_custom_styles %}{% endblock %}
+		{% endblock %}
 
 		{% block admin_head_scripts %}
 			{# Lucide Icons - Local fallback recommandé #}
@@ -87,15 +87,21 @@
 								</a>
 							</li>
 							<li class="synapse-admin__nav-item">
-								<a href="{{ path('synapse_admin_tools') }}" class="{% if app.request.attributes.get('_route') == 'synapse_admin_tools' %}active{% endif %}">
-									<i data-lucide="wrench"></i>
-									Outils
-								</a>
-							</li>
-							<li class="synapse-admin__nav-item">
 								<a href="{{ path('synapse_admin_presets') }}" class="{% if app.request.attributes.get('_route') starts with 'synapse_admin_presets' %}active{% endif %}">
 									<i data-lucide="sliders-horizontal"></i>
 									Presets
+								</a>
+							</li>
+							<li class="synapse-admin__nav-item">
+								<a href="{{ path('synapse_admin_embeddings') }}" class="{% if app.request.attributes.get('_route') starts with 'synapse_admin_embeddings' %}active{% endif %}">
+									<i data-lucide="database"></i>
+									Embeddings
+								</a>
+							</li>
+							<li class="synapse-admin__nav-item">
+								<a href="{{ path('synapse_admin_tools') }}" class="{% if app.request.attributes.get('_route') == 'synapse_admin_tools' %}active{% endif %}">
+									<i data-lucide="wrench"></i>
+									Outils
 								</a>
 							</li>
 							<li class="synapse-admin__nav-item">
@@ -121,7 +127,8 @@
 							<span>Synapse Bundle</span>
 						</div>
 						<div style="font-size: 0.875rem; color: var(--color-text-secondary, #666);">
-							{{ synapse_version() }} • Made with ❤️ by Arnaud M.
+							{{ synapse_version() }}
+							• Made with ❤️ by Arnaud M.
 						</div>
 					</div>
 				{% endblock %}

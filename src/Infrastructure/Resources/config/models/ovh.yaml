@@ -59,3 +59,18 @@ models:
     context_window: 32768 # Standard 32k context for V0.3
     pricing_input: 0.10
     pricing_output: 0.10
+
+  bge-m3:
+    type: embedding
+    provider: ovh
+    dimensions: [1024] # Dimension standard pour bge-m3
+    thinking: false
+    safety_settings: false
+    top_k: false
+    function_calling: false
+    streaming: false
+    system_prompt: false
+    context_window: 8192
+    pricing_input: 0.01 # Source : https://www.ovhcloud.com/fr/ai-machine-learning/ai-endpoints/pricing/ (0.01€ / 1M tokens d'entrée)
+    pricing_output: 0.00
+

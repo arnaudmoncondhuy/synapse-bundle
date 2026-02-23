@@ -6,6 +6,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Core\Client;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface;
+use ArnaudMoncondhuy\SynapseBundle\Contract\EmbeddingClientInterface;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmAuthenticationException;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmException;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmQuotaException;
@@ -32,7 +33,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * Streaming  : SSE (data: {...}\n, terminé par data: [DONE])
  * Tool calls : format OpenAI (tool_calls / role tool)
  */
-class OvhAiClient implements LlmClientInterface
+class OvhAiClient implements LlmClientInterface, EmbeddingClientInterface
 {
     private string $model         = 'Gpt-oss-20b';
     private string $apiKey        = '';
@@ -238,6 +239,60 @@ class OvhAiClient implements LlmClientInterface
         } catch (\Throwable $e) {
             $this->handleException($e);
             return $this->emptyChunk();
+        }
+    }
+
+    /**
+     * Génère des embeddings vectoriels pour un ou plusieurs textes d'entrée.
+     * Compatible avec l'endpoint /v1/embeddings de type OpenAI (comme OVH).
+     */
+    public function generateEmbeddings(string|array $input, ?string $model = null, array $options = []): array
+    {
+        $this->applyDynamicConfig();
+
+        $effectiveModel = $model ?? $this->model;
+
+        $payload = [
+            'model' => $effectiveModel,
+            'input' => $input,
+        ];
+
+        try {
+            $response = $this->httpClient->request('POST', rtrim($this->endpoint, '/') . '/embeddings', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $this->apiKey,
+                    'Content-Type'  => 'application/json',
+                ],
+                'json'    => $payload,
+                'timeout' => 60,
+            ]);
+
+            $data = $response->toArray();
+
+            $embeddings = [];
+            if (isset($data['data']) && is_array($data['data'])) {
+                // OpenAI returns data sorted by index, but it's good practice to ensure it
+                usort($data['data'], fn($a, $b) => ($a['index'] ?? 0) <=> ($b['index'] ?? 0));
+
+                foreach ($data['data'] as $item) {
+                    if (isset($item['embedding'])) {
+                        $embeddings[] = $item['embedding'];
+                    }
+                }
+            }
+
+            $usage = [
+                'prompt_tokens' => $data['usage']['prompt_tokens'] ?? 0,
+                'total_tokens'  => $data['usage']['total_tokens'] ?? 0,
+            ];
+
+            return [
+                'embeddings' => $embeddings,
+                'usage'      => $usage,
+            ];
+        } catch (\Throwable $e) {
+            $this->handleException($e);
+            return ['embeddings' => [], 'usage' => ['prompt_tokens' => 0, 'total_tokens' => 0]];
         }
     }
 

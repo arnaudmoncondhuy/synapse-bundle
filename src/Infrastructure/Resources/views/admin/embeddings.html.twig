@@ -1,0 +1,352 @@
+{% extends '@Synapse/admin/layout.html.twig' %}
+
+{% block admin_title %}
+	Embeddings — Synapse Admin
+{% endblock %}
+
+{% block admin_content %}
+	<div class="synapse-admin__page">
+		<div class="synapse-admin__page-header">
+			<div>
+				<h1 class="synapse-admin__page-title">
+					<i data-lucide="database"></i>
+					Embeddings
+				</h1>
+				<p class="synapse-admin__help mb-4" style="margin-top: 5px;">
+					Configurez ici le modèle utilisé globalement par votre application pour générer des vecteurs (Embeddings). 
+																									Ce réglage est séparé des Presets de Chat car les vecteurs générés par un modèle donné ne sont pas compatibles avec un autre.
+				</p>
+			</div>
+		</div>
+
+		<div
+			class="synapse-admin__grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start;">
+
+			{# Colonne Gauche : Configuration #}
+			<div>
+				<form method="post" action="{{ path('synapse_admin_embeddings') }}">
+					<div class="synapse-admin__card">
+						<div class="synapse-admin__card-header">
+							<span class="synapse-admin__card-title">Configuration Initiale (Text to Vector)</span>
+						</div>
+						<div class="synapse-admin__card-body">
+							<div class="synapse-admin__form-row">
+								<label class="synapse-admin__label">Provider d'Embedding Actif</label>
+								<select name="embedding_provider" class="synapse-admin__select" id="embedding_provider_select">
+									<option value="">-- Résolution automatique (par défaut) --</option>
+									{% for provider in active_providers %}
+										<option value="{{ provider.name }}" {% if config.embeddingProvider == provider.name %} selected {% endif %}>
+											{{ provider.label }}
+										</option>
+									{% endfor %}
+								</select>
+								<p class="synapse-admin__help">Sélectionnez le fournisseur que vous souhaitez utiliser. Seuls les fournisseurs activés sont listés.</p>
+							</div>
+
+							<div class="synapse-admin__form-row" id="embedding_model_row" style="display: none;">
+								<label class="synapse-admin__label">Modèle d'embedding actif</label>
+								<select name="embedding_model" class="synapse-admin__select" id="embedding_model_select">
+									<option value="">-- Résolution automatique (par défaut) --</option>
+								</select>
+							</div>
+
+							<div class="synapse-admin__form-row" id="embedding_dimension_row" style="display: none;">
+								<label class="synapse-admin__label">Dimension des vecteurs (Output Dimensionality)</label>
+								<select name="embedding_dimension" class="synapse-admin__select" id="embedding_dimension_select">
+									<option value="">-- Par défaut --</option>
+								</select>
+								<p class="synapse-admin__help">Certains modèles (ex: Vertex AI, Nomic) permettent de réduire la taille des vecteurs générés pour économiser du stockage au prix d'une légère baisse de précision.</p>
+							</div>
+						</div>
+					</div>
+
+					<div class="synapse-admin__card" style="opacity: 0.6;">
+						<div class="synapse-admin__card-header">
+							<span class="synapse-admin__card-title">Chunking et Stratégies d'Indexation (Bientôt disponible)</span>
+						</div>
+						<div class="synapse-admin__card-body">
+							<p class="synapse-admin__help">
+								De futures versions de Synapse permettront de configurer ici les stratégies de RAG, 
+																																la taille de découpage des textes (chunks) et le chevauchement (overlap) avant vectorisation.
+							</p>
+						</div>
+					</div>
+
+					<div class="synapse-admin__form-actions">
+						<button type="submit" class="synapse-admin__btn synapse-admin__btn--primary">
+							<i data-lucide="save"></i>
+							Enregistrer la configuration globale
+						</button>
+					</div>
+				</form>
+			</div>
+
+			{# Colonne Droite : Widgets de Test & DB #}
+			<div
+				style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+				{# Widget de Test #}
+				<div class="synapse-admin__card">
+					<div class="synapse-admin__card-header">
+						<span class="synapse-admin__card-title">Test d'Embedding</span>
+					</div>
+					<div class="synapse-admin__card-body">
+						{% if config.embeddingModel or config.embeddingProvider %}
+							<p class="synapse-admin__help mb-4">Générez un vecteur pour vérifier la bonne communication avec l'API configurée (paramètres sauvegardés).</p>
+
+							<div class="synapse-admin__form-row" style="margin-bottom: 1rem;">
+								<textarea id="test_embedding_text" class="synapse-admin__input" rows="2" placeholder="Texte à vectoriser..." style="resize: vertical; font-size: 0.9rem;">Bonjour Synapse !</textarea>
+							</div>
+
+							<button type="button" class="synapse-admin__btn synapse-admin__btn--secondary" id="test_embedding_btn" style="width: 100%; justify-content: center;">
+								<i data-lucide="flask-conical"></i>
+								Tester l'API
+							</button>
+
+							<div id="test_embedding_result" style="margin-top: 1rem; display: none; background: var(--synapse-admin-bg); padding: 1rem; border-radius: var(--synapse-admin-radius); border: 1px solid var(--synapse-admin-border-light);">
+								<div id="test_embedding_status" style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"></div>
+
+								{# Visualization Visual #}
+								<div id="test_embedding_viz" style="margin-bottom: 1rem; height: 40px; background: var(--synapse-admin-bg-hover); border-radius: 4px; overflow: hidden; display: flex; align-items: stretch; border: 1px solid var(--synapse-admin-border-light);"></div>
+
+								<div id="test_embedding_details" style="font-size: 0.85rem; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem;"></div>
+								<pre id="test_embedding_json" style="margin: 0; padding: 0.5rem; background: var(--synapse-admin-bg-hover); border-radius: 4px; font-size: 0.75rem; overflow-x: auto; color: var(--synapse-admin-text); max-height: 100px;"></pre>
+							</div>
+						{% else %}
+							<div class="synapse-admin__alert synapse-admin__alert--warning" style="margin: 0; padding: 1rem;">
+								Veuillez enregistrer une configuration avant de pouvoir tester.
+							</div>
+						{% endif %}
+					</div>
+				</div>
+
+				{# Widget Base de données #}
+				<div class="synapse-admin__card">
+					<div class="synapse-admin__card-header">
+						<span class="synapse-admin__card-title">Stockage Vectoriel</span>
+					</div>
+					<div class="synapse-admin__card-body" style="padding: 0;">
+						{% if db_vector_ready %}
+							<div style="padding: 1.5rem; border-left: 4px solid var(--synapse-admin-success); background: var(--synapse-admin-bg-hover);">
+								<div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+									<i data-lucide="check-circle" style="color: var(--synapse-admin-success); margin-top: 2px;"></i>
+									<div>
+										<div style="font-weight: 600; margin-bottom: 0.25rem;">Support Natif Opérationnel</div>
+										<div style="font-size: 0.85rem; color: var(--synapse-admin-text-secondary);">
+											La base de données gère les vecteurs nativement (extension
+											<code>pgvector</code>
+											activée). Le stockage RAG est prêt.
+										</div>
+									</div>
+								</div>
+							</div>
+						{% elseif db_is_postgres %}
+							<div style="padding: 1.5rem; border-left: 4px solid var(--synapse-admin-warning); background: var(--synapse-admin-bg-hover);">
+								<div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+									<i data-lucide="alert-triangle" style="color: var(--synapse-admin-warning); margin-top: 2px;"></i>
+									<div>
+										<div style="font-weight: 600; margin-bottom: 0.25rem;">Support Vectoriel Inactif</div>
+										<div style="font-size: 0.85rem; color: var(--synapse-admin-text-secondary);">
+											Base PostgreSQL détectée, mais l'extension
+											<code>pgvector</code>
+											n'est pas activée.
+											<br>Exécutez
+											<code>CREATE EXTENSION vector;</code>
+											sur la BDD.
+										</div>
+									</div>
+								</div>
+							</div>
+						{% else %}
+							<div style="padding: 1.5rem; border-left: 4px solid var(--synapse-admin-primary); background: var(--synapse-admin-bg-hover);">
+								<div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+									<i data-lucide="info" style="color: var(--synapse-admin-primary); margin-top: 2px;"></i>
+									<div>
+										<div style="font-weight: 600; margin-bottom: 0.25rem;">Support Natif Indisponible</div>
+										<div style="font-size: 0.85rem; color: var(--synapse-admin-text-secondary);">
+											La base actuelle ({{ db_platform }}) ne supporte pas nativement les vecteurs. L'indexation sémantique nécessitera un moteur tiers (ex: Qdrant) branché à Synapse.
+										</div>
+									</div>
+								</div>
+							</div>
+						{% endif %}
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () { // Configuration Dynamique Provider/Model/Dimensions
+const providerSelect = document.getElementById('embedding_provider_select');
+const modelRow = document.getElementById('embedding_model_row');
+const modelSelect = document.getElementById('embedding_model_select');
+const dimensionRow = document.getElementById('embedding_dimension_row');
+const dimensionSelect = document.getElementById('embedding_dimension_select');
+
+const modelsByProvider = {{ embedding_models_by_provider|json_encode|raw }};
+
+const currentSavedModel = "{{ config.embeddingModel|default('') }}";
+const currentSavedDimension = "{{ config.embeddingDimension|default('') }}";
+
+function updateModels() {
+const provider = providerSelect.value;
+
+if (! provider || ! modelsByProvider[provider] || Object.keys(modelsByProvider[provider]).length === 0) {
+modelRow.style.display = 'none';
+modelSelect.innerHTML = '<option value="">-- Résolution automatique (par défaut) --</option>';
+updateDimensions();
+return;
+}
+
+modelRow.style.display = 'block';
+let html = '<option value="">-- Résolution automatique (par défaut) --</option>';
+
+const models = modelsByProvider[provider];
+for (const modelId in models) {
+const caps = models[modelId];
+const isSelected = (currentSavedModel == modelId) ? 'selected' : '';
+const dimensionsData = caps.dimensions ? JSON.stringify(caps.dimensions) : '';
+
+html += `<option value="${modelId}" ${isSelected} data-dimensions='${dimensionsData}'>${modelId}</option>`;
+}
+
+modelSelect.innerHTML = html;
+updateDimensions();
+}
+
+function updateDimensions() {
+const selectedOption = modelSelect.options[modelSelect.selectedIndex];
+if (! selectedOption || ! selectedOption.dataset.dimensions) {
+dimensionRow.style.display = 'none';
+dimensionSelect.innerHTML = '<option value="">-- Par défaut --</option>';
+return;
+}
+
+try {
+const dimensions = JSON.parse(selectedOption.dataset.dimensions);
+if (dimensions && dimensions.length > 1) {
+dimensionRow.style.display = 'block';
+let html = `<option value="">-- Par défaut (${
+dimensions[0]
+}) --</option>`;
+dimensions.forEach(dim => {
+const isSelected = (currentSavedDimension == dim) ? 'selected' : '';
+html += `<option value="${dim}" ${isSelected}>${dim} dimensions</option>`;
+});
+dimensionSelect.innerHTML = html;
+} else {
+dimensionRow.style.display = 'none';
+dimensionSelect.innerHTML = '<option value="">-- Par défaut --</option>';
+}
+} catch (e) {
+dimensionRow.style.display = 'none';
+}
+}
+
+if (providerSelect) {
+providerSelect.addEventListener('change', updateModels);
+modelSelect.addEventListener('change', updateDimensions);
+updateModels();
+}
+
+// Script de Test d'Embedding AJAX
+const testBtn = document.getElementById('test_embedding_btn');
+const testText = document.getElementById('test_embedding_text');
+const testResult = document.getElementById('test_embedding_result');
+const testStatus = document.getElementById('test_embedding_status');
+const testDetails = document.getElementById('test_embedding_details');
+const testJson = document.getElementById('test_embedding_json');
+
+if (testBtn) {
+testBtn.addEventListener('click', async () => {
+const text = testText.value;
+const originalText = testBtn.innerHTML;
+
+testBtn.innerHTML = '<i data-lucide="loader-2" class="lucide-spin"></i> Génération en cours...';
+testBtn.disabled = true;
+testResult.style.display = 'none';
+if (typeof lucide !== 'undefined') 
+lucide.createIcons();
+
+
+
+try {
+const formData = new FormData();
+formData.append('text', text);
+
+const response = await fetch('{{ path("synapse_admin_embeddings_test") }}', {
+method: 'POST',
+body: formData,
+headers: {
+'X-Requested-With': 'XMLHttpRequest'
+}
+});
+
+
+const isJson = response.headers.get('content-type') ?. includes('application/json');
+if (! isJson) {
+throw new Error('La réponse du serveur n\'est pas au format JSON.');
+}
+
+const data = await response.json();
+
+testResult.style.display = 'block';
+
+if (data.success) {
+testStatus.innerHTML = '<i data-lucide="check-circle" style="color: var(--synapse-admin-success); width: 16px;"></i> <span style="color: var(--synapse-admin-success);">Succès de l\'API</span>';
+
+// Visualization Rendering
+const vizContainer = document.getElementById('test_embedding_viz');
+vizContainer.innerHTML = '';
+if (Array.isArray(data.sample)) {
+data.sample.forEach(val => {
+const slice = document.createElement('div');
+slice.style.flex = '1';
+const opacity = Math.min(Math.abs(val) * 5, 1);
+slice.style.backgroundColor = `rgba(124, 58, 237, ${opacity})`;
+slice.title = val.toFixed(4);
+vizContainer.appendChild(slice);
+});
+}
+
+let detailsHtml = `<strong>Dimension:</strong> ${
+data.dimension
+} vecteurs<br>`;
+detailsHtml += `<strong>Temps de réponse:</strong> ${
+data.time
+} ms`;
+if (data.usage ?. prompt_tokens) {
+detailsHtml += `<br><strong>Tokens consommés:</strong> ${
+data.usage.prompt_tokens
+}`;
+}
+testDetails.innerHTML = detailsHtml;
+
+const sampleStr = Array.isArray(data.sample) ? data.sample.slice(0, 5).map(v => Number(v).toFixed(6)).join(', ') + (data.dimension > 5 ? ', ...' : '') : '';
+testJson.textContent = `[${sampleStr}]`;
+} else {
+testStatus.innerHTML = '<i data-lucide="x-circle" style="color: var(--synapse-admin-error); width: 16px;"></i> <span style="color: var(--synapse-admin-error);">Erreur d\'API</span>';
+testDetails.innerHTML = '';
+testJson.textContent = data.error || 'Erreur inconnue';
+}
+} catch (err) {
+testResult.style.display = 'block';
+testStatus.innerHTML = '<i data-lucide="x-circle" style="color: var(--synapse-admin-error); width: 16px;"></i> <span style="color: var(--synapse-admin-error);">Erreur Serveur</span>';
+testDetails.innerHTML = '';
+testJson.textContent = err.message;
+} finally {
+testBtn.innerHTML = originalText;
+testBtn.disabled = false;
+if (typeof lucide !== 'undefined') 
+lucide.createIcons();
+
+
+
+}
+});
+}
+});
+	</script>
+{% endblock %}

@@ -8,27 +8,26 @@
 		<div>
 			<h1 class="synapse-admin__title">Analytique</h1>
 			<div class="synapse-admin__subtitle">
-				Usage et Coûts : {{ period_label }}
+				Usage et Coûts :
+				{{ period_label }}
 			</div>
 		</div>
 		<div style="display: flex; gap: 0.5rem;">
-			<a href="{{ path('synapse_admin_analytics', {period: 7}) }}"
-			   class="synapse-admin__btn synapse-admin__btn--sm {% if period == 7 %}synapse-admin__btn--primary{% else %}synapse-admin__btn--outline{% endif %}">
+			<a href="{{ path('synapse_admin_analytics', {period: 7}) }}" class="synapse-admin__btn synapse-admin__btn--sm {% if period == 7 %}synapse-admin__btn--primary{% else %}synapse-admin__btn--outline{% endif %}">
 				7j
 			</a>
-			<a href="{{ path('synapse_admin_analytics', {period: 30}) }}"
-			   class="synapse-admin__btn synapse-admin__btn--sm {% if period == 30 %}synapse-admin__btn--primary{% else %}synapse-admin__btn--outline{% endif %}">
+			<a href="{{ path('synapse_admin_analytics', {period: 30}) }}" class="synapse-admin__btn synapse-admin__btn--sm {% if period == 30 %}synapse-admin__btn--primary{% else %}synapse-admin__btn--outline{% endif %}">
 				30j
 			</a>
-			<a href="{{ path('synapse_admin_analytics', {period: 90}) }}"
-			   class="synapse-admin__btn synapse-admin__btn--sm {% if period == 90 %}synapse-admin__btn--primary{% else %}synapse-admin__btn--outline{% endif %}">
+			<a href="{{ path('synapse_admin_analytics', {period: 90}) }}" class="synapse-admin__btn synapse-admin__btn--sm {% if period == 90 %}synapse-admin__btn--primary{% else %}synapse-admin__btn--outline{% endif %}">
 				3 mois
 			</a>
 		</div>
 	</header>
 
 	{# KPIs #}
-	<div class="synapse-admin__grid synapse-admin__grid--4" style="margin-bottom: 2rem;">
+	<div
+		class="synapse-admin__grid synapse-admin__grid--4" style="margin-bottom: 2rem;">
 		{# Cost #}
 		<div class="synapse-admin__card synapse-admin__card--hover" style="padding: 1.5rem;">
 			<div class="synapse-admin__kpi">
@@ -121,7 +120,8 @@
 	</div>
 
 	{# Two Column Layout: Usage by Module + Usage by Model #}
-	<div class="synapse-admin__grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+	<div
+		class="synapse-admin__grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
 		{# Usage by Module #}
 		<div class="synapse-admin__card">
 			<div class="synapse-admin__card-header">
@@ -170,7 +170,9 @@
 					<tbody>
 						{% for model, data in usage_by_model %}
 							<tr>
-								<td><code style="font-size: 0.85rem;">{{ model }}</code></td>
+								<td>
+									<code style="font-size: 0.85rem;">{{ model }}</code>
+								</td>
 								<td style="text-align: right; color: var(--synapse-admin-text-muted);">{{ data.count|default(0) }}</td>
 								<td style="text-align: right; font-family: monospace;">{{ (data.total_tokens|default(0) / 1000)|number_format(1) }}k</td>
 							</tr>
@@ -185,8 +187,9 @@
 		</div>
 	</div>
 
-	{# Automated Tasks & Conversations #}
-	<div class="synapse-admin__grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+	{# Automated Tasks & Conversations & Embeddings #}
+	<div
+		class="synapse-admin__grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem;">
 		{# Automated Tasks #}
 		<div class="synapse-admin__card">
 			<div class="synapse-admin__card-header">
@@ -224,21 +227,43 @@
 		{# Conversations Stats #}
 		<div class="synapse-admin__card">
 			<div class="synapse-admin__card-header">
-				<h3 style="margin: 0; font-size: 1.1rem;">Conversations Assistant</h3>
+				<h3 style="margin: 0; font-size: 1.1rem;">Chat (Messages)</h3>
 			</div>
-			<div style="padding: 1.5rem; display: flex; align-items: center; justify-content: space-around;">
+			<div style="padding: 1.5rem; display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 1rem;">
 				<div style="text-align: center;">
 					<div class="synapse-admin__kpi-value" style="color: var(--synapse-admin-primary);">{{ conversation_stats.count|default(0) }}</div>
-					<div class="synapse-admin__kpi-label">Messages IA</div>
+					<div class="synapse-admin__kpi-label">Messages</div>
 				</div>
 				<div style="text-align: center;">
 					<div class="synapse-admin__kpi-value">{{ (conversation_stats.total_tokens|default(0) / 1000)|number_format(1) }}k</div>
-					<div class="synapse-admin__kpi-label">Tokens Totaux</div>
+					<div class="synapse-admin__kpi-label">Tokens</div>
 				</div>
 				<div style="text-align: center;">
 					{% set conv_percentage = stats.total_tokens > 0 ? (conversation_stats.total_tokens|default(0) / stats.total_tokens * 100) : 0 %}
 					<div class="synapse-admin__kpi-value" style="color: var(--synapse-admin-success);">{{ conv_percentage|number_format(0) }}%</div>
-					<div class="synapse-admin__kpi-label">Part du Budget</div>
+					<div class="synapse-admin__kpi-label">Budget</div>
+				</div>
+			</div>
+		</div>
+
+		{# Embeddings Stats #}
+		<div class="synapse-admin__card">
+			<div class="synapse-admin__card-header">
+				<h3 style="margin: 0; font-size: 1.1rem;">Embeddings (Vecteurs)</h3>
+			</div>
+			<div style="padding: 1.5rem; display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 1rem;">
+				<div style="text-align: center;">
+					<div class="synapse-admin__kpi-value" style="color: var(--synapse-admin-primary);">{{ embedding_stats.count|default(0) }}</div>
+					<div class="synapse-admin__kpi-label">Requêtes</div>
+				</div>
+				<div style="text-align: center;">
+					<div class="synapse-admin__kpi-value">{{ (embedding_stats.total_tokens|default(0) / 1000)|number_format(1) }}k</div>
+					<div class="synapse-admin__kpi-label">Tokens</div>
+				</div>
+				<div style="text-align: center;">
+					{% set emb_percentage = stats.total_tokens > 0 ? (embedding_stats.total_tokens|default(0) / stats.total_tokens * 100) : 0 %}
+					<div class="synapse-admin__kpi-value" style="color: var(--synapse-admin-success);">{{ emb_percentage|number_format(0) }}%</div>
+					<div class="synapse-admin__kpi-label">Budget</div>
 				</div>
 			</div>
 		</div>

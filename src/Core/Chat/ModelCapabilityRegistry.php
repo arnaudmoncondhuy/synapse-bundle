@@ -65,6 +65,7 @@ class ModelCapabilityRegistry
      */
     private const DEFAULTS = [
         'provider'        => 'unknown',
+        'type'            => 'chat',
         'thinking'        => false,
         'safety_settings' => false,
         'top_k'           => false,
@@ -86,6 +87,7 @@ class ModelCapabilityRegistry
         return new ModelCapabilities(
             model: $model,
             provider: $data['provider'],
+            type: $data['type'] ?? 'chat',
             thinking: $data['thinking'] ?? false,
             safetySettings: $data['safety_settings'] ?? false,
             topK: $data['top_k'] ?? false,
@@ -96,6 +98,7 @@ class ModelCapabilityRegistry
             pricingInput: isset($data['pricing_input']) ? (float) $data['pricing_input'] : null,
             pricingOutput: isset($data['pricing_output']) ? (float) $data['pricing_output'] : null,
             modelId: $data['model_id'] ?? null,
+            dimensions: $data['dimensions'] ?? [],
         );
     }
 

@@ -29,6 +29,8 @@ class DashboardController extends AbstractController
         private SynapseProviderRepository $providerRepo,
         private SynapsePresetRepository $presetRepo,
         private SynapseConfigRepository $configRepo,
+        #[\Symfony\Component\DependencyInjection\Attribute\Autowire(param: 'synapse.persistence.conversation_class')]
+        private ?string $conversationClass = null,
     ) {}
 
     #[Route('', name: 'synapse_admin_index')]
@@ -36,10 +38,13 @@ class DashboardController extends AbstractController
     public function dashboard(): Response
     {
         // KPI : Conversations
-        $conversationRepo = $this->em->getRepository(Conversation::class);
+        $repoClass = $this->conversationClass ?? Conversation::class;
+        $conversationRepo = $this->em->getRepository($repoClass);
         $last24h = new \DateTimeImmutable('-24 hours');
-        $conversationsLast24h = $conversationRepo->countActiveLast24h();
-        $activeUsersLast24h = $conversationRepo->countActiveUsersSince($last24h);
+
+        // Check if repository supports the custom methods (in case persistence is disabled/abstract)
+        $conversationsLast24h = method_exists($conversationRepo, 'countActiveLast24h') ? $conversationRepo->countActiveLast24h() : 0;
+        $activeUsersLast24h = method_exists($conversationRepo, 'countActiveUsersSince') ? $conversationRepo->countActiveUsersSince($last24h) : 0;
 
         // Usage tokens (7 derniers jours)
         $last7days = new \DateTimeImmutable('-7 days');

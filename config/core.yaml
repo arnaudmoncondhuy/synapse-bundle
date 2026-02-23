@@ -108,6 +108,10 @@ services:
             $em: '@doctrine.orm.entity_manager'
             $dispatcher: '@event_dispatcher'
 
+    ArnaudMoncondhuy\SynapseBundle\Core\Service\EmbeddingService:
+        arguments:
+            $clients: !tagged_iterator synapse.llm_client
+
     # ── Agents ────────────────────────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Core\Agent\PresetValidator\PresetValidatorAgent:
         autowire: true

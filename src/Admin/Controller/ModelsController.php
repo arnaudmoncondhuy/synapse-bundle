@@ -65,6 +65,7 @@ class ModelsController extends AbstractController
             $models[] = [
                 'id'           => $modelId,
                 'provider'     => $caps->provider,
+                'type'         => $caps->type,
                 'currency'     => $caps->provider === 'ovh' ? '€' : '$',
                 'capabilities' => $caps,
                 'db_entity'    => $dbModel,

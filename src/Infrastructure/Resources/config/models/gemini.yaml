@@ -60,3 +60,17 @@ models:
     pricing_input: 0.10
     pricing_output: 0.40
 
+  gemini-embedding-001:
+    type: embedding
+    provider: gemini
+    dimensions: [3072, 1536, 768] # Source: https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini
+    thinking: false
+    safety_settings: false
+    top_k: false
+    function_calling: false
+    streaming: false
+    system_prompt: false
+    context_window: 2048 # Source: https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini
+    pricing_input: 0.15 # Source: https://cloud.google.com/vertex-ai/pricing ($0.15 / 1M tokens)
+    pricing_output: 0.00
+

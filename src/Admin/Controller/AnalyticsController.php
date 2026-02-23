@@ -57,6 +57,7 @@ class AnalyticsController extends AbstractController
             'usage_by_model' => $usageByModel,
             'automated_stats' => $automatedTasks,
             'conversation_stats' => $usageByModule['chat'] ?? ['count' => 0, 'total_tokens' => 0],
+            'embedding_stats' => $usageByModule['embedding'] ?? ['count' => 0, 'total_tokens' => 0],
         ]);
     }
 }

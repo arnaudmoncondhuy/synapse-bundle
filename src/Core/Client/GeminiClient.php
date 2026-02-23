@@ -6,6 +6,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Core\Client;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface;
+use ArnaudMoncondhuy\SynapseBundle\Contract\EmbeddingClientInterface;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmAuthenticationException;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmException;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Exception\LlmQuotaException;
@@ -22,10 +23,11 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  * Credentials (project_id, region, service_account_json) chargés dynamiquement
  * depuis SynapseProvider en DB — aucune valeur YAML requise après l'installation.
  */
-class GeminiClient implements LlmClientInterface
+class GeminiClient implements LlmClientInterface, EmbeddingClientInterface
 {
     private const VERTEX_URL        = 'https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/%s:generateContent';
     private const VERTEX_STREAM_URL = 'https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/%s:streamGenerateContent';
+    private const VERTEX_EMBEDDING_URL = 'https://%s-aiplatform.googleapis.com/v1/projects/%s/locations/%s/publishers/google/models/%s:predict';
 
     // ── Config runtime (chargée depuis DB via applyDynamicConfig) ────────────
     private string $model                   = 'gemini-2.5-flash';
@@ -107,6 +109,75 @@ class GeminiClient implements LlmClientInterface
         } catch (\Throwable $e) {
             $this->handleException($e);
             return $this->emptyChunk();
+        }
+    }
+
+    /**
+     * Génère des embeddings vectoriels pour un ou plusieurs textes d'entrée.
+     * Utilise le endpoint Vertex AI model.predict avec un format d'instance spécifique.
+     */
+    public function generateEmbeddings(string|array $input, ?string $model = null, array $options = []): array
+    {
+        $this->applyDynamicConfig();
+
+        $effectiveModel = $model ?? $this->model;
+        $url = $this->buildVertexUrl(self::VERTEX_EMBEDDING_URL, $effectiveModel);
+
+        $inputs = is_array($input) ? $input : [$input];
+        $instances = [];
+
+        foreach ($inputs as $text) {
+            $instances[] = [
+                'content' => $text,
+            ];
+        }
+
+        $payload = [
+            'instances' => $instances,
+        ];
+
+        // Intégrer la dimension de sortie si requise
+        if (isset($options['output_dimensionality'])) {
+            $payload['parameters'] = [
+                'outputDimensionality' => (int) $options['output_dimensionality'],
+            ];
+        }
+
+        try {
+            $response = $this->httpClient->request('POST', $url, [
+                'json'    => TextUtil::sanitizeArrayUtf8($payload),
+                'headers' => $this->buildVertexHeaders(),
+                'timeout' => 60,
+            ]);
+
+            $data = $response->toArray();
+
+            $embeddings = [];
+            if (isset($data['predictions']) && is_array($data['predictions'])) {
+                foreach ($data['predictions'] as $prediction) {
+                    if (isset($prediction['embeddings']['values'])) {
+                        $embeddings[] = $prediction['embeddings']['values'];
+                    }
+                }
+            }
+
+            // Vertex AI embeddings API often returns billableCharacterCount instead of tokens
+            // Approximation: 1 token ~= 4 chars pour l'anglais/français
+            $billableChars = $data['metadata']['billableCharacterCount'] ?? 0;
+            $totalTokens = (int) ceil($billableChars / 4.0);
+
+            $usage = [
+                'prompt_tokens' => $totalTokens,
+                'total_tokens'  => $totalTokens,
+            ];
+
+            return [
+                'embeddings' => $embeddings,
+                'usage'      => $usage,
+            ];
+        } catch (\Throwable $e) {
+            $this->handleException($e);
+            return ['embeddings' => [], 'usage' => ['prompt_tokens' => 0, 'total_tokens' => 0]];
         }
     }
 
