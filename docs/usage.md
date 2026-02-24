@@ -585,7 +585,6 @@ class User implements ConversationOwnerInterface
 synapse:
     persistence:
         enabled: true
-        handler: doctrine
         conversation_class: App\Entity\Conversation
         message_class: App\Entity\Message
 ```

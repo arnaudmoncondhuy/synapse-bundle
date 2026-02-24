@@ -9,7 +9,6 @@ Ce document documente toutes les options de configuration du bundle SynapseBundl
 synapse:
     persistence:
         enabled: true
-        handler: doctrine
         conversation_class: App\Entity\Conversation
         message_class: App\Entity\Message
 
@@ -28,28 +27,18 @@ Gère la persistance de l'historique des conversations.
 | Clé | Type | Défaut | Description |
 |---|---|---|---|
 | `enabled` | bool | `false` | Activer la persistance |
-| `handler` | string | `'session'` | Type de persistance : `'session'` (mémoire) ou `'doctrine'` (BDD) |
-| `conversation_class` | string | `null` | **Requis si handler='doctrine'** : FQCN de votre entité `Conversation` (ex: `App\Entity\Conversation`) |
-| `message_class` | string | `null` | **Requis si handler='doctrine'** : FQCN de votre entité `Message` (ex: `App\Entity\Message`) |
+| `conversation_class` | string | `null` | **Requis** : FQCN de votre entité `Conversation` (ex: `App\Entity\Conversation`) |
+| `message_class` | string | `null` | **Requis** : FQCN de votre entité `Message` (ex: `App\Entity\Message`) |
 | `conversation_repository` | string | `null` | **Optionnel** : FQCN du repository `ConversationRepository` (auto-détecté sinon) |
 | `message_repository` | string | `null` | **Optionnel** : FQCN du repository `MessageRepository` (auto-détecté sinon) |
 
-**Exemple avec Doctrine :**
+**Exemple :**
 ```yaml
 synapse:
     persistence:
         enabled: true
-        handler: doctrine
         conversation_class: App\Entity\Conversation
         message_class: App\Entity\Message
-```
-
-**Exemple avec session (dev/test) :**
-```yaml
-synapse:
-    persistence:
-        enabled: false
-        handler: session
 ```
 
 ---
@@ -99,12 +88,15 @@ synapse:
     token_tracking:
         enabled: true
         pricing:
+            gemini-3.1-pro:
+                input: 2.00
+                output: 12.00
+            gemini-3-flash:
+                input: 0.50
+                output: 3.00
             gemini-2.5-flash:
                 input: 0.30
                 output: 2.50
-            gemini-2.0-pro:
-                input: 2.50
-                output: 10.00
 ```
 
 ---
@@ -314,7 +306,6 @@ synapse:
     # ── Persistance Doctrine ──────────────────────────────────────────
     persistence:
         enabled: true
-        handler: doctrine
         conversation_class: App\Entity\Conversation
         message_class: App\Entity\Message
 
@@ -327,12 +318,9 @@ synapse:
     token_tracking:
         enabled: true
         pricing:
-            gemini-2.5-flash:
-                input: 0.30
-                output: 2.50
-            gemini-2.0-pro:
-                input: 2.50
-                output: 10.00
+            gemini-3.1-pro: {input: 2.00, output: 12.00}
+            gemini-3-flash: {input: 0.50, output: 3.00}
+            gemini-2.5-flash: {input: 0.30, output: 2.50}
 
     # ── Rétention RGPD ────────────────────────────────────────────────
     retention:
@@ -379,7 +367,6 @@ SYNAPSE_ENCRYPTION_KEY=base64:0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f
 synapse:
     persistence:
         enabled: false
-        handler: session
 
     admin:
         enabled: true

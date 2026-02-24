@@ -7,7 +7,7 @@ Un bundle Symfony pour intégrer facilement des assistants IA dans votre applica
 
 ## ✨ Fonctionnalités
 
-- 🤖 **Multi-providers** : Google Vertex AI (Gemini 2.5+) et OVH AI Endpoints (OpenAI-compatible)
+- 🤖 **Multi-providers** : Google Vertex AI (Gemini 3.1+) et OVH AI Endpoints (OpenAI-compatible)
 - 🔧 **Function Calling** : Système extensible pour ajouter des outils IA personnalisés
 - 📡 **Streaming** : Réponses en temps réel via NDJSON
 - 💾 **Persistance** : Historique des conversations en base de données (Doctrine)
@@ -17,7 +17,7 @@ Un bundle Symfony pour intégrer facilement des assistants IA dans votre applica
   - Filtres de sécurité configurables
 - 🎨 **Interface Admin** : Dashboard, analytiques, gestion des presets et modèles
 - 🎯 **Personas** : Personnalités IA prédéfinies ou custom
-- 💭 **Thinking Mode** : Support natif du raisonnement Chain-of-Thought (Gemini 2.5+)
+- 💭 **Thinking Mode** : Support natif du raisonnement Chain-of-Thought (Gemini 2.5/3.1+)
 - 📊 **Token Tracking** : Suivi de la consommation et calcul des coûts
 - 🧩 **Modes flexibles** : Standalone ou intégration dans votre design system
 
@@ -43,7 +43,6 @@ composer require arnaudmoncondhuy/synapse-bundle
 synapse:
     persistence:
         enabled: true
-        handler: doctrine
         conversation_class: App\Entity\Conversation
         message_class: App\Entity\Message
 
@@ -115,7 +114,7 @@ Le bundle gère les prompts en 3 couches :
 ### Providers supportés
 
 #### Google Vertex AI (Gemini)
-- Modèles : `gemini-2.5-flash`, `gemini-2.5-pro`, etc.
+- Modèles : `gemini-3.1-pro`, `gemini-3-flash`, `gemini-2.5-pro`, `gemini-2.5-flash`, etc.
 - Région : `europe-west1`, `europe-west4`, `us-central1`, etc.
 - Capacités : streaming, thinking natif, safety settings
 

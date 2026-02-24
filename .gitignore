@@ -23,3 +23,6 @@ composer.lock
 Thumbs.db
 nul
 ###< system ###
+
+# Instructions internes
+GEMINI.md
