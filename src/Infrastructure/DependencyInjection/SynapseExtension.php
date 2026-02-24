@@ -52,13 +52,27 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         ]);
 
         // 2. Enregistrement des assets pour AssetMapper (Stimulus controllers)
-        $container->prependExtensionConfig('framework', [
+        $frameworkConfig = [
             'asset_mapper' => [
                 'paths' => [
                     realpath(dirname(__DIR__, 3) . '/assets') => 'synapse',
                 ],
             ],
-        ]);
+        ];
+
+        // Only prepend messenger config if the component is installed
+        if (interface_exists(\Symfony\Component\Messenger\MessageBusInterface::class)) {
+            $frameworkConfig['messenger'] = [
+                'transports' => [
+                    'synapse_async' => 'doctrine://default?auto_setup=true',
+                ],
+                'routing' => [
+                    'ArnaudMoncondhuy\SynapseBundle\Message\TestPresetMessage' => 'synapse_async',
+                ],
+            ];
+        }
+
+        $container->prependExtensionConfig('framework', $frameworkConfig);
 
         // 3. Auto-configuration du mapping Doctrine pour les entités du bundle.
         if ($container->hasExtension('doctrine')) {

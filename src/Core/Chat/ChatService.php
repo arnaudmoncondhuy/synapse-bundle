@@ -9,7 +9,10 @@ use ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapsePreset;
 use ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseChunkReceivedEvent;
 use ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseExchangeCompletedEvent;
+use ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseGenerationCompletedEvent;
+use ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseGenerationStartedEvent;
 use ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapsePrePromptEvent;
+use ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseToolCallCompletedEvent;
 use ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseToolCallRequestedEvent;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Util\TextUtil;
 use Doctrine\ORM\EntityManagerInterface;
@@ -67,6 +70,9 @@ class ChatService
         if ($onStatusUpdate) {
             $onStatusUpdate('Analyse de la demande...', 'thinking');
         }
+
+        // ── DISPATCH GENERATION STARTED EVENT ──
+        $this->dispatcher->dispatch(new SynapseGenerationStartedEvent($message, $options));
 
         // ── DISPATCH PRE-PROMPT EVENT ──
         // ContextBuilderSubscriber will populate prompt, config, and tool definitions
@@ -212,6 +218,7 @@ class ChatService
                     }
 
                     if (null !== $toolResult) {
+                        $this->dispatcher->dispatch(new SynapseToolCallCompletedEvent($toolName, $toolResult, $tc));
                         $prompt['contents'][] = [
                             'role'         => 'tool',
                             'tool_call_id' => $tc['id'],
@@ -249,6 +256,13 @@ class ChatService
         if ($presetOverride !== null) {
             $this->configProvider->setOverride(null);
         }
+
+        // ── DISPATCH GENERATION COMPLETED EVENT ──
+        $this->dispatcher->dispatch(new SynapseGenerationCompletedEvent(
+            $fullTextAccumulator,
+            $finalUsageMetadata,
+            $debugId
+        ));
 
         return [
             'answer'   => $fullTextAccumulator,

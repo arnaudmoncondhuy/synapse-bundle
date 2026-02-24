@@ -15,6 +15,9 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Admin\Twig\SynapseTwigExtension:
         tags: ['twig.extension']
 
+    ArnaudMoncondhuy\SynapseBundle\MessageHandler\:
+        resource: '../src/MessageHandler/'
+
     # ── Controllers ───────────────────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ChatUiController:
         autowire: true

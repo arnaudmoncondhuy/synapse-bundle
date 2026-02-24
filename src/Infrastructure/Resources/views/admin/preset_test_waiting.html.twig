@@ -1,0 +1,97 @@
+{% extends '@Synapse/admin/layout.html.twig' %}
+
+{% block admin_title %}Test en cours —
+	{{ preset.name }}
+{% endblock %}
+
+{% block admin_content %}
+	<div class="synapse-admin__page">
+		<div class="synapse-admin__page-header">
+			<h1 class="synapse-admin__page-title">
+				<i data-lucide="flask-conical"></i>
+				Test du Preset :
+				{{ preset.name }}
+			</h1>
+		</div>
+
+		<div class="synapse-admin__card" style="margin: 2rem 0; padding: 3rem 2rem;">
+			<div id="test-loader" style="text-align: center;">
+				<div class="synapse-admin__spinner" style="width: 48px; height: 48px; margin: 0 auto 1.5rem auto;"></div>
+				<h2 id="status-text" style="margin: 0 0 0.5rem 0; color: var(--synapse-admin-text-main)">Initialisation du test...</h2>
+				<p id="progress-text" style="color: var(--synapse-admin-text-muted); margin-bottom: 2rem;">Veuillez patienter, Synapse effectue les appels LLM par étapes (Sync + Stream + Analyse).</p>
+
+				<div style="background: var(--synapse-admin-bg-main); height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+					<div id="progress-bar" style="background: var(--synapse-admin-primary); width: 0%; height: 100%; transition: width 0.5s ease;"></div>
+				</div>
+			</div>
+
+			<div
+				id="test-result" style="display: none;"><!-- Will be populated by polling -->
+			</div>
+
+			<div style="text-align: center; margin-top: 2rem;">
+				<a href="{{ path('synapse_admin_presets') }}" class="synapse-admin__btn synapse-admin__btn--ghost">
+					<i data-lucide="arrow-left"></i>
+					Retour aux presets
+				</a>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+const statusUrl = "{{ path('synapse_admin_presets_test_status', {id: preset.id}) }}";
+const statusText = document.getElementById('status-text');
+const progressBar = document.getElementById('progress-bar');
+const testLoader = document.getElementById('test-loader');
+const testResult = document.getElementById('test-result');
+
+function pollStatus() {
+fetch(statusUrl).then(response => {
+const contentType = response.headers.get("content-type");
+if (contentType && contentType.indexOf("application/json") !== -1) {
+return response.json().then(data => ({isJson: true, data}));
+} else {
+return response.text().then(text => ({isJson: false, text}));
+}
+}).then(result => {
+if (result.isJson) {
+const data = result.data;
+if (data.status === 'processing' || data.status === 'pending') {
+let label = "Test en cours (" + data.progress + "%)...";
+if (data.message) {
+label = data.message + " (" + data.progress + "%)";
+}
+statusText.innerText = label;
+progressBar.style.width = data.progress + "%";
+setTimeout(pollStatus, 1200);
+} else if (data.status === 'not_found') {
+statusText.innerText = "Test introuvable ou expiré.";
+}
+} else { // It's the HTML result
+testLoader.style.display = 'none';
+testResult.style.display = 'block';
+testResult.innerHTML = result.text;
+
+// Post-injection rendering
+const rawEl = document.getElementById('analysis-raw');
+const targetEl = document.getElementById('analysis-rendered');
+if (rawEl && targetEl && typeof marked !== 'undefined') {
+targetEl.innerHTML = marked.parse(rawEl.textContent);
+}
+
+if (typeof lucide !== 'undefined') {
+lucide.createIcons();
+}
+}
+}).catch(error => {
+console.error('Error polling status:', error);
+setTimeout(pollStatus, 3000);
+});
+}
+
+pollStatus();
+});
+	</script>
+{% endblock %}
