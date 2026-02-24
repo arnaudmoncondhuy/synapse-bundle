@@ -89,7 +89,7 @@ class ChatService
 
         // Check debug mode
         $globalDebugMode = $config['debug_mode'] ?? false;
-        $debugMode = ($options['debug'] ?? false) || ($globalDebugMode && ($options['debug'] !== false));
+        $debugMode = ($options['debug'] ?? false) || ($globalDebugMode && ($options['debug'] ?? true) !== false);
 
         // Get LLM client and config
         $activeClient = $this->llmRegistry->getClient();
