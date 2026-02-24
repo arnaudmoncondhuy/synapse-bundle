@@ -23,10 +23,11 @@ interface VectorStoreInterface
     /**
      * Recherche les éléments les plus similaires à un vecteur donné.
      *
-     * @param float[] $vector Le vecteur de recherche
-     * @param int     $limit  Nombre maximum de résultats
+     * @param float[] $vector  Le vecteur de recherche
+     * @param int     $limit   Nombre maximum de résultats
+     * @param array   $filters Filtres additionnels (ex: ['ownerId' => '...'])
      * 
      * @return array<int, array{payload: array, score: float}>
      */
-    public function searchSimilar(array $vector, int $limit = 5): array;
+    public function searchSimilar(array $vector, int $limit = 5, array $filters = []): array;
 }

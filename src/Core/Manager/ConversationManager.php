@@ -131,7 +131,14 @@ class ConversationManager
             $message->setBlocked($metadata['blocked']);
         }
         if (isset($metadata['metadata'])) {
-            $message->setMetadata($metadata['metadata']);
+            $metaDataToSave = $metadata['metadata'];
+            if ($this->encryptionService !== null) {
+                // On chiffre tout le tableau de metadata pour masquer les données sensibles
+                $encryptedMeta = $this->encryptionService->encrypt(json_encode($metaDataToSave, JSON_THROW_ON_ERROR));
+                $message->setMetadata(['_encrypted' => $encryptedMeta]);
+            } else {
+                $message->setMetadata($metaDataToSave);
+            }
         }
 
         // Enregistrer le modèle et calculer le coût
@@ -259,6 +266,18 @@ class ConversationManager
             } else {
                 // Fallback explicite pour les messages non chiffrés
                 $message->setDecryptedContent($message->getContent());
+            }
+
+            // Déchiffrement des métadonnées
+            $meta = $message->getMetadata();
+            if (isset($meta['_encrypted']) && $this->encryptionService !== null) {
+                try {
+                    $decryptedMeta = json_decode($this->encryptionService->decrypt($meta['_encrypted']), true, 512, JSON_THROW_ON_ERROR);
+                    $message->setMetadata($decryptedMeta);
+                } catch (\Exception $e) {
+                    // Si échec de déchiffrement, on vide les métadonnées par sécurité
+                    $message->setMetadata([]);
+                }
             }
         }
 
