@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Security;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
@@ -27,7 +27,7 @@ class DefaultPermissionChecker implements PermissionCheckerInterface
     ) {
     }
 
-    public function canView(Conversation $conversation): bool
+    public function canView(SynapseConversation $conversation): bool
     {
         // Pattern 1: Pas d'auth = accès total (mode dev)
         if ($this->security === null) {
@@ -53,7 +53,7 @@ class DefaultPermissionChecker implements PermissionCheckerInterface
         return $owner->getIdentifier() === $user->getIdentifier();
     }
 
-    public function canEdit(Conversation $conversation): bool
+    public function canEdit(SynapseConversation $conversation): bool
     {
         // Plus strict: seul le propriétaire peut éditer
         if ($this->security === null) {
@@ -73,7 +73,7 @@ class DefaultPermissionChecker implements PermissionCheckerInterface
         return $owner->getIdentifier() === $user->getIdentifier();
     }
 
-    public function canDelete(Conversation $conversation): bool
+    public function canDelete(SynapseConversation $conversation): bool
     {
         // Même logique que canEdit
         return $this->canEdit($conversation);

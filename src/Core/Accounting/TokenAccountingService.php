@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Core\Accounting;
 
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\TokenUsage;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseTokenUsage;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -13,7 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
  * Permet de logger la consommation de tokens pour toutes les fonctionnalités
  * IA de l'application (pas seulement les conversations).
  *
- * Les conversations (chat) sont trackées via Message.tokens,
+ * Les conversations (chat) sont trackées via SynapseMessage.tokens,
  * ce service est pour les tâches automatisées et agrégations.
  */
 class TokenAccountingService
@@ -43,7 +43,7 @@ class TokenAccountingService
         ?string $conversationId = null,
         ?array $metadata = null
     ): void {
-        $tokenUsage = new TokenUsage();
+        $tokenUsage = new SynapseTokenUsage();
         $tokenUsage->setModule($module);
         $tokenUsage->setAction($action);
         $tokenUsage->setModel($model);
@@ -67,7 +67,7 @@ class TokenAccountingService
             $tokenUsage->setUserId((string) $userId);
         }
 
-        // Conversation ID
+        // SynapseConversation ID
         if ($conversationId !== null) {
             $tokenUsage->setConversationId($conversationId);
         }

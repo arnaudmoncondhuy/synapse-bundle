@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Entity;
 
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Message;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseMessage;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole;
 use PHPUnit\Framework\TestCase;
 
@@ -249,17 +249,17 @@ class MessageTest extends TestCase
         $this->assertEquals('decrypted text', $message->getDecryptedContent());
     }
 
-    private function createMessage(): Message
+    private function createMessage(): SynapseMessage
     {
-        return new class extends Message {
-            private ?Conversation $conversation = null;
+        return new class extends SynapseMessage {
+            private ?SynapseConversation $conversation = null;
 
-            public function getConversation(): Conversation
+            public function getConversation(): SynapseConversation
             {
                 return $this->conversation;
             }
 
-            public function setConversation(Conversation $conversation): self
+            public function setConversation(SynapseConversation $conversation): self
             {
                 $this->conversation = $conversation;
                 return $this;

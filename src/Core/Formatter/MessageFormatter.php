@@ -6,8 +6,8 @@ namespace ArnaudMoncondhuy\SynapseBundle\Core\Formatter;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\MessageFormatterInterface;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Message;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseMessage;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole;
 
 /**
@@ -21,7 +21,7 @@ class MessageFormatter implements MessageFormatterInterface
         private ?EncryptionServiceInterface $encryptionService = null,
     ) {}
     /**
-     * Convertit les entités Message vers le format OpenAI canonical
+     * Convertit les entités SynapseMessage vers le format OpenAI canonical
      *
      * Format OpenAI:
      * [
@@ -54,7 +54,7 @@ class MessageFormatter implements MessageFormatterInterface
                 }
             }
 
-            if (!$entity instanceof Message) {
+            if (!$entity instanceof SynapseMessage) {
                 continue;
             }
 
@@ -87,12 +87,12 @@ class MessageFormatter implements MessageFormatterInterface
     }
 
     /**
-     * Convertit le format OpenAI canonical vers des entités Message
+     * Convertit le format OpenAI canonical vers des entités SynapseMessage
      *
      * Utile pour l'import de conversations ou les tests.
      * Les entités retournées ne sont PAS persistées.
      */
-    public function apiFormatToEntities(array $messages, Conversation $conversation): array
+    public function apiFormatToEntities(array $messages, SynapseConversation $conversation): array
     {
         $entities = [];
 
@@ -101,8 +101,8 @@ class MessageFormatter implements MessageFormatterInterface
                 continue;
             }
 
-            // Déterminer la classe Message concrète depuis la conversation
-            $messageClass = get_class($conversation->getMessages()->first() ?: new Message());
+            // Déterminer la classe SynapseMessage concrète depuis la conversation
+            $messageClass = get_class($conversation->getMessages()->first() ?: new SynapseMessage());
 
             $entity = new $messageClass();
             $entity->setConversation($conversation);

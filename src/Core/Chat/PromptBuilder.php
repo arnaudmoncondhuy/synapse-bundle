@@ -44,7 +44,7 @@ PROMPT;
      * Retourne un tableau avec role et content, prêt à être utilisé dans le tableau contents.
      *
      * @param string|null $personaKey Clé optionnelle de la personnalité
-     * @return array{role: 'system', content: string} Message système au format OpenAI
+     * @return array{role: 'system', content: string} SynapseMessage système au format OpenAI
      */
     public function buildSystemMessage(?string $personaKey = null): array
     {

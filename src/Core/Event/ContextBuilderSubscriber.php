@@ -16,7 +16,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *
  * Listens to SynapsePrePromptEvent and populates:
  * - System instruction (persona-based)
- * - Message history (from options or loaded via handler)
+ * - SynapseMessage history (from options or loaded via handler)
  * - Generation config (from active preset)
  */
 class ContextBuilderSubscriber implements EventSubscriberInterface
@@ -52,21 +52,28 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
         $options = $event->getOptions();
 
         // ── Build system message (OpenAI format) ──
-        $personaKey = $options['persona'] ?? null;
-        $systemMessage = $this->promptBuilder->buildSystemMessage($personaKey);
+        if (isset($options['system_prompt']) && is_string($options['system_prompt'])) {
+            $systemMessage = ['role' => 'system', 'content' => $options['system_prompt']];
+        } else {
+            $personaKey = $options['persona'] ?? null;
+            $systemMessage = $this->promptBuilder->buildSystemMessage($personaKey);
+        }
 
         // ── Load history ──
         $isStateless = $options['stateless'] ?? false;
-        $rawHistory = [];
         $contents = [];
 
         if ($isStateless) {
-            // Stateless mode: only current message
+            // Stateless mode: Use provided history in options or empty list
+            $providedHistory = $options['history'] ?? [];
+            if (!empty($providedHistory)) {
+                $contents = $this->sanitizeHistoryForNewTurn($providedHistory);
+            }
             if (!empty($message)) {
-                $contents[] = ['role' => 'user', 'content' => $message];
+                $contents[] = ['role' => 'user', 'content' => TextUtil::sanitizeUtf8($message)];
             }
         } else {
-            // Stateful mode: load history + add current message
+            // Stateful mode: load history from DB/Handler + add current message
             $rawHistory = $options['history'] ?? [];
             $contents = $this->sanitizeHistoryForNewTurn($rawHistory);
             if (!empty($message)) {
@@ -77,7 +84,7 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
         // Get config
         $config = $this->configProvider->getConfig();
 
-        // Support preset override (for testing)
+        // Support preset override (for testing or AgentBuilder)
         if (isset($options['preset'])) {
             $config = $this->configProvider->getConfigForPreset($options['preset']);
         }
@@ -86,7 +93,7 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
         // System instruction is now the first message in contents (OpenAI canonical format)
         $prompt = [
             'contents'        => array_merge([$systemMessage], $contents),
-            'toolDefinitions' => $options['tools'] ?? $this->toolRegistry->getDefinitions(),
+            'toolDefinitions' => $options['tools_override'] ?? ($options['tools'] ?? $this->toolRegistry->getDefinitions()),
         ];
 
         // Set on event

@@ -10,17 +10,17 @@ namespace ArnaudMoncondhuy\SynapseBundle\Shared\Enum;
 enum MessageRole: string
 {
     /**
-     * Message envoyé par l'utilisateur
+     * SynapseMessage envoyé par l'utilisateur
      */
     case USER = 'USER';
 
     /**
-     * Message généré par le modèle IA
+     * SynapseMessage généré par le modèle IA
      */
     case MODEL = 'MODEL';
 
     /**
-     * Message système (instructions, contexte)
+     * SynapseMessage système (instructions, contexte)
      */
     case SYSTEM = 'SYSTEM';
 

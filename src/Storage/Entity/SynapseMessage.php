@@ -10,29 +10,29 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
 
 /**
- * Entité Message
+ * Entité SynapseMessage
  *
  * MappedSuperclass : Permet l'extension dans les projets.
  *
  * @example
  * ```php
- * use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Message as BaseMessage;
+ * use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseMessage as BaseMessage;
  *
- * #[ORM\Entity(repositoryClass: MessageRepository::class)]
+ * #[ORM\Entity(repositoryClass: SynapseMessageRepository::class)]
  * #[ORM\Table(name: 'synapse_message')]
  * #[ORM\Index(name: 'idx_conversation_created', columns: ['conversation_id', 'created_at'])]
- * class Message extends BaseMessage
+ * class SynapseMessage extends BaseMessage
  * {
- *     #[ORM\ManyToOne(targetEntity: Conversation::class, inversedBy: 'messages')]
+ *     #[ORM\ManyToOne(targetEntity: SynapseConversation::class, inversedBy: 'messages')]
  *     #[ORM\JoinColumn(name: 'conversation_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
- *     private Conversation $conversation;
+ *     private SynapseConversation $conversation;
  *
- *     public function getConversation(): Conversation
+ *     public function getConversation(): SynapseConversation
  *     {
  *         return $this->conversation;
  *     }
  *
- *     public function setConversation(Conversation $conversation): self
+ *     public function setConversation(SynapseConversation $conversation): self
  *     {
  *         $this->conversation = $conversation;
  *         return $this;
@@ -42,7 +42,7 @@ use Symfony\Component\Uid\Ulid;
  */
 #[ORM\MappedSuperclass]
 #[ORM\HasLifecycleCallbacks]
-abstract class Message
+abstract class SynapseMessage
 {
     /**
      * Identifiant unique (ULID au format UUID)
@@ -116,7 +116,7 @@ abstract class Message
     protected ?array $safetyRatings = null;
 
     /**
-     * Message bloqué par les filtres de sécurité
+     * SynapseMessage bloqué par les filtres de sécurité
      */
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     protected bool $blocked = false;
@@ -401,10 +401,10 @@ abstract class Message
     /**
      * Retourne la conversation associée
      */
-    abstract public function getConversation(): Conversation;
+    abstract public function getConversation(): SynapseConversation;
 
     /**
      * Définit la conversation associée
      */
-    abstract public function setConversation(Conversation $conversation): self;
+    abstract public function setConversation(SynapseConversation $conversation): self;
 }

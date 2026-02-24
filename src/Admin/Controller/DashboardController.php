@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Message;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\ConversationRepository;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\MessageRepository;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\TokenUsageRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseMessage;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseConversationRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseMessageRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseTokenUsageRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseProviderRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseConfigRepository;
@@ -25,7 +25,7 @@ class DashboardController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private TokenUsageRepository $tokenUsageRepo,
+        private SynapseTokenUsageRepository $tokenUsageRepo,
         private SynapseProviderRepository $providerRepo,
         private SynapsePresetRepository $presetRepo,
         private SynapseConfigRepository $configRepo,
@@ -38,7 +38,7 @@ class DashboardController extends AbstractController
     public function dashboard(): Response
     {
         // KPI : Conversations
-        $repoClass = $this->conversationClass ?? Conversation::class;
+        $repoClass = $this->conversationClass ?? SynapseConversation::class;
         $conversationRepo = $this->em->getRepository($repoClass);
         $last24h = new \DateTimeImmutable('-24 hours');
 

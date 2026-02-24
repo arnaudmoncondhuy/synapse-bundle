@@ -6,7 +6,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Core\Agent\PresetValidator;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\AgentInterface;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapsePreset;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\DebugLogRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseDebugLogRepository;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ChatService;
 
 /**
@@ -23,7 +23,7 @@ class PresetValidatorAgent implements AgentInterface
 {
     public function __construct(
         private ChatService $chatService,
-        private DebugLogRepository $debugLogRepo,
+        private SynapseDebugLogRepository $debugLogRepo,
         private \ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry $capabilityRegistry,
     ) {}
 

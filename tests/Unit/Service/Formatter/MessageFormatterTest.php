@@ -31,7 +31,7 @@ class MessageFormatterTest extends TestCase
     }
 
     /**
-     * Test la conversion d'une entité Message normale vers le format Gemini.
+     * Test la conversion d'une entité SynapseMessage normale vers le format Gemini.
      * Note: Nous testons surtout les arrays sérialisés car c'est le bug qu'on a résolu.
      */
     public function testEntitiesToApiFormatConvertsApiFormat(): void
@@ -296,7 +296,7 @@ class MessageFormatterTest extends TestCase
 
     /**
      * Test que les arrays sérialisés conservent leur format.
-     * Note: Les rôles ne sont normalisés que pour les entités Message.
+     * Note: Les rôles ne sont normalisés que pour les entités SynapseMessage.
      */
     public function testEntitiesToApiFormatWithCapitalizedRoles(): void
     {
@@ -332,7 +332,7 @@ class MessageFormatterTest extends TestCase
             'parts' => [['text' => 'Valid message']]
         ];
 
-        $invalidObject = new \stdClass(); // Not a Message
+        $invalidObject = new \stdClass(); // Not a SynapseMessage
 
         $result = $this->formatter->entitiesToApiFormat([$validMessage, $invalidObject]);
 

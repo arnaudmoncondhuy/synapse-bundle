@@ -10,17 +10,17 @@ namespace ArnaudMoncondhuy\SynapseBundle\Shared\Enum;
 enum ConversationStatus: string
 {
     /**
-     * Conversation active (en cours d'utilisation)
+     * SynapseConversation active (en cours d'utilisation)
      */
     case ACTIVE = 'ACTIVE';
 
     /**
-     * Conversation archivée (historique, lecture seule)
+     * SynapseConversation archivée (historique, lecture seule)
      */
     case ARCHIVED = 'ARCHIVED';
 
     /**
-     * Conversation supprimée (soft delete, purge RGPD)
+     * SynapseConversation supprimée (soft delete, purge RGPD)
      */
     case DELETED = 'DELETED';
 

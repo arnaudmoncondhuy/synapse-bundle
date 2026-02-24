@@ -16,8 +16,8 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  * synapse:
  *     persistence:
  *         enabled: true
- *         conversation_class: 'App\...\Entity\Conversation'
- *         message_class: 'App\...\Entity\Message'
+ *         conversation_class: 'App\...\Entity\SynapseConversation'
+ *         message_class: 'App\...\Entity\SynapseMessage'
  *     admin:
  *         enabled: true
  *
@@ -48,11 +48,11 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->scalarNode('conversation_class')
             ->defaultNull()
-            ->info('FQCN de l\'entité Conversation concrète (ex : App\Module\Assistant\Entity\Conversation)')
+            ->info('FQCN de l\'entité SynapseConversation concrète (ex : App\Module\Assistant\Entity\SynapseConversation)')
             ->end()
             ->scalarNode('message_class')
             ->defaultNull()
-            ->info('FQCN de l\'entité Message concrète (ex : App\Module\Assistant\Entity\Message)')
+            ->info('FQCN de l\'entité SynapseMessage concrète (ex : App\Module\Assistant\Entity\SynapseMessage)')
             ->end()
             ->end()
             ->end()

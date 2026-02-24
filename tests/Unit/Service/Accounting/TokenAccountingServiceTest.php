@@ -6,7 +6,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Service\Accounting;
 
 use ArnaudMoncondhuy\SynapseBundle\Core\Accounting\TokenAccountingService;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseModel;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\TokenUsage;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseTokenUsage;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseModelRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
@@ -47,7 +47,7 @@ class TokenAccountingServiceTest extends TestCase
 
         $this->entityManager->expects($this->once())
             ->method('persist')
-            ->with($this->isInstanceOf(TokenUsage::class));
+            ->with($this->isInstanceOf(SynapseTokenUsage::class));
 
         $this->entityManager->expects($this->once())
             ->method('flush');
@@ -81,7 +81,7 @@ class TokenAccountingServiceTest extends TestCase
 
         $capturedEntity = null;
         $this->entityManager->method('persist')
-            ->willReturnCallback(function (TokenUsage $entity) use (&$capturedEntity) {
+            ->willReturnCallback(function (SynapseTokenUsage $entity) use (&$capturedEntity) {
                 $capturedEntity = $entity;
             });
 
@@ -116,7 +116,7 @@ class TokenAccountingServiceTest extends TestCase
 
         $capturedEntity = null;
         $this->entityManager->method('persist')
-            ->willReturnCallback(function (TokenUsage $entity) use (&$capturedEntity) {
+            ->willReturnCallback(function (SynapseTokenUsage $entity) use (&$capturedEntity) {
                 $capturedEntity = $entity;
             });
 
@@ -150,7 +150,7 @@ class TokenAccountingServiceTest extends TestCase
 
         $capturedEntity = null;
         $this->entityManager->method('persist')
-            ->willReturnCallback(function (TokenUsage $entity) use (&$capturedEntity) {
+            ->willReturnCallback(function (SynapseTokenUsage $entity) use (&$capturedEntity) {
                 $capturedEntity = $entity;
             });
 
@@ -183,7 +183,7 @@ class TokenAccountingServiceTest extends TestCase
 
         $capturedEntity = null;
         $this->entityManager->method('persist')
-            ->willReturnCallback(function (TokenUsage $entity) use (&$capturedEntity) {
+            ->willReturnCallback(function (SynapseTokenUsage $entity) use (&$capturedEntity) {
                 $capturedEntity = $entity;
             });
 
@@ -221,7 +221,7 @@ class TokenAccountingServiceTest extends TestCase
 
         $capturedEntity = null;
         $this->entityManager->method('persist')
-            ->willReturnCallback(function (TokenUsage $entity) use (&$capturedEntity) {
+            ->willReturnCallback(function (SynapseTokenUsage $entity) use (&$capturedEntity) {
                 $capturedEntity = $entity;
             });
 
@@ -252,7 +252,7 @@ class TokenAccountingServiceTest extends TestCase
 
         $capturedEntity = null;
         $this->entityManager->method('persist')
-            ->willReturnCallback(function (TokenUsage $entity) use (&$capturedEntity) {
+            ->willReturnCallback(function (SynapseTokenUsage $entity) use (&$capturedEntity) {
                 $capturedEntity = $entity;
             });
 
@@ -283,7 +283,7 @@ class TokenAccountingServiceTest extends TestCase
 
         $capturedEntity = null;
         $this->entityManager->method('persist')
-            ->willReturnCallback(function (TokenUsage $entity) use (&$capturedEntity) {
+            ->willReturnCallback(function (SynapseTokenUsage $entity) use (&$capturedEntity) {
                 $capturedEntity = $entity;
             });
 
@@ -315,7 +315,7 @@ class TokenAccountingServiceTest extends TestCase
 
         $capturedEntity = null;
         $this->entityManager->method('persist')
-            ->willReturnCallback(function (TokenUsage $entity) use (&$capturedEntity) {
+            ->willReturnCallback(function (SynapseTokenUsage $entity) use (&$capturedEntity) {
                 $capturedEntity = $entity;
             });
 

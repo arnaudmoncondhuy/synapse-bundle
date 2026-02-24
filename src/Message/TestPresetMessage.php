@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Message;
 
 /**
- * Message to trigger an asynchronous preset test.
+ * SynapseMessage to trigger an asynchronous preset test.
  */
 class TestPresetMessage
 {

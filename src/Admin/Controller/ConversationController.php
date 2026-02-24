@@ -31,7 +31,7 @@ class ConversationController extends AbstractController
         $conversation = $this->conversationManager->getConversation($id);
 
         if (!$conversation) {
-            throw $this->createNotFoundException('Conversation not found');
+            throw $this->createNotFoundException('SynapseConversation not found');
         }
 
         // Audit log (RGPD)

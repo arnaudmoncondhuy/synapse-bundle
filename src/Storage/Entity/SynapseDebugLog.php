@@ -6,16 +6,16 @@ namespace ArnaudMoncondhuy\SynapseBundle\Storage\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\DebugLogRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseDebugLogRepository;
 
 /**
  * Journaux de debug persistants
  *
  * Stocke les traces d'exécution des appels LLM (requête, réponse, paramètres effectivement envoyés).
  */
-#[ORM\Entity(repositoryClass: DebugLogRepository::class)]
+#[ORM\Entity(repositoryClass: SynapseDebugLogRepository::class)]
 #[ORM\Table(name: 'synapse_debug_log')]
-class DebugLog
+class SynapseDebugLog
 {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]

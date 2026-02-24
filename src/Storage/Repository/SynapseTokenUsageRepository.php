@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Storage\Repository;
 
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\TokenUsage;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseTokenUsage;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository pour l'entité TokenUsage
+ * Repository pour l'entité SynapseTokenUsage
  *
  * Fournit des requêtes d'analytics avancées avec agrégation
- * des données de TokenUsage (tâches automatisées) + Message (conversations).
+ * des données de SynapseTokenUsage (tâches automatisées) + SynapseMessage (conversations).
  *
- * @extends ServiceEntityRepository<TokenUsage>
+ * @extends ServiceEntityRepository<SynapseTokenUsage>
  */
-class TokenUsageRepository extends ServiceEntityRepository
+class SynapseTokenUsageRepository extends ServiceEntityRepository
 {
     private string $messageTableName;
 
     public function __construct(ManagerRegistry $registry, string $messageTableName = 'synapse_message')
     {
-        parent::__construct($registry, TokenUsage::class);
+        parent::__construct($registry, SynapseTokenUsage::class);
         $this->messageTableName = $messageTableName;
     }
 
@@ -40,7 +40,7 @@ class TokenUsageRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère les statistiques globales d'usage (TokenUsage + Message)
+     * Récupère les statistiques globales d'usage (SynapseTokenUsage + SynapseMessage)
      *
      * @param \DateTimeInterface $start Date de début
      * @param \DateTimeInterface $end Date de fin
@@ -53,7 +53,7 @@ class TokenUsageRepository extends ServiceEntityRepository
         $isPostgreSql = str_contains($connection->getDatabasePlatform()::class, 'PostgreSQL');
         $modelExpression = $isPostgreSql ? "metadata->>'model'" : "JSON_UNQUOTE(JSON_EXTRACT(metadata, '$.model'))";
 
-        // Requête UNION ALL pour agréger TokenUsage + Message
+        // Requête UNION ALL pour agréger SynapseTokenUsage + SynapseMessage
         $sql = <<<SQL
             SELECT
                 prompt_tokens,

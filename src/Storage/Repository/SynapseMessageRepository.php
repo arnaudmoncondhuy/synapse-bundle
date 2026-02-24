@@ -4,30 +4,30 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Storage\Repository;
 
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Message;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseMessage;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository pour l'entité Message
+ * Repository pour l'entité SynapseMessage
  *
- * @template T of Message
+ * @template T of SynapseMessage
  * @extends ServiceEntityRepository<T>
  *
- * Note : Ce repository est abstrait car Message est une MappedSuperclass.
+ * Note : Ce repository est abstrait car SynapseMessage est une MappedSuperclass.
  *        Les projets doivent créer leur propre repository qui étend celui-ci.
  */
-abstract class MessageRepository extends ServiceEntityRepository
+abstract class SynapseMessageRepository extends ServiceEntityRepository
 {
     /**
      * Trouve les messages d'une conversation
      *
-     * @param Conversation $conversation Conversation
+     * @param SynapseConversation $conversation SynapseConversation
      * @param int $limit Nombre maximum de messages (0 = illimité)
-     * @return Message[] Liste des messages
+     * @return SynapseMessage[] Liste des messages
      */
-    public function findByConversation(Conversation $conversation, int $limit = 0): array
+    public function findByConversation(SynapseConversation $conversation, int $limit = 0): array
     {
         $qb = $this->createQueryBuilder('m')
             ->where('m.conversation = :conversation')
@@ -88,7 +88,7 @@ abstract class MessageRepository extends ServiceEntityRepository
      * Trouve les messages avec un mauvais feedback
      *
      * @param int $limit Limite
-     * @return Message[] Messages
+     * @return SynapseMessage[] Messages
      */
     public function findNegativeFeedback(int $limit = 50): array
     {
@@ -104,7 +104,7 @@ abstract class MessageRepository extends ServiceEntityRepository
      * Trouve les messages bloqués par la sécurité
      *
      * @param int $limit Limite
-     * @return Message[] Messages
+     * @return SynapseMessage[] Messages
      */
     public function findBlocked(int $limit = 50): array
     {

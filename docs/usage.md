@@ -494,7 +494,7 @@ namespace App\Entity;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation as BaseConversation;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ConversationRepository::class)]
+#[ORM\Entity(repositoryClass: SynapseConversationRepository::class)]
 #[ORM\Table(name: 'conversation')]
 class Conversation extends BaseConversation
 {
@@ -522,7 +522,7 @@ namespace App\Entity;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Message as BaseMessage;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: MessageRepository::class)]
+#[ORM\Entity(repositoryClass: SynapseMessageRepository::class)]
 #[ORM\Table(name: 'message')]
 class Message extends BaseMessage
 {

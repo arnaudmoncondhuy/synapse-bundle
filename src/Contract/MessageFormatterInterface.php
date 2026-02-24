@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
 
 /**
  * Interface pour la conversion de format des messages
@@ -18,19 +18,19 @@ use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
 interface MessageFormatterInterface
 {
     /**
-     * Convertit un tableau d'entités Message vers le format API
+     * Convertit un tableau d'entités SynapseMessage vers le format API
      *
-     * @param array $messageEntities Tableau d'entités Message
+     * @param array $messageEntities Tableau d'entités SynapseMessage
      * @return array Format compatible avec l'API (ex: Gemini, Claude)
      */
     public function entitiesToApiFormat(array $messageEntities): array;
 
     /**
-     * Convertit un tableau au format API vers des entités Message
+     * Convertit un tableau au format API vers des entités SynapseMessage
      *
      * @param array $messages Messages au format API
-     * @param Conversation $conversation Conversation parente
-     * @return array Tableau d'entités Message (non persistées)
+     * @param SynapseConversation $conversation SynapseConversation parente
+     * @return array Tableau d'entités SynapseMessage (non persistées)
      */
-    public function apiFormatToEntities(array $messages, Conversation $conversation): array;
+    public function apiFormatToEntities(array $messages, SynapseConversation $conversation): array;
 }

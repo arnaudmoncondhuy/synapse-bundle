@@ -63,7 +63,7 @@ class ConversationApiController extends AbstractController
         try {
             $conversation = $this->conversationManager->getConversation($id, $user);
             if (!$conversation) {
-                return new JsonResponse(['error' => 'Conversation not found'], Response::HTTP_NOT_FOUND);
+                return new JsonResponse(['error' => 'SynapseConversation not found'], Response::HTTP_NOT_FOUND);
             }
 
             $this->conversationManager->deleteConversation($conversation);
@@ -95,7 +95,7 @@ class ConversationApiController extends AbstractController
         try {
             $conversation = $this->conversationManager->getConversation($id, $user);
             if (!$conversation) {
-                return new JsonResponse(['error' => 'Conversation not found'], Response::HTTP_NOT_FOUND);
+                return new JsonResponse(['error' => 'SynapseConversation not found'], Response::HTTP_NOT_FOUND);
             }
 
             $this->conversationManager->updateTitle($conversation, $title);
@@ -123,7 +123,7 @@ class ConversationApiController extends AbstractController
         try {
             $conversation = $this->conversationManager->getConversation($id, $user);
             if (!$conversation) {
-                return new JsonResponse(['error' => 'Conversation not found'], Response::HTTP_NOT_FOUND);
+                return new JsonResponse(['error' => 'SynapseConversation not found'], Response::HTTP_NOT_FOUND);
             }
 
             $messages = $this->conversationManager->getMessages($conversation);

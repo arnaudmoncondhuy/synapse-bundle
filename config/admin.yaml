@@ -107,7 +107,7 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Storage\Logger\DoctrineAdminLogger:
         arguments:
             $em: '@doctrine.orm.entity_manager'
-            $repository: '@ArnaudMoncondhuy\SynapseBundle\Storage\Repository\DebugLogRepository'
+            $repository: '@ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseDebugLogRepository'
         public: false
 
     # Override the default interface alias to use DoctrineAdminLogger when admin is enabled

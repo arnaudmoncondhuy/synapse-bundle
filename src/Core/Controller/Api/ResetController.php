@@ -33,7 +33,7 @@ class ResetController extends AbstractController
         try {
             $this->chatService->resetConversation();
 
-            return $this->json(['success' => true, 'message' => 'Conversation reset.']);
+            return $this->json(['success' => true, 'message' => 'SynapseConversation reset.']);
         } catch (\Exception $e) {
             return $this->json(['error' => $e->getMessage()], 500);
         }

@@ -118,7 +118,7 @@ services:
         autoconfigure: true
 
     # ── Repositories (required by core services) ──────────────────────────────
-    ArnaudMoncondhuy\SynapseBundle\Storage\Repository\TokenUsageRepository:
+    ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseTokenUsageRepository:
         arguments:
             $registry: '@doctrine'
         tags: ['doctrine.repository_service']
@@ -143,7 +143,7 @@ services:
             $registry: '@doctrine'
         tags: ['doctrine.repository_service']
 
-    ArnaudMoncondhuy\SynapseBundle\Storage\Repository\DebugLogRepository:
+    ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseDebugLogRepository:
         arguments:
             $registry: '@doctrine'
         tags: ['doctrine.repository_service']

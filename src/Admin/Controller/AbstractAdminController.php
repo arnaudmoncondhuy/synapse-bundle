@@ -6,7 +6,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\TokenUsageRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseTokenUsageRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,7 +27,7 @@ abstract class AbstractAdminController extends AbstractController
     protected const PRICE_OUTPUT_PER_1M = 2.50;
 
     public function __construct(
-        protected TokenUsageRepository $tokenUsageRepository,
+        protected SynapseTokenUsageRepository $tokenUsageRepository,
         protected SynapsePresetRepository $synapsePresetRepository,
         protected EncryptionServiceInterface $encryption,
     ) {}

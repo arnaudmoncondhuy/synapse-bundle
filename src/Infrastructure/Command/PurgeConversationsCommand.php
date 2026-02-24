@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Infrastructure\Command;
 
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\ConversationRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseConversationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -99,8 +99,8 @@ class PurgeConversationsCommand extends Command
 
         // Récupérer les conversations à supprimer
         $io->section('🔍 Recherche des conversations à purger...');
-        /** @var ConversationRepository $conversationRepo */
-        $conversationRepo = $this->em->getRepository(Conversation::class);
+        /** @var SynapseConversationRepository $conversationRepo */
+        $conversationRepo = $this->em->getRepository(SynapseConversation::class);
         $conversations = $conversationRepo->findOlderThan($days);
 
         if (empty($conversations)) {

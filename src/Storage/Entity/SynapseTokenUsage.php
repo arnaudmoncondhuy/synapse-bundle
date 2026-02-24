@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * Exemples : génération de titres, résumés, emails automatiques, calendrier IA, etc.
  *
- * Note : Les conversations (chat) sont trackées via Message.tokens,
+ * Note : Les conversations (chat) sont trackées via SynapseMessage.tokens,
  *        cette table est pour les tâches automatisées et agrégations.
  */
 #[ORM\Entity]
@@ -23,7 +23,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Index(name: 'idx_created_at', columns: ['created_at'])]
 #[ORM\Index(name: 'idx_module_model', columns: ['module', 'model'])]
 #[ORM\HasLifecycleCallbacks]
-class TokenUsage
+class SynapseTokenUsage
 {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]

@@ -7,11 +7,11 @@ namespace ArnaudMoncondhuy\SynapseBundle\Core\Manager;
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Message;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseMessage;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\ConversationStatus;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\ConversationRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseConversationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
@@ -27,12 +27,12 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
  */
 class ConversationManager
 {
-    private ?Conversation $currentConversation = null;
-    private ?ConversationRepository $resolvedConversationRepo = null;
+    private ?SynapseConversation $currentConversation = null;
+    private ?SynapseConversationRepository $resolvedConversationRepo = null;
 
     public function __construct(
         private EntityManagerInterface $em,
-        private ?ConversationRepository $conversationRepo = null,
+        private ?SynapseConversationRepository $conversationRepo = null,
         private ?EncryptionServiceInterface $encryptionService = null,
         private ?PermissionCheckerInterface $permissionChecker = null,
         private ?string $conversationClass = null,
@@ -44,7 +44,7 @@ class ConversationManager
     /**
      * Récupère le repository de conversations (injecté ou résolu dynamiquement)
      */
-    private function getConversationRepo(): ConversationRepository
+    private function getConversationRepo(): SynapseConversationRepository
     {
         if ($this->conversationRepo !== null) {
             return $this->conversationRepo;
@@ -62,12 +62,12 @@ class ConversationManager
      *
      * @param ConversationOwnerInterface $owner Propriétaire
      * @param string|null $title Titre (sera chiffré si encryption activée)
-     * @return Conversation Nouvelle conversation
+     * @return SynapseConversation Nouvelle conversation
      */
     public function createConversation(
         ConversationOwnerInterface $owner,
         ?string $title = null
-    ): Conversation {
+    ): SynapseConversation {
         $conversation = $this->instantiateConversation();
         $conversation->setOwner($owner);
 
@@ -84,10 +84,10 @@ class ConversationManager
     /**
      * Met à jour le titre d'une conversation
      *
-     * @param Conversation $conversation Conversation
+     * @param SynapseConversation $conversation SynapseConversation
      * @param string $title Nouveau titre (sera chiffré si encryption activée)
      */
-    public function updateTitle(Conversation $conversation, string $title): void
+    public function updateTitle(SynapseConversation $conversation, string $title): void
     {
         $this->checkPermission($conversation, 'edit');
         $this->setTitle($conversation, $title);
@@ -97,18 +97,18 @@ class ConversationManager
     /**
      * Sauvegarde un message dans une conversation
      *
-     * @param Conversation $conversation Conversation
+     * @param SynapseConversation $conversation SynapseConversation
      * @param MessageRole $role Rôle du message
      * @param string $content Contenu (sera chiffré si encryption activée)
      * @param array $metadata Métadonnées (tokens, safety_ratings, etc.)
-     * @return Message Message créé
+     * @return SynapseMessage SynapseMessage créé
      */
     public function saveMessage(
-        Conversation $conversation,
+        SynapseConversation $conversation,
         MessageRole $role,
         string $content,
         array $metadata = []
-    ): Message {
+    ): SynapseMessage {
         $message = $this->instantiateMessage();
         $message->setConversation($conversation);
         $message->setRole($role);
@@ -173,10 +173,10 @@ class ConversationManager
      *
      * @param string $id ID de la conversation
      * @param ConversationOwnerInterface|null $owner Propriétaire (optionnel, pour filtrer)
-     * @return Conversation|null Conversation ou null si non trouvée
+     * @return SynapseConversation|null SynapseConversation ou null si non trouvée
      * @throws AccessDeniedException Si pas de permission
      */
-    public function getConversation(string $id, ?ConversationOwnerInterface $owner = null): ?Conversation
+    public function getConversation(string $id, ?ConversationOwnerInterface $owner = null): ?SynapseConversation
     {
         $conversation = $this->getConversationRepo()->find($id);
 
@@ -201,7 +201,7 @@ class ConversationManager
      * @param ConversationOwnerInterface $owner Propriétaire
      * @param ConversationStatus|null $status Filtrer par statut
      * @param int $limit Nombre maximum de résultats
-     * @return Conversation[] Conversations avec titres déchiffrés
+     * @return SynapseConversation[] Conversations avec titres déchiffrés
      */
     public function getUserConversations(
         ConversationOwnerInterface $owner,
@@ -234,11 +234,11 @@ class ConversationManager
     /**
      * Récupère les messages d'une conversation avec déchiffrement
      *
-     * @param Conversation $conversation Conversation
+     * @param SynapseConversation $conversation SynapseConversation
      * @param int $limit Nombre maximum de messages (0 = tous)
-     * @return Message[] Messages déchiffrés
+     * @return SynapseMessage[] Messages déchiffrés
      */
-    public function getMessages(Conversation $conversation, int $limit = 0): array
+    public function getMessages(SynapseConversation $conversation, int $limit = 0): array
     {
         $this->checkPermission($conversation, 'view');
 
@@ -275,9 +275,9 @@ class ConversationManager
     /**
      * Supprime une conversation (soft delete)
      *
-     * @param Conversation $conversation Conversation à supprimer
+     * @param SynapseConversation $conversation SynapseConversation à supprimer
      */
-    public function deleteConversation(Conversation $conversation): void
+    public function deleteConversation(SynapseConversation $conversation): void
     {
         $this->checkPermission($conversation, 'delete');
         $conversation->softDelete();
@@ -287,13 +287,13 @@ class ConversationManager
     /**
      * Retourne les messages d'une conversation formatés en tableau pour le rendu Twig.
      *
-     * Gère les deux formats possibles (objet Message ou tableau legacy).
+     * Gère les deux formats possibles (objet SynapseMessage ou tableau legacy).
      * Filtre les messages non affichables (système, fonction, etc.).
      *
-     * @param Conversation $conversation Conversation à formater
+     * @param SynapseConversation $conversation SynapseConversation à formater
      * @return array<int, array{role: string, content: string, parts: array, metadata: array}>
      */
-    public function getHistoryArray(Conversation $conversation): array
+    public function getHistoryArray(SynapseConversation $conversation): array
     {
         $history = [];
         $messages = $this->getMessages($conversation);
@@ -331,9 +331,9 @@ class ConversationManager
     /**
      * Définit la conversation courante (contexte thread-local)
      *
-     * @param Conversation|null $conversation Conversation courante
+     * @param SynapseConversation|null $conversation SynapseConversation courante
      */
-    public function setCurrentConversation(?Conversation $conversation): void
+    public function setCurrentConversation(?SynapseConversation $conversation): void
     {
         $this->currentConversation = $conversation;
     }
@@ -341,9 +341,9 @@ class ConversationManager
     /**
      * Récupère la conversation courante
      *
-     * @return Conversation|null Conversation courante ou null
+     * @return SynapseConversation|null SynapseConversation courante ou null
      */
-    public function getCurrentConversation(): ?Conversation
+    public function getCurrentConversation(): ?SynapseConversation
     {
         return $this->currentConversation;
     }
@@ -353,7 +353,7 @@ class ConversationManager
     /**
      * Définit le titre d'une conversation avec chiffrement transparent
      */
-    private function setTitle(Conversation $conversation, string $title): void
+    private function setTitle(SynapseConversation $conversation, string $title): void
     {
         if ($this->encryptionService !== null) {
             $title = $this->encryptionService->encrypt($title);
@@ -364,7 +364,7 @@ class ConversationManager
     /**
      * Définit le contenu d'un message avec chiffrement transparent
      */
-    private function setMessageContent(Message $message, string $content): void
+    private function setMessageContent(SynapseMessage $message, string $content): void
     {
         $message->setDecryptedContent($content);
 
@@ -379,7 +379,7 @@ class ConversationManager
      *
      * @throws AccessDeniedException Si pas de permission
      */
-    private function checkPermission(Conversation $conversation, string $action): void
+    private function checkPermission(SynapseConversation $conversation, string $action): void
     {
         if ($this->permissionChecker === null) {
             return; // Pas de vérification si pas de checker
@@ -402,7 +402,7 @@ class ConversationManager
      *
      * À override dans les projets si classe custom
      */
-    protected function instantiateConversation(): Conversation
+    protected function instantiateConversation(): SynapseConversation
     {
         $class = $this->getConversationClass();
         return new $class();
@@ -413,29 +413,29 @@ class ConversationManager
      *
      * À override dans les projets si classe custom
      */
-    protected function instantiateMessage(): Message
+    protected function instantiateMessage(): SynapseMessage
     {
         $class = $this->getMessageClass();
         return new $class();
     }
 
     /**
-     * Retourne la classe Conversation à utiliser
+     * Retourne la classe SynapseConversation à utiliser
      *
      * À override dans les projets
      */
     protected function getConversationClass(): string
     {
-        return $this->conversationClass ?? Conversation::class;
+        return $this->conversationClass ?? SynapseConversation::class;
     }
 
     /**
-     * Retourne la classe Message à utiliser
+     * Retourne la classe SynapseMessage à utiliser
      *
      * À override dans les projets
      */
     protected function getMessageClass(): string
     {
-        return $this->messageClass ?? Message::class;
+        return $this->messageClass ?? SynapseMessage::class;
     }
 }

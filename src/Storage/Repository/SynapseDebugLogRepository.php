@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Storage\Repository;
 
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\DebugLog;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseDebugLog;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<DebugLog>
+ * @extends ServiceEntityRepository<SynapseDebugLog>
  */
-class DebugLogRepository extends ServiceEntityRepository
+class SynapseDebugLogRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, DebugLog::class);
+        parent::__construct($registry, SynapseDebugLog::class);
     }
 
     /**
      * Récupère un log de debug par ID
      */
-    public function findByDebugId(string $debugId): ?DebugLog
+    public function findByDebugId(string $debugId): ?SynapseDebugLog
     {
         return $this->findOneBy(['debugId' => $debugId]);
     }

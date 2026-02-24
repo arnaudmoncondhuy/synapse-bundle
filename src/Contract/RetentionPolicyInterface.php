@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
 
 /**
  * Interface pour la politique de rétention des conversations
@@ -24,10 +24,10 @@ interface RetentionPolicyInterface
     /**
      * Détermine si une conversation doit être purgée
      *
-     * @param Conversation $conversation Conversation à évaluer
+     * @param SynapseConversation $conversation SynapseConversation à évaluer
      * @return bool true si la conversation doit être purgée
      */
-    public function shouldPurge(Conversation $conversation): bool;
+    public function shouldPurge(SynapseConversation $conversation): bool;
 
     /**
      * Hook appelé avant la purge d'une conversation
@@ -37,9 +37,9 @@ interface RetentionPolicyInterface
      * - Archiver ailleurs
      * - Notifier l'utilisateur
      *
-     * @param Conversation $conversation Conversation sur le point d'être purgée
+     * @param SynapseConversation $conversation SynapseConversation sur le point d'être purgée
      */
-    public function beforePurge(Conversation $conversation): void;
+    public function beforePurge(SynapseConversation $conversation): void;
 
     /**
      * Hook appelé après la purge de toutes les conversations

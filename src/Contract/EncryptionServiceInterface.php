@@ -13,7 +13,7 @@ namespace ArnaudMoncondhuy\SynapseBundle\Contract;
  * @example
  * ```php
  * // Implémentation libsodium (par défaut)
- * $encrypted = $encryptionService->encrypt('Message secret');
+ * $encrypted = $encryptionService->encrypt('SynapseMessage secret');
  * $decrypted = $encryptionService->decrypt($encrypted);
  *
  * // Vérifier si un texte est chiffré

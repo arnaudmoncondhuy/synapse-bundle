@@ -11,7 +11,7 @@ use ArnaudMoncondhuy\SynapseBundle\Core\Chat\PromptBuilder;
 use ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapsePrePromptEvent;
 use ArnaudMoncondhuy\SynapseBundle\Core\Manager\ConversationManager;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -34,11 +34,12 @@ class ChatServiceTest extends TestCase
         $this->em = $this->createMock(EntityManagerInterface::class);
         $this->dispatcher = $this->createMock(EventDispatcherInterface::class);
         $this->conversationManager = $this->createMock(ConversationManager::class);
+        $toolRegistry = $this->createMock(\ArnaudMoncondhuy\SynapseBundle\Core\Chat\ToolRegistry::class);
 
         $this->chatService = new ChatService(
             $this->llmRegistry,
             $this->promptBuilder,
-            [],
+            $toolRegistry,
             $this->configProvider,
             $this->em,
             $this->dispatcher,
@@ -404,7 +405,7 @@ class ChatServiceTest extends TestCase
     public function testResetConversationCallsManager(): void
     {
         // Arrange
-        $mockConversation = $this->createMock(Conversation::class);
+        $mockConversation = $this->createMock(SynapseConversation::class);
         $this->conversationManager->expects($this->once())
             ->method('getCurrentConversation')
             ->willReturn($mockConversation);
@@ -427,7 +428,7 @@ class ChatServiceTest extends TestCase
     public function testGetConversationHistoryReturnsFormattedHistory(): void
     {
         // Arrange
-        $mockConversation = $this->createMock(Conversation::class);
+        $mockConversation = $this->createMock(SynapseConversation::class);
         $expectedHistory = [
             ['role' => 'user', 'content' => 'Hello'],
             ['role' => 'assistant', 'content' => 'Hi!'],

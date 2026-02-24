@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
-use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\DebugLogRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseDebugLogRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -21,7 +21,7 @@ use Symfony\Contracts\Cache\ItemInterface;
 class DebugController extends AbstractController
 {
     public function __construct(
-        private DebugLogRepository $debugLogRepo,
+        private SynapseDebugLogRepository $debugLogRepo,
         private CacheInterface $cache,
     ) {
     }

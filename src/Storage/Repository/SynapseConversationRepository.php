@@ -5,41 +5,41 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Storage\Repository;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\ConversationStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * Repository pour l'entité Conversation
+ * Repository pour l'entité SynapseConversation
  *
- * @template T of Conversation
+ * @template T of SynapseConversation
  * @extends ServiceEntityRepository<T>
  *
- * Note : Ce repository est abstrait car Conversation est une MappedSuperclass.
+ * Note : Ce repository est abstrait car SynapseConversation est une MappedSuperclass.
  *        Les projets doivent créer leur propre repository qui étend celui-ci.
  *
  * @example
  * ```php
- * use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\ConversationRepository as BaseConversationRepository;
+ * use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseConversationRepository as BaseSynapseConversationRepository;
  *
- * class ConversationRepository extends BaseConversationRepository
+ * class SynapseConversationRepository extends BaseSynapseConversationRepository
  * {
  *     public function __construct(ManagerRegistry $registry)
  *     {
- *         parent::__construct($registry, Conversation::class);
+ *         parent::__construct($registry, SynapseConversation::class);
  *     }
  * }
  * ```
  */
-abstract class ConversationRepository extends ServiceEntityRepository
+abstract class SynapseConversationRepository extends ServiceEntityRepository
 {
     /**
      * Trouve les conversations actives d'un propriétaire
      *
      * @param ConversationOwnerInterface $owner Propriétaire
      * @param int $limit Nombre maximum de résultats
-     * @return Conversation[] Liste des conversations
+     * @return SynapseConversation[] Liste des conversations
      */
     public function findActiveByOwner(ConversationOwnerInterface $owner, int $limit = 50): array
     {
@@ -58,7 +58,7 @@ abstract class ConversationRepository extends ServiceEntityRepository
      * Trouve les conversations plus anciennes que X jours (pour purge RGPD)
      *
      * @param int $days Nombre de jours de rétention
-     * @return Conversation[] Conversations à purger
+     * @return SynapseConversation[] Conversations à purger
      */
     public function findOlderThan(int $days): array
     {
@@ -111,7 +111,7 @@ abstract class ConversationRepository extends ServiceEntityRepository
      *
      * @param ConversationStatus $status Statut recherché
      * @param int $limit Nombre maximum de résultats
-     * @return Conversation[] Liste des conversations
+     * @return SynapseConversation[] Liste des conversations
      */
     public function findByStatus(ConversationStatus $status, int $limit = 100): array
     {
@@ -133,7 +133,7 @@ abstract class ConversationRepository extends ServiceEntityRepository
      * @param string $query Terme de recherche
      * @param ConversationOwnerInterface|null $owner Filtrer par propriétaire
      * @param int $limit Nombre maximum de résultats
-     * @return Conversation[] Résultats de recherche
+     * @return SynapseConversation[] Résultats de recherche
      */
     public function search(string $query, ?ConversationOwnerInterface $owner = null, int $limit = 50): array
     {

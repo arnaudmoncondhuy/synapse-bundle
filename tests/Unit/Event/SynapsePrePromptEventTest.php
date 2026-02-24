@@ -91,7 +91,7 @@ class SynapsePrePromptEventTest extends TestCase
     public function testSetAndGetPrompt(): void
     {
         // Arrange
-        $event = new SynapsePrePromptEvent('Message', []);
+        $event = new SynapsePrePromptEvent('SynapseMessage', []);
         $newPrompt = [
             ['role' => 'system', 'content' => 'New system'],
             ['role' => 'user', 'content' => 'New user message'],
@@ -110,7 +110,7 @@ class SynapsePrePromptEventTest extends TestCase
     public function testSetPromptReturnsSelf(): void
     {
         // Arrange
-        $event = new SynapsePrePromptEvent('Message', []);
+        $event = new SynapsePrePromptEvent('SynapseMessage', []);
 
         // Act
         $result = $event->setPrompt([]);
@@ -125,7 +125,7 @@ class SynapsePrePromptEventTest extends TestCase
     public function testSetAndGetConfig(): void
     {
         // Arrange
-        $event = new SynapsePrePromptEvent('Message', []);
+        $event = new SynapsePrePromptEvent('SynapseMessage', []);
         $newConfig = [
             'model' => 'gemini-2.5-flash',
             'temperature' => 0.7,
@@ -144,7 +144,7 @@ class SynapsePrePromptEventTest extends TestCase
     public function testSetConfigReturnsSelf(): void
     {
         // Arrange
-        $event = new SynapsePrePromptEvent('Message', []);
+        $event = new SynapsePrePromptEvent('SynapseMessage', []);
 
         // Act
         $result = $event->setConfig([]);
@@ -199,7 +199,7 @@ class SynapsePrePromptEventTest extends TestCase
         ];
 
         // Act
-        $event = new SynapsePrePromptEvent('Message', $options);
+        $event = new SynapsePrePromptEvent('SynapseMessage', $options);
 
         // Assert
         $this->assertEquals($options, $event->getOptions());
@@ -245,7 +245,7 @@ class SynapsePrePromptEventTest extends TestCase
         $originalPrompt = [
             ['role' => 'user', 'content' => 'Original'],
         ];
-        $event = new SynapsePrePromptEvent('Message', [], $originalPrompt);
+        $event = new SynapsePrePromptEvent('SynapseMessage', [], $originalPrompt);
 
         // Act
         $newPrompt = [
@@ -279,7 +279,7 @@ class SynapsePrePromptEventTest extends TestCase
     public function testEmptyOptionsArray(): void
     {
         // Arrange
-        $event = new SynapsePrePromptEvent('Message', []);
+        $event = new SynapsePrePromptEvent('SynapseMessage', []);
 
         // Act
         $options = $event->getOptions();
@@ -295,7 +295,7 @@ class SynapsePrePromptEventTest extends TestCase
     public function testEmptyPromptInitially(): void
     {
         // Arrange
-        $event = new SynapsePrePromptEvent('Message', []);
+        $event = new SynapsePrePromptEvent('SynapseMessage', []);
 
         // Act
         $prompt = $event->getPrompt();
@@ -311,7 +311,7 @@ class SynapsePrePromptEventTest extends TestCase
     public function testEmptyConfigInitially(): void
     {
         // Arrange
-        $event = new SynapsePrePromptEvent('Message', []);
+        $event = new SynapsePrePromptEvent('SynapseMessage', []);
 
         // Act
         $config = $event->getConfig();
@@ -327,7 +327,7 @@ class SynapsePrePromptEventTest extends TestCase
     public function testUpdatingConfigMultipleTimes(): void
     {
         // Arrange
-        $event = new SynapsePrePromptEvent('Message', []);
+        $event = new SynapsePrePromptEvent('SynapseMessage', []);
 
         // Act
         $event->setConfig(['version' => 1]);

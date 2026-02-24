@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Entity;
 
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\TokenUsage;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseTokenUsage;
 use PHPUnit\Framework\TestCase;
 
 class TokenUsageTest extends TestCase
 {
     /**
-     * Test que TokenUsage peut être créée avec les propriétés par défaut.
+     * Test que SynapseTokenUsage peut être créée avec les propriétés par défaut.
      */
     public function testTokenUsageCreation(): void
     {
         // Act
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
 
         // Assert
         $this->assertNull($usage->getId());
@@ -31,7 +31,7 @@ class TokenUsageTest extends TestCase
     public function testSetAndGetModule(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
 
         // Act
         $usage->setModule('chat');
@@ -46,7 +46,7 @@ class TokenUsageTest extends TestCase
     public function testSetAndGetAction(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
 
         // Act
         $usage->setAction('chat_turn');
@@ -61,7 +61,7 @@ class TokenUsageTest extends TestCase
     public function testSetAndGetModel(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
 
         // Act
         $usage->setModel('gemini-2.5-flash');
@@ -76,7 +76,7 @@ class TokenUsageTest extends TestCase
     public function testSetAndGetPromptTokens(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
 
         // Act
         $usage->setPromptTokens(100);
@@ -91,7 +91,7 @@ class TokenUsageTest extends TestCase
     public function testSetAndGetCompletionTokens(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
 
         // Act
         $usage->setCompletionTokens(50);
@@ -106,7 +106,7 @@ class TokenUsageTest extends TestCase
     public function testSetAndGetThinkingTokens(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
 
         // Act
         $usage->setThinkingTokens(25);
@@ -121,7 +121,7 @@ class TokenUsageTest extends TestCase
     public function testCalculateTotalTokens(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
         $usage->setPromptTokens(100);
         $usage->setCompletionTokens(50);
         $usage->setThinkingTokens(25);
@@ -139,7 +139,7 @@ class TokenUsageTest extends TestCase
     public function testCalculateTotalTokensWithOnlyPrompt(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
         $usage->setPromptTokens(100);
 
         // Act
@@ -155,7 +155,7 @@ class TokenUsageTest extends TestCase
     public function testSetAndGetUserId(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
         $userId = 'user-12345';
 
         // Act
@@ -171,7 +171,7 @@ class TokenUsageTest extends TestCase
     public function testSetAndGetConversationId(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
         $conversationId = 'conv-67890';
 
         // Act
@@ -187,7 +187,7 @@ class TokenUsageTest extends TestCase
     public function testCreatedAtIsAutoInitialized(): void
     {
         // Act
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
 
         // Assert
         $this->assertInstanceOf(\DateTimeImmutable::class, $usage->getCreatedAt());
@@ -199,7 +199,7 @@ class TokenUsageTest extends TestCase
     public function testSetAndGetMetadata(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
         $metadata = [
             'cost' => 0.50,
             'pricing' => ['input' => 0.30, 'output' => 2.50],
@@ -219,7 +219,7 @@ class TokenUsageTest extends TestCase
     public function testGetMetadataValueWithExistingKey(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
         $usage->setMetadata(['cost' => 1.25, 'debug_id' => 'xyz']);
 
         // Act
@@ -237,7 +237,7 @@ class TokenUsageTest extends TestCase
     public function testGetMetadataValueMissingKeyReturnsNull(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
         $usage->setMetadata(['cost' => 1.0]);
 
         // Act
@@ -253,7 +253,7 @@ class TokenUsageTest extends TestCase
     public function testGetMetadataValueWithDefault(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
         $usage->setMetadata(['cost' => 1.0]);
 
         // Act
@@ -269,7 +269,7 @@ class TokenUsageTest extends TestCase
     public function testSetMetadataValueOnNullMetadata(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
 
         // Act
         $usage->setMetadataValue('new_key', 'new_value');
@@ -284,7 +284,7 @@ class TokenUsageTest extends TestCase
     public function testCompleteTokenUsageFlow(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
 
         // Act
         $usage->setModule('chat')
@@ -318,7 +318,7 @@ class TokenUsageTest extends TestCase
     public function testSettersReturnThis(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
 
         // Act
         $result = $usage->setModule('test')
@@ -336,7 +336,7 @@ class TokenUsageTest extends TestCase
     public function testZeroTokensTotal(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
 
         // Act
         $usage->calculateTotalTokens();
@@ -351,7 +351,7 @@ class TokenUsageTest extends TestCase
     public function testLargeTokenCounts(): void
     {
         // Arrange
-        $usage = new TokenUsage();
+        $usage = new SynapseTokenUsage();
         $usage->setPromptTokens(1000000)
             ->setCompletionTokens(500000)
             ->setThinkingTokens(250000);

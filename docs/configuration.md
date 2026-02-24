@@ -29,8 +29,8 @@ Gère la persistance de l'historique des conversations.
 | `enabled` | bool | `false` | Activer la persistance |
 | `conversation_class` | string | `null` | **Requis** : FQCN de votre entité `Conversation` (ex: `App\Entity\Conversation`) |
 | `message_class` | string | `null` | **Requis** : FQCN de votre entité `Message` (ex: `App\Entity\Message`) |
-| `conversation_repository` | string | `null` | **Optionnel** : FQCN du repository `ConversationRepository` (auto-détecté sinon) |
-| `message_repository` | string | `null` | **Optionnel** : FQCN du repository `MessageRepository` (auto-détecté sinon) |
+| `conversation_repository` | string | `null` | **Optionnel** : FQCN du repository `SynapseConversationRepository` (auto-détecté sinon) |
+| `message_repository` | string | `null` | **Optionnel** : FQCN du repository `SynapseMessageRepository` (auto-détecté sinon) |
 
 **Exemple :**
 ```yaml

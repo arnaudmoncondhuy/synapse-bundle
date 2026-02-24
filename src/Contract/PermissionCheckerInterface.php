@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
 
 /**
  * Interface pour la vérification des permissions
@@ -24,19 +24,19 @@ use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
  *         private AuthorizationCheckerInterface $authChecker
  *     ) {}
  *
- *     public function canView(Conversation $conversation): bool
+ *     public function canView(SynapseConversation $conversation): bool
  *     {
  *         $user = $this->security->getUser();
  *         return $conversation->getOwner()->getId() === $user->getId()
  *             || $this->authChecker->isGranted('ROLE_ADMIN');
  *     }
  *
- *     public function canEdit(Conversation $conversation): bool
+ *     public function canEdit(SynapseConversation $conversation): bool
  *     {
  *         return $conversation->getOwner()->getId() === $this->security->getUser()->getId();
  *     }
  *
- *     public function canDelete(Conversation $conversation): bool
+ *     public function canDelete(SynapseConversation $conversation): bool
  *     {
  *         return $this->canEdit($conversation);
  *     }
@@ -53,26 +53,26 @@ interface PermissionCheckerInterface
     /**
      * Vérifie si l'utilisateur actuel peut voir une conversation
      *
-     * @param Conversation $conversation La conversation à vérifier
+     * @param SynapseConversation $conversation La conversation à vérifier
      * @return bool True si l'utilisateur peut voir la conversation
      */
-    public function canView(Conversation $conversation): bool;
+    public function canView(SynapseConversation $conversation): bool;
 
     /**
      * Vérifie si l'utilisateur actuel peut modifier une conversation
      *
-     * @param Conversation $conversation La conversation à vérifier
+     * @param SynapseConversation $conversation La conversation à vérifier
      * @return bool True si l'utilisateur peut modifier la conversation
      */
-    public function canEdit(Conversation $conversation): bool;
+    public function canEdit(SynapseConversation $conversation): bool;
 
     /**
      * Vérifie si l'utilisateur actuel peut supprimer une conversation
      *
-     * @param Conversation $conversation La conversation à vérifier
+     * @param SynapseConversation $conversation La conversation à vérifier
      * @return bool True si l'utilisateur peut supprimer la conversation
      */
-    public function canDelete(Conversation $conversation): bool;
+    public function canDelete(SynapseConversation $conversation): bool;
 
     /**
      * Vérifie si l'utilisateur actuel peut accéder à l'interface d'administration

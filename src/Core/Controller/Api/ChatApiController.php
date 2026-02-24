@@ -100,7 +100,7 @@ class ChatApiController extends AbstractController
             flush();
 
             if (empty($message) && !($options['reset_conversation'] ?? false)) {
-                $sendEvent('error', 'Message is required.');
+                $sendEvent('error', 'SynapseMessage is required.');
 
                 return;
             }

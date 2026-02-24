@@ -13,18 +13,18 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
 
 /**
- * Entité Conversation
+ * Entité SynapseConversation
  *
  * MappedSuperclass : Permet l'extension dans les projets.
  * Les projets doivent créer leur propre entité qui étend celle-ci.
  *
  * @example
  * ```php
- * use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation as BaseConversation;
+ * use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation as BaseConversation;
  *
- * #[ORM\Entity(repositoryClass: ConversationRepository::class)]
+ * #[ORM\Entity(repositoryClass: SynapseConversationRepository::class)]
  * #[ORM\Table(name: 'synapse_conversation')]
- * class Conversation extends BaseConversation
+ * class SynapseConversation extends BaseConversation
  * {
  *     #[ORM\ManyToOne(targetEntity: User::class)]
  *     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -44,7 +44,7 @@ use Symfony\Component\Uid\Ulid;
  */
 #[ORM\MappedSuperclass]
 #[ORM\HasLifecycleCallbacks]
-abstract class Conversation
+abstract class SynapseConversation
 {
     /**
      * Identifiant unique (ULID au format UUID)
@@ -98,7 +98,7 @@ abstract class Conversation
     /**
      * Messages de la conversation
      *
-     * @var Collection<int, Message>
+     * @var Collection<int, SynapseMessage>
      */
     protected Collection $messages;
 
@@ -199,14 +199,14 @@ abstract class Conversation
     }
 
     /**
-     * @return Collection<int, Message>
+     * @return Collection<int, SynapseMessage>
      */
     public function getMessages(): Collection
     {
         return $this->messages;
     }
 
-    public function addMessage(Message $message): self
+    public function addMessage(SynapseMessage $message): self
     {
         if (!$this->messages->contains($message)) {
             $this->messages->add($message);
@@ -214,7 +214,7 @@ abstract class Conversation
         return $this;
     }
 
-    public function removeMessage(Message $message): self
+    public function removeMessage(SynapseMessage $message): self
     {
         $this->messages->removeElement($message);
         return $this;

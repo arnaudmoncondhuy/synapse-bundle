@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Tests\Unit\Entity;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Conversation;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\Message;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseMessage;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\ConversationStatus;
 use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole;
 use PHPUnit\Framework\TestCase;
@@ -14,11 +14,11 @@ use PHPUnit\Framework\TestCase;
 class ConversationTest extends TestCase
 {
     /**
-     * Crée une instance concrète de Conversation pour les tests.
+     * Crée une instance concrète de SynapseConversation pour les tests.
      */
-    private function createConversation(): Conversation
+    private function createConversation(): SynapseConversation
     {
-        return new class extends Conversation {
+        return new class extends SynapseConversation {
             private ?ConversationOwnerInterface $owner = null;
 
             public function getOwner(): ?ConversationOwnerInterface

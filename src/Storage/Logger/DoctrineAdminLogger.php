@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Storage\Logger;
 
 use ArnaudMoncondhuy\SynapseBundle\Contract\SynapseDebugLoggerInterface;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\DebugLog;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\DebugLogRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseDebugLog;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseDebugLogRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -22,13 +22,13 @@ class DoctrineAdminLogger implements SynapseDebugLoggerInterface
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private DebugLogRepository $repository,
+        private SynapseDebugLogRepository $repository,
     ) {
     }
 
     public function logExchange(string $debugId, array $metadata, array $rawPayload): void
     {
-        $debugLog = new DebugLog();
+        $debugLog = new SynapseDebugLog();
         $debugLog->setDebugId($debugId);
 
         // Store the COMPLETE payload for template rendering

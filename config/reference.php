@@ -908,10 +908,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     persistence?: array{
  *         enabled?: bool|Param, // Activer la persistence des conversations en base de données // Default: false
  *         handler?: scalar|Param|null, // Handler de persistence : "session" (défaut) ou "doctrine" // Default: "session"
- *         conversation_class?: scalar|Param|null, // FQCN de l'entité Conversation concrète (ex : App\Module\Assistant\Entity\Conversation) // Default: null
- *         message_class?: scalar|Param|null, // FQCN de l'entité Message concrète (ex : App\Module\Assistant\Entity\Message) // Default: null
- *         conversation_repository?: scalar|Param|null, // FQCN du repository Conversation concret. Si renseigné, le bundle enregistre automatiquement l'alias DI. // Default: null
- *         message_repository?: scalar|Param|null, // FQCN du repository Message concret. Si renseigné, le bundle enregistre automatiquement l'alias DI. // Default: null
+ *         conversation_class?: scalar|Param|null, // FQCN de l'entité SynapseConversation concrète (ex : App\Module\Assistant\Entity\SynapseConversation) // Default: null
+ *         message_class?: scalar|Param|null, // FQCN de l'entité SynapseMessage concrète (ex : App\Module\Assistant\Entity\SynapseMessage) // Default: null
+ *         conversation_repository?: scalar|Param|null, // FQCN du repository SynapseConversation concret. Si renseigné, le bundle enregistre automatiquement l'alias DI. // Default: null
+ *         message_repository?: scalar|Param|null, // FQCN du repository SynapseMessage concret. Si renseigné, le bundle enregistre automatiquement l'alias DI. // Default: null
  *     },
  *     encryption?: array{
  *         enabled?: bool|Param, // Activer le chiffrement des conversations (libsodium AES-256-GCM) // Default: false

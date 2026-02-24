@@ -6,8 +6,8 @@ namespace ArnaudMoncondhuy\SynapseBundle\Infrastructure\DependencyInjection;
 
 use ArnaudMoncondhuy\SynapseBundle\Admin\Twig\SynapseRuntime;
 use ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\ConversationRepository;
-use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\MessageRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseConversationRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseMessageRepository;
 use ArnaudMoncondhuy\SynapseBundle\Core\Manager\ConversationManager;
 use ArnaudMoncondhuy\SynapseBundle\Security\LibsodiumEncryptionService;
 use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
