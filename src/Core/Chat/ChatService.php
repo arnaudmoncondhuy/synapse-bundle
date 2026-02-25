@@ -48,14 +48,30 @@ class ChatService
     ) {}
 
     /**
-     * Traite un message utilisateur et retourne la réponse de l'IA (après exécution d'outils si nécessaire).
+     * Point d'entrée principal pour envoyer un message à l'IA.
      *
-     * @param string        $message
-     * @param array         $options
-     * @param callable|null $onStatusUpdate Function(string $message, string $step): void
-     * @param callable|null $onToken        Function(string $token): void
+     * Cette méthode gère l'orchestration complète : recherche du contexte, appel du client LLM,
+     * exécution des outils (si nécessaire) et persistance des messages.
      *
-     * @return array
+     * @param string        $message Le texte envoyé par l'utilisateur.
+     * @param array{
+     *     persona?: string,
+     *     history?: array,
+     *     stateless?: bool,
+     *     debug?: bool,
+     *     preset?: SynapsePreset,
+     *     conversation_id?: string
+     * } $options Options contrôlant le comportement de l'échange.
+     * @param callable|null $onStatusUpdate Callback appelé à chaque étape (thinking, tool_call, etc.) : fn(string $msg, string $step).
+     * @param callable|null $onToken        Callback appelé à chaque token reçu (streaming) : fn(string $token).
+     *
+     * @return array{
+     *     answer: string,
+     *     debug_id: ?string,
+     *     usage: array,
+     *     safety: array,
+     *     model: string
+     * } Résultat normalisé de l'échange.
      */
     public function ask(
         string $message,

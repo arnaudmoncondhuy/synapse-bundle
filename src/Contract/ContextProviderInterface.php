@@ -5,29 +5,43 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 
 /**
- * Interface pour la fourniture de contexte au modèle IA.
+ * Interface pour l'injection de contexte dynamique au modèle IA.
  *
- * Implémentez cette interface pour injecter dynamiquement des "System Prompts"
- * et des données contextuelles (date, utilisateur connecté, environnement)
- * au début de chaque conversation Gemini.
+ * Implémentez cette interface dans votre application pour personnaliser
+ * les instructions système et injecter des données contextuelles (identité,
+ * date, préférences utilisateur) au début de chaque échange.
+ *
+ * @example
+ * ```php
+ * class AppContextProvider implements ContextProviderInterface {
+ *     public function getSystemPrompt(): string {
+ *         return "Tu es l'assistant de l'application MaSociété.";
+ *     }
+ *     public function getInitialContext(): array {
+ *         return ['version' => '1.2', 'env' => 'prod'];
+ *     }
+ * }
+ * ```
  */
 interface ContextProviderInterface
 {
     /**
-     * Retourne le prompt système principal (identité, règles, instructions de sécurité).
+     * Retourne le prompt système principal (identité et règles de base).
      *
-     * C'est ici que l'on définit "qui" est l'IA et comment elle doit se comporter globalement.
+     * Définit le comportement global de l'IA. Cette instruction est placée
+     * en tête de chaque conversation.
      *
-     * @return string le texte du prompt système
+     * @return string Les instructions système pour le LLM.
      */
     public function getSystemPrompt(): string;
 
     /**
-     * Retourne le contexte initial à injecter dans la conversation.
+     * Retourne des données contextuelles additionnelles.
      *
-     * Utile pour fournir des données d'environnement immédiates (ex: "Nous sommes le 25/01/2026").
+     * Ces données sont converties en texte et injectées après le prompt système
+     * pour donner au modèle des informations sur l'environnement actuel.
      *
-     * @return array<string, mixed> tableau clé-valeur de données contextuelles
+     * @return array<string, mixed> Tableau clé-valeur de métadonnées.
      */
     public function getInitialContext(): array;
 }

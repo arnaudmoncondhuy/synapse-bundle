@@ -5,32 +5,35 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Shared\Enum;
 
 /**
- * Rôle d'un message dans une conversation
+ * Rôle d'un message dans une conversation IA.
+ *
+ * Définit l'identité de l'émetteur du message pour que le LLM comprenne la structure
+ * de l'échange. Synapse normalise ces rôles vers les formats spécifiques des fournisseurs.
  */
 enum MessageRole: string
 {
     /**
-     * SynapseMessage envoyé par l'utilisateur
+     * Message envoyé par l'utilisateur humain.
      */
     case USER = 'USER';
 
     /**
-     * SynapseMessage généré par le modèle IA
+     * Message généré par l'Intelligence Artificielle.
      */
     case MODEL = 'MODEL';
 
     /**
-     * SynapseMessage système (instructions, contexte)
+     * Instructions système ou contexte global injecté (ex: "Tu es un pirate").
      */
     case SYSTEM = 'SYSTEM';
 
     /**
-     * Appel ou réponse de fonction (Function Calling)
+     * Représente un appel de fonction par l'IA ou le résultat renvoyé par un outil.
      */
     case FUNCTION = 'FUNCTION';
 
     /**
-     * Vérifie si le rôle est affiché dans l'interface
+     * Indique si ce rôle a vocation à être affiché dans une interface de chat classique.
      */
     public function isDisplayable(): bool
     {
@@ -41,7 +44,7 @@ enum MessageRole: string
     }
 
     /**
-     * Retourne l'émoji associé au rôle
+     * Retourne l'émoji représentatif pour les logs ou l'UI.
      */
     public function getEmoji(): string
     {
@@ -54,7 +57,7 @@ enum MessageRole: string
     }
 
     /**
-     * Retourne le label français
+     * Nom lisible du rôle pour l'administration.
      */
     public function getLabel(): string
     {

@@ -7,22 +7,22 @@ namespace ArnaudMoncondhuy\SynapseBundle\Core\Event;
 use Symfony\Contracts\EventDispatcher\Event;
 
 /**
- * Fired WHEN the LLM requests a tool/function call.
+ * Événement déclenché lorsque le LLM demande l'exécution d'un ou plusieurs outils.
  *
- * Allows subscribers to:
- * - Resolve and execute the tool
- * - Validate tool arguments
- * - Log tool invocations
- * - Return results to the LLM
+ * C'est le cœur du "Function Calling". Synapse décompose la demande du modèle
+ * et émet cet événement. Les écouteurs (subscribers) sont chargés d'exécuter
+ * la logique métier et de renvoyer le résultat via `setToolResult()`.
+ *
+ * @see \ArnaudMoncondhuy\SynapseBundle\Core\Event\ToolExecutionSubscriber
  */
 class SynapseToolCallRequestedEvent extends Event
 {
-    /** @var array<array{name: string, args: array}> */
+    /** @var array<array{id: string, name: string, args: array}> */
     private array $toolCalls;
     private array $results = [];
 
     /**
-     * @param array<array{name: string, args: array}> $toolCalls
+     * @param array<array{id: string, name: string, args: array}> $toolCalls Liste des appels d'outils demandés par le LLM.
      */
     public function __construct(array $toolCalls)
     {
@@ -30,9 +30,9 @@ class SynapseToolCallRequestedEvent extends Event
     }
 
     /**
-     * Get all tool calls requested by the LLM.
+     * Retourne la liste des outils que le modèle souhaite appeler.
      *
-     * @return array<array{name: string, args: array}>
+     * @return array<array{id: string, name: string, args: array}>
      */
     public function getToolCalls(): array
     {
@@ -40,10 +40,10 @@ class SynapseToolCallRequestedEvent extends Event
     }
 
     /**
-     * Register a tool execution result.
+     * Enregistre le résultat de l'exécution d'un outil.
      *
-     * @param string $toolName
-     * @param mixed  $result
+     * @param string $toolName Nom technique de l'outil.
+     * @param mixed  $result   Donnée renvoyée par l'application (sera JSON-sérialisée pour le LLM).
      */
     public function setToolResult(string $toolName, mixed $result): self
     {
@@ -52,7 +52,7 @@ class SynapseToolCallRequestedEvent extends Event
     }
 
     /**
-     * Get all registered tool results.
+     * Retourne l'ensemble des résultats collectés.
      *
      * @return array<string, mixed>
      */
@@ -62,15 +62,7 @@ class SynapseToolCallRequestedEvent extends Event
     }
 
     /**
-     * Get result for a specific tool.
-     */
-    public function getResult(string $toolName): mixed
-    {
-        return $this->results[$toolName] ?? null;
-    }
-
-    /**
-     * Check if all tool calls have results registered.
+     * Vérifie si tous les outils demandés ont reçu une réponse de l'application.
      */
     public function areAllResultsRegistered(): bool
     {

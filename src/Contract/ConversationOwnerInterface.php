@@ -5,17 +5,24 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 
 /**
- * Interface pour le propriétaire d'une conversation
+ * Interface pour le propriétaire d'une conversation.
  *
- * Permet au bundle d'être agnostique vis-à-vis de l'entité User du projet.
- * Chaque projet doit faire implémenter cette interface à son entité User.
+ * Permet au bundle d'être agnostique vis-à-vis de l'entité User de votre projet.
+ * Chaque projet Symfony utilisant ce bundle doit faire implémenter cette interface à son entité User
+ * (ou toute entité capable de posséder une conversation).
  *
  * @example
  * ```php
- * use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface;
+ * namespace App\Entity;
  *
+ * use ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface;
+ * use Doctrine\ORM\Mapping as ORM;
+ *
+ * #[ORM\Entity]
  * class User implements ConversationOwnerInterface
  * {
+ *     // ...
+ *
  *     public function getId(): ?int
  *     {
  *         return $this->id;
@@ -31,19 +38,21 @@ namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 interface ConversationOwnerInterface
 {
     /**
-     * Retourne l'identifiant unique du propriétaire
+     * Retourne l'identifiant technique unique du propriétaire.
      *
-     * @return int|string|null L'ID du propriétaire (peut être null avant persist)
+     * Cet identifiant sera utilisé pour lier les conversations en base de données via une relation ManyToOne.
+     *
+     * @return int|string|null L'ID du propriétaire (généralement son ID de base de données)
      */
     public function getId(): int|string|null;
 
     /**
-     * Retourne un identifiant humainement lisible du propriétaire
+     * Retourne un identifiant humainement lisible du propriétaire.
      *
-     * Utilisé pour les logs, l'audit, l'affichage admin.
-     * Exemples : email, username, nom complet
+     * Cet identifiant est utilisé principalement pour l'affichage dans l'interface d'administration
+     * de Synapse, les logs d'audit et le suivi de consommation.
      *
-     * @return string Identifiant lisible (email, username, etc.)
+     * @return string Un identifiant tel que l'email, le pseudo ou le nom complet.
      */
     public function getIdentifier(): string;
 }

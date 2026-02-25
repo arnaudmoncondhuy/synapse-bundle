@@ -7,52 +7,54 @@ namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapsePreset;
 
 /**
- * Interface pour fournir la configuration dynamique au GeminiClient.
+ * Interface pour fournir la configuration dynamique aux clients LLM.
  *
  * Permet d'injecter des paramètres depuis une source externe (BDD, API, etc.)
- * au lieu d'utiliser uniquement les paramètres statiques de synapse.yaml.
+ * au lieu d'utiliser uniquement les paramètres statiques de `synapse.yaml`.
+ * Cette interface est utilisée par le bundle pour récupérer les réglages de
+ * sécurité et les paramètres de génération.
  */
 interface ConfigProviderInterface
 {
     /**
-     * Retourne la configuration dynamique.
+     * Retourne la configuration dynamique active.
      *
-     * @return array Configuration au format:
-     *               [
-     *                   'safety_settings' => [
-     *                       'enabled' => bool,
-     *                       'default_threshold' => string,
-     *                       'thresholds' => [
-     *                           'hate_speech' => string,
-     *                           'dangerous_content' => string,
-     *                           'harassment' => string,
-     *                           'sexually_explicit' => string,
-     *                       ],
-     *                   ],
-     *                   'generation_config' => [
-     *                       'temperature' => float,
-     *                       'top_p' => float,
-     *                       'top_k' => int,
-     *                       'max_output_tokens' => ?int,
-     *                       'stop_sequences' => array,
-     *                   ],
-     *               ]
+     * @return array{
+     *     safety_settings: array{
+     *         enabled: bool,
+     *         default_threshold: string,
+     *         thresholds: array<string, string>
+     *     },
+     *     generation_config: array{
+     *         temperature: float,
+     *         top_p: float,
+     *         top_k: int,
+     *         max_output_tokens: ?int,
+     *         stop_sequences: array<string>
+     *     }
+     * } Configuration structurée pour le client LLM.
      */
     public function getConfig(): array;
 
     /**
-     * Configure un override temporaire (en mémoire) qui sera retourné par getConfig()
-     * au lieu du preset actif en base de données.
+     * Configure un override temporaire (en mémoire).
      *
-     * Utilisé par ChatService pour tester un preset spécifique sans le rendre actif.
+     * Cet override sera retourné par `getConfig()` à la place de la configuration
+     * par défaut ou persistée. Utilisé pour tester des configurations à la volée.
+     *
+     * @param array|null $config La configuration d'override ou null pour la désactiver.
      */
     public function setOverride(?array $config): void;
 
     /**
-     * Retourne la configuration complète pour un preset spécifique,
-     * sans modifier le preset actif en DB.
+     * Retourne la configuration complète pour un preset spécifique.
      *
-     * Utilisé par PresetTestService pour obtenir la config du preset à tester.
+     * Contrairement à `getConfig()`, cette méthode ne dépend pas de l'état global
+     * mais extrait la configuration depuis une entité Preset donnée.
+     *
+     * @param SynapsePreset $preset L'entité preset à analyser.
+     *
+     * @return array Configuration extraite du preset.
      */
     public function getConfigForPreset(SynapsePreset $preset): array;
 }

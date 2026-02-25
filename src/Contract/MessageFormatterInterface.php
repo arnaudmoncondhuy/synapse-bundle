@@ -7,30 +7,29 @@ namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
 
 /**
- * Interface pour la conversion de format des messages
+ * Interface responsable du formatage et de la normalisation des échanges.
  *
- * Permet de convertir entre le format des entités (ORM) et le format API (Gemini, Claude, OpenAI, etc.)
- * Cette abstraction permet de:
- * - Séparer la logique de formatage de la logique métier
- * - Supporter plusieurs formats d'API
- * - Faciliter les tests
+ * Ce service gère la conversion entre les entités de base de données (SynapseMessage)
+ * et le format "OpenAI canonical" utilisé en interne et par les clients LLM.
  */
 interface MessageFormatterInterface
 {
     /**
-     * Convertit un tableau d'entités SynapseMessage vers le format API
+     * Convertit une liste d'entités de messages vers le format API brut.
      *
-     * @param array $messageEntities Tableau d'entités SynapseMessage
-     * @return array Format compatible avec l'API (ex: Gemini, Claude)
+     * @param array<int, object> $messageEntities Liste des entités (SynapseMessage).
+     *
+     * @return array<int, array{role: string, content: string|null, tool_calls?: array}> Messages formatés pour le LLM.
      */
     public function entitiesToApiFormat(array $messageEntities): array;
 
     /**
-     * Convertit un tableau au format API vers des entités SynapseMessage
+     * Transforme des messages provenant d'une API en objets entités prêts à la persistance.
      *
-     * @param array $messages Messages au format API
-     * @param SynapseConversation $conversation SynapseConversation parente
-     * @return array Tableau d'entités SynapseMessage (non persistées)
+     * @param array<int, array<string, mixed>> $messages     Messages au format API.
+     * @param SynapseConversation              $conversation La conversation parente à laquelle lier les messages.
+     *
+     * @return array<int, object> Liste des nouvelles entités SynapseMessage (non persistées).
      */
     public function apiFormatToEntities(array $messages, SynapseConversation $conversation): array;
 }

@@ -1,0 +1,106 @@
+site_name: SynapseBundle
+site_description: Un bundle Chatbot IA réutilisable pour Symfony avec support multi-fournisseurs.
+site_author: Arnaud Moncondhuy
+
+theme:
+  name: material
+  language: fr
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Passer au mode sombre
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Passer au mode clair
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: php
+      handlers:
+        php:
+          setup_commands:
+            - "composer install --no-dev"
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.mermaid_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+    emoji_index: !!python/name:pymdownx.emoji.twemoji
+    emoji_generator: !!python/name:pymdownx.emoji.to_svg
+
+nav:
+  - Accueil: index.md
+  - Prise en main:
+      - Installation: getting-started/installation.md
+      - Guide rapide: getting-started/quickstart.md
+  - Guides d'utilisation:
+      - Configuration: guides/configuration.md
+  - Interface d'Administration:
+      - Utilisation: admin/interface.md
+  - Guides d'utilisation:
+      - Configuration: guides/configuration.md
+      - Créer des outils IA: guides/ai-tools.md
+      - Personas & Presets: guides/personas-presets.md
+      - Conversations & Persistance: guides/rle-management.md
+  - Référence Technique:
+      - Services Cœurs:
+          - ChatService: reference/chat-service.md
+          - ConversationManager: reference/conversation-manager.md
+      - Interfaces (Contrats):
+          - Vue d'ensemble: reference/contracts/overview.md
+          - AgentInterface: reference/contracts/agent-interface.md
+          - AiToolInterface: reference/contracts/ai-tool-interface.md
+          - ConfigProvider: reference/contracts/config-provider-interface.md
+          - ContextProvider: reference/contracts/context-provider-interface.md
+          - ConversationOwner: reference/contracts/conversation-owner-interface.md
+          - EmbeddingClient: reference/contracts/embedding-client-interface.md
+          - EncryptionService: reference/contracts/encryption-service-interface.md
+          - LlmClient: reference/contracts/llm-client-interface.md
+          - MessageFormatter: reference/contracts/message-formatter-interface.md
+          - PermissionChecker: reference/contracts/permission-checker-interface.md
+          - RetentionPolicy: reference/contracts/retention-policy-interface.md
+          - DebugLogger: reference/contracts/synapse-debug-logger-interface.md
+          - VectorStore: reference/contracts/vector-store-interface.md
+      - Événements (Events):
+          - Cycle de vie: reference/events/overview.md
+          - GenerationStarted: reference/events/generation-started-event.md
+          - PrePrompt: reference/events/pre-prompt-event.md
+          - ChunkReceived: reference/events/chunk-received-event.md
+          - ToolCallRequested: reference/events/tool-call-requested-event.md
+          - ToolCallCompleted: reference/events/tool-call-completed-event.md
+          - GenerationCompleted: reference/events/generation-completed-event.md
+          - ExchangeCompleted (Debug): reference/events/exchange-completed-event.md
+      - Enums & Formats:
+          - MessageRole: reference/shared/message-role.md
+          - ConversationStatus: reference/shared/conversation-status.md
+      - Entités Doctrine: reference/entities.md
+      - Commandes CLI: reference/cli.md
+  - Architecture & Concepts:
+      - Vue d'ensemble: explanation/architecture.md
+      - Sécurité & RGPD: explanation/security.md

@@ -7,15 +7,25 @@ namespace ArnaudMoncondhuy\SynapseBundle\Core\Event;
 use Symfony\Contracts\EventDispatcher\Event;
 
 /**
- * Fired AFTER the multi-turn loop completes.
+ * Événement de bas niveau déclenché après la complétion d'un échange LLM.
  *
- * Allows subscribers to:
- * - Finalize debug logging
- * - Clean up resources
- * - Publish metrics
+ * Principalement utilisé pour le système de logging de debug interne. Il contient
+ * toutes les métadonnées techniques brutes, y compris les payloads API complets
+ * si le mode debug est activé.
+ *
+ * @see \ArnaudMoncondhuy\SynapseBundle\Core\Event\DebugLogSubscriber
  */
 class SynapseExchangeCompletedEvent extends Event
 {
+    /**
+     * @param string $debugId   Identifiant unique de cet échange précis.
+     * @param string $model     Modèle technique utilisé (ex: 'gemini-1.5-flash').
+     * @param string $provider  Nom du client provider (ex: 'gemini').
+     * @param array  $usage     Détails de consommation.
+     * @param array  $safety    Évaluations de sécurité.
+     * @param bool   $debugMode Indique si le mode debug était activé par l'utilisateur.
+     * @param array  $rawData   Données brutes de la requête et de la réponse (payloads).
+     */
     public function __construct(
         private string $debugId,
         private string $model,
@@ -24,8 +34,7 @@ class SynapseExchangeCompletedEvent extends Event
         private array $safety = [],
         private bool $debugMode = false,
         private array $rawData = [],
-    ) {
-    }
+    ) {}
 
     public function getDebugId(): string
     {
@@ -57,6 +66,9 @@ class SynapseExchangeCompletedEvent extends Event
         return $this->debugMode;
     }
 
+    /**
+     * Retourne les données API brutes (Requêtes + Réponses).
+     */
     public function getRawData(): array
     {
         return $this->rawData;

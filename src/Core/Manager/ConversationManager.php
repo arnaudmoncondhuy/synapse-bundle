@@ -16,14 +16,15 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
- * Gestionnaire centralisé des conversations
+ * Gestionnaire centralisé des conversations et de leur persistance.
  *
  * Responsabilités :
- * - CRUD conversations avec chiffrement transparent
- * - Gestion des messages
- * - Gestion des risques (Ange Gardien)
- * - Vérification des permissions
- * - Contexte thread-local (conversation courante)
+ * - Cycle de vie des conversations (CRUD) avec chiffrement transparent des données sensibles.
+ * - Gestion des messages et calcul automatique des coûts/tokens.
+ * - Vérification des permissions d'accès (via `PermissionCheckerInterface`).
+ * - Gestion du contexte thread-local pour suivre la conversation active.
+ *
+ * @see \ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation
  */
 class ConversationManager
 {
@@ -95,13 +96,25 @@ class ConversationManager
     }
 
     /**
-     * Sauvegarde un message dans une conversation
+     * Enregistre un nouveau message dans une conversation.
      *
-     * @param SynapseConversation $conversation SynapseConversation
-     * @param MessageRole $role Rôle du message
-     * @param string $content Contenu (sera chiffré si encryption activée)
-     * @param array $metadata Métadonnées (tokens, safety_ratings, etc.)
-     * @return SynapseMessage SynapseMessage créé
+     * Si le chiffrement est activé, le contenu et les métadonnées sensibles sont chiffrés
+     * avant la persistance. Le coût en tokens est calculé si possible.
+     *
+     * @param SynapseConversation $conversation La conversation concernée.
+     * @param MessageRole         $role         Rôle de l'émetteur (USER, MODEL, etc.).
+     * @param string              $content      Contenu textuel brut.
+     * @param array{
+     *     prompt_tokens?: int,
+     *     completion_tokens?: int,
+     *     thinking_tokens?: int,
+     *     safety_ratings?: array,
+     *     blocked?: bool,
+     *     model?: string,
+     *     metadata?: array
+     * } $metadata Données techniques de l'échange.
+     *
+     * @return SynapseMessage L'entité message créée.
      */
     public function saveMessage(
         SynapseConversation $conversation,

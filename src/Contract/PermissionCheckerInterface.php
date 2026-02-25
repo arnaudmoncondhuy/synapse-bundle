@@ -7,77 +7,35 @@ namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
 
 /**
- * Interface pour la vérification des permissions
+ * Interface pour la gestion fine des droits d'accès.
  *
- * Permet au bundle d'être agnostique vis-à-vis du système de permissions
- * du projet (Symfony Security, Voter, ACL, custom).
- *
- * @example
- * ```php
- * use Symfony\Component\Security\Core\Security;
- * use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
- *
- * class AssistantPermissionChecker implements PermissionCheckerInterface
- * {
- *     public function __construct(
- *         private Security $security,
- *         private AuthorizationCheckerInterface $authChecker
- *     ) {}
- *
- *     public function canView(SynapseConversation $conversation): bool
- *     {
- *         $user = $this->security->getUser();
- *         return $conversation->getOwner()->getId() === $user->getId()
- *             || $this->authChecker->isGranted('ROLE_ADMIN');
- *     }
- *
- *     public function canEdit(SynapseConversation $conversation): bool
- *     {
- *         return $conversation->getOwner()->getId() === $this->security->getUser()->getId();
- *     }
- *
- *     public function canDelete(SynapseConversation $conversation): bool
- *     {
- *         return $this->canEdit($conversation);
- *     }
- *
- *     public function canAccessAdmin(): bool
- *     {
- *         return $this->authChecker->isGranted('ROLE_ADMIN');
- *     }
- * }
- * ```
+ * Permet au bundle de déléguer la sécurité au système de votre application (Voters, ACL).
+ * Le `ChatService` utilise ce service avant d'autoriser la lecture ou l'écriture
+ * dans une conversation existante.
  */
 interface PermissionCheckerInterface
 {
     /**
-     * Vérifie si l'utilisateur actuel peut voir une conversation
+     * Vérifie si l'utilisateur actuel peut accéder au contenu d'une conversation.
      *
-     * @param SynapseConversation $conversation La conversation à vérifier
-     * @return bool True si l'utilisateur peut voir la conversation
+     * @param SynapseConversation $conversation La conversation visée.
+     *
+     * @return bool True si la consultation est autorisée.
      */
     public function canView(SynapseConversation $conversation): bool;
 
     /**
-     * Vérifie si l'utilisateur actuel peut modifier une conversation
-     *
-     * @param SynapseConversation $conversation La conversation à vérifier
-     * @return bool True si l'utilisateur peut modifier la conversation
+     * Vérifie si l'utilisateur peut envoyer un nouveau message dans cette conversation.
      */
     public function canEdit(SynapseConversation $conversation): bool;
 
     /**
-     * Vérifie si l'utilisateur actuel peut supprimer une conversation
-     *
-     * @param SynapseConversation $conversation La conversation à vérifier
-     * @return bool True si l'utilisateur peut supprimer la conversation
+     * Vérifie si l'utilisateur peut supprimer cette conversation.
      */
     public function canDelete(SynapseConversation $conversation): bool;
 
     /**
-     * Vérifie si l'utilisateur actuel peut accéder à l'interface d'administration
-     *
-     * @return bool True si l'utilisateur peut accéder à l'admin
+     * Vérifie les droits d'accès à l'interface d'administration `/synapse/admin`.
      */
     public function canAccessAdmin(): bool;
 }

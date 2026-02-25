@@ -7,49 +7,39 @@ namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConversation;
 
 /**
- * Interface pour la politique de rétention des conversations
+ * Interface pour la politique de rétention RGPD des conversations.
  *
- * Permet de personnaliser:
- * - La durée de rétention
- * - Les critères de purge
- * - Les hooks avant/après purge (logging, notifications, etc.)
+ * Permet de définir les règles de purge automatique (Nettoyage de la base de données).
+ * Vous pouvez ainsi implémenter des durées de rétention différentes selon le type
+ * d'utilisateur ou de conversation.
  */
 interface RetentionPolicyInterface
 {
     /**
-     * Retourne la durée de rétention en jours
+     * Retourne la durée de conservation par défaut en jours.
      */
     public function getRetentionDays(): int;
 
     /**
-     * Détermine si une conversation doit être purgée
+     * Évalue individuellement si une conversation doit être supprimée.
      *
-     * @param SynapseConversation $conversation SynapseConversation à évaluer
-     * @return bool true si la conversation doit être purgée
+     * @param SynapseConversation $conversation La conversation à tester.
+     *
+     * @return bool True si elle doit être purgée immédiatement.
      */
     public function shouldPurge(SynapseConversation $conversation): bool;
 
     /**
-     * Hook appelé avant la purge d'une conversation
+     * Hook appelé juste avant la suppression physique d'une conversation.
      *
-     * Peut être utilisé pour:
-     * - Logger la purge (RGPD)
-     * - Archiver ailleurs
-     * - Notifier l'utilisateur
-     *
-     * @param SynapseConversation $conversation SynapseConversation sur le point d'être purgée
+     * Idéal pour archiver les données anonymisées ou logger l'action de purge.
      */
     public function beforePurge(SynapseConversation $conversation): void;
 
     /**
-     * Hook appelé après la purge de toutes les conversations
+     * Hook appelé à la fin d'un processus global de nettoyage.
      *
-     * Peut être utilisé pour:
-     * - Envoyer un rapport
-     * - Notifier les admins
-     * - Mettre à jour des métriques
-     *
-     * @param int $purgedCount Nombre de conversations purgées
+     * @param int $purgedCount Le nombre total de conversations supprimées lors de ce cycle.
      */
     public function afterPurge(int $purgedCount): void;
 }

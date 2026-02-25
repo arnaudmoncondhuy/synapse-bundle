@@ -7,58 +7,46 @@ namespace ArnaudMoncondhuy\SynapseBundle\Contract;
 /**
  * Contrat pour tout client LLM intégré dans Synapse.
  *
- * Permet de brancher n'importe quel provider (Gemini, OVH AI, OpenAI, Mistral…)
- * sans modifier ChatService.
+ * Cette interface permet de brancher n'importe quel provider (Gemini, OVH AI, OpenAI, Mistral…)
+ * sans modifier le `ChatService`. Chaque client est responsable de la communication avec l'API
+ * distante et de la normalisation du format.
  *
  * ═══════════════════════════════════════════════════════
- * FORMAT INTERNE SYNAPSE (OpenAI canonical)
+ * FORMAT DE L'HISTORIQUE (OpenAI canonical)
  * ═══════════════════════════════════════════════════════
  *
- * Input $contents (OpenAI format, le système est le PREMIER message) :
- *   [
- *     ['role' => 'system',    'content' => '...'],  // First message = system instruction
- *     ['role' => 'user',      'content' => '...'],
- *     ['role' => 'assistant', 'content' => '...', 'tool_calls' => [
- *         ['id' => '...', 'type' => 'function', 'function' => ['name' => '...', 'arguments' => '...']]
- *     ]],
- *     ['role' => 'tool', 'tool_call_id' => '...', 'content' => '...'],
- *   ]
+ * L'entrée `$contents` respecte le format standard OpenAI :
  *
- * Chaque client est responsable de convertir ce format vers l'API de son provider.
- * Par exemple, GeminiClient extrait le message système et le place dans systemInstruction Gemini.
+ * ```php
+ * [
+ *     ['role' => 'system',    'content' => 'Instructions du système...'],
+ *     ['role' => 'user',      'content' => 'Question utilisateur'],
+ *     ['role' => 'assistant', 'content' => 'Réponse...', 'tool_calls' => [...]],
+ *     ['role' => 'tool',      'tool_call_id' => '...', 'content' => 'Résultat'],
+ * ]
+ * ```
  *
- * Output (chunks yield par streamGenerateContent) :
- *   [
- *     'text'             => string|null,
- *     'thinking'         => string|null,   // Réflexion brute (si supporté)
- *     'function_calls'   => [['id' => string, 'name' => string, 'args' => array]],
- *     'usage'            => [
- *         'prompt_tokens'     => int,
- *         'completion_tokens'   => int,
- *         'thinking_tokens'   => int,
- *         'total_tokens'      => int,
- *     ],
- *     'safety_ratings'   => array,         // [], ou scores de sécurité si supporté
- *     'blocked'          => bool,
- *     'blocked_reason'   => string|null,   // Raison lisible de bloquage
- *   ]
+ * @see \ArnaudMoncondhuy\SynapseBundle\Core\Chat\ChatService
  */
 interface LlmClientInterface
 {
     /**
-     * Identifiant du provider (ex : 'gemini', 'ovh').
-     * Doit correspondre à la clé dans synapse.providers.* du YAML.
+     * Identifiant interne du fournisseur.
+     *
+     * Doit être en minuscule et sans espace (ex : 'gemini', 'ovh', 'anthropic').
+     * Cet identifiant est utilisé dans la configuration YAML et en base de données.
      */
     public function getProviderName(): string;
 
     /**
-     * Génère du contenu en mode streaming.
-     * Yield des chunks normalisés (voir format ci-dessus).
+     * Génère du contenu en mode streaming (Server-Sent Events).
      *
-     * @param array       $contents          Historique au format OpenAI canonical (inclut le message système en tête)
-     * @param array       $tools             Déclarations d'outils (format Synapse)
-     * @param string|null $model             Modèle spécifique (override config)
-     * @param array       $debugOut          Sortie de debug : sera remplie avec actual_request_params et raw_request_body
+     * @param array<int, array<string, mixed>> $contents Historique complet (format OpenAI canonical)
+     * @param array<int, array<string, mixed>> $tools    Déclarations des outils disponibles au format JSON Schema
+     * @param string|null                      $model    Identifiant du modèle à utiliser (ex: 'gemini-1.5-pro')
+     * @param array<string, mixed>             $debugOut Sortie de debug (passage par référence)
+     *
+     * @return \Generator<int, array<string, mixed>> Yield des chunks normalisés contenant 'text', 'usage', etc.
      */
     public function streamGenerateContent(
         array $contents,
@@ -68,14 +56,15 @@ interface LlmClientInterface
     ): \Generator;
 
     /**
-     * Génère du contenu en mode synchrone.
-     * Retourne le dernier chunk normalisé.
+     * Génère du contenu en mode synchrone (bloquant).
      *
-     * @param array       $contents     Historique au format OpenAI canonical (inclut le message système en tête)
-     * @param array       $tools        Déclarations d'outils (format Synapse)
-     * @param string|null $model        Modèle spécifique (override config)
-     * @param array       $options      Options additionnelles (ex: thinking_config, safety_settings)
-     * @param array       $debugOut     Sortie de debug : sera remplie avec actual_request_params et raw_request_body
+     * @param array<int, array<string, mixed>> $contents Historique complet
+     * @param array<int, array<string, mixed>> $tools    Déclarations des outils
+     * @param string|null                      $model    Modèle à utiliser
+     * @param array<string, mixed>             $options  Options additionnelles (température, top-p, etc.)
+     * @param array<string, mixed>             $debugOut Sortie de debug
+     *
+     * @return array<string, mixed> Le dernier chunk normalisé de la réponse
      */
     public function generateContent(
         array $contents,
@@ -84,38 +73,29 @@ interface LlmClientInterface
         array $options = [],
         array &$debugOut = [],
     ): array;
+
     /**
-     * Retourne la définition des champs nécessaires pour configurer ce provider.
-     * Utilisé pour générer dynamiquement le formulaire d'administration.
+     * Retourne la définition des champs de configuration pour l'administration.
      *
-     * Format : [
-     *   'field_name' => [
-     *      'label' => '...',
-     *      'type' => 'text'|'password'|'textarea'|'select',
-     *      'help' => '...',
-     *      'placeholder' => '...',
-     *      'required' => bool,
-     *      'options' => ['value' => 'label', ...] // Si type select
-     *      'is_code' => bool // Si type textarea, active l'édition en mode code
-     *   ],
-     *   ...
-     * ]
+     * Permet de générer dynamiquement le formulaire de saisie des credentials dans l'admin.
+     * Chaque champ peut définir son label, type (text, password, select), et son caractère obligatoire.
      *
-     * @return array<string, array>
+     * @return array<string, array{label: string, type: string, help?: string, required?: bool}>
      */
     public function getCredentialFields(): array;
 
     /**
-     * Valide les credentials fournis.
-     * Lève une exception si invalide.
+     * Valide l'intégrité des credentials fournis.
      *
-     * @param array $credentials
-     * @throws \InvalidArgumentException|\Exception
+     * @param array<string, mixed> $credentials Les valeurs saisies dans l'admin
+     *
+     * @throws \InvalidArgumentException Si les formats sont incorrects
+     * @throws \Exception                Si la validation échoue (ex: test de connexion impossible)
      */
     public function validateCredentials(array $credentials): void;
 
     /**
-     * Retourne le nom lisible du provider (ex: 'Google Vertex AI').
+     * Nom d'affichage lisible du fournisseur (ex: 'Google Vertex AI').
      */
     public function getDefaultLabel(): string;
 }
