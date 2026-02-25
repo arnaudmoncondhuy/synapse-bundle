@@ -91,9 +91,14 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
 
         // ── Build complete prompt (system message + history) ──
         // System instruction is now the first message in contents (OpenAI canonical format)
+        $toolsOverride = $options['tools_override'] ?? null;
+        $toolDefinitions = $toolsOverride !== null
+            ? $this->toolRegistry->getDefinitions($toolsOverride)
+            : ($options['tools'] ?? $this->toolRegistry->getDefinitions());
+
         $prompt = [
             'contents'        => array_merge([$systemMessage], $contents),
-            'toolDefinitions' => $options['tools_override'] ?? ($options['tools'] ?? $this->toolRegistry->getDefinitions()),
+            'toolDefinitions' => $toolDefinitions,
         ];
 
         // Set on event
