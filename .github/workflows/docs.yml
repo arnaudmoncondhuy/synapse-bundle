@@ -32,7 +32,8 @@ jobs:
 
       - name: Install MkDocs and plugins
         run: |
-          pip install mkdocs-material "mkdocstrings[php]"
+          pip install mkdocs-material mkdocstrings
+          pip install git+https://github.com/mkdocstrings/php.git
 
       - name: Build documentation
         run: mkdocs build
