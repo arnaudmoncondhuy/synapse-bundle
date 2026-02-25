@@ -66,6 +66,4 @@ L'interface `EncryptionServiceInterface` est la sentinelle de la vie privée dan
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface

@@ -36,6 +36,4 @@ L'événement `SynapseExchangeCompletedEvent` est l'outil ultime pour le diagnos
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseExchangeCompletedEvent

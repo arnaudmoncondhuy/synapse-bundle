@@ -67,6 +67,4 @@ La méthode `ask()` accepte un tableau d'options pour personnaliser l'échange :
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Core\Chat\ChatService

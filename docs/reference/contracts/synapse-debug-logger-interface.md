@@ -48,6 +48,4 @@ L'interface `SynapseDebugLoggerInterface` permet d'exporter et de journaliser l'
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Contract\SynapseDebugLoggerInterface

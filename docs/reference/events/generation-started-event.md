@@ -32,6 +32,4 @@ L'événement `SynapseGenerationStartedEvent` marque le point de départ de tout
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseGenerationStartedEvent

@@ -32,4 +32,3 @@ L'énumération `MessageRole` définit l'origine et la fonction de chaque messag
 
 ## 🔍 Référence complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole

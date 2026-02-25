@@ -52,6 +52,4 @@ L'interface `ConfigProviderInterface` permet d'ajuster dynamiquement les paramè
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Contract\ConfigProviderInterface

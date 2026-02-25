@@ -84,6 +84,4 @@ Voici comment implémenter un outil simple mais robuste.
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Contract\AiToolInterface

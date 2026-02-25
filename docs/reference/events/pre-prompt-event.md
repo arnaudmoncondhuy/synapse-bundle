@@ -57,6 +57,4 @@ L'événement `SynapsePrePromptEvent` est l'un des plus importants pour la perso
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapsePrePromptEvent

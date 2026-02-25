@@ -55,6 +55,4 @@ L'interface `EmbeddingClientInterface` est responsable de la conversion du langa
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Contract\EmbeddingClientInterface

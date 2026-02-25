@@ -17,4 +17,3 @@ L'énumération `ConversationStatus` définit les états possibles d'une convers
 
 ## 🔍 Référence complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Shared\Enum\ConversationStatus

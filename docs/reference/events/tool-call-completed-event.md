@@ -37,6 +37,4 @@ L'événement `SynapseToolCallCompletedEvent` confirme qu'un outil a fini son ex
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseToolCallCompletedEvent

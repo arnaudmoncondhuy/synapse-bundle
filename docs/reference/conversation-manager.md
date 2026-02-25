@@ -59,7 +59,5 @@ Le `ConversationManager` est le gardien de l'historique et de la sécurité des 
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Core\Manager\ConversationManager
 

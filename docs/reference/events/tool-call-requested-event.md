@@ -38,6 +38,4 @@ L'événement `SynapseToolCallRequestedEvent` est au cœur du mécanisme de "Fun
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseToolCallRequestedEvent

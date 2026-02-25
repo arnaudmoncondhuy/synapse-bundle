@@ -56,6 +56,4 @@ L'interface `ConversationOwnerInterface` est le pont entre votre système d'util
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Contract\ConversationOwnerInterface

@@ -62,6 +62,4 @@ L'interface `AgentInterface` définit des entités d'IA autonomes et spécialis�
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Contract\AgentInterface

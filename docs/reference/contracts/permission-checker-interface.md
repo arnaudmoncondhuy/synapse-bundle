@@ -61,6 +61,4 @@ L'interface `PermissionCheckerInterface` permet de déléguer la logique de séc
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface

@@ -36,6 +36,4 @@ L'événement `SynapseGenerationCompletedEvent` est le signal de fin. Il est ém
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseGenerationCompletedEvent

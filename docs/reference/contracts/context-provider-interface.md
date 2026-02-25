@@ -60,6 +60,4 @@ L'interface `ContextProviderInterface` est l'un des outils les plus puissants de
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Contract\ContextProviderInterface

@@ -54,6 +54,4 @@ L'événement `SynapseChunkReceivedEvent` est la clé pour créer des interfaces
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Core\Event\SynapseChunkReceivedEvent

@@ -70,6 +70,4 @@ L'interface `VectorStoreInterface` est le socle du système de RAG (Retrieval-Au
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Contract\VectorStoreInterface

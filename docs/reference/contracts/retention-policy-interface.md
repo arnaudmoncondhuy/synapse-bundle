@@ -53,6 +53,4 @@ L'interface `RetentionPolicyInterface` répond aux exigences de conservation des
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Contract\RetentionPolicyInterface

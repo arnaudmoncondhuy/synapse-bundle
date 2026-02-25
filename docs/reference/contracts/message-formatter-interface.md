@@ -26,6 +26,4 @@ L'interface `MessageFormatterInterface` gère la traduction entre vos entités D
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Contract\MessageFormatterInterface

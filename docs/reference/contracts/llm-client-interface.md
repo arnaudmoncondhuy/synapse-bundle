@@ -75,6 +75,4 @@ L'interface `LlmClientInterface` est le connecteur universel de SynapseBundle. C
 
 ---
 
-## 🔍 Référence API complète
 
-::: ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface
