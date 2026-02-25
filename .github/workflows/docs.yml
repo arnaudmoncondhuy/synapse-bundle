@@ -28,11 +28,11 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.x
+          python-version: '3.11'
 
       - name: Install MkDocs and plugins
         run: |
-          pip install mkdocs-material mkdocstrings[php] mkdocs-mermaid2-plugin
+          pip install mkdocs-material mkdocstrings[php] mkdocstrings-php mkdocs-mermaid2-plugin
 
       - name: Build documentation
         run: mkdocs build

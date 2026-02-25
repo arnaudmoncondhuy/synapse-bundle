@@ -39,10 +39,6 @@ plugins:
         php:
           setup_commands:
             - "composer install --no-dev"
-  - mermaid2:
-      arguments:
-        theme: 'default'
-
 markdown_extensions:
   - admonition
   - pymdownx.details
