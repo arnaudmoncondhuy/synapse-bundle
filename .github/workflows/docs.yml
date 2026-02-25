@@ -32,7 +32,7 @@ jobs:
 
       - name: Install MkDocs and plugins
         run: |
-          pip install mkdocs-material mkdocstrings[php] mkdocstrings-php mkdocs-mermaid2-plugin
+          pip install mkdocs-material "mkdocstrings[php]"
 
       - name: Build documentation
         run: mkdocs build
