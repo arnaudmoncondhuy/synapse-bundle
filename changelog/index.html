@@ -1,0 +1,2737 @@
+
+<!doctype html>
+<html lang="fr" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Un bundle Chatbot IA réutilisable pour Symfony avec support multi-fournisseurs.">
+      
+      
+        <meta name="author" content="Arnaud Moncondhuy">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
+    
+    
+      
+        <title>Changelog - SynapseBundle</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Aller au contenu
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="En-tête">
+    <a href=".." title="SynapseBundle" class="md-header__button md-logo" aria-label="SynapseBundle" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            SynapseBundle
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Passer au mode sombre"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Passer au mode sombre" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Passer au mode clair"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Passer au mode clair" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Rechercher" placeholder="Rechercher" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Recherche">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Partager" aria-label="Partager" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Effacer" aria-label="Effacer" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initialisation de la recherche
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Onglets" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Accueil
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../getting-started/installation/" class="md-tabs__link">
+          
+  
+  
+  Prise en main
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../admin/interface/" class="md-tabs__link">
+          
+  
+  
+  Interface d'Administration
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../guides/configuration/" class="md-tabs__link">
+          
+  
+  
+  Guides d'utilisation
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../reference/chat-service/" class="md-tabs__link">
+          
+  
+  
+  Référence Technique
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../explanation/architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture & Concepts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="SynapseBundle" class="md-nav__button md-logo" aria-label="SynapseBundle" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    SynapseBundle
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Accueil
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Prise en main
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Prise en main
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide rapide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interface d'Administration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Interface d'Administration
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../admin/interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Utilisation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guides d'utilisation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides d'utilisation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/ai-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Créer des outils IA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/personas-presets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Personas & Presets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/rle-management/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conversations & Persistance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Référence Technique
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Référence Technique
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_1" id="__nav_5_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Services Cœurs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Services Cœurs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/chat-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ChatService
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/conversation-manager/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ConversationManager
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interfaces (Contrats)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Interfaces (Contrats)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vue d'ensemble
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/agent-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AgentInterface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/ai-tool-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AiToolInterface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/config-provider-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ConfigProvider
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/context-provider-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ContextProvider
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/conversation-owner-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ConversationOwner
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/embedding-client-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EmbeddingClient
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/encryption-service-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EncryptionService
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/llm-client-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LlmClient
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/message-formatter-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MessageFormatter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/permission-checker-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PermissionChecker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/retention-policy-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RetentionPolicy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/synapse-debug-logger-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DebugLogger
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/contracts/vector-store-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VectorStore
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Événements (Events)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Événements (Events)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/events/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cycle de vie
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/events/generation-started-event/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GenerationStarted
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/events/pre-prompt-event/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PrePrompt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/events/chunk-received-event/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ChunkReceived
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/events/tool-call-requested-event/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ToolCallRequested
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/events/tool-call-completed-event/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ToolCallCompleted
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/events/generation-completed-event/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GenerationCompleted
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/events/exchange-completed-event/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ExchangeCompleted (Debug)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Enums & Formats
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Enums & Formats
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/shared/message-role/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MessageRole
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/shared/conversation-status/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ConversationStatus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/entities/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entités Doctrine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commandes CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture & Concepts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture & Concepts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../explanation/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vue d'ensemble
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../explanation/security/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sécurité & RGPD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#non-classe-developpement-actuel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        [Non classé] — Développement actuel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="[Non classé] — Développement actuel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standardisation-sur-le-format-openai-llm-agnosticism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standardisation sur le format OpenAI (LLM-Agnosticism)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chiffrement-des-credentials-des-providers-llm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chiffrement des credentials des providers LLM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vidage-des-logs-de-debug" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vidage des logs de debug
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#support-multi-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Support multi-providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interface-dadministration-complete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interface d'administration complète
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#personas-ia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Personas IA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#context-caching-gemini" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context Caching (Gemini)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#thinking-mode-natif" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thinking Mode natif
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refactoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Refactoring
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Refactoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architecture-domain-driven" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture domain-driven
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chargement-des-configurations-modeles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chargement des configurations modèles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#registration-de-debugcontroller" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registration de DebugController
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chiffrement-des-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chiffrement des messages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chiffrement-des-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chiffrement des credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controle-dacces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contrôle d'accès
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Docs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#refonte-complete-de-la-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Refonte complète de la documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes-de-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes de migration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Notes de migration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes-standardisation-openai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Breaking Changes - Standardisation OpenAI
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚠️ Breaking Changes - Standardisation OpenAI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-signatures-des-methodes-llmclientinterface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Signatures des méthodes (LlmClientInterface)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-format-des-messages-openai-canonical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Format des messages (OpenAI canonical)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-format-du-chunk-retourne" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Format du chunk retourné
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-migration-simple-exemple" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Migration simple (exemple)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pas-de-changement-requis-pour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Pas de changement requis pour
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pour-utiliser-le-chiffrement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pour utiliser le chiffrement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pour-utiliser-le-chiffrement_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pour utiliser le chiffrement
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-future-envisagee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version future envisagée
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#liens-utiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Liens utiles
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="changelog">Changelog</h1>
+<p>Toutes les modifications importantes de SynapseBundle sont documentées dans ce fichier.</p>
+<p>Les modifications importantes sont classées par catégorie :
+- <strong>Features</strong> : Nouvelles fonctionnalités
+- <strong>Fixes</strong> : Corrections de bugs
+- <strong>Refactor</strong> : Refactorisations de code
+- <strong>Security</strong> : Améliorations de sécurité
+- <strong>Docs</strong> : Mises à jour de documentation</p>
+<hr />
+<h2 id="non-classe-developpement-actuel">[Non classé] — Développement actuel</h2>
+<h3 id="features">Features</h3>
+<h4 id="standardisation-sur-le-format-openai-llm-agnosticism">Standardisation sur le format OpenAI (LLM-Agnosticism)</h4>
+<ul>
+<li><strong>Refactorisation majeure</strong> : ChatService utilise maintenant OpenAI Chat Completions comme format interne standard</li>
+<li><strong>Impact</strong> : Bundle maintenant 100% LLM-agnostique (prêt pour Mistral, Claude, Ollama, etc.)</li>
+<li><strong>Changement de format</strong> : Message système intégré comme premier élément de <code>contents</code> array</li>
+<li><strong>Avant</strong> : <code>systemInstruction</code> (string) + <code>contents</code> (array) séparés</li>
+<li><strong>Après</strong> : Tous les messages dans <code>contents</code> avec <code>role: 'system'</code> en tête (format OpenAI)</li>
+<li><strong>Clients LLM</strong> : Chacun devient un simple "traducteur"</li>
+<li>GeminiClient : Extrait système de contents, convertit OpenAI→Gemini, traduit les catégories de sécurité</li>
+<li>OvhAiClient : Passthrough pur (déjà compatible OpenAI)</li>
+<li>Nouveaux providers : Implémentation simple en 2-3 heures (juste la couche de conversion)</li>
+<li><strong>ChatService</strong> : Zéro logique spécifique au provider (sécurité, safety settings, etc. gérés par les clients)</li>
+<li><strong>Chunk format</strong> : Changement de <code>blocked_category</code> → <code>blocked_reason</code> (raison lisible)</li>
+<li><strong>Sécurité Gemini</strong> : Toujours fonctionnelle, traduction déplacée du centre à la périphérie</li>
+</ul>
+<p><strong>Pour les développeurs créant des clients personnalisés</strong> : Voir <a href="../IMPLEMENTATION_GUIDE.md">IMPLEMENTATION_GUIDE.md</a></p>
+<h4 id="chiffrement-des-credentials-des-providers-llm">Chiffrement des credentials des providers LLM</h4>
+<ul>
+<li>Implémentation du chiffrement XSalsa20-Poly1305 pour les credentials (API keys, service account JSON)</li>
+<li>Chiffrement automatique lors de la sauvegarde via l'interface admin</li>
+<li>Déchiffrement transparent lors du chargement en mémoire</li>
+<li>Support <code>encryption.enabled: true/false</code> dans la configuration</li>
+<li>Clés sensibles encryptées : <code>api_key</code>, <code>service_account_json</code>, <code>private_key</code></li>
+<li>Format de stockage : <code>base64(nonce_24bytes + ciphertext)</code> en BDD</li>
+<li>Migration progressive : détection automatique des credentials non chiffrés lors de la sauvegarde</li>
+</ul>
+<h4 id="vidage-des-logs-de-debug">Vidage des logs de debug</h4>
+<ul>
+<li>Nouvelle fonctionnalité dans l'interface admin : vidage complet des logs de debug</li>
+<li>Contrôle d'accès : accessible aux administrateurs uniquement</li>
+<li>Endpoint dédié pour la gestion des logs</li>
+</ul>
+<h4 id="support-multi-providers">Support multi-providers</h4>
+<ul>
+<li>Google Vertex AI (Gemini 2.5+, 2.0-pro, etc.)</li>
+<li>OVH AI Endpoints (OpenAI-compatible)</li>
+<li>Interface admin pour gérer les credentials et tester la connexion</li>
+</ul>
+<h4 id="interface-dadministration-complete">Interface d'administration complète</h4>
+<ul>
+<li>Dashboard avec KPIs (conversations, utilisateurs, tokens, coûts)</li>
+<li>Analytics avec graphiques (usage par modèle, tendances temporelles)</li>
+<li>Gestion des presets LLM (création, édition, test)</li>
+<li>Gestion des providers (credentials chiffrés)</li>
+<li>Catalogue des modèles disponibles</li>
+<li>Paramètres globaux (rétention RGPD, langue, prompt système)</li>
+<li>Logs de debug complets (requête/réponse LLM, tokens, safety ratings)</li>
+</ul>
+<h4 id="personas-ia">Personas IA</h4>
+<ul>
+<li>Support des personnalités IA prédéfinies</li>
+<li>Fichier JSON configurable (<code>personas_path</code>)</li>
+<li>Chaque persona : nom, emoji, prompt système custom</li>
+</ul>
+<h4 id="context-caching-gemini">Context Caching (Gemini)</h4>
+<ul>
+<li>Support du caching de contexte pour optimiser les coûts</li>
+<li>~90% d'économie sur les tokens de contexte réutilisés</li>
+</ul>
+<h4 id="thinking-mode-natif">Thinking Mode natif</h4>
+<ul>
+<li>Support du raisonnement Chain-of-Thought (Gemini 2.5+)</li>
+<li>Configuration : <code>thinking.enabled</code>, <code>thinking.budget</code></li>
+</ul>
+<h4 id="token-tracking">Token tracking</h4>
+<ul>
+<li>Suivi de la consommation de tokens par modèle</li>
+<li>Calcul automatique des coûts basé sur la pricing</li>
+<li>Analytics : coûts par modèle, par utilisateur, par période</li>
+</ul>
+<h3 id="refactoring">Refactoring</h3>
+<h4 id="architecture-domain-driven">Architecture domain-driven</h4>
+<ul>
+<li>Réorganisation complète du code source en domaines :</li>
+<li><code>Core/</code> : logique métier, orchestration LLM</li>
+<li><code>Admin/</code> : contrôleurs et UI administration</li>
+<li><code>Storage/</code> : persistance Doctrine, entités, repositories</li>
+<li><code>Security/</code> : chiffrement, permissions</li>
+<li><code>Contract/</code> : interfaces publiques (API du bundle)</li>
+<li><code>Shared/</code> : code réutilisable (enums, models, tools, utils)</li>
+<li><code>Infrastructure/</code> : DI, commandes CLI, ressources/views</li>
+</ul>
+<h4 id="chargement-des-configurations-modeles">Chargement des configurations modèles</h4>
+<ul>
+<li>Priorisation : dossier <code>Infrastructure/config/models/</code> en premier, fallback sur <code>Core/</code></li>
+<li>Permet une meilleure organisation des fichiers de configuration</li>
+</ul>
+<h4 id="registration-de-debugcontroller">Registration de DebugController</h4>
+<ul>
+<li>Enregistrement explicite comme service Symfony</li>
+<li>Correction : était manquant dans la configuration admin</li>
+</ul>
+<h3 id="security">Security</h3>
+<h4 id="chiffrement-des-messages">Chiffrement des messages</h4>
+<ul>
+<li>Messages de conversation chiffrés en BDD (XSalsa20-Poly1305)</li>
+<li>Déchiffrement automatique lors de la lecture</li>
+<li>Transparent pour l'utilisateur/développeur</li>
+</ul>
+<h4 id="chiffrement-des-credentials">Chiffrement des credentials</h4>
+<ul>
+<li>Credentials des providers chiffrés (décrit ci-dessus)</li>
+<li>Migration progressive des credentials existants</li>
+</ul>
+<h4 id="controle-dacces">Contrôle d'accès</h4>
+<ul>
+<li>Interface admin protégée par rôle Symfony (<code>ROLE_ADMIN</code>)</li>
+<li>Vérification des permissions à chaque action</li>
+</ul>
+<h3 id="docs">Docs</h3>
+<h4 id="refonte-complete-de-la-documentation">Refonte complète de la documentation</h4>
+<ul>
+<li>README.md : rewritten avec 2 providers (Gemini + OVH), vraies options de config</li>
+<li><strong>docs/configuration.md</strong> : référence complète de <code>synapse.yaml</code></li>
+<li><strong>docs/usage.md</strong> : guide d'utilisation avancée (ChatService, outils, events)</li>
+<li><strong>docs/views.md</strong> : intégration Twig, layouts, personnalisation CSS</li>
+<li><strong>docs/changelog.md</strong> : ce fichier</li>
+</ul>
+<hr />
+<h2 id="notes-de-migration">Notes de migration</h2>
+<h3 id="breaking-changes-standardisation-openai">⚠️ Breaking Changes - Standardisation OpenAI</h3>
+<p><strong>Si vous avez créé un client LLM personnalisé</strong>, vous devez mettre à jour ses signatures :</p>
+<h4 id="1-signatures-des-methodes-llmclientinterface">1. Signatures des méthodes (LlmClientInterface)</h4>
+<p><strong>AVANT</strong> :
+<div class="highlight"><pre><span></span><code><span class="x">public function generateContent(</span>
+<span class="x">    string $systemInstruction,</span>
+<span class="x">    array $contents,</span>
+<span class="x">    array $tools = [],</span>
+<span class="x">    ?string $model = null,</span>
+<span class="x">    ?array $thinkingConfigOverride = null,</span>
+<span class="x">    array &amp;$debugOut = [],</span>
+<span class="x">): array;</span>
+</code></pre></div></p>
+<p><strong>APRÈS</strong> :
+<div class="highlight"><pre><span></span><code><span class="x">public function generateContent(</span>
+<span class="x">    array $contents,  // ← Contient le système en [0]</span>
+<span class="x">    array $tools = [],</span>
+<span class="x">    ?string $model = null,</span>
+<span class="x">    ?array $thinkingConfigOverride = null,</span>
+<span class="x">    array &amp;$debugOut = [],</span>
+<span class="x">): array;</span>
+</code></pre></div></p>
+<h4 id="2-format-des-messages-openai-canonical">2. Format des messages (OpenAI canonical)</h4>
+<p><strong>AVANT</strong> : systèmeInstruction séparé + contents
+<div class="highlight"><pre><span></span><code><span class="x">$systemInstruction = &quot;You are helpful&quot;;</span>
+<span class="x">$contents = [</span>
+<span class="x">    [&#39;role&#39; =&gt; &#39;user&#39;, &#39;content&#39; =&gt; &#39;...&#39;],</span>
+<span class="x">    [&#39;role&#39; =&gt; &#39;assistant&#39;, &#39;content&#39; =&gt; &#39;...&#39;],</span>
+<span class="x">];</span>
+</code></pre></div></p>
+<p><strong>APRÈS</strong> : Tout dans contents, système en premier
+<div class="highlight"><pre><span></span><code><span class="x">$contents = [</span>
+<span class="x">    [&#39;role&#39; =&gt; &#39;system&#39;, &#39;content&#39; =&gt; &#39;You are helpful&#39;],    // ← PREMIER</span>
+<span class="x">    [&#39;role&#39; =&gt; &#39;user&#39;, &#39;content&#39; =&gt; &#39;...&#39;],</span>
+<span class="x">    [&#39;role&#39; =&gt; &#39;assistant&#39;, &#39;content&#39; =&gt; &#39;...&#39;],</span>
+<span class="x">];</span>
+</code></pre></div></p>
+<h4 id="3-format-du-chunk-retourne">3. Format du chunk retourné</h4>
+<p><strong>AVANT</strong> : <code>blocked_category</code> (enum Gemini-spécifique)
+<div class="highlight"><pre><span></span><code><span class="x">return [</span>
+<span class="x">    &#39;blocked&#39; =&gt; true,</span>
+<span class="x">    &#39;blocked_category&#39; =&gt; &#39;HARM_CATEGORY_HATE_SPEECH&#39;,  // ← Constante Gemini</span>
+<span class="x">];</span>
+</code></pre></div></p>
+<p><strong>APRÈS</strong> : <code>blocked_reason</code> (string lisible, provider-agnostique)
+<div class="highlight"><pre><span></span><code><span class="x">return [</span>
+<span class="x">    &#39;blocked&#39; =&gt; true,</span>
+<span class="x">    &#39;blocked_reason&#39; =&gt; &#39;discours haineux&#39;,  // ← String lisible</span>
+<span class="x">];</span>
+</code></pre></div></p>
+<h4 id="4-migration-simple-exemple">4. Migration simple (exemple)</h4>
+<p>Si vous aviez un client personnalisé, voici le pattern :</p>
+<div class="highlight"><pre><span></span><code><span class="x">class MyLLMClient implements LlmClientInterface {</span>
+<span class="x">    public function generateContent(</span>
+<span class="x">        array $contents,  // ← Nouvelle signature</span>
+<span class="x">        array $tools = [],</span>
+<span class="x">        ?string $model = null,</span>
+<span class="x">        ?array $thinkingConfigOverride = null,</span>
+<span class="x">        array &amp;$debugOut = [],</span>
+<span class="x">    ): array {</span>
+<span class="x">        // 1. Extraire le système si présent</span>
+<span class="x">        $systemMessage = &#39;&#39;;</span>
+<span class="x">        $contentsWithoutSystem = $contents;</span>
+
+<span class="x">        if (!empty($contents) &amp;&amp; $contents[0][&#39;role&#39;] === &#39;system&#39;) {</span>
+<span class="x">            $systemMessage = $contents[0][&#39;content&#39;];</span>
+<span class="x">            $contentsWithoutSystem = array_slice($contents, 1);</span>
+<span class="x">        }</span>
+
+<span class="x">        // 2. Convertir au format de votre provider</span>
+<span class="x">        $providerMessages = $this-&gt;toProviderFormat($contentsWithoutSystem);</span>
+
+<span class="x">        // 3. Appeler votre API (avec ou sans système selon le provider)</span>
+<span class="x">        $response = $this-&gt;callApi($systemMessage, $providerMessages, ...);</span>
+
+<span class="x">        // 4. Normaliser la réponse</span>
+<span class="x">        return $this-&gt;normalizeResponse($response);</span>
+<span class="x">    }</span>
+<span class="x">}</span>
+</code></pre></div>
+<p><strong>Voir</strong> : <a href="../IMPLEMENTATION_GUIDE.md">IMPLEMENTATION_GUIDE.md</a> pour un guide complet.</p>
+<h3 id="pas-de-changement-requis-pour">✅ Pas de changement requis pour</h3>
+<ul>
+<li>Configuration (synapse.yaml, presets, safety_settings)</li>
+<li>Base de données (schéma inchangé)</li>
+<li>Interface admin (UI inchangée)</li>
+<li>Utilisation de ChatService (signatures publiques inchangées)</li>
+<li>Conversations existantes (compatibilité totale)</li>
+</ul>
+<h3 id="pour-utiliser-le-chiffrement">Pour utiliser le chiffrement</h3>
+<h3 id="pour-utiliser-le-chiffrement_1">Pour utiliser le chiffrement</h3>
+<ol>
+<li>Générer une clé : <code>php -r "echo bin2hex(sodium_crypto_secretbox_keygen());"</code></li>
+<li>Ajouter à <code>.env.local</code> : <code>SYNAPSE_ENCRYPTION_KEY=base64:...</code></li>
+<li>Activer dans <code>synapse.yaml</code> :
+   <div class="highlight"><pre><span></span><code><span class="nt">encryption</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;%env(SYNAPSE_ENCRYPTION_KEY)%&#39;</span>
+</code></pre></div></li>
+<li>Les credentials existants seront chiffrés automatiquement lors de la prochaine sauvegarde</li>
+</ol>
+<hr />
+<h2 id="version-future-envisagee">Version future envisagée</h2>
+<ul>
+<li>[ ] Support d'autres providers LLM (OpenAI, Anthropic Claude, etc.)</li>
+<li>[ ] Téléchargement des logs de debug</li>
+<li>[ ] API publique pour les modules tiers</li>
+<li>[ ] Webhooks pour les événements importants</li>
+<li>[ ] Système de plugins</li>
+</ul>
+<hr />
+<h2 id="liens-utiles">Liens utiles</h2>
+<ul>
+<li><a href="configuration.md">Configuration</a> — Documentation complète <code>synapse.yaml</code></li>
+<li><a href="usage.md">Usage</a> — Utilisation ChatService, outils, events</li>
+<li><a href="views.md">Intégration des vues</a> — Templates Twig, personnalisation CSS</li>
+<li><a href="../README.md">README</a> — Vue d'ensemble du bundle</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Retour en haut de la page
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
