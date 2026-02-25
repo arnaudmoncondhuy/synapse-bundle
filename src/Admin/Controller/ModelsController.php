@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
+use ArnaudMoncondhuy\SynapseBundle\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseModel;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseModelRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseProviderRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * Catalogue des modèles LLM
@@ -23,11 +27,16 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/synapse/admin/models')]
 class ModelsController extends AbstractController
 {
+    use AdminSecurityTrait;
+
     public function __construct(
         private SynapseModelRepository $modelRepo,
         private SynapseProviderRepository $providerRepo,
+        private SynapsePresetRepository $presetRepo,
         private ModelCapabilityRegistry $capabilityRegistry,
         private EntityManagerInterface $em,
+        private PermissionCheckerInterface $permissionChecker,
+        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {}
 
     /**
@@ -36,6 +45,7 @@ class ModelsController extends AbstractController
     #[Route('', name: 'synapse_admin_models', methods: ['GET'])]
     public function index(): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
         // 1. Récupérer les providers actifs et configurés
         $activeProviders = [];
         foreach ($this->providerRepo->findAll() as $provider) {
@@ -84,10 +94,12 @@ class ModelsController extends AbstractController
      * Toggle activation d'un modèle
      */
     #[Route('/{modelId}/toggle', name: 'synapse_admin_models_toggle', methods: ['POST'])]
-    public function toggle(string $modelId): Response
+    public function toggle(string $modelId, Request $request): Response
     {
-        $model = $this->modelRepo->findOneBy(['modelId' => $modelId]);
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager);
 
+        $model = $this->modelRepo->findOneBy(['modelId' => $modelId]);
         if ($model === null) {
             // Créer l'entrée DB si elle n'existe pas
             $caps = $this->capabilityRegistry->getCapabilities($modelId);
@@ -115,6 +127,9 @@ class ModelsController extends AbstractController
     #[Route('/{modelId}/pricing', name: 'synapse_admin_models_pricing', methods: ['POST'])]
     public function updatePricing(string $modelId, Request $request): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager);
+
         $model = $this->modelRepo->findOneBy(['modelId' => $modelId]);
 
         if ($model === null) {

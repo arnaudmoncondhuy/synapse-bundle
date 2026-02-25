@@ -15,8 +15,8 @@
 		</div>
 	</header>
 
-	{# KPIs Grid - 4 columns #}
-	<div class="synapse-admin__grid synapse-admin__grid--4" style="margin-bottom: 2rem;">
+	{# KPIs Grid - 5 columns #}
+	<div class="synapse-admin__grid synapse-admin__grid--4" style="margin-bottom: 2rem; grid-template-columns: repeat(5, 1fr);">
 		{# Conversations 24h #}
 		<div class="synapse-admin__card synapse-admin__card--hover" style="padding: 1.5rem;">
 			<div class="synapse-admin__kpi">
@@ -65,6 +65,19 @@
 				<div>
 					<div class="synapse-admin__kpi-label">Coût estimé du mois</div>
 					<div class="synapse-admin__kpi-value">€{{ kpis.tokens_cost|number_format(3, '.', ',') }}</div>
+				</div>
+			</div>
+		</div>
+
+		{# Memory KPI #}
+		<div class="synapse-admin__card synapse-admin__card--hover" style="padding: 1.5rem;">
+			<div class="synapse-admin__kpi">
+				<div class="synapse-admin__kpi-icon" style="background: rgba(103, 58, 183, 0.1); color: #673AB7;">
+					<i data-lucide="brain"></i>
+				</div>
+				<div>
+					<div class="synapse-admin__kpi-label">Souvenirs mémorisés</div>
+					<div class="synapse-admin__kpi-value">{{ kpis.total_memories }}</div>
 				</div>
 			</div>
 		</div>

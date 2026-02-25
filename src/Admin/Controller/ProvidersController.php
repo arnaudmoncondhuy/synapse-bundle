@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
-use ArnaudMoncondhuy\SynapseBundle\Contract\EncryptionServiceInterface;
+use ArnaudMoncondhuy\SynapseBundle\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseProvider;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseProviderRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository;
@@ -15,6 +16,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
@@ -25,12 +27,16 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 #[Route('/synapse/admin/providers')]
 class ProvidersController extends AbstractController
 {
+    use AdminSecurityTrait;
+
     public function __construct(
         private SynapseProviderRepository $providerRepo,
         private SynapsePresetRepository $presetRepo,
         private EntityManagerInterface $em,
         private HttpClientInterface $httpClient,
         private LlmClientRegistry $clientRegistry,
+        private PermissionCheckerInterface $permissionChecker,
+        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
         private ?EncryptionServiceInterface $encryptionService = null,
     ) {}
 
@@ -40,6 +46,8 @@ class ProvidersController extends AbstractController
     #[Route('', name: 'synapse_admin_providers', methods: ['GET'])]
     public function index(): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
         $providers = $this->providerRepo->findAllOrdered();
 
         // S'assurer que les providers enregistrés dans le registre existent en DB
@@ -93,7 +101,10 @@ class ProvidersController extends AbstractController
     #[Route('/{id}/edit', name: 'synapse_admin_providers_edit', methods: ['GET', 'POST'])]
     public function edit(SynapseProvider $provider, Request $request): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
         if ($request->isMethod('POST')) {
+            $this->validateCsrfToken($request, $this->csrfTokenManager);
             $data = $request->request->all();
 
             $provider->setLabel($data['label'] ?? $provider->getLabel());
@@ -140,8 +151,11 @@ class ProvidersController extends AbstractController
      * Test des credentials d'un provider
      */
     #[Route('/{id}/test', name: 'synapse_admin_providers_test', methods: ['POST'])]
-    public function test(SynapseProvider $provider): JsonResponse
+    public function test(SynapseProvider $provider, Request $request): JsonResponse
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager);
+
         if (!$provider->isConfigured()) {
             return new JsonResponse(['success' => false, 'error' => 'Provider non configuré']);
         }

@@ -485,3 +485,97 @@ body:has(.assistant-layout) main {
     margin: 0;
     /* Reset margin as gap handles spacing */
 }
+
+/* ── MEMORY PROPOSAL TOAST ─────────────────────────────────────────────────── */
+.synapse-memory-toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 2rem 8px;
+    padding: 10px 14px;
+    background: rgba(11, 87, 208, 0.06);
+    border: 1px solid rgba(11, 87, 208, 0.18);
+    border-radius: 14px;
+    font-size: 0.875rem;
+    color: var(--synapse-text-primary);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.synapse-memory-toast--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.synapse-memory-toast--feedback {
+    justify-content: center;
+    background: rgba(15, 157, 88, 0.08);
+    border-color: rgba(15, 157, 88, 0.2);
+    color: #137333;
+    font-weight: 500;
+}
+
+.synapse-memory-toast__icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.synapse-memory-toast__body {
+    flex: 1;
+    overflow: hidden;
+}
+
+.synapse-memory-toast__label {
+    font-weight: 600;
+    color: var(--synapse-primary-color);
+    margin-right: 4px;
+}
+
+.synapse-memory-toast__fact {
+    color: var(--synapse-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.synapse-memory-toast__actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.synapse-memory-toast__btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.synapse-memory-toast__btn--accept {
+    color: #137333;
+    border-color: rgba(15, 157, 88, 0.3);
+}
+
+.synapse-memory-toast__btn--accept:hover {
+    background: rgba(15, 157, 88, 0.12);
+    border-color: rgba(15, 157, 88, 0.5);
+}
+
+.synapse-memory-toast__btn--reject {
+    color: #c5221f;
+    border-color: rgba(197, 34, 31, 0.3);
+}
+
+.synapse-memory-toast__btn--reject:hover {
+    background: rgba(197, 34, 31, 0.08);
+    border-color: rgba(197, 34, 31, 0.5);
+}

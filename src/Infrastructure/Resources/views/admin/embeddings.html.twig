@@ -9,25 +9,35 @@
 		<div class="synapse-admin__page-header">
 			<div>
 				<h1 class="synapse-admin__page-title">
-					<i data-lucide="database"></i>
-					Embeddings
+					<i><i data-lucide="database"></i></i>
+					Embeddings & RAG
 				</h1>
-				<p class="synapse-admin__help mb-4" style="margin-top: 5px;">
-					Configurez ici le modèle utilisé globalement par votre application pour générer des vecteurs (Embeddings). 
-																									Ce réglage est séparé des Presets de Chat car les vecteurs générés par un modèle donné ne sont pas compatibles avec un autre.
+				<p class="synapse-admin__page-subtitle">
+					Configurez le moteur de vectorisation global. Ces réglages assurent la cohérence de votre base de connaissances sémantique.
 				</p>
+			</div>
+			<div class="synapse-admin__header-actions">
+				{% if config.embeddingProvider and config.embeddingModel %}
+					<span class="synapse-admin__badge synapse-admin__badge--success">
+						<i data-lucide="check-circle"></i> API Connectée
+					</span>
+				{% else %}
+					<span class="synapse-admin__badge synapse-admin__badge--warning">
+						<i data-lucide="alert-triangle"></i> Non configuré
+					</span>
+				{% endif %}
 			</div>
 		</div>
 
-		<div
-			class="synapse-admin__grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start;">
+		<div class="synapse-admin__grid" style="grid-template-columns: 1.8fr 1.2fr;">
 
 			{# Colonne Gauche : Configuration #}
-			<div>
+			<div style="display: flex; flex-direction: column; gap: 2rem;">
 				<form method="post" action="{{ path('synapse_admin_embeddings') }}">
 					<div class="synapse-admin__card">
 						<div class="synapse-admin__card-header">
-							<span class="synapse-admin__card-title">Configuration Initiale (Text to Vector)</span>
+							<span class="synapse-admin__card-title">Moteur de Vectorisation</span>
+							<p class="synapse-admin__card-subtitle">Source de vérité pour la génération d'embeddings.</p>
 						</div>
 						<div class="synapse-admin__card-body">
 							<div class="synapse-admin__form-row">
@@ -60,15 +70,66 @@
 						</div>
 					</div>
 
-					<div class="synapse-admin__card" style="opacity: 0.6;">
+					<div class="synapse-admin__card">
 						<div class="synapse-admin__card-header">
-							<span class="synapse-admin__card-title">Chunking et Stratégies d'Indexation (Bientôt disponible)</span>
+							<span class="synapse-admin__card-title">Stockage des Vecteurs</span>
+							<p class="synapse-admin__card-subtitle">Où les dimensions numériques sont-elles conservées ?</p>
 						</div>
 						<div class="synapse-admin__card-body">
-							<p class="synapse-admin__help">
-								De futures versions de Synapse permettront de configurer ici les stratégies de RAG, 
-																																la taille de découpage des textes (chunks) et le chevauchement (overlap) avant vectorisation.
-							</p>
+							<div class="synapse-admin__form-row">
+								<label class="synapse-admin__label">Moteur de stockage (Vector Store)</label>
+								<select name="vector_store" class="synapse-admin__select">
+									{% for store in available_vector_stores %}
+										<option value="{{ store }}" {% if config.vectorStore == store %} selected {% endif %}>
+											{{ store|capitalize }}
+										</option>
+									{% endfor %}
+								</select>
+								<p class="synapse-admin__help">
+									<strong>Doctrine</strong> : Utilise votre base actuelle (PostgreSQL idéalement).<br>
+									<strong>InMemory</strong> : Rapide mais s'efface au redémarrage (tests uniquement).
+								</p>
+							</div>
+						</div>
+					</div>
+
+					<div class="synapse-admin__card">
+						<div class="synapse-admin__card-header">
+							<span class="synapse-admin__card-title">Chunking et Stratégies d'Indexation</span>
+						</div>
+						<div class="synapse-admin__card-body">
+							<div class="synapse-admin__form-row">
+								<label class="synapse-admin__label">Stratégie de découpage</label>
+								<select name="chunking_strategy" class="synapse-admin__select" id="chunking_strategy_select">
+									<option value="recursive" {% if config.chunkingStrategy == 'recursive' %} selected {% endif %}>Récursive (Recommandé)</option>
+									<option value="fixed" {% if config.chunkingStrategy == 'fixed' %} selected {% endif %}>Taille fixe</option>
+								</select>
+								<p class="synapse-admin__help">La stratégie récursive préserve la structure sémantique (paragraphes/phrases).</p>
+							</div>
+
+							<div class="synapse-admin__grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+								<div class="synapse-admin__form-row">
+									<label class="synapse-admin__label">Taille des chunks</label>
+									<input type="number" name="chunk_size" class="synapse-admin__input" value="{{ config.chunkSize|default(1000) }}" step="100" min="100" max="20000" id="chunk_size_input" required>
+									<p class="synapse-admin__help">Nombre max de caractères (100 - 20 000).</p>
+								</div>
+								<div class="synapse-admin__form-row">
+									<label class="synapse-admin__label">Overlap</label>
+									<input type="number" name="chunk_overlap" class="synapse-admin__input" value="{{ config.chunkOverlap|default(200) }}" step="50" min="0" max="10000" id="chunk_overlap_input" required>
+									<p class="synapse-admin__help">Recouvrement de contexte.</p>
+								</div>
+							</div>
+
+							{# Visualiseur de Chunking #}
+							<div class="synapse-admin__chunk-viz" style="margin-top: 2rem; padding: 1.5rem; background: var(--synapse-admin-bg-main); border-radius: var(--synapse-admin-radius); border: 1px dashed var(--synapse-admin-border);">
+								<div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--synapse-admin-text-muted); margin-bottom: 1rem; display: flex; justify-content: space-between;">
+									<span>Aperçu visuel du découpage</span>
+									<span id="viz_info">Taille: 1000 | Overlap: 200</span>
+								</div>
+								<div id="chunk_visual_track" style="height: 12px; background: white; border-radius: 6px; position: relative; overflow: hidden; display: flex; gap: 4px;">
+									{# Les morceaux seront générés en JS #}
+								</div>
+							</div>
 						</div>
 					</div>
 
@@ -122,53 +183,37 @@
 
 				{# Widget Base de données #}
 				<div class="synapse-admin__card">
-					<div class="synapse-admin__card-header">
-						<span class="synapse-admin__card-title">Stockage Vectoriel</span>
+					<div class="synapse-admin__card-header" style="background: linear-gradient(135deg, var(--synapse-admin-bg-card) 0%, rgba(139, 92, 246, 0.05) 100%);">
+						<span class="synapse-admin__card-title">Infrastructure Vectorielle</span>
 					</div>
-					<div class="synapse-admin__card-body" style="padding: 0;">
+					<div class="synapse-admin__card-body" style="padding: 1.5rem;">
 						{% if db_vector_ready %}
-							<div style="padding: 1.5rem; border-left: 4px solid var(--synapse-admin-success); background: var(--synapse-admin-bg-hover);">
-								<div style="display: flex; gap: 0.75rem; align-items: flex-start;">
-									<i data-lucide="check-circle" style="color: var(--synapse-admin-success); margin-top: 2px;"></i>
-									<div>
-										<div style="font-weight: 600; margin-bottom: 0.25rem;">Support Natif Opérationnel</div>
-										<div style="font-size: 0.85rem; color: var(--synapse-admin-text-secondary);">
-											La base de données gère les vecteurs nativement (extension
-											<code>pgvector</code>
-											activée). Le stockage RAG est prêt.
-										</div>
-									</div>
-								</div>
+							<div class="synapse-admin__badge synapse-admin__badge--success" style="margin-bottom: 1rem; width: 100%;">
+								<i data-lucide="check-circle"></i> Support Natif Actif
 							</div>
+							<p class="synapse-admin__text-muted" style="font-size: 0.85rem;">
+								Votre base PostgreSQL utilise l'extension <code>pgvector</code>. Les recherches sémantiques sont optimisées.
+							</p>
 						{% elseif db_is_postgres %}
-							<div style="padding: 1.5rem; border-left: 4px solid var(--synapse-admin-warning); background: var(--synapse-admin-bg-hover);">
-								<div style="display: flex; gap: 0.75rem; align-items: flex-start;">
-									<i data-lucide="alert-triangle" style="color: var(--synapse-admin-warning); margin-top: 2px;"></i>
-									<div>
-										<div style="font-weight: 600; margin-bottom: 0.25rem;">Support Vectoriel Inactif</div>
-										<div style="font-size: 0.85rem; color: var(--synapse-admin-text-secondary);">
-											Base PostgreSQL détectée, mais l'extension
-											<code>pgvector</code>
-											n'est pas activée.
-											<br>Exécutez
-											<code>CREATE EXTENSION vector;</code>
-											sur la BDD.
-										</div>
-									</div>
-								</div>
+							<div class="synapse-admin__badge synapse-admin__badge--warning" style="margin-bottom: 1rem; width: 100%;">
+								<i data-lucide="alert-triangle"></i> Extension Manquante
+							</div>
+							<p class="synapse-admin__text-muted" style="font-size: 0.85rem; margin-bottom: 1rem;">
+								PostgreSQL détecté mais sans <code>pgvector</code>. Activez-le pour de meilleures performances :
+							</p>
+							<div style="background: var(--synapse-admin-bg-sidebar); border-radius: 6px; padding: 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+								<code style="color: var(--synapse-admin-primary-light); font-size: 0.8rem;">CREATE EXTENSION vector;</code>
+								<button class="synapse-admin__btn synapse-admin__btn--ghost synapse-admin__btn--sm" style="padding: 4px 8px; border-color: rgba(255,255,255,0.2); color: white;" onclick="navigator.clipboard.writeText('CREATE EXTENSION vector;'); this.innerHTML='<i data-lucide=\'check\'></i>'">
+									<i data-lucide="copy" style="width: 14px;"></i>
+								</button>
 							</div>
 						{% else %}
-							<div style="padding: 1.5rem; border-left: 4px solid var(--synapse-admin-primary); background: var(--synapse-admin-bg-hover);">
-								<div style="display: flex; gap: 0.75rem; align-items: flex-start;">
-									<i data-lucide="info" style="color: var(--synapse-admin-primary); margin-top: 2px;"></i>
-									<div>
-										<div style="font-weight: 600; margin-bottom: 0.25rem;">Support Natif Indisponible</div>
-										<div style="font-size: 0.85rem; color: var(--synapse-admin-text-secondary);">
-											La base actuelle ({{ db_platform }}) ne supporte pas nativement les vecteurs. L'indexation sémantique nécessitera un moteur tiers (ex: Qdrant) branché à Synapse.
-										</div>
-									</div>
-								</div>
+							<div class="synapse-admin__badge synapse-admin__badge--muted" style="margin-bottom: 1rem; width: 100%;">
+								<i data-lucide="info"></i> Support natif indisponible
 							</div>
+							<p class="synapse-admin__text-muted" style="font-size: 0.85rem;">
+								La plateforme <strong>{{ db_platform }}</strong> ne supporte pas nativement les vecteurs. Un moteur tiers sera nécessaire pour le RAG à grande échelle.
+							</p>
 						{% endif %}
 					</div>
 				</div>
@@ -228,9 +273,8 @@ try {
 const dimensions = JSON.parse(selectedOption.dataset.dimensions);
 if (dimensions && dimensions.length > 1) {
 dimensionRow.style.display = 'block';
-let html = `<option value="">-- Par défaut (${
-dimensions[0]
-}) --</option>`;
+dimensionSelect.innerHTML = '';
+let html = `<option value="">-- Par défaut (${dimensions[0]}) --</option>`;
 dimensions.forEach(dim => {
 const isSelected = (currentSavedDimension == dim) ? 'selected' : '';
 html += `<option value="${dim}" ${isSelected}>${dim} dimensions</option>`;
@@ -245,10 +289,70 @@ dimensionRow.style.display = 'none';
 }
 }
 
+// Visualiseur de Chunking
+const chunkSizeInput = document.getElementById('chunk_size_input');
+const chunkOverlapInput = document.getElementById('chunk_overlap_input');
+const strategySelect = document.getElementById('chunking_strategy_select');
+const chunkVisualTrack = document.getElementById('chunk_visual_track');
+const vizInfo = document.getElementById('viz_info');
+
+function updateChunkViz() {
+const size = parseInt(chunkSizeInput.value) || 1000;
+const overlap = parseInt(chunkOverlapInput.value) || 0;
+const strategy = strategySelect.value;
+
+vizInfo.textContent = `Taille: ${size} | Overlap: ${overlap} | ${strategy == 'recursive' ? 'Récursif' : 'Fixe'}`;
+
+chunkVisualTrack.innerHTML = '';
+const totalWidth = chunkVisualTrack.offsetWidth || 500;
+
+// Échelle adaptative : on simule une longueur de texte qui dépend de la taille du chunk
+// pour que le visualiseur reste lisible quelle que soit la taille.
+// On affiche environ 3 chunks complets.
+const simulatedChars = Math.max(3000, size * 3.5);
+const charToPx = totalWidth / simulatedChars;
+
+let currentPos = 0;
+let step = size - overlap;
+
+// Sécurité : éviter boucle infinie
+if (step <= 0) 
+step = size / 2;
+
+
+const colors = strategy === 'recursive' 
+? ['#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe'] // Violet pour récursif
+: ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe']; // Bleu pour fixe
+
+for (let i = 0; i < 10; i++) {
+const chunk = document.createElement('div');
+chunk.style.position = 'absolute';
+chunk.style.left = (currentPos * charToPx) + 'px';
+chunk.style.width = (size * charToPx) + 'px';
+chunk.style.height = '100%';
+
+const colorBase = colors[i % colors.length];
+chunk.style.backgroundColor = colorBase + '4d'; // 30% alpha
+chunk.style.border = `1px solid ${colorBase}80`; // 50% alpha
+chunk.style.borderRadius = '4px';
+chunk.style.zIndex = i;
+chunkVisualTrack.appendChild(chunk);
+
+currentPos += step;
+if (currentPos * charToPx > totalWidth) 
+break;
+
+}
+}
+
 if (providerSelect) {
 providerSelect.addEventListener('change', updateModels);
 modelSelect.addEventListener('change', updateDimensions);
+chunkSizeInput.addEventListener('input', updateChunkViz);
+chunkOverlapInput.addEventListener('input', updateChunkViz);
+strategySelect.addEventListener('change', updateChunkViz);
 updateModels();
+setTimeout(updateChunkViz, 100);
 }
 
 // Script de Test d'Embedding AJAX
@@ -276,11 +380,15 @@ try {
 const formData = new FormData();
 formData.append('text', text);
 
+const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
 const response = await fetch('{{ path("synapse_admin_embeddings_test") }}', {
 method: 'POST',
 body: formData,
 headers: {
-'X-Requested-With': 'XMLHttpRequest'
+'X-Requested-With': 'XMLHttpRequest',
+'X-CSRF-Token': csrfToken
 }
 });
 
@@ -301,11 +409,14 @@ testStatus.innerHTML = '<i data-lucide="check-circle" style="color: var(--synaps
 const vizContainer = document.getElementById('test_embedding_viz');
 vizContainer.innerHTML = '';
 if (Array.isArray(data.sample)) {
+const maxVal = Math.max(...data.sample.map(Math.abs)) || 1;
 data.sample.forEach(val => {
 const slice = document.createElement('div');
 slice.style.flex = '1';
-const opacity = Math.min(Math.abs(val) * 5, 1);
-slice.style.backgroundColor = `rgba(124, 58, 237, ${opacity})`;
+const intensity = (Math.abs(val) / maxVal);
+slice.style.backgroundColor = val > 0 ? `rgba(139, 92, 246, ${0.2 + intensity * 0.8})` : `rgba(236, 72, 153, ${0.2 + intensity * 0.8})`;
+slice.style.height = (20 + intensity * 80) + '%';
+slice.style.alignSelf = 'center';
 slice.title = val.toFixed(4);
 vizContainer.appendChild(slice);
 });

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
 use ArnaudMoncondhuy\SynapseBundle\Core\Manager\ConversationManager;
+use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * Contrôleur UI de chat fourni par le bundle.
@@ -20,16 +20,18 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * `templates/bundles/SynapseBundle/chat/page.html.twig`.
  */
 #[Route('/synapse/chat', name: 'synapse_chat', methods: ['GET'])]
-#[IsGranted('ROLE_USER')]
 class ChatUiController extends AbstractController
 {
     public function __construct(
+        private PermissionCheckerInterface $permissionChecker,
         private ?ConversationManager $conversationManager = null,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, ?Profiler $profiler): Response
     {
+        if (!$this->permissionChecker->canCreateConversation()) {
+            throw $this->createAccessDeniedException('Access Denied to Chat UI.');
+        }
         if ($profiler) {
             $profiler->disable();
         }

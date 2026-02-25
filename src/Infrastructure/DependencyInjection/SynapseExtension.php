@@ -211,6 +211,22 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         $container->registerForAutoconfiguration(ContextProviderInterface::class)
             ->addTag('synapse.context_provider');
 
+        // ── Vector Store Configuration ────────────────────────────────────────
+        // L'alias est désormais géré dynamiquement par DynamicVectorStore via core.yaml
+        /*
+        $vectorStoreAlias = match ($config['vector_store']['default'] ?? 'null') {
+            'null' => 'ArnaudMoncondhuy\SynapseBundle\Core\VectorStore\NullVectorStore',
+            'in_memory' => 'ArnaudMoncondhuy\SynapseBundle\Core\VectorStore\InMemoryVectorStore',
+            'doctrine' => 'ArnaudMoncondhuy\SynapseBundle\Core\VectorStore\DoctrineVectorStore',
+            default => $config['vector_store']['default'],
+        };
+
+        $container->setAlias(
+            \ArnaudMoncondhuy\SynapseBundle\Contract\VectorStoreInterface::class,
+            $vectorStoreAlias
+        );
+        */
+
         // ── Twig Globals ──────────────────────────────────────────────────────
         if ($config['admin']['enabled'] ?? false) {
             $container->getDefinition(SynapseRuntime::class)

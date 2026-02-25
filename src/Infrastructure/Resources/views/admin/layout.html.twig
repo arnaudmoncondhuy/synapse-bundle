@@ -32,6 +32,10 @@
 			{% endblock %}
 		</title>
 
+		{% if csrf_token is defined %}
+			<meta name="csrf-token" content="{{ csrf_token('synapse_admin') }}">
+		{% endif %}
+
 		{% block admin_stylesheets %}
 			<link rel="stylesheet" href="{{ asset('synapse/styles/admin/synapse-variables.css') }}">
 			<link rel="stylesheet" href="{{ asset('synapse/styles/admin/synapse-admin.css') }}">

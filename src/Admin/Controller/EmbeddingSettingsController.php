@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
+use ArnaudMoncondhuy\SynapseBundle\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Entity\SynapseConfig;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseConfigRepository;
@@ -13,21 +15,29 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 #[Route('/synapse/admin/embeddings')]
 class EmbeddingSettingsController extends AbstractController
 {
+    use AdminSecurityTrait;
+
     public function __construct(
         private SynapseConfigRepository $configRepo,
         private SynapseProviderRepository $providerRepo,
         private ModelCapabilityRegistry $modelRegistry,
         private EntityManagerInterface $em,
         private \ArnaudMoncondhuy\SynapseBundle\Core\Service\EmbeddingService $embeddingService,
+        private \ArnaudMoncondhuy\SynapseBundle\Core\VectorStore\VectorStoreRegistry $vectorStoreRegistry,
+        private PermissionCheckerInterface $permissionChecker,
+        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {}
 
     #[Route('', name: 'synapse_admin_embeddings', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
         $config = $this->configRepo->getGlobalConfig();
         $providers = $this->providerRepo->findAllOrdered();
 
@@ -49,11 +59,22 @@ class EmbeddingSettingsController extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
+            $this->validateCsrfToken($request, $this->csrfTokenManager);
             $data = $request->request->all();
 
             $embeddingProvider = !empty($data['embedding_provider']) ? $data['embedding_provider'] : null;
             $embeddingModel = !empty($data['embedding_model']) ? $data['embedding_model'] : null;
             $embeddingDimension = !empty($data['embedding_dimension']) ? (int) $data['embedding_dimension'] : null;
+
+            $chunkingStrategy = !empty($data['chunking_strategy']) ? $data['chunking_strategy'] : 'recursive';
+            $chunkSize = !empty($data['chunk_size']) ? (int) $data['chunk_size'] : 1000;
+            $chunkOverlap = !empty($data['chunk_overlap']) ? (int) $data['chunk_overlap'] : 200;
+
+            // Validation des limites
+            $chunkSize = max(100, min(20000, $chunkSize));
+            $chunkOverlap = max(0, min($chunkSize - 50, $chunkOverlap)); // Garder au moins 50 chars de marge
+
+            $vectorStore = !empty($data['vector_store']) ? $data['vector_store'] : 'doctrine';
 
             // Valider que le modèle appartient bien au fournisseur choisi
             if ($embeddingProvider && $embeddingModel && !isset($embeddingModelsByProvider[$embeddingProvider][$embeddingModel])) {
@@ -64,6 +85,11 @@ class EmbeddingSettingsController extends AbstractController
             $config->setEmbeddingProvider($embeddingProvider);
             $config->setEmbeddingModel($embeddingModel);
             $config->setEmbeddingDimension($embeddingDimension);
+
+            $config->setChunkingStrategy($chunkingStrategy);
+            $config->setChunkSize($chunkSize);
+            $config->setChunkOverlap($chunkOverlap);
+            $config->setVectorStore($vectorStore);
 
             $this->em->flush();
             $this->addFlash('success', 'Configuration des Embeddings mise à jour.');
@@ -93,12 +119,17 @@ class EmbeddingSettingsController extends AbstractController
             'db_is_postgres' => $isPostgres,
             'db_vector_ready' => $vectorExtensionEnabled,
             'db_platform' => (new \ReflectionClass($platform))->getShortName(),
+            'available_vector_stores' => $this->vectorStoreRegistry->getAvailableAliases(),
+            'csrf_token' => true,
         ]);
     }
 
     #[Route('/test', name: 'synapse_admin_embeddings_test', methods: ['POST'])]
     public function testEmbedding(Request $request): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager);
+
         try {
             $text = $request->request->get('text', 'Test text for embedding generation.');
 

@@ -14,11 +14,13 @@ use ArnaudMoncondhuy\SynapseBundle\Shared\Enum\MessageRole;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ChatService;
 use ArnaudMoncondhuy\SynapseBundle\Core\Formatter\MessageFormatter;
 use ArnaudMoncondhuy\SynapseBundle\Core\Manager\ConversationManager;
+use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * Contrôleur API principal pour le flux de conversation.
@@ -31,8 +33,10 @@ class ChatApiController extends AbstractController
 {
     public function __construct(
         private ChatService $chatService,
+        private PermissionCheckerInterface $permissionChecker,
         private ?ConversationManager $conversationManager = null,
         private ?MessageFormatter $messageFormatter = null,
+        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {}
 
     /**
@@ -53,6 +57,19 @@ class ChatApiController extends AbstractController
     #[Route('/chat', name: 'synapse_api_chat', methods: ['POST'])]
     public function chat(Request $request, ?Profiler $profiler): StreamedResponse
     {
+        // CSRF Check (optional but recommended for AJAX)
+        if ($this->csrfTokenManager) {
+            $token = $request->headers->get('X-CSRF-Token') ?? $request->request->get('_csrf_token');
+            if (!$this->isCsrfTokenValid('synapse_api', (string) $token)) {
+                throw $this->createAccessDeniedException('Invalid CSRF token.');
+            }
+        }
+
+        // Permission check: Can start/continue chat?
+        if (!$this->permissionChecker->canCreateConversation()) {
+            throw $this->createAccessDeniedException('Not allowed to start a conversation.');
+        }
+
         // 1. On désactive le profiler pour ne pas casser le flux JSON
         if ($profiler) {
             $profiler->disable();
@@ -72,6 +89,9 @@ class ChatApiController extends AbstractController
             if ($user instanceof ConversationOwnerInterface) {
                 $conversation = $this->conversationManager->getConversation($conversationId, $user);
                 if ($conversation) {
+                    if (!$this->permissionChecker->canView($conversation)) {
+                        throw $this->createAccessDeniedException('Access Denied to this conversation.');
+                    }
                     $this->conversationManager->setCurrentConversation($conversation);
                 }
             }

@@ -12,10 +12,14 @@ use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseTokenUsageRepositor
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseProviderRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapsePresetRepository;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseConfigRepository;
+use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseVectorMemoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use ArnaudMoncondhuy\SynapseBundle\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * Dashboard administrateur - Vue d'ensemble Synapse
@@ -23,12 +27,17 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/synapse/admin')]
 class DashboardController extends AbstractController
 {
+    use AdminSecurityTrait;
+
     public function __construct(
         private EntityManagerInterface $em,
         private SynapseTokenUsageRepository $tokenUsageRepo,
         private SynapseProviderRepository $providerRepo,
         private SynapsePresetRepository $presetRepo,
         private SynapseConfigRepository $configRepo,
+        private SynapseVectorMemoryRepository $vectorMemoryRepo,
+        private PermissionCheckerInterface $permissionChecker,
+        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
         #[\Symfony\Component\DependencyInjection\Attribute\Autowire(param: 'synapse.persistence.conversation_class')]
         private ?string $conversationClass = null,
     ) {}
@@ -37,6 +46,8 @@ class DashboardController extends AbstractController
     #[Route('/dashboard', name: 'synapse_admin_dashboard')]
     public function dashboard(): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
         // KPI : Conversations
         $repoClass = $this->conversationClass ?? SynapseConversation::class;
         $conversationRepo = $this->em->getRepository($repoClass);
@@ -63,16 +74,20 @@ class DashboardController extends AbstractController
         // Active preset
         $activePreset = $this->presetRepo->findActive();
 
+        // Nombre total de souvenirs mémorisés
+        $totalMemories = $this->vectorMemoryRepo->count([]);
+
         return $this->render('@Synapse/admin/dashboard.html.twig', [
             'kpis' => [
                 'active_conversations' => $conversationsLast24h,
-                'active_users_24h' => $activeUsersLast24h,
-                'tokens_7d' => $tokenStats['total_tokens'] ?? 0,
-                'tokens_cost' => $tokenStats['cost'] ?? 0,
+                'active_users_24h'     => $activeUsersLast24h,
+                'tokens_7d'            => $tokenStats['total_tokens'] ?? 0,
+                'tokens_cost'          => $tokenStats['cost'] ?? 0,
+                'total_memories'       => $totalMemories,
             ],
-            'daily_usage' => $dailyUsage,
+            'daily_usage'      => $dailyUsage,
             'active_providers' => $activeProviders,
-            'active_preset' => $activePreset,
+            'active_preset'    => $activePreset,
         ]);
     }
 }

@@ -5,6 +5,7 @@ SynapseBundle est un bundle Symfony puissant et flexible conçu pour intégrer d
 ## Pourquoi Synapse ?
 
 - **Multi-fournisseurs** : Support natif pour Google Gemini, OpenAI, Anthropic et d'autres via une architecture de clients abstraite.
+- **RAG & Mémoire sémantique** : Intégrez vos propres documents à l'IA avec le support natif de **PostgreSQL/pgvector** et du chunking intelligent.
 - **Prêt pour la production** : Inclut la gestion de l'historique, la persistance Doctrine, et un indicateur de consommation de tokens.
 - **Extensible** : Créez vos propres outils (Function Calling), personas et hooks via le système d'événements Symfony.
 - **Admin incluse** : Un tableau de bord prêt à l'emploi pour surveiller vos conversations et configurer vos modèles.

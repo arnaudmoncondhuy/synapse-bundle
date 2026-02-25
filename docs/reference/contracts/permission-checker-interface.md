@@ -17,6 +17,8 @@ L'interface `PermissionCheckerInterface` permet de déléguer la logique de séc
 | `canView($conversation)` | Conversation | Autorise ou non la lecture. |
 | `canEdit($conversation)` | Conversation | Autorise ou non l'envoi de messages. |
 | `canDelete($conversation)` | Conversation | Autorise ou non la suppression/archivage. |
+| `canAccessAdmin()` | - | Vérifie l'accès à `/synapse/admin`. |
+| `canCreateConversation()`| - | Autorise la création d'un nouveau chat. |
 
 ---
 
@@ -49,6 +51,17 @@ L'interface `PermissionCheckerInterface` permet de déléguer la logique de séc
             // Seuls les admins peuvent supprimer
             return $this->security->isGranted('ROLE_ADMIN');
         }
+
+        public function canAccessAdmin(): bool
+        {
+            return $this->security->isGranted('ROLE_ADMIN');
+        }
+
+        public function canCreateConversation(): bool
+        {
+            // Tout utilisateur connecté peut créer un chat
+            return $this->security->getUser() !== null;
+        }
     }
     ```
 
@@ -56,8 +69,8 @@ L'interface `PermissionCheckerInterface` permet de déléguer la logique de séc
 
 ## 💡 Conseils d'implémentation
 
-*   **Délégation** : Si vous ne souhaitez pas gérer de permissions complexes, vous pouvez laisser cette interface non implémentée (Synapse autorisera alors tout par défaut au sein du manager, mais il est fortement recommandé de la configurer).
-*   **Performance** : Ces méthodes sont appelées à chaque accès aux messages. Veillez à ce qu'elles ne fassent pas de requêtes SQL lourdes.
+*   **Délégation** : Si vous ne souhaitez pas gérer de permissions complexes, vous pouvez laisser le bundle utiliser `DefaultPermissionChecker`. Notez que par défaut, l'accès à l'administration est **bloqué** si aucun système de sécurité n'est configuré (posture "Secure by Default").
+*   **Performance** : Ces méthodes sont appelées à chaque accès aux messages ou au dashboard. Veillez à ce qu'elles ne fassent pas de requêtes SQL lourdes.
 
 ---
 

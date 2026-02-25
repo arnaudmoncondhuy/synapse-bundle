@@ -14,6 +14,9 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Core\Accounting\:
         resource: '../src/Core/Accounting/'
 
+    ArnaudMoncondhuy\SynapseBundle\Infrastructure\Command\:
+        resource: '../src/Infrastructure/Command/'
+
     # ── Infra : Google Vertex AI ──────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Core\Client\GeminiAuthService:
         # $serviceAccountJsonPath defaults to null — credentials injected at runtime from DB
@@ -52,6 +55,21 @@ services:
         arguments:
             $tools: !tagged_iterator synapse.tool
 
+    # ── Registre des splitters (Chunking) ────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Core\Chunking\TextSplitterRegistry:
+        arguments:
+            $splitters: !tagged_iterator { tag: synapse.text_splitter, index_by: alias }
+
+    # ── Registre des Vector Stores ───────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Core\VectorStore\VectorStoreRegistry:
+        arguments:
+            $vectorStores: !tagged_iterator { tag: synapse.vector_store, index_by: alias }
+
+    ArnaudMoncondhuy\SynapseBundle\Core\VectorStore\DynamicVectorStore:
+        arguments:
+            $registry: '@ArnaudMoncondhuy\SynapseBundle\Core\VectorStore\VectorStoreRegistry'
+            $configRepository: '@ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseConfigRepository'
+
 
     # ── Default implementations (can be overridden by user) ──────────────────
     ArnaudMoncondhuy\SynapseBundle\Core\DatabaseConfigProvider:
@@ -89,6 +107,27 @@ services:
         alias: ArnaudMoncondhuy\SynapseBundle\Core\Formatter\MessageFormatter
 
     # ── Logic ─────────────────────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Core\VectorStore\NullVectorStore:
+        tags: [{ name: synapse.vector_store, alias: null }]
+    ArnaudMoncondhuy\SynapseBundle\Core\VectorStore\InMemoryVectorStore:
+        tags: [{ name: synapse.vector_store, alias: in_memory }]
+    ArnaudMoncondhuy\SynapseBundle\Core\VectorStore\DoctrineVectorStore:
+        arguments:
+            $repository: '@ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseVectorMemoryRepository'
+            $logger: '@?logger'
+        tags: [{ name: synapse.vector_store, alias: doctrine }]
+
+    ArnaudMoncondhuy\SynapseBundle\Contract\VectorStoreInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Core\VectorStore\DynamicVectorStore
+
+    ArnaudMoncondhuy\SynapseBundle\Core\Chunking\RecursiveTextSplitter:
+        tags: [{ name: synapse.text_splitter, alias: recursive }]
+    ArnaudMoncondhuy\SynapseBundle\Core\Chunking\FixedSizeTextSplitter:
+        tags: [{ name: synapse.text_splitter, alias: fixed }]
+
+    ArnaudMoncondhuy\SynapseBundle\Contract\TextSplitterInterface:
+        alias: ArnaudMoncondhuy\SynapseBundle\Core\Chunking\RecursiveTextSplitter
+
     ArnaudMoncondhuy\SynapseBundle\Core\PersonaRegistry:
         arguments:
             $configPath: '%synapse.personas_path%'
@@ -112,6 +151,10 @@ services:
         arguments:
             $clients: !tagged_iterator synapse.llm_client
 
+    ArnaudMoncondhuy\SynapseBundle\Core\Memory\MemoryManager:
+        arguments:
+            $em: '@doctrine.orm.entity_manager'
+
     # ── Agents ────────────────────────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Core\Agent\PresetValidator\PresetValidatorAgent:
         autowire: true
@@ -120,6 +163,8 @@ services:
     ArnaudMoncondhuy\SynapseBundle\Core\Agent\SynapseAgentBuilder:
         autowire: true
         autoconfigure: true
+
+    ArnaudMoncondhuy\SynapseBundle\Core\Service\ChunkingService: ~
 
     # ── Repositories (required by core services) ──────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseTokenUsageRepository:
@@ -148,6 +193,11 @@ services:
         tags: ['doctrine.repository_service']
 
     ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseDebugLogRepository:
+        arguments:
+            $registry: '@doctrine'
+        tags: ['doctrine.repository_service']
+
+    ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseVectorMemoryRepository:
         arguments:
             $registry: '@doctrine'
         tags: ['doctrine.repository_service']
@@ -181,3 +231,12 @@ services:
         autowire: true
         autoconfigure: true
         public: false
+
+    ArnaudMoncondhuy\SynapseBundle\Core\Event\MemoryContextSubscriber:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    # ── Memory Tools ─────────────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseBundle\Core\Memory\Tool\ProposeMemoryTool:
+        tags: [{ name: synapse.tool }]

@@ -169,6 +169,20 @@ export default class extends Controller {
                             } else if (evt.type === 'result') {
                                 this.setLoading(false);
 
+                                // Détecter le signal memory_proposal dans l'answer
+                                if (evt.payload && evt.payload.answer) {
+                                    try {
+                                        const maybeJson = JSON.parse(evt.payload.answer);
+                                        if (maybeJson && maybeJson.__synapse_action === 'memory_proposal') {
+                                            this.showMemoryProposal(maybeJson, evt.payload.conversation_id);
+                                            if (evt.payload.conversation_id) {
+                                                this.updateUrlWithConversationId(evt.payload.conversation_id);
+                                            }
+                                            break;
+                                        }
+                                    } catch (e) { /* Not JSON, normal response */ }
+                                }
+
                                 // If we streamed text, ensure final consistency (sometimes helpful for incomplete markdown)
                                 if (currentMessageBubble && evt.payload && evt.payload.answer) {
                                     currentMessageBubble.innerHTML = this.parseMarkdown(evt.payload.answer);
@@ -437,6 +451,83 @@ export default class extends Controller {
 
     scrollToBottom() {
         this.messagesTarget.scrollTop = this.messagesTarget.scrollHeight;
+    }
+
+    /**
+     * Affiche un toast de proposition de mémorisation non-bloquant.
+     * L'utilisateur peut confirmer ou ignorer la suggestion de l'IA.
+     */
+    showMemoryProposal(proposal, conversationId = null) {
+        // Supprimer un toast existant éventuel
+        const existing = document.querySelector('.synapse-memory-toast');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.className = 'synapse-memory-toast';
+        toast.innerHTML = `
+            <span class="synapse-memory-toast__icon">🧠</span>
+            <div class="synapse-memory-toast__body">
+                <span class="synapse-memory-toast__label">Retenir :</span>
+                <span class="synapse-memory-toast__fact">${this.escapeHtml(proposal.fact)}</span>
+            </div>
+            <div class="synapse-memory-toast__actions">
+                <button class="synapse-memory-toast__btn synapse-memory-toast__btn--accept" title="Oui, mémoriser">✓</button>
+                <button class="synapse-memory-toast__btn synapse-memory-toast__btn--reject" title="Ignorer">✕</button>
+            </div>
+        `;
+
+        // Insérer juste au-dessus de la zone de saisie
+        const inputArea = this.element.querySelector('.synapse-chat__input-area');
+        if (inputArea) {
+            inputArea.insertAdjacentElement('beforebegin', toast);
+        } else {
+            this.element.appendChild(toast);
+        }
+
+        // Animation d'apparition
+        requestAnimationFrame(() => toast.classList.add('synapse-memory-toast--visible'));
+
+        // Bouton Confirmer
+        toast.querySelector('.synapse-memory-toast__btn--accept').addEventListener('click', async () => {
+            toast.remove();
+            try {
+                await fetch('/synapse/api/memory/confirm', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fact: proposal.fact,
+                        category: proposal.category,
+                        scope: 'user',
+                        conversation_id: conversationId
+                    })
+                });
+                // Confirmation visuelle discrète
+                const feedback = document.createElement('div');
+                feedback.className = 'synapse-memory-toast synapse-memory-toast--feedback';
+                feedback.innerHTML = `<span>✅ Mémorisé !</span>`;
+                document.querySelector('.synapse-chat__input-area')?.insertAdjacentElement('beforebegin', feedback);
+                setTimeout(() => feedback.remove(), 2500);
+            } catch (e) {
+                console.error('[Synapse Memory] Erreur lors de la confirmation:', e);
+            }
+        });
+
+        // Bouton Ignorer
+        toast.querySelector('.synapse-memory-toast__btn--reject').addEventListener('click', async () => {
+            toast.remove();
+            try {
+                await fetch('/synapse/api/memory/reject', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+            } catch (e) { /* Silencieux */ }
+        });
+
+        // Auto-dismiss après 30 secondes
+        setTimeout(() => { if (toast.isConnected) toast.remove(); }, 30000);
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(text));
+        return div.innerHTML;
     }
 
     updateUrlWithConversationId(conversationId) {

@@ -14,16 +14,12 @@ L'interface `VectorStoreInterface` est le socle du système de RAG (Retrieval-Au
 
 | Méthode | Entrée | Sortie | Rôle |
 | :--- | :--- | :--- | :--- |
-| `add(array $vectors)` | Liste d'objets `Embedding` | `void` | Insère de nouvelles données dans la base vectorielle. |
-| `search(array $vector, int $limit)` | Vecteur de recherche | `array` | Récupère les documents les plus proches sémantiquement. |
-| `delete(array $ids)` | Liste d'identifiants | `void` | Supprime des entrées spécifiques. |
-| `clear()` | - | `void` | Réinitialise complètement le store. |
+| `saveMemory(array $vector, array $payload)` | Vecteurs + Métadonnées | `void` | Insère de nouvelles données dans la base vectorielle. |
+| `searchSimilar(array $vector, int $limit, array $filters)` | Vecteur de recherche | `array` | Récupère les documents les plus proches sémantiquement. |
 
 ---
 
 ## 🚀 Exemple : Implémentation simplifiée en mémoire
-
-=== "InMemoryVectorStore.php"
 
     ```php
     namespace App\Synapse\Vector;
@@ -34,27 +30,19 @@ L'interface `VectorStoreInterface` est le socle du système de RAG (Retrieval-Au
     {
         private array $storage = [];
 
-        public function add(array $vectors): void
+        public function saveMemory(array $vector, array $payload): void
         {
-            foreach ($vectors as $v) {
-                // $v['id'], $v['vector'], $v['metadata']
-                $this->storage[$v['id']] = $v;
-            }
+            $this->storage[] = [
+                'vector'  => $vector,
+                'payload' => $payload,
+            ];
         }
 
-        public function search(array $vector, int $limit = 5): array
+        public function searchSimilar(array $vector, int $limit = 5, array $filters = []): array
         {
             // Ici, vous implémenteriez un calcul de similarité cosinus.
-            // Pour l'exemple, on retourne les 5 premiers éléments.
             return array_slice($this->storage, 0, $limit);
         }
-
-        public function delete(array $ids): void
-        {
-            foreach ($ids as $id) unset($this->storage[$id]);
-        }
-
-        public function clear(): void { $this->storage = []; }
     }
     ```
 

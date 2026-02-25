@@ -11,10 +11,13 @@ use ArnaudMoncondhuy\SynapseBundle\Core\DatabaseConfigProvider;
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ModelCapabilityRegistry;
 
 use Doctrine\ORM\EntityManagerInterface;
+use ArnaudMoncondhuy\SynapseBundle\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * Gestion des presets de configuration LLM
@@ -25,13 +28,16 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/synapse/admin/presets')]
 class PresetsController extends AbstractController
 {
+    use AdminSecurityTrait;
+
     public function __construct(
         private SynapsePresetRepository $presetRepo,
         private SynapseProviderRepository $providerRepo,
         private ModelCapabilityRegistry $capabilityRegistry,
         private DatabaseConfigProvider $configProvider,
         private EntityManagerInterface $em,
-
+        private PermissionCheckerInterface $permissionChecker,
+        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {}
 
     /**
@@ -40,6 +46,8 @@ class PresetsController extends AbstractController
     #[Route('', name: 'synapse_admin_presets', methods: ['GET'])]
     public function index(): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
         $presets  = $this->presetRepo->findAllPresets();
         $providers = $this->providerRepo->findAllOrdered();
 
@@ -70,9 +78,12 @@ class PresetsController extends AbstractController
     #[Route('/new', name: 'synapse_admin_presets_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
         $preset = new SynapsePreset();
 
         if ($request->isMethod('POST')) {
+            $this->validateCsrfToken($request, $this->csrfTokenManager);
             $this->applyFormData($preset, $request->request->all());
             $this->em->persist($preset);
             $this->em->flush();
@@ -104,7 +115,10 @@ class PresetsController extends AbstractController
     #[Route('/{id}/edit', name: 'synapse_admin_presets_edit', methods: ['GET', 'POST'])]
     public function edit(SynapsePreset $preset, Request $request): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
         if ($request->isMethod('POST')) {
+            $this->validateCsrfToken($request, $this->csrfTokenManager);
             $this->applyFormData($preset, $request->request->all());
             $this->em->flush();
 
@@ -129,8 +143,11 @@ class PresetsController extends AbstractController
      * Activer un preset (désactive tous les autres)
      */
     #[Route('/{id}/activate', name: 'synapse_admin_presets_activate', methods: ['POST'])]
-    public function activate(SynapsePreset $preset): Response
+    public function activate(SynapsePreset $preset, Request $request): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager);
+
         $this->presetRepo->activate($preset);
 
         // Invalider le cache
@@ -145,8 +162,11 @@ class PresetsController extends AbstractController
      * Cloner un preset
      */
     #[Route('/{id}/clone', name: 'synapse_admin_presets_clone', methods: ['POST'])]
-    public function clone(SynapsePreset $source): Response
+    public function clone(SynapsePreset $source, Request $request): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager);
+
         $clone = new SynapsePreset();
         $clone->setName($source->getName() . ' (copie)');
         $clone->setProviderName($source->getProviderName());
@@ -177,8 +197,11 @@ class PresetsController extends AbstractController
      * Supprimer un preset
      */
     #[Route('/{id}/delete', name: 'synapse_admin_presets_delete', methods: ['POST'])]
-    public function delete(SynapsePreset $preset): Response
+    public function delete(SynapsePreset $preset, Request $request): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager);
+
         if ($preset->isActive()) {
             $this->addFlash('error', 'Impossible de supprimer le preset actif. Activez d\'abord un autre preset.');
             return $this->redirectToRoute('synapse_admin_presets');

@@ -13,9 +13,38 @@ Les modifications importantes sont classées par catégorie :
 
 ## [Non classé] — Développement actuel
 
+### Security
+
+#### Durcissement Agnostique (Agnostic Security Shield)
+- **Autorisation Agnostique** : Remplacement des rôles en dur (`#[IsGranted]`) par une vérification via `PermissionCheckerInterface` dans tous les contrôleurs (Admin & API).
+- **Secure by Default** : Le bundle refuse désormais tout accès admin si aucun système de sécurité n'est configuré (correction de la posture trop permissive).
+- **Protection CSRF** : Validation systématique des jetons CSRF pour toutes les actions mutables (POST/PUT/DELETE) dans l'admin et l'API de chat.
+- **Support AJAX/API** : Support des jetons via le header `X-CSRF-Token` pour une intégration fluide avec les frameworks frontend.
+- **Permission Checker** : Ajout de la méthode `canCreateConversation()` pour protéger le point d'entrée du chat.
+
 ### Features
 
-#### Standardisation sur le format OpenAI (LLM-Agnosticism)
+#### 🧠 Mémoire Sémantique "Human-in-the-loop"
+
+Nouveau système de mémoire conversationnelle avec consentement explicite :
+
+- **`ProposeMemoryTool`** : Le LLM peut proposer de mémoriser un fait important via un AI Tool dédié. Il retourne un signal JSON (`__synapse_action: memory_proposal`) sans sauvegarder directement.
+- **`MemoryManager`** : Service de haut niveau (`remember`, `recall`, `forget`, `listForUser`, `update`) avec vectorisation automatique via `EmbeddingService`.
+- **`MemoryScope`** : Enum `USER` (souvenir permanent) / `CONVERSATION` (éphémère).
+- **`MemoryApiController`** : Endpoints REST `/synapse/api/memory/{confirm,reject,list,delete}`.
+- **Toast Frontend** : Notification non-bloquante dans le chat (✓/✕). Auto-dismiss après 30 secondes.
+- **`MemoryContextSubscriber`** : Injection automatique des souvenirs pertinents (score ≥ 0.7) dans le prompt avant chaque appel LLM.
+- **Data Sealing** : Filtrage `user_id` imposé au niveau SQL dans `DoctrineVectorStore` — isolation totale garantie.
+- **`SynapseVectorMemory` enrichie** : 5 nouvelles colonnes (`user_id`, `scope`, `conversation_id`, `content`, `source_type`).
+- **Dashboard Admin** : KPI "Souvenirs mémorisés" ajouté.
+
+#### Vectorisation dynamique du Vector Store
+
+- **`VectorStoreRegistry`** : Registre centralisé des implémentations de stockage.
+- **`DynamicVectorStore`** : Résolveur dynamique du moteur de stockage (sans redémarrage).
+- **Interface Admin Embeddings** : Sélection du Vector Store depuis l'interface.
+- **Visualiseur de Chunking** : Aperçu interactif avec mise à l'échelle adaptative (jusqu'à 20k chars).
+
 - **Refactorisation majeure** : ChatService utilise maintenant OpenAI Chat Completions comme format interne standard
 - **Impact** : Bundle maintenant 100% LLM-agnostique (prêt pour Mistral, Claude, Ollama, etc.)
 - **Changement de format** : Message système intégré comme premier élément de `contents` array

@@ -38,4 +38,9 @@ interface PermissionCheckerInterface
      * Vérifie les droits d'accès à l'interface d'administration `/synapse/admin`.
      */
     public function canAccessAdmin(): bool;
+
+    /**
+     * Vérifie si l'utilisateur peut créer une nouvelle conversation.
+     */
+    public function canCreateConversation(): bool;
 }

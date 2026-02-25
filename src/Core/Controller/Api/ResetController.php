@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api;
 
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ChatService;
+use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * Contrôleur utilitaire pour la gestion de session.
@@ -17,8 +20,9 @@ class ResetController extends AbstractController
 {
     public function __construct(
         private ChatService $chatService,
-    ) {
-    }
+        private PermissionCheckerInterface $permissionChecker,
+        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
+    ) {}
 
     /**
      * Réinitialise explicitement la conversation courante.
@@ -28,8 +32,20 @@ class ResetController extends AbstractController
      * @return JsonResponse confirmation du reset
      */
     #[Route('/reset', name: 'synapse_api_reset', methods: ['POST'])]
-    public function reset(): JsonResponse
+    public function reset(Request $request): JsonResponse
     {
+        // CSRF Check
+        if ($this->csrfTokenManager) {
+            $token = $request->headers->get('X-CSRF-Token') ?? $request->request->get('_csrf_token');
+            if (!$this->isCsrfTokenValid('synapse_api', (string) $token)) {
+                return $this->json(['error' => 'Invalid CSRF token.'], 403);
+            }
+        }
+
+        if (!$this->permissionChecker->canCreateConversation()) {
+            return $this->json(['error' => 'Not allowed.'], 403);
+        }
+
         try {
             $this->chatService->resetConversation();
 

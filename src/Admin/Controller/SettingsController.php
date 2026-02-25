@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
+use ArnaudMoncondhuy\SynapseBundle\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseConfigRepository;
 use ArnaudMoncondhuy\SynapseBundle\Core\DatabaseConfigProvider;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * Gestion des paramètres globaux de Synapse
@@ -20,12 +23,15 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/synapse/admin/settings')]
 class SettingsController extends AbstractController
 {
+    use AdminSecurityTrait;
+
     public function __construct(
         private SynapseConfigRepository $configRepo,
         private DatabaseConfigProvider $configProvider,
         private EntityManagerInterface $em,
-    ) {
-    }
+        private PermissionCheckerInterface $permissionChecker,
+        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
+    ) {}
 
     /**
      * Afficher et éditer les paramètres globaux
@@ -33,9 +39,12 @@ class SettingsController extends AbstractController
     #[Route('', name: 'synapse_admin_settings', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
         $config = $this->configRepo->getGlobalConfig();
 
         if ($request->isMethod('POST')) {
+            $this->validateCsrfToken($request, $this->csrfTokenManager);
             // Retention RGPD
             $retentionDays = (int) ($request->request->get('retention_days') ?? 30);
             if ($retentionDays >= 1 && $retentionDays <= 3650) { // 1 day to 10 years

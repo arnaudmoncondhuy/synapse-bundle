@@ -20,6 +20,7 @@ Cliquez sur une interface pour découvrir son guide d'implémentation premium.
 | :--- | :--- |
 | [**VectorStoreInterface**](../contracts/vector-store-interface.md) | **Le Stockage.** Gère les documents vectorisés (PostgreSQL, Pinecone). |
 | [**EmbeddingClientInterface**](../contracts/embedding-client-interface.md) | **Le Traducteur.** Transforme le texte en vecteurs mathématiques. |
+| [**TextSplitterInterface**](../contracts/text-splitter-interface.md) | **Le Découpeur.** Divise les documents en chunks optimisés pour le RAG. |
 
 ### 🛡 Sécurité & Conformité
 | Interface | Rôle principal |

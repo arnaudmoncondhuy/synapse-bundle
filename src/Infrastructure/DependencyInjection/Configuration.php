@@ -178,6 +178,17 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
 
+            // ── Vector Store ──────────────────────────────────────────────────
+            ->arrayNode('vector_store')
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->scalarNode('default')
+            ->defaultValue('null')
+            ->info('L\'implémentation par défaut : "null", "in_memory", "doctrine" ou un service ID personnalisé.')
+            ->end()
+            ->end()
+            ->end()
+
             ->end();
 
         return $treeBuilder;

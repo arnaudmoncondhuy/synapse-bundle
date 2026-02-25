@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
 use ArnaudMoncondhuy\SynapseBundle\Core\Manager\ConversationManager;
+use ArnaudMoncondhuy\SynapseBundle\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,11 +18,13 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/synapse/admin/conversations')]
 class ConversationController extends AbstractController
 {
+    use AdminSecurityTrait;
+
     public function __construct(
         private ConversationManager $conversationManager,
+        private PermissionCheckerInterface $permissionChecker,
         private ?LoggerInterface $logger = null
-    ) {
-    }
+    ) {}
 
     /**
      * Vue détaillée d'une conversation (Break-Glass)
@@ -28,6 +32,8 @@ class ConversationController extends AbstractController
     #[Route('/{id}', name: 'synapse_admin_conversation_view')]
     public function view(string $id): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
         $conversation = $this->conversationManager->getConversation($id);
 
         if (!$conversation) {

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
 use ArnaudMoncondhuy\SynapseBundle\Core\Chat\ToolRegistry;
+use ArnaudMoncondhuy\SynapseBundle\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -15,8 +17,11 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/synapse/admin/tools')]
 class ToolsController extends AbstractController
 {
+    use AdminSecurityTrait;
+
     public function __construct(
-        private ToolRegistry $toolRegistry
+        private ToolRegistry $toolRegistry,
+        private PermissionCheckerInterface $permissionChecker,
     ) {}
 
     /**
@@ -25,6 +30,8 @@ class ToolsController extends AbstractController
     #[Route('', name: 'synapse_admin_tools', methods: ['GET'])]
     public function index(): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
         $tools = $this->toolRegistry->getTools();
 
         $toolsData = [];
@@ -47,6 +54,8 @@ class ToolsController extends AbstractController
     #[Route('/{name}', name: 'synapse_admin_tools_show', methods: ['GET'])]
     public function show(string $name): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
         $tool = $this->toolRegistry->get($name);
 
         if (!$tool) {

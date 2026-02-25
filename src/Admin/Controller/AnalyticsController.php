@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseBundle\Admin\Controller;
 
+use ArnaudMoncondhuy\SynapseBundle\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseBundle\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseTokenUsageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,8 +18,11 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/synapse/admin/analytics')]
 class AnalyticsController extends AbstractController
 {
+    use AdminSecurityTrait;
+
     public function __construct(
-        private SynapseTokenUsageRepository $tokenUsageRepo
+        private SynapseTokenUsageRepository $tokenUsageRepo,
+        private PermissionCheckerInterface $permissionChecker,
     ) {}
 
     /**
@@ -26,6 +31,8 @@ class AnalyticsController extends AbstractController
     #[Route('', name: 'synapse_admin_analytics')]
     public function index(Request $request): Response
     {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
         $period = $request->query->get('period', '30'); // 7, 30, 90 jours
         $days = (int) $period;
 

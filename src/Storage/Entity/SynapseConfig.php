@@ -71,6 +71,30 @@ class SynapseConfig
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     private ?int $embeddingDimension = null;
 
+    /**
+     * Type de Vector Store à utiliser pour le stockage sémantique.
+     */
+    #[ORM\Column(type: Types::STRING, length: 100, options: ['default' => 'doctrine'])]
+    private string $vectorStore = 'doctrine';
+
+    /**
+     * Stratégie de chunking par défaut.
+     */
+    #[ORM\Column(type: Types::STRING, length: 50, options: ['default' => 'recursive'])]
+    private string $chunkingStrategy = 'recursive';
+
+    /**
+     * Taille maximale des chunks (en caractères).
+     */
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 1000])]
+    private int $chunkSize = 1000;
+
+    /**
+     * Chevauchement entre les chunks (en caractères).
+     */
+    #[ORM\Column(type: Types::INTEGER, options: ['default' => 200])]
+    private int $chunkOverlap = 200;
+
     // Getters et Setters
 
     public function getId(): ?int
@@ -152,6 +176,50 @@ class SynapseConfig
     public function setEmbeddingDimension(?int $embeddingDimension): self
     {
         $this->embeddingDimension = $embeddingDimension;
+        return $this;
+    }
+
+    public function getVectorStore(): string
+    {
+        return $this->vectorStore;
+    }
+
+    public function setVectorStore(string $vectorStore): self
+    {
+        $this->vectorStore = $vectorStore;
+        return $this;
+    }
+
+    public function getChunkingStrategy(): string
+    {
+        return $this->chunkingStrategy;
+    }
+
+    public function setChunkingStrategy(string $chunkingStrategy): self
+    {
+        $this->chunkingStrategy = $chunkingStrategy;
+        return $this;
+    }
+
+    public function getChunkSize(): int
+    {
+        return $this->chunkSize;
+    }
+
+    public function setChunkSize(int $chunkSize): self
+    {
+        $this->chunkSize = $chunkSize;
+        return $this;
+    }
+
+    public function getChunkOverlap(): int
+    {
+        return $this->chunkOverlap;
+    }
+
+    public function setChunkOverlap(int $chunkOverlap): self
+    {
+        $this->chunkOverlap = $chunkOverlap;
         return $this;
     }
 

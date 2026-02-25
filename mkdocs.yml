@@ -49,6 +49,7 @@ nav:
   - Prise en main:
       - Installation: getting-started/installation.md
       - Guide rapide: getting-started/quickstart.md
+      - Guide Intégration IA: getting-started/guide-integration-ia.md
   - Interface d'Administration:
       - Utilisation: admin/interface.md
   - Guides d'utilisation:
@@ -56,6 +57,8 @@ nav:
       - Créer des outils IA: guides/ai-tools.md
       - Personas & Presets: guides/personas-presets.md
       - Conversations & Persistance: guides/rle-management.md
+      - RAG & Mémoire Vectorielle: guides/rag-memory.md
+      - Mémoire Sémantique (Human-in-the-loop): guides/semantic-memory.md
   - Référence Technique:
       - Services Cœurs:
           - ChatService: reference/chat-service.md
@@ -73,6 +76,7 @@ nav:
           - MessageFormatter: reference/contracts/message-formatter-interface.md
           - PermissionChecker: reference/contracts/permission-checker-interface.md
           - RetentionPolicy: reference/contracts/retention-policy-interface.md
+          - TextSplitter: reference/contracts/text-splitter-interface.md
           - DebugLogger: reference/contracts/synapse-debug-logger-interface.md
           - VectorStore: reference/contracts/vector-store-interface.md
       - Événements (Events):
@@ -87,8 +91,11 @@ nav:
       - Enums & Formats:
           - MessageRole: reference/shared/message-role.md
           - ConversationStatus: reference/shared/conversation-status.md
+          - MemoryScope: reference/shared/memory-scope.md
       - Entités Doctrine: reference/entities.md
       - Commandes CLI: reference/cli.md
+      - Guide d'implémentation: reference/implementation-guide.md
   - Architecture & Concepts:
       - Vue d'ensemble: explanation/architecture.md
       - Sécurité & RGPD: explanation/security.md
+      - Contexte IA & Test: explanation/gemini-context.md

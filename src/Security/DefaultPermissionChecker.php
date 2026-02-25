@@ -24,14 +24,13 @@ class DefaultPermissionChecker implements PermissionCheckerInterface
         private ?Security $security = null,
         private ?AuthorizationCheckerInterface $authChecker = null,
         private string $adminRole = 'ROLE_ADMIN'
-    ) {
-    }
+    ) {}
 
     public function canView(SynapseConversation $conversation): bool
     {
-        // Pattern 1: Pas d'auth = accès total (mode dev)
+        // Pattern 1: Pas d'auth = accès refusé par défaut pour la sécurité
         if ($this->security === null) {
-            return true;
+            return false;
         }
 
         $user = $this->security->getUser();
@@ -57,7 +56,7 @@ class DefaultPermissionChecker implements PermissionCheckerInterface
     {
         // Plus strict: seul le propriétaire peut éditer
         if ($this->security === null) {
-            return true; // Mode dev
+            return false;
         }
 
         $user = $this->security->getUser();
@@ -82,9 +81,18 @@ class DefaultPermissionChecker implements PermissionCheckerInterface
     public function canAccessAdmin(): bool
     {
         if ($this->authChecker === null) {
-            return true; // Mode dev
+            return false; // Strict par défaut : pas d'admin sans sécurité configurée
         }
 
         return $this->authChecker->isGranted($this->adminRole);
+    }
+
+    public function canCreateConversation(): bool
+    {
+        if ($this->security === null) {
+            return true; // On autorise le chat par défaut si pas de security (mode ouvert)
+        }
+
+        return $this->security->getUser() !== null;
     }
 }
