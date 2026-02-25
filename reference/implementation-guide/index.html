@@ -13,28 +13,28 @@
       
       
       
-        <link rel="prev" href="../text-splitter-interface/">
+        <link rel="prev" href="../cli/">
       
       
-        <link rel="next" href="../vector-store-interface/">
+        <link rel="next" href="../../explanation/architecture/">
       
       
         
       
       
-      <link rel="icon" href="../../../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
-        <title>DebugLogger - SynapseBundle</title>
+        <title>Guide d'implémentation - SynapseBundle</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,7 +53,7 @@
       
     
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#synapsedebugloggerinterface" class="md-skip">
+        <a href="#guide-dimplementation-breaking-changes-fevrier-2026" class="md-skip">
           Aller au contenu
         </a>
       
@@ -92,7 +92,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="En-tête">
-    <a href="../../.." title="SynapseBundle" class="md-header__button md-logo" aria-label="SynapseBundle" data-md-component="logo">
+    <a href="../.." title="SynapseBundle" class="md-header__button md-logo" aria-label="SynapseBundle" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              DebugLogger
+              Guide d'implémentation
             
           </span>
         </div>
@@ -218,7 +218,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../.." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -239,7 +239,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../getting-started/installation/" class="md-tabs__link">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
           
   
   
@@ -259,7 +259,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../admin/interface/" class="md-tabs__link">
+        <a href="../../admin/interface/" class="md-tabs__link">
           
   
   
@@ -279,7 +279,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../guides/configuration/" class="md-tabs__link">
+        <a href="../../guides/configuration/" class="md-tabs__link">
           
   
   
@@ -310,7 +310,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../chat-service/" class="md-tabs__link">
+        <a href="../chat-service/" class="md-tabs__link">
           
   
   
@@ -333,7 +333,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../explanation/architecture/" class="md-tabs__link">
+        <a href="../../explanation/architecture/" class="md-tabs__link">
           
   
   
@@ -367,7 +367,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="SynapseBundle" class="md-nav__button md-logo" aria-label="SynapseBundle" data-md-component="logo">
+    <a href="../.." title="SynapseBundle" class="md-nav__button md-logo" aria-label="SynapseBundle" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -385,7 +385,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -466,7 +466,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/installation/" class="md-nav__link">
+      <a href="../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -494,7 +494,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/quickstart/" class="md-nav__link">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
         
   
   
@@ -522,7 +522,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/guide-integration-ia/" class="md-nav__link">
+      <a href="../../getting-started/guide-integration-ia/" class="md-nav__link">
         
   
   
@@ -611,7 +611,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../admin/interface/" class="md-nav__link">
+      <a href="../../admin/interface/" class="md-nav__link">
         
   
   
@@ -700,7 +700,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/configuration/" class="md-nav__link">
+      <a href="../../guides/configuration/" class="md-nav__link">
         
   
   
@@ -728,7 +728,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/ai-tools/" class="md-nav__link">
+      <a href="../../guides/ai-tools/" class="md-nav__link">
         
   
   
@@ -756,7 +756,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/personas-presets/" class="md-nav__link">
+      <a href="../../guides/personas-presets/" class="md-nav__link">
         
   
   
@@ -784,7 +784,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/rle-management/" class="md-nav__link">
+      <a href="../../guides/rle-management/" class="md-nav__link">
         
   
   
@@ -812,7 +812,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/rag-memory/" class="md-nav__link">
+      <a href="../../guides/rag-memory/" class="md-nav__link">
         
   
   
@@ -840,7 +840,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/semantic-memory/" class="md-nav__link">
+      <a href="../../guides/semantic-memory/" class="md-nav__link">
         
   
   
@@ -989,7 +989,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../chat-service/" class="md-nav__link">
+      <a href="../chat-service/" class="md-nav__link">
         
   
   
@@ -1017,7 +1017,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../conversation-manager/" class="md-nav__link">
+      <a href="../conversation-manager/" class="md-nav__link">
         
   
   
@@ -1050,8 +1050,6 @@
                 
   
   
-    
-  
   
   
     
@@ -1067,11 +1065,13 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_2" >
         
           
           <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="">
@@ -1092,7 +1092,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1110,7 +1110,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../contracts/overview/" class="md-nav__link">
         
   
   
@@ -1138,7 +1138,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../agent-interface/" class="md-nav__link">
+      <a href="../contracts/agent-interface/" class="md-nav__link">
         
   
   
@@ -1166,7 +1166,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ai-tool-interface/" class="md-nav__link">
+      <a href="../contracts/ai-tool-interface/" class="md-nav__link">
         
   
   
@@ -1194,7 +1194,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../config-provider-interface/" class="md-nav__link">
+      <a href="../contracts/config-provider-interface/" class="md-nav__link">
         
   
   
@@ -1222,7 +1222,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../context-provider-interface/" class="md-nav__link">
+      <a href="../contracts/context-provider-interface/" class="md-nav__link">
         
   
   
@@ -1250,7 +1250,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../conversation-owner-interface/" class="md-nav__link">
+      <a href="../contracts/conversation-owner-interface/" class="md-nav__link">
         
   
   
@@ -1278,7 +1278,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../embedding-client-interface/" class="md-nav__link">
+      <a href="../contracts/embedding-client-interface/" class="md-nav__link">
         
   
   
@@ -1306,7 +1306,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../encryption-service-interface/" class="md-nav__link">
+      <a href="../contracts/encryption-service-interface/" class="md-nav__link">
         
   
   
@@ -1334,7 +1334,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../llm-client-interface/" class="md-nav__link">
+      <a href="../contracts/llm-client-interface/" class="md-nav__link">
         
   
   
@@ -1362,7 +1362,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../message-formatter-interface/" class="md-nav__link">
+      <a href="../contracts/message-formatter-interface/" class="md-nav__link">
         
   
   
@@ -1390,7 +1390,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../permission-checker-interface/" class="md-nav__link">
+      <a href="../contracts/permission-checker-interface/" class="md-nav__link">
         
   
   
@@ -1418,7 +1418,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../retention-policy-interface/" class="md-nav__link">
+      <a href="../contracts/retention-policy-interface/" class="md-nav__link">
         
   
   
@@ -1446,7 +1446,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../text-splitter-interface/" class="md-nav__link">
+      <a href="../contracts/text-splitter-interface/" class="md-nav__link">
         
   
   
@@ -1471,37 +1471,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    DebugLogger
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../contracts/synapse-debug-logger-interface/" class="md-nav__link">
         
   
   
@@ -1517,70 +1490,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table des matières
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        🛠 Pourquoi l'utiliser ?
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#resume-du-contrat" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        📋 Résumé du Contrat
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exemple-enregistrement-dans-les-logs-symfony" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        🚀 Exemple : Enregistrement dans les logs Symfony
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#conseils-dimplementation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        💡 Conseils d'implémentation
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1593,7 +1502,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../vector-store-interface/" class="md-nav__link">
+      <a href="../contracts/vector-store-interface/" class="md-nav__link">
         
   
   
@@ -1686,7 +1595,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../events/overview/" class="md-nav__link">
+      <a href="../events/overview/" class="md-nav__link">
         
   
   
@@ -1714,7 +1623,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../events/generation-started-event/" class="md-nav__link">
+      <a href="../events/generation-started-event/" class="md-nav__link">
         
   
   
@@ -1742,7 +1651,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../events/pre-prompt-event/" class="md-nav__link">
+      <a href="../events/pre-prompt-event/" class="md-nav__link">
         
   
   
@@ -1770,7 +1679,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../events/chunk-received-event/" class="md-nav__link">
+      <a href="../events/chunk-received-event/" class="md-nav__link">
         
   
   
@@ -1798,7 +1707,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../events/tool-call-requested-event/" class="md-nav__link">
+      <a href="../events/tool-call-requested-event/" class="md-nav__link">
         
   
   
@@ -1826,7 +1735,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../events/tool-call-completed-event/" class="md-nav__link">
+      <a href="../events/tool-call-completed-event/" class="md-nav__link">
         
   
   
@@ -1854,7 +1763,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../events/generation-completed-event/" class="md-nav__link">
+      <a href="../events/generation-completed-event/" class="md-nav__link">
         
   
   
@@ -1882,7 +1791,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../events/exchange-completed-event/" class="md-nav__link">
+      <a href="../events/exchange-completed-event/" class="md-nav__link">
         
   
   
@@ -1975,7 +1884,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../shared/message-role/" class="md-nav__link">
+      <a href="../shared/message-role/" class="md-nav__link">
         
   
   
@@ -2003,7 +1912,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../shared/conversation-status/" class="md-nav__link">
+      <a href="../shared/conversation-status/" class="md-nav__link">
         
   
   
@@ -2031,7 +1940,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../shared/memory-scope/" class="md-nav__link">
+      <a href="../shared/memory-scope/" class="md-nav__link">
         
   
   
@@ -2067,7 +1976,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../entities/" class="md-nav__link">
+      <a href="../entities/" class="md-nav__link">
         
   
   
@@ -2095,7 +2004,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cli/" class="md-nav__link">
+      <a href="../cli/" class="md-nav__link">
         
   
   
@@ -2120,10 +2029,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../implementation-guide/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide d'implémentation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -2139,6 +2075,104 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#standardisation-openai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Standardisation OpenAI
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Standardisation OpenAI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ce-qui-a-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ce qui a changé
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creer-un-client-personnalise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠️ Créer un client personnalisé
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🛠️ Créer un client personnalisé">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-implementer-linterface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Implémenter l'interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-format-du-chunk-normalise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Format du Chunk normalisé
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migration-dun-ancien-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Migration d'un ancien client
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2212,7 +2246,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../explanation/architecture/" class="md-nav__link">
+      <a href="../../explanation/architecture/" class="md-nav__link">
         
   
   
@@ -2240,7 +2274,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../explanation/security/" class="md-nav__link">
+      <a href="../../explanation/security/" class="md-nav__link">
         
   
   
@@ -2268,7 +2302,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../explanation/gemini-context/" class="md-nav__link">
+      <a href="../../explanation/gemini-context/" class="md-nav__link">
         
   
   
@@ -2323,43 +2357,77 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#standardisation-openai" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        🚀 Standardisation OpenAI
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Standardisation OpenAI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ce-qui-a-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ce qui a changé
       
     </span>
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#resume-du-contrat" class="md-nav__link">
+  <a href="#creer-un-client-personnalise" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Résumé du Contrat
+        🛠️ Créer un client personnalisé
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🛠️ Créer un client personnalisé">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-implementer-linterface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Implémenter l'interface
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#exemple-enregistrement-dans-les-logs-symfony" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#2-format-du-chunk-normalise" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Enregistrement dans les logs Symfony
+        2. Format du Chunk normalisé
       
     </span>
   </a>
   
 </li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
-  <a href="#conseils-dimplementation" class="md-nav__link">
+  <a href="#migration-dun-ancien-client" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'implémentation
+        📋 Migration d'un ancien client
       
     </span>
   </a>
@@ -2383,60 +2451,66 @@
 
 
 
-<h1 id="synapsedebugloggerinterface">SynapseDebugLoggerInterface</h1>
-<p>L'interface <code>SynapseDebugLoggerInterface</code> permet d'exporter et de journaliser l'intégralité des échanges techniques entre SynapseBundle et les LLM.</p>
-<h2 id="pourquoi-lutiliser">🛠 Pourquoi l'utiliser ?</h2>
-<ul>
-<li><strong>Observabilité</strong> : Voir exactement ce qui a été envoyé et reçu par l'IA dans vos outils de log (ELK, CloudWatch, etc.).</li>
-<li><strong>Aide au développement</strong> : Diagnostiquer pourquoi un outil n'a pas été appelé ou pourquoi le LLM a mal interprété un prompt.</li>
-<li><strong>Audit</strong> : Conserver une trace technique des interactions IA pour des besoins de conformité.</li>
-</ul>
-<hr />
-<h2 id="resume-du-contrat">📋 Résumé du Contrat</h2>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Méthode</th>
-<th style="text-align: left;">Rôle</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><code>logExchange(...)</code></td>
-<td style="text-align: left;">Enregistre l'intégralité d'un échange (Requête + Réponse + Usage).</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="exemple-enregistrement-dans-les-logs-symfony">🚀 Exemple : Enregistrement dans les logs Symfony</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">SymfonyDebugLogger.php</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="x">namespace App\Synapse\Log;</span>
+<h1 id="guide-dimplementation-breaking-changes-fevrier-2026">Guide d'implémentation (Breaking Changes - Février 2026)</h1>
+<p>Ce guide accompagne la standardisation du SynapseBundle sur le format OpenAI Chat Completions (LLM-agnosticism).</p>
+<h2 id="standardisation-openai">🚀 Standardisation OpenAI</h2>
+<p>Depuis février 2026, le bundle utilise le format canonique OpenAI pour tous les échanges internes. Cela permet une compatibilité totale avec n'importe quel provider (Gemini, Mistral, Claude, Ollama) sans changer la logique du service de chat.</p>
+<h3 id="ce-qui-a-change">Ce qui a changé</h3>
+<ol>
+<li><strong>Format des messages</strong> : Toutes les instructions, y compris le prompt système, passent désormais par le tableau <code>contents</code>. Le message système est systématiquement le premier élément avec le rôle <code>system</code>.</li>
+<li><strong>Signature de <code>LlmClientInterface</code></strong> : La méthode <code>generateContent</code> ne reçoit plus <code>$systemInstruction</code> en argument séparé.</li>
+<li><strong>Normalisation des erreurs</strong> : Les erreurs de sécurité (safety ratings) sont traduites en chaînes de caractères lisibles (<code>blocked_reason</code>) au lieu d'enums spécifiques aux providers.</li>
+</ol>
+<h2 id="creer-un-client-personnalise">🛠️ Créer un client personnalisé</h2>
+<p>Si vous souhaitez implémenter un nouveau provider, vous devez implémenter <code>LlmClientInterface</code>.</p>
+<h3 id="1-implementer-linterface">1. Implémenter l'interface</h3>
+<div class="highlight"><pre><span></span><code><span class="x">use ArnaudMoncondhuy\SynapseBundle\Contract\LlmClientInterface;</span>
 
-<span class="x">use ArnaudMoncondhuy\SynapseBundle\Contract\SynapseDebugLoggerInterface;</span>
-<span class="x">use Psr\Log\LoggerInterface;</span>
-
-<span class="x">class SymfonyDebugLogger implements SynapseDebugLoggerInterface</span>
+<span class="x">class MyCustomClient implements LlmClientInterface</span>
 <span class="x">{</span>
-<span class="x">    public function __construct(private LoggerInterface $logger) {}</span>
+<span class="x">    public function generateContent(</span>
+<span class="x">        array $contents, </span>
+<span class="x">        array $tools = [], </span>
+<span class="x">        ?string $model = null, </span>
+<span class="x">        array $options = [], </span>
+<span class="x">        array &amp;$debugOut = []</span>
+<span class="x">    ): array {</span>
+<span class="x">        // 1. Extraire le système si besoin (en tête de $contents)</span>
+<span class="x">        $system = &#39;&#39;;</span>
+<span class="x">        if ($contents[0][&#39;role&#39;] === &#39;system&#39;) {</span>
+<span class="x">            $system = $contents[0][&#39;content&#39;];</span>
+<span class="x">            $contents = array_slice($contents, 1);</span>
+<span class="x">        }</span>
 
-<span class="x">    public function logExchange(string $debugId, array $data): void</span>
-<span class="x">    {</span>
-<span class="x">        $this-&gt;logger-&gt;debug(sprintf(&quot;Synapse Exchange %s&quot;, $debugId), $data);</span>
+<span class="x">        // 2. Traduire $contents vers votre API</span>
+<span class="x">        // 3. Appeler votre API</span>
+<span class="x">        // 4. Retourner un chunk normalisé</span>
 <span class="x">    }</span>
 <span class="x">}</span>
 </code></pre></div>
-</div>
-</div>
-</div>
-<hr />
-<h2 id="conseils-dimplementation">💡 Conseils d'implémentation</h2>
-<ul>
-<li><strong>Activation</strong> : Le logging de debug n'est déclenché que si l'option <code>debug: true</code> est passée lors de l'appel à <code>ChatService::ask()</code>.</li>
-<li><strong>Charge de données</strong> : Le tableau <code>$data</code> peut être volumineux (plusieurs Mo si la conversation est longue). Veillez à ce que votre système de log puisse supporter ce volume ou filtrez les données inutiles.</li>
-</ul>
-<hr />
+<h3 id="2-format-du-chunk-normalise">2. Format du Chunk normalisé</h3>
+<p>Le retour doit TOUJOURS suivre cette structure :</p>
+<div class="highlight"><pre><span></span><code><span class="x">return [</span>
+<span class="x">    &#39;text&#39;           =&gt; &#39;...&#39;,      // Contenu texte généré</span>
+<span class="x">    &#39;thinking&#39;       =&gt; &#39;...&#39;,      // Contenu de réflexion (si supporté)</span>
+<span class="x">    &#39;function_calls&#39; =&gt; [...],      // Appels d&#39;outils</span>
+<span class="x">    &#39;usage&#39;          =&gt; [</span>
+<span class="x">        &#39;prompt_tokens&#39;     =&gt; 10,</span>
+<span class="x">        &#39;completion_tokens&#39; =&gt; 20,</span>
+<span class="x">        &#39;total_tokens&#39;      =&gt; 30,</span>
+<span class="x">    ],</span>
+<span class="x">    &#39;blocked&#39;        =&gt; false,</span>
+<span class="x">    &#39;blocked_reason&#39; =&gt; null,       // &quot;discours haineux&quot;, &quot;harcèlement&quot;, etc.</span>
+<span class="x">];</span>
+</code></pre></div>
+<h2 id="migration-dun-ancien-client">📋 Migration d'un ancien client</h2>
+<p>Si vous aviez un client pré-v0.5 :</p>
+<ol>
+<li>Supprimez l'argument <code>$systemInstruction</code> de vos méthodes.</li>
+<li>Récupérez l'instruction système via <code>$contents[0]['content']</code> si <code>$contents[0]['role'] === 'system'</code>.</li>
+<li>Utilisez <code>ModelCapabilityRegistry</code> pour vérifier les capacités du modèle avant l'envoi.</li>
+<li>Remplacez <code>blocked_category</code> par <code>blocked_reason</code> dans vos retours.</li>
+</ol>
 
 
 
@@ -2492,10 +2566,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

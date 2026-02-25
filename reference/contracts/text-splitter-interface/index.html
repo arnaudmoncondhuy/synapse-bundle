@@ -13,10 +13,10 @@
       
       
       
-        <link rel="prev" href="../text-splitter-interface/">
+        <link rel="prev" href="../retention-policy-interface/">
       
       
-        <link rel="next" href="../vector-store-interface/">
+        <link rel="next" href="../synapse-debug-logger-interface/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>DebugLogger - SynapseBundle</title>
+        <title>TextSplitter - SynapseBundle</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#synapsedebugloggerinterface" class="md-skip">
+        <a href="#textsplitterinterface" class="md-skip">
           Aller au contenu
         </a>
       
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              DebugLogger
+              TextSplitter
             
           </span>
         </div>
@@ -1443,34 +1443,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../text-splitter-interface/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    TextSplitter
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -1490,7 +1462,7 @@
   <span class="md-ellipsis">
     
   
-    DebugLogger
+    TextSplitter
   
 
     
@@ -1508,7 +1480,7 @@
   <span class="md-ellipsis">
     
   
-    DebugLogger
+    TextSplitter
   
 
     
@@ -1556,21 +1528,49 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#exemple-enregistrement-dans-les-logs-symfony" class="md-nav__link">
+  <a href="#strategies-disponibles" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Enregistrement dans les logs Symfony
+        🚀 Stratégies disponibles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Stratégies disponibles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-recursivetextsplitter-recommande" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. RecursiveTextSplitter (Recommandé)
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#conseils-dimplementation" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#2-fixedsizetextsplitter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'implémentation
+        2. FixedSizeTextSplitter
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚙️ Configuration
       
     </span>
   </a>
@@ -1581,6 +1581,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../synapse-debug-logger-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DebugLogger
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -2345,21 +2373,49 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#exemple-enregistrement-dans-les-logs-symfony" class="md-nav__link">
+  <a href="#strategies-disponibles" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Enregistrement dans les logs Symfony
+        🚀 Stratégies disponibles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Stratégies disponibles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-recursivetextsplitter-recommande" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. RecursiveTextSplitter (Recommandé)
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#conseils-dimplementation" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#2-fixedsizetextsplitter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'implémentation
+        2. FixedSizeTextSplitter
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚙️ Configuration
       
     </span>
   </a>
@@ -2383,13 +2439,13 @@
 
 
 
-<h1 id="synapsedebugloggerinterface">SynapseDebugLoggerInterface</h1>
-<p>L'interface <code>SynapseDebugLoggerInterface</code> permet d'exporter et de journaliser l'intégralité des échanges techniques entre SynapseBundle et les LLM.</p>
+<h1 id="textsplitterinterface">TextSplitterInterface</h1>
+<p>L'interface <code>TextSplitterInterface</code> définit comment découper de longs documents en segments plus petits (chunks) avant de les transformer en vecteurs. C'est une étape cruciale pour le RAG (Retrieval-Augmented Generation).</p>
 <h2 id="pourquoi-lutiliser">🛠 Pourquoi l'utiliser ?</h2>
 <ul>
-<li><strong>Observabilité</strong> : Voir exactement ce qui a été envoyé et reçu par l'IA dans vos outils de log (ELK, CloudWatch, etc.).</li>
-<li><strong>Aide au développement</strong> : Diagnostiquer pourquoi un outil n'a pas été appelé ou pourquoi le LLM a mal interprété un prompt.</li>
-<li><strong>Audit</strong> : Conserver une trace technique des interactions IA pour des besoins de conformité.</li>
+<li><strong>Limites de Tokens</strong> : Les modèles d'embedding ont une taille d'entrée limitée.</li>
+<li><strong>Précision du RAG</strong> : Des segments trop longs diluent l'information ; des segments trop courts perdent le contexte.</li>
+<li><strong>Chevauchement (Overlap)</strong> : Permet de conserver le contexte entre deux segments consécutifs.</li>
 </ul>
 <hr />
 <h2 id="resume-du-contrat">📋 Résumé du Contrat</h2>
@@ -2397,46 +2453,38 @@
 <thead>
 <tr>
 <th style="text-align: left;">Méthode</th>
+<th style="text-align: left;">Entrée</th>
+<th style="text-align: left;">Sortie</th>
 <th style="text-align: left;">Rôle</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>logExchange(...)</code></td>
-<td style="text-align: left;">Enregistre l'intégralité d'un échange (Requête + Réponse + Usage).</td>
+<td style="text-align: left;"><code>splitText(string $text, int $chunkSize, int $chunkOverlap)</code></td>
+<td style="text-align: left;">Texte source + réglages</td>
+<td style="text-align: left;"><code>string[]</code></td>
+<td style="text-align: left;">Découpe le texte en un tableau de segments.</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="exemple-enregistrement-dans-les-logs-symfony">🚀 Exemple : Enregistrement dans les logs Symfony</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">SymfonyDebugLogger.php</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="x">namespace App\Synapse\Log;</span>
-
-<span class="x">use ArnaudMoncondhuy\SynapseBundle\Contract\SynapseDebugLoggerInterface;</span>
-<span class="x">use Psr\Log\LoggerInterface;</span>
-
-<span class="x">class SymfonyDebugLogger implements SynapseDebugLoggerInterface</span>
-<span class="x">{</span>
-<span class="x">    public function __construct(private LoggerInterface $logger) {}</span>
-
-<span class="x">    public function logExchange(string $debugId, array $data): void</span>
-<span class="x">    {</span>
-<span class="x">        $this-&gt;logger-&gt;debug(sprintf(&quot;Synapse Exchange %s&quot;, $debugId), $data);</span>
-<span class="x">    }</span>
-<span class="x">}</span>
+<h2 id="strategies-disponibles">🚀 Stratégies disponibles</h2>
+<p>SynapseBundle propose deux implémentations natives :</p>
+<h3 id="1-recursivetextsplitter-recommande">1. RecursiveTextSplitter (Recommandé)</h3>
+<p>Tente de découper le texte intelligemment en utilisant une liste de séparateurs par ordre de priorité :
+1. Doubles sauts de ligne (paragraphes)
+2. Sauts de ligne simples
+3. Espaces
+4. Caractères individuels (en dernier recours)</p>
+<p>Cela garantit que les paragraphes restent soudés autant que possible, préservant la cohérence sémantique.</p>
+<h3 id="2-fixedsizetextsplitter">2. FixedSizeTextSplitter</h3>
+<p>Découpe brutalement tous les X caractères. Plus rapide mais peut couper au milieu d'un mot ou d'une phrase importante.</p>
+<hr />
+<h2 id="configuration">⚙️ Configuration</h2>
+<p>Le splitter est piloté par le <a href="../../../guides/configuration/">ChunkingService</a> qui récupère les réglages (taille, overlap) depuis la configuration globale de Synapse.</p>
+<div class="highlight"><pre><span></span><code><span class="x">// Exemple d&#39;utilisation manuelle</span>
+<span class="x">$chunks = $splitter-&gt;splitText($grosFichier, 1000, 200);</span>
 </code></pre></div>
-</div>
-</div>
-</div>
-<hr />
-<h2 id="conseils-dimplementation">💡 Conseils d'implémentation</h2>
-<ul>
-<li><strong>Activation</strong> : Le logging de debug n'est déclenché que si l'option <code>debug: true</code> est passée lors de l'appel à <code>ChatService::ask()</code>.</li>
-<li><strong>Charge de données</strong> : Le tableau <code>$data</code> peut être volumineux (plusieurs Mo si la conversation est longue). Veillez à ce que votre système de log puisse supporter ce volume ou filtrez les données inutiles.</li>
-</ul>
-<hr />
 
 
 

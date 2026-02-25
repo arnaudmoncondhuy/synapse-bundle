@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../shared/conversation-status/">
+        <link rel="prev" href="../shared/memory-scope/">
       
       
         <link rel="next" href="../cli/">
@@ -515,6 +515,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/guide-integration-ia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide Intégration IA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -764,6 +792,62 @@
     
   
     Conversations & Persistance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/rag-memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG & Mémoire Vectorielle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/semantic-memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mémoire Sémantique (Human-in-the-loop)
   
 
     
@@ -1362,6 +1446,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../contracts/text-splitter-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TextSplitter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../contracts/synapse-debug-logger-interface/" class="md-nav__link">
         
   
@@ -1821,6 +1933,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../shared/memory-scope/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MemoryScope
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1917,6 +2057,34 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#entites-rag-memoire-semantique" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entités RAG &amp; Mémoire Sémantique
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Entités RAG &amp; Mémoire Sémantique">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#synapsevectormemory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseVectorMemory
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1941,6 +2109,34 @@
     
   
     Commandes CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../implementation-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide d'implémentation
   
 
     
@@ -2071,6 +2267,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explanation/gemini-context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contexte IA & Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2126,6 +2350,34 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#entites-rag-memoire-semantique" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entités RAG &amp; Mémoire Sémantique
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Entités RAG &amp; Mémoire Sémantique">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#synapsevectormemory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseVectorMemory
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2154,10 +2406,65 @@
 <ul>
 <li><strong>SynapsePreset</strong> : Configuration technique d'un modèle (température, outils, etc.).</li>
 <li><strong>SynapseProvider</strong> : Credentials chiffrés pour les fournisseurs (Gemini, OpenAI).</li>
+<li><strong>SynapseConfig</strong> : Paramètres globaux (Rétention, Langue, Chunking, Vector Store actif).</li>
 </ul>
+<h2 id="entites-rag-memoire-semantique">Entités RAG &amp; Mémoire Sémantique</h2>
+<h3 id="synapsevectormemory"><code>SynapseVectorMemory</code></h3>
+<p>Stocke les vecteurs d'embeddings et leurs contenus pour la recherche sémantique et la mémoire conversationnelle.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Colonne</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>embedding</code></td>
+<td style="text-align: left;"><code>json</code></td>
+<td style="text-align: left;">Vecteur numérique généré par le modèle d'embedding</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>payload</code></td>
+<td style="text-align: left;"><code>json</code></td>
+<td style="text-align: left;">Métadonnées brutes (texte, source, ids)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>content</code></td>
+<td style="text-align: left;"><code>text</code></td>
+<td style="text-align: left;">Texte brut dénormalisé (pour affichage dans le Privacy Dashboard)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>user_id</code></td>
+<td style="text-align: left;"><code>string(255)</code></td>
+<td style="text-align: left;">Propriétaire du souvenir — compatible UUID et entier</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>scope</code></td>
+<td style="text-align: left;"><code>string(20)</code></td>
+<td style="text-align: left;"><code>user</code> (permanent) ou <code>conversation</code> (éphémère)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>conversation_id</code></td>
+<td style="text-align: left;"><code>string(255)</code></td>
+<td style="text-align: left;">Lien vers la conversation d'origine (optionnel)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>source_type</code></td>
+<td style="text-align: left;"><code>string(20)</code></td>
+<td style="text-align: left;"><code>fact</code>, <code>document</code>, <code>manual</code> — prépare le support d'upload de fichiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>created_at</code></td>
+<td style="text-align: left;"><code>datetime_immutable</code></td>
+<td style="text-align: left;">Date de création du souvenir</td>
+</tr>
+</tbody>
+</table>
 <blockquote>
 <p>[!NOTE]
-Reportez-vous au guide de <a href="../../guides/rle-management/">Persistance</a> pour les détails d'implémentation.</p>
+Reportez-vous au guide <a href="../../guides/semantic-memory/">Mémoire Sémantique</a> pour l'utilisation et au guide <a href="../../guides/rle-management/">Persistance</a> pour les détails Doctrine.</p>
 </blockquote>
 
 

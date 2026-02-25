@@ -515,6 +515,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/guide-integration-ia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide Intégration IA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -764,6 +792,62 @@
     
   
     Conversations & Persistance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/rag-memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG & Mémoire Vectorielle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/semantic-memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mémoire Sémantique (Human-in-the-loop)
   
 
     
@@ -1453,6 +1537,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../text-splitter-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TextSplitter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../synapse-debug-logger-interface/" class="md-nav__link">
         
   
@@ -1912,6 +2024,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../shared/memory-scope/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MemoryScope
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1963,6 +2103,34 @@
     
   
     Commandes CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../implementation-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide d'implémentation
   
 
     
@@ -2080,6 +2248,34 @@
     
   
     Sécurité & RGPD
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../explanation/gemini-context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contexte IA & Test
   
 
     
@@ -2221,6 +2417,16 @@
 <td style="text-align: left;">Conversation</td>
 <td style="text-align: left;">Autorise ou non la suppression/archivage.</td>
 </tr>
+<tr>
+<td style="text-align: left;"><code>canAccessAdmin()</code></td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">Vérifie l'accès à <code>/synapse/admin</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>canCreateConversation()</code></td>
+<td style="text-align: left;">-</td>
+<td style="text-align: left;">Autorise la création d'un nouveau chat.</td>
+</tr>
 </tbody>
 </table>
 <hr />
@@ -2252,6 +2458,17 @@
 <span class="x">        // Seuls les admins peuvent supprimer</span>
 <span class="x">        return $this-&gt;security-&gt;isGranted(&#39;ROLE_ADMIN&#39;);</span>
 <span class="x">    }</span>
+
+<span class="x">    public function canAccessAdmin(): bool</span>
+<span class="x">    {</span>
+<span class="x">        return $this-&gt;security-&gt;isGranted(&#39;ROLE_ADMIN&#39;);</span>
+<span class="x">    }</span>
+
+<span class="x">    public function canCreateConversation(): bool</span>
+<span class="x">    {</span>
+<span class="x">        // Tout utilisateur connecté peut créer un chat</span>
+<span class="x">        return $this-&gt;security-&gt;getUser() !== null;</span>
+<span class="x">    }</span>
 <span class="x">}</span>
 </code></pre></div>
 </div>
@@ -2260,8 +2477,8 @@
 <hr />
 <h2 id="conseils-dimplementation">💡 Conseils d'implémentation</h2>
 <ul>
-<li><strong>Délégation</strong> : Si vous ne souhaitez pas gérer de permissions complexes, vous pouvez laisser cette interface non implémentée (Synapse autorisera alors tout par défaut au sein du manager, mais il est fortement recommandé de la configurer).</li>
-<li><strong>Performance</strong> : Ces méthodes sont appelées à chaque accès aux messages. Veillez à ce qu'elles ne fassent pas de requêtes SQL lourdes.</li>
+<li><strong>Délégation</strong> : Si vous ne souhaitez pas gérer de permissions complexes, vous pouvez laisser le bundle utiliser <code>DefaultPermissionChecker</code>. Notez que par défaut, l'accès à l'administration est <strong>bloqué</strong> si aucun système de sécurité n'est configuré (posture "Secure by Default").</li>
+<li><strong>Performance</strong> : Ces méthodes sont appelées à chaque accès aux messages ou au dashboard. Veillez à ce qu'elles ne fassent pas de requêtes SQL lourdes.</li>
 </ul>
 <hr />
 

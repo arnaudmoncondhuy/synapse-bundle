@@ -515,6 +515,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/guide-integration-ia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide Intégration IA
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -764,6 +792,62 @@
     
   
     Conversations & Persistance
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/rag-memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG & Mémoire Vectorielle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/semantic-memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mémoire Sémantique (Human-in-the-loop)
   
 
     
@@ -1362,6 +1446,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../text-splitter-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TextSplitter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../synapse-debug-logger-interface/" class="md-nav__link">
         
   
@@ -1912,6 +2024,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../shared/memory-scope/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MemoryScope
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1963,6 +2103,34 @@
     
   
     Commandes CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../implementation-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide d'implémentation
   
 
     
@@ -2093,6 +2261,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../explanation/gemini-context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contexte IA & Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2208,70 +2404,46 @@
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>add(array $vectors)</code></td>
-<td style="text-align: left;">Liste d'objets <code>Embedding</code></td>
+<td style="text-align: left;"><code>saveMemory(array $vector, array $payload)</code></td>
+<td style="text-align: left;">Vecteurs + Métadonnées</td>
 <td style="text-align: left;"><code>void</code></td>
 <td style="text-align: left;">Insère de nouvelles données dans la base vectorielle.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>search(array $vector, int $limit)</code></td>
+<td style="text-align: left;"><code>searchSimilar(array $vector, int $limit, array $filters)</code></td>
 <td style="text-align: left;">Vecteur de recherche</td>
 <td style="text-align: left;"><code>array</code></td>
 <td style="text-align: left;">Récupère les documents les plus proches sémantiquement.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>delete(array $ids)</code></td>
-<td style="text-align: left;">Liste d'identifiants</td>
-<td style="text-align: left;"><code>void</code></td>
-<td style="text-align: left;">Supprime des entrées spécifiques.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>clear()</code></td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;"><code>void</code></td>
-<td style="text-align: left;">Réinitialise complètement le store.</td>
 </tr>
 </tbody>
 </table>
 <hr />
 <h2 id="exemple-implementation-simplifiee-en-memoire">🚀 Exemple : Implémentation simplifiée en mémoire</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">InMemoryVectorStore.php</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="x">namespace App\Synapse\Vector;</span>
+<pre><code>```php
+namespace App\Synapse\Vector;
 
-<span class="x">use ArnaudMoncondhuy\SynapseBundle\Contract\VectorStoreInterface;</span>
+use ArnaudMoncondhuy\SynapseBundle\Contract\VectorStoreInterface;
 
-<span class="x">class InMemoryVectorStore implements VectorStoreInterface</span>
-<span class="x">{</span>
-<span class="x">    private array $storage = [];</span>
+class InMemoryVectorStore implements VectorStoreInterface
+{
+    private array $storage = [];
 
-<span class="x">    public function add(array $vectors): void</span>
-<span class="x">    {</span>
-<span class="x">        foreach ($vectors as $v) {</span>
-<span class="x">            // $v[&#39;id&#39;], $v[&#39;vector&#39;], $v[&#39;metadata&#39;]</span>
-<span class="x">            $this-&gt;storage[$v[&#39;id&#39;]] = $v;</span>
-<span class="x">        }</span>
-<span class="x">    }</span>
+    public function saveMemory(array $vector, array $payload): void
+    {
+        $this-&gt;storage[] = [
+            'vector'  =&gt; $vector,
+            'payload' =&gt; $payload,
+        ];
+    }
 
-<span class="x">    public function search(array $vector, int $limit = 5): array</span>
-<span class="x">    {</span>
-<span class="x">        // Ici, vous implémenteriez un calcul de similarité cosinus.</span>
-<span class="x">        // Pour l&#39;exemple, on retourne les 5 premiers éléments.</span>
-<span class="x">        return array_slice($this-&gt;storage, 0, $limit);</span>
-<span class="x">    }</span>
-
-<span class="x">    public function delete(array $ids): void</span>
-<span class="x">    {</span>
-<span class="x">        foreach ($ids as $id) unset($this-&gt;storage[$id]);</span>
-<span class="x">    }</span>
-
-<span class="x">    public function clear(): void { $this-&gt;storage = []; }</span>
-<span class="x">}</span>
-</code></pre></div>
-</div>
-</div>
-</div>
+    public function searchSimilar(array $vector, int $limit = 5, array $filters = []): array
+    {
+        // Ici, vous implémenteriez un calcul de similarité cosinus.
+        return array_slice($this-&gt;storage, 0, $limit);
+    }
+}
+```
+</code></pre>
 <hr />
 <h2 id="conseils-dimplementation">💡 Conseils d'implémentation</h2>
 <blockquote>
