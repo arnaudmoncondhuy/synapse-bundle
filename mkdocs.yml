@@ -33,12 +33,7 @@ theme:
 
 plugins:
   - search
-  - mkdocstrings:
-      default_handler: php
-      handlers:
-        php:
-          setup_commands:
-            - "composer install --no-dev"
+
 markdown_extensions:
   - admonition
   - pymdownx.details
