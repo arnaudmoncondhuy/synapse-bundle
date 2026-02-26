@@ -1,6 +1,6 @@
 {
     "name": "arnaudmoncondhuy/synapse-bundle",
-    "description": "Synapse — Complete AI orchestration framework for Symfony with admin interface and chat widget. Monorepo: synapse-core, synapse-admin, synapse-chat.",
+    "description": "Synapse — Bundles Symfony pour l'intégration IA (LLM). Monorepo : synapse-core, synapse-admin, synapse-chat.",
     "type": "symfony-bundle",
     "authors": [
         {
