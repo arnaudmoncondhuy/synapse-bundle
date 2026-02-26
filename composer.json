@@ -1,8 +1,8 @@
 {
-    "name": "arnaudmoncondhuy/synapse-bundle",
-    "type": "symfony-bundle",
-    "description": "Un bundle Chatbot IA réutilisable pour Symfony avec support multi-fournisseurs.",
-    "license": "PolyForm-Noncommercial-1.0.0",
+    "name": "arnaudmoncondhuy/synapse-monorepo",
+    "description": "Monorepo root — dev only, not published on Packagist",
+    "type": "project",
+    "private": true,
     "authors": [
         {
             "name": "Arnaud Moncondhuy",
@@ -10,39 +10,45 @@
         }
     ],
     "require": {
-        "php": ">=8.2",
-        "symfony/framework-bundle": "^7.0 || ^8.0",
-        "symfony/asset-mapper": "^7.0 || ^8.0",
-        "symfony/asset": "^7.0 || ^8.0",
-        "symfony/twig-bundle": "^7.0 || ^8.0",
-        "symfony/stimulus-bundle": "^2.0",
-        "symfony/security-bundle": "^7.0 || ^8.0",
-        "symfony/uid": "^7.0 || ^8.0",
-        "doctrine/orm": "^2.19 || ^3.0",
-        "doctrine/doctrine-bundle": "^2.10 || ^3.0",
-        "symfony/yaml": "^7.0 || ^8.0",
-        "symfony/http-client": "^7.0 || ^8.0",
-        "symfony/messenger": "^7.0 || ^8.0",
-        "symfony/doctrine-messenger": "^7.0 || ^8.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "ArnaudMoncondhuy\\SynapseBundle\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "ArnaudMoncondhuy\\SynapseBundle\\Tests\\": "tests/"
-        }
-    },
-    "extra": {
-        "symfony": {
-            "allow-contrib": "true"
-        }
+        "arnaudmoncondhuy/synapse-admin": "@dev",
+        "arnaudmoncondhuy/synapse-chat": "@dev",
+        "arnaudmoncondhuy/synapse-core": "@dev"
     },
     "require-dev": {
-        "symfony/test-pack": "^1.2",
+        "friendsofphp/php-cs-fixer": "^3.93",
+        "symplify/monorepo-builder": "^12.0",
         "symfony/process": "^8.0",
-        "friendsofphp/php-cs-fixer": "^3.93"
-    }
+        "symfony/test-pack": "^1.2"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages/core",
+            "options": {"symlink": true}
+        },
+        {
+            "type": "path",
+            "url": "packages/admin",
+            "options": {"symlink": true}
+        },
+        {
+            "type": "path",
+            "url": "packages/chat",
+            "options": {"symlink": true}
+        }
+    ],
+    "config": {
+        "allow-plugins": {
+            "symplify/monorepo-builder": true,
+            "symfony/runtime": true
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "validate-monorepo": "vendor/bin/monorepo-builder validate",
+        "merge": "vendor/bin/monorepo-builder merge",
+        "release": "vendor/bin/monorepo-builder release"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

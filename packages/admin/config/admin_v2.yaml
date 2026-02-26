@@ -1,0 +1,20 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # ── Controllers Admin V2 ──────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseAdmin\AdminV2\Controller\DashboardController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\AdminV2\Controller\PlaceholderController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\AdminV2\Controller\Intelligence\ProviderController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\AdminV2\Controller\Intelligence\ModelController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\AdminV2\Controller\Intelligence\PresetController:
+        tags: ['controller.service_arguments']

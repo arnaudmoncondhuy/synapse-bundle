@@ -1,0 +1,188 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Souvenirs | Mémoire | Synapse Admin V2{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Mémoire</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">Souvenirs</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--primary">
+					<i data-lucide="sparkles"></i>
+				</span>
+				Souvenirs
+			</h1>
+			<p class="sv2-page-subtitle">
+				Mémoires long terme confirmées par les utilisateurs. Vérifiez ici que le flux
+				« proposition → confirmation » fonctionne correctement.
+			</p>
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="sv2-grid sv2-grid--3 sv2-mb-xl">
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--primary">
+					<i data-lucide="sparkles"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Souvenirs total</div>
+					<div class="sv2-kpi__value">{{ total }}</div>
+					<div class="sv2-kpi__sub">tous utilisateurs confondus</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--info">
+					<i data-lucide="file-text"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Cette page</div>
+					<div class="sv2-kpi__value">{{ memories|length }}</div>
+					<div class="sv2-kpi__sub">sur {{ limit }} max par page</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--neutral">
+					<i data-lucide="layers"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Pages</div>
+					<div class="sv2-kpi__value">{{ page }} / {{ pages }}</div>
+					<div class="sv2-kpi__sub">pagination {{ limit }}/page</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Tableau des souvenirs ────────────────────────────────────────────────── #}
+	<div class="sv2-card">
+		<div class="sv2-card__header">
+			<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+				<i data-lucide="list"></i>
+			</div>
+			<div>
+				<div class="sv2-card__title">Liste des souvenirs</div>
+				<div class="sv2-card__subtitle">
+					Triés par date de création décroissante
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-table-container">
+			<table class="sv2-table">
+				<thead>
+					<tr>
+						<th>Contenu</th>
+						<th>Utilisateur</th>
+						<th>Scope</th>
+						<th>Type</th>
+						<th>Créé le</th>
+						<th class="sv2-table__cell--actions">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for memory in memories %}
+						<tr>
+							<td>
+								<div class="sv2-table-cell-label">
+									<div class="sv2-table-cell-label__icon sv2-kpi__icon--primary">
+										<i data-lucide="sparkles"></i>
+									</div>
+									<div>
+										<div class="sv2-table-cell-label__title sv2-truncate" data-sv2-tooltip="{{ memory.content|e('html_attr') }}">
+											{{ memory.content|length > 80 ? memory.content|slice(0, 80) ~ '…' : memory.content }}
+										</div>
+										<div class="sv2-table-cell-label__sub sv2-font-mono">#{{ memory.id }}</div>
+									</div>
+								</div>
+							</td>
+							<td>
+								<div class="sv2-table-cell-label">
+									<div class="sv2-table-cell-label__icon sv2-kpi__icon--neutral">
+										<i data-lucide="user"></i>
+									</div>
+									<div>
+										<div class="sv2-table-cell-label__title">{{ memory.userId ?? '—' }}</div>
+									</div>
+								</div>
+							</td>
+							<td>
+								<span class="sv2-badge sv2-badge--neutral">{{ memory.scope }}</span>
+							</td>
+							<td class="sv2-table__cell--muted">{{ memory.sourceType }}</td>
+							<td class="sv2-table__cell--muted">{{ memory.createdAt|date('d/m/Y H:i') }}</td>
+							<td class="sv2-table__cell--actions">
+								<form action="{{ path('synapse_v2_admin_memories_delete', { id: memory.id }) }}" method="POST" class="sv2-form-inline">
+									<input type="hidden" name="token" value="{{ csrf_token('synapse_v2_admin_memories_delete') }}">
+									<input type="hidden" name="page" value="{{ page }}">
+									<button type="submit" class="sv2-btn sv2-btn--ghost sv2-btn--sm sv2-btn--danger sv2-btn--icon"
+									        data-sv2-tooltip="Supprimer ce souvenir"
+									        onclick="return confirm('Supprimer ce souvenir ?');">
+										<i data-lucide="trash-2"></i>
+									</button>
+								</form>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="6">
+								<div class="sv2-empty">
+									<div class="sv2-empty__icon">
+										<i data-lucide="sparkles"></i>
+									</div>
+									<div class="sv2-empty__title">Aucun souvenir</div>
+									<p class="sv2-empty__description">
+										Les souvenirs apparaîtront ici une fois que les utilisateurs auront
+										confirmé des mémoires proposées par l'IA lors des conversations.
+									</p>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+		{# ── Pagination ────────────────────────────────────────────────────────── #}
+		{% if pages > 1 %}
+			<div class="sv2-card__footer sv2-justify-between">
+				<span class="sv2-text-sm sv2-text-muted">
+					Page {{ page }} sur {{ pages }} — {{ total }} souvenir{{ total != 1 ? 's' : '' }}
+				</span>
+				<div class="sv2-flex sv2-gap-sm">
+					{% if page > 1 %}
+						<a href="{{ path('synapse_v2_admin_memories', { page: page - 1 }) }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+							<i data-lucide="chevron-left"></i>
+							Précédent
+						</a>
+					{% endif %}
+					{% if page < pages %}
+						<a href="{{ path('synapse_v2_admin_memories', { page: page + 1 }) }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+							Suivant
+							<i data-lucide="chevron-right"></i>
+						</a>
+					{% endif %}
+				</div>
+			</div>
+		{% endif %}
+
+	</div>
+
+{% endblock %}

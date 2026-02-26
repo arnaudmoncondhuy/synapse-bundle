@@ -1,0 +1,88 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # ── Controllers Admin V2 (autoloading récursif) ───────────────────────────
+    # Couvre PlaceholderController + tous les sous-dossiers :
+    # Intelligence/, Conversation/, Memoire/, Usage/, etc.
+    # Tout nouveau contrôleur dans AdminV2/ sera automatiquement enregistré.
+    ArnaudMoncondhuy\SynapseAdmin\AdminV2\Controller\:
+        resource: '../src/AdminV2/Controller/'
+        tags: ['controller.service_arguments']
+
+    # ── Layout ────────────────────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Layout\SynapseLayoutResolver:
+        arguments:
+            $layoutMode: '%synapse.ui.layout_mode%'
+
+    # ── Twig Integration ──────────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Twig\SynapseRuntime:
+        tags: ['twig.runtime']
+
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Twig\SynapseTwigExtension:
+        tags: ['twig.extension']
+
+    # ── Controllers V1 (Admin — individuels) ──────────────────────────────────
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\ChatUiController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\DashboardController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseChat\Core\Controller\Api\ChatApiController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseChat\Core\Controller\Api\ConversationApiController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseChat\Core\Controller\Api\ResetController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\ProvidersController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\ModelsController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\PresetsController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\PresetTestController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\ToolsController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\SettingsController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\EmbeddingSettingsController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\DebugLogsController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\DebugController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\AnalyticsController:
+        tags: ['controller.service_arguments']
+
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\ConversationController:
+        tags: ['controller.service_arguments']
+
+    # ── Accounting (Admin feature) ────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseCore\Core\Accounting\TokenAccountingService: ~
+
+    # ── Debug Logging (Admin override) ───────────────────────────────────────
+    # Quand l'admin est activé, utilise DoctrineAdminLogger (stockage DB)
+    # au lieu de MonologDebugLogger (logs filesystem)
+    ArnaudMoncondhuy\SynapseCore\Storage\Logger\DoctrineAdminLogger:
+        arguments:
+            $em: '@doctrine.orm.entity_manager'
+            $repository: '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository'
+        public: false
+
+    ArnaudMoncondhuy\SynapseCore\Contract\SynapseDebugLoggerInterface:
+        alias: ArnaudMoncondhuy\SynapseCore\Storage\Logger\DoctrineAdminLogger

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Synapse Debug Details ({{ id }})</title>
+		<style>
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+			body {
+				font-family: system-ui, -apple-system, sans-serif;
+				background: #f9fafb;
+				color: #111827;
+			}
+			.debug-container {
+				max-width: 1400px;
+				margin: 0 auto;
+				padding: 20px;
+			}
+			h1 {
+				border-bottom: 2px solid #e5e7eb;
+				padding-bottom: 15px;
+				margin-bottom: 30px;
+				font-size: 2rem;
+			}
+			.tabs-header {
+				display: flex;
+				gap: 8px;
+				margin-bottom: 20px;
+				border-bottom: 2px solid #e5e7eb;
+				overflow-x: auto;
+			}
+			.tabs-header button {
+				background: none;
+				border: none;
+				padding: 12px 16px;
+				font-size: 14px;
+				font-weight: 500;
+				cursor: pointer;
+				color: #6b7280;
+				border-bottom: 3px solid transparent;
+				transition: all 0.2s;
+				white-space: nowrap;
+			}
+			.tabs-header button.active {
+				color: #1e40af;
+				border-bottom-color: #1e40af;
+			}
+			.tabs-header button:hover {
+				color: #374151;
+			}
+			.tab-content {
+				display: none;
+				background: white;
+				border: 1px solid #e5e7eb;
+				border-radius: 8px;
+				padding: 24px;
+				box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+			}
+			.tab-content.active {
+				display: block;
+			}
+			pre {
+				background: #1f2937;
+				color: #f3f4f6;
+				padding: 15px;
+				border-radius: 8px;
+				overflow-x: auto;
+				font-size: 12px;
+				line-height: 1.5;
+				margin: 10px 0;
+			}
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				margin: 10px 0;
+			}
+			table th, table td {
+				padding: 10px;
+				text-align: left;
+				border-bottom: 1px solid #e5e7eb;
+			}
+			table th {
+				background: #f3f4f6;
+				font-weight: 600;
+			}
+			.badge {
+				background: #dbeafe;
+				color: #1e40af;
+				padding: 4px 8px;
+				border-radius: 4px;
+				font-size: 12px;
+				font-weight: 500;
+				display: inline-block;
+			}
+			h3 {
+				margin-top: 20px;
+				margin-bottom: 12px;
+				font-size: 1rem;
+				color: #374151;
+			}
+			.turn {
+				background: #f9fafb;
+				border: 1px solid #e5e7eb;
+				border-radius: 6px;
+				padding: 16px;
+				margin: 12px 0;
+			}
+			.turn-header {
+				font-weight: 600;
+				color: #1f2937;
+				margin-bottom: 12px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="debug-container">
+			<h1>🔍 Debug Report — {{ id }}</h1>
+
+			<!-- Tabs Header -->
+			<div class="tabs-header">
+				<button class="tab-btn active" onclick="switchTab('preset')">Preset</button>
+				<button class="tab-btn" onclick="switchTab('raw-request')">Requête brute</button>
+				<button class="tab-btn" onclick="switchTab('response-ai')">Réponse IA</button>
+			<button class="tab-btn" onclick="switchTab('conversation')">Messages envoyés</button>
+				<button class="tab-btn" onclick="switchTab('usage')">Usage & Sécurité</button>
+				<button class="tab-btn" onclick="switchTab('tools')">Outils</button>
+			</div>
+
+			<!-- Tab: Preset Configuration -->
+			<div id="preset" class="tab-content active">
+				<h3>Paramètres effectivement envoyés au LLM</h3>
+				{% if debug['preset_config'] is defined and debug['preset_config'] %}
+					{% set pc = debug['preset_config'] %}
+					<table>
+						<tr>
+							<th>Paramètre</th>
+							<th>Valeur</th>
+						</tr>
+						<tr>
+							<td>Modèle</td>
+							<td><strong>{{ pc.model ?? '–' }}</strong></td>
+						</tr>
+						<tr>
+							<td>Provider</td>
+							<td><span class="badge">{{ pc.provider ?? '–' }}</span></td>
+						</tr>
+						<tr>
+							<td>Température</td>
+							<td>{{ pc.temperature ?? '–' }}</td>
+						</tr>
+						<tr>
+							<td>Top P</td>
+							<td>{{ pc.top_p ?? '–' }}</td>
+						</tr>
+						<tr>
+							<td>Top K</td>
+							<td>{{ pc.top_k ?? '–' }}</td>
+						</tr>
+						<tr>
+							<td>Max Output Tokens</td>
+							<td>{{ pc.max_output_tokens ?? 'illimité' }}</td>
+						</tr>
+						<tr>
+							<td>Thinking Activé</td>
+							<td>
+								{% if pc.thinking_enabled %}
+									✅ Oui
+									{% if pc.thinking_budget %}
+										(budget: {{ pc.thinking_budget }})
+									{% endif %}
+								{% else %}
+									❌ Non
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<td>Safety Enabled</td>
+							<td>{% if pc.safety_enabled %}✅ Oui{% else %}❌ Non{% endif %}</td>
+						</tr>
+						<tr>
+							<td>Tools Envoyés</td>
+							<td>{% if pc.tools_sent %}✅ Oui{% else %}❌ Non{% endif %}</td>
+						</tr>
+						<tr>
+							<td>Streaming (SSE)</td>
+							<td>{% if pc['streaming_enabled'] is defined %}{% if pc.streaming_enabled %}✅ Oui{% else %}❌ Non{% endif %}{% else %}❌ Non{% endif %}</td>
+						</tr>
+					</table>
+				{% else %}
+					<p style="color: #6b7280;">Aucun paramètre de preset capturé.</p>
+				{% endif %}
+			</div>
+
+			<!-- Tab: AI Response -->
+			<div id="response-ai" class="tab-content">
+				<h3>📤 Réponses de l'IA</h3>
+				{% if debug.turns is defined and debug.turns %}
+					{% for turn in debug.turns %}
+						<div class="turn">
+							<div class="turn-header">🤖 Turn {{ turn.turn }}</div>
+
+							{% if turn.thinking %}
+								<h4 style="color: #6366f1; margin: 15px 0 8px 0; font-size: 0.95rem;">🧠 Réflexion</h4>
+								<pre style="background: #f0f4ff; color: #1e1b4b; border-left: 3px solid #6366f1;">{{ turn.thinking }}</pre>
+							{% endif %}
+
+							{% if turn.text %}
+								<h4 style="color: #059669; margin: 15px 0 8px 0; font-size: 0.95rem;">💬 Réponse</h4>
+								<pre style="background: #f0fdf4; color: #052e16; border-left: 3px solid #059669;">{{ turn.text }}</pre>
+							{% endif %}
+
+							{% if turn.function_calls and turn.function_calls | length > 0 %}
+								<h4 style="color: #dc2626; margin: 15px 0 8px 0; font-size: 0.95rem;">🔧 Appels d'outils ({{ turn.function_calls | length }})</h4>
+								{% for fc in turn.function_calls %}
+									<div style="background: #fef2f2; border-left: 3px solid #dc2626; padding: 10px; margin: 8px 0; border-radius: 4px;">
+										<strong>{{ fc.name }}</strong>
+										<pre style="background: #1f2937; color: #f3f4f6; margin: 8px 0;">{{ fc.args | json_encode }}</pre>
+									</div>
+								{% endfor %}
+							{% endif %}
+						</div>
+					{% endfor %}
+				{% else %}
+					<p style="color: #6b7280;">Aucune réponse d'IA enregistrée.</p>
+				{% endif %}
+			</div>
+
+			<!-- Tab: Raw Request Body -->
+			<div id="raw-request" class="tab-content">
+				<h3>📤 Requête brute envoyée à l'API</h3>
+				{% if debug['raw_request_body'] is defined and debug['raw_request_body'] %}
+					<pre class="json-pretty">{{ debug['raw_request_body'] | json_encode }}</pre>
+				{% else %}
+					<p style="color: #6b7280;">Aucun body brut enregistré.</p>
+				{% endif %}
+
+				<h3 style="margin-top: 30px;">📥 Réponse brute reçue (chunks normalisés)</h3>
+				{% if debug['raw_response'] is defined and debug['raw_response'] %}
+					<pre class="json-pretty">{{ debug['raw_response'] | json_encode }}</pre>
+				{% else %}
+					<p style="color: #6b7280;">Aucune réponse brute enregistrée.</p>
+				{% endif %}
+
+				<h3 style="margin-top: 30px;">🔍 Chunks bruts API (AVANT normalisation)</h3>
+				{% if debug['raw_api_chunks'] is defined and debug['raw_api_chunks'] %}
+					<p style="color: #4b5563; font-size: 12px;">Voici les chunks exacts reçus de l'API OVH, AVANT notre normalisation. Pour un vrai debug!</p>
+					<pre class="json-pretty">{{ debug['raw_api_chunks'] | json_encode }}</pre>
+				{% elseif debug['raw_api_response'] is defined and debug['raw_api_response'] %}
+					<p style="color: #4b5563; font-size: 12px;">Réponse complète de l'API OVH (mode synchrone)</p>
+					<pre class="json-pretty">{{ debug['raw_api_response'] | json_encode }}</pre>
+				{% else %}
+					<p style="color: #6b7280;">Aucun chunk brut API enregistré.</p>
+				{% endif %}
+			</div>
+
+			<!-- Tab: SynapseConversation History -->
+			<div id="conversation" class="tab-content">
+				<h3>Historique des messages</h3>
+				{% if debug.history is defined and debug.history %}
+					{% for msg in debug.history %}
+						<div class="turn">
+							<div class="turn-header">
+								<span class="badge">{{ msg.role | upper }}</span>
+								{% if msg.role == 'tool' and msg.tool_call_id is defined and msg.tool_call_id %}
+									<span class="badge" style="background: #fee2e2; color: #991b1b; margin-left: 8px;">{{ msg.tool_call_id }}</span>
+								{% endif %}
+							</div>
+							{% if msg.content is defined and msg.content %}
+								<p>{{ msg.content }}</p>
+							{% endif %}
+							{% if msg.role == 'assistant' and msg.tool_calls is defined and msg.tool_calls %}
+								<h4 style="color: #dc2626; margin: 12px 0 8px 0; font-size: 0.95rem;">🔧 Appels de fonction ({{ msg.tool_calls | length }})</h4>
+								{% for tc in msg.tool_calls %}
+									<div style="background: #fef2f2; border-left: 3px solid #dc2626; padding: 10px; margin: 8px 0; border-radius: 4px;">
+										<strong>{{ tc.function.name }}</strong>
+										<pre style="background: #1f2937; color: #f3f4f6; margin: 8px 0;">{{ tc.function.arguments }}</pre>
+									</div>
+								{% endfor %}
+							{% endif %}
+						</div>
+					{% endfor %}
+				{% else %}
+					<p style="color: #6b7280;">Aucun historique enregistré.</p>
+				{% endif %}
+			</div>
+
+			<!-- Tab: Usage & Safety -->
+			<div id="usage" class="tab-content">
+				<h3>Consommation de tokens</h3>
+				{% if debug.usage is defined and debug.usage %}
+					<table>
+						<tr>
+							<th>Métrique</th>
+							<th>Valeur</th>
+						</tr>
+						<tr>
+							<td>Tokens d'entrée</td>
+							<td>{{ debug.usage.prompt_tokens ?? 0 }}</td>
+						</tr>
+						<tr>
+							<td>Tokens de sortie</td>
+							<td>{{ debug.usage.completion_tokens ?? 0 }}</td>
+						</tr>
+						<tr>
+							<td>Tokens de réflexion</td>
+							<td>{{ debug.usage.thinking_tokens ?? 0 }}</td>
+						</tr>
+						<tr>
+							<td><strong>Total</strong></td>
+							<td><strong>{{ debug.usage.total_tokens ?? 0 }}</strong></td>
+						</tr>
+					</table>
+				{% else %}
+					<p style="color: #6b7280;">Aucune métrique d'usage.</p>
+				{% endif %}
+
+				<h3>Sécurité</h3>
+				{% if debug.safety is defined and debug.safety %}
+					{% if debug.safety | length > 0 %}
+						<table>
+							<tr>
+								<th>Catégorie</th>
+								<th>Probabilité</th>
+								<th>Sévérité</th>
+								<th>Bloqué</th>
+							</tr>
+							{% for rating in debug.safety %}
+								<tr>
+									<td>{{ rating.category ?? '–' }}</td>
+									<td>{{ rating.probability ?? rating.probabilityScore ?? '–' }}</td>
+									<td>{{ rating.severity ?? rating.severityScore ?? '–' }}</td>
+									<td>{% if rating['blocked'] is defined %}{% if rating.blocked %}🚫 Oui{% else %}✅ Non{% endif %}{% else %}–{% endif %}</td>
+								</tr>
+							{% endfor %}
+						</table>
+					{% else %}
+						<p style="color: #6b7280;">Aucune problématique de sécurité.</p>
+					{% endif %}
+				{% else %}
+					<p style="color: #6b7280;">Aucune métrique de sécurité.</p>
+				{% endif %}
+			</div>
+
+			<!-- Tab: Tools -->
+			<div id="tools" class="tab-content">
+				<h3>📋 Outils disponibles envoyés au LLM</h3>
+				{% if debug.tool_definitions is defined and debug.tool_definitions %}
+					{% if debug.tool_definitions | length > 0 %}
+						<p style="color: #4b5563; font-size: 12px; margin-bottom: 12px;">
+							{{ debug.tool_definitions | length }} outil(s) disponible(s) pour ce modèle.
+						</p>
+						{% for toolDef in debug.tool_definitions %}
+							<div class="turn">
+								<div class="turn-header">🛠️ {{ toolDef.name ?? toolDef.function.name ?? '?' }}</div>
+								<strong>Description:</strong>
+								<p style="color: #374151; margin: 8px 0;">
+									{{ toolDef.description ?? toolDef.function.description ?? '—' }}
+								</p>
+								
+								{% set parameters = toolDef.parameters ?? (toolDef.function.parameters ?? null) %}
+								{% if parameters %}
+									<strong>Paramètres:</strong>
+									<pre>{{ parameters | json_encode }}</pre>
+								{% endif %}
+								
+								{% set properties = toolDef.properties ?? (parameters.properties ?? null) %}
+								{% if properties and properties is iterable and properties | length > 0 %}
+									<strong>Champs attendus:</strong>
+									<ul style="margin: 8px 0 8px 20px;">
+										{% for propName, propDef in properties %}
+											<li>
+												<code>{{ propName }}</code>
+												{% if propDef.type is defined %}<span style="color: #6b7280;">({{ propDef.type }})</span>{% endif %}
+												{% if propDef.description is defined %}<br><span style="color: #6b7280; font-size: 0.9em;">{{ propDef.description }}</span>{% endif %}
+											</li>
+										{% endfor %}
+									</ul>
+								{% endif %}
+							</div>
+						{% endfor %}
+					{% else %}
+						<p style="color: #6b7280;">Aucun outil envoyé au LLM.</p>
+					{% endif %}
+				{% else %}
+					<p style="color: #6b7280;">Aucun outil envoyé au LLM (données manquantes).</p>
+				{% endif %}
+
+				<h3 style="margin-top: 30px;">🎯 Outils utilisés par le LLM</h3>
+				{% if debug.tool_usage is defined and debug.tool_usage %}
+					{% if debug.tool_usage | length > 0 %}
+						<p style="color: #4b5563; font-size: 12px; margin-bottom: 12px;">
+							{{ debug.tool_usage | length }} outil(s) ont été appelé(s).
+						</p>
+						{% for usage in debug.tool_usage %}
+							<div class="turn">
+								<div class="turn-header">✅ {{ usage.tool_name }}</div>
+								
+								<strong style="color: #059669;">📥 Paramètres envoyés:</strong>
+								{% if usage.tool_args %}
+									<pre>{{ usage.tool_args is iterable ? usage.tool_args | json_encode : usage.tool_args }}</pre>
+								{% else %}
+									<p style="color: #6b7280;">Aucun paramètre.</p>
+								{% endif %}
+
+								<strong style="color: #dc2626; margin-top: 12px; display: block;">📤 Résultat retourné:</strong>
+								{% if usage.tool_result %}
+									<pre>{{ usage.tool_result is iterable ? usage.tool_result | json_encode : usage.tool_result }}</pre>
+								{% else %}
+									<p style="color: #6b7280;">Aucun résultat.</p>
+								{% endif %}
+								
+								<p style="color: #9ca3af; font-size: 11px; margin-top: 8px;">
+									ID d'appel: <code>{{ usage.tool_call_id }}</code>
+								</p>
+							</div>
+						{% endfor %}
+					{% else %}
+						<p style="color: #6b7280;">Aucun outil n'a été utilisé par le LLM.</p>
+					{% endif %}
+				{% else %}
+					<p style="color: #6b7280;">Aucune utilisation d'outil enregistrée (données manquantes).</p>
+				{% endif %}
+
+				<h3 style="margin-top: 30px;">📊 Exécutions d'outils (côté système)</h3>
+				{% if debug.tool_executions is defined and debug.tool_executions %}
+					{% if debug.tool_executions | length > 0 %}
+						<p style="color: #4b5563; font-size: 12px; margin-bottom: 12px;">
+							Résumé des exécutions effectuées par le système.
+						</p>
+						{% for tool in debug.tool_executions %}
+							<div class="turn">
+								<div class="turn-header">🔧 {{ tool.tool }}</div>
+								<strong>Paramètres:</strong>
+								<pre>{{ tool.params | json_encode }}</pre>
+								<strong>Résultat (aperçu):</strong>
+								<pre>{{ tool.result_preview }}</pre>
+							</div>
+						{% endfor %}
+					{% else %}
+						<p style="color: #6b7280;">Aucun outil exécuté côté système.</p>
+					{% endif %}
+				{% else %}
+					<p style="color: #6b7280;">Aucune exécution d'outil côté système (données manquantes).</p>
+				{% endif %}
+			</div>
+		</div>
+
+		<script>
+			function switchTab(tabName) {
+				// Hide all tabs
+				const tabs = document.querySelectorAll('.tab-content');
+				tabs.forEach(tab => tab.classList.remove('active'));
+
+				// Remove active class from all buttons
+				const buttons = document.querySelectorAll('.tab-btn');
+				buttons.forEach(btn => btn.classList.remove('active'));
+
+				// Show selected tab
+				document.getElementById(tabName).classList.add('active');
+
+				// Add active class to clicked button
+				event.target.classList.add('active');
+			}
+
+			// Format JSON in <pre class="json-pretty"> elements
+			document.addEventListener('DOMContentLoaded', function() {
+				document.querySelectorAll('pre.json-pretty').forEach(el => {
+					try {
+						const json = JSON.parse(el.textContent);
+						el.textContent = JSON.stringify(json, null, 2);
+					} catch (e) {
+						// Si pas du JSON valide, laisser tel quel
+					}
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,7 +1,0 @@
-# This file is deprecated in favor of:
-# - config/core.yaml (always loaded)
-# - config/admin.yaml (loaded if admin.enabled: true)
-#
-# See SynapseExtension.php for the conditional loading logic.
-
-services: ~
