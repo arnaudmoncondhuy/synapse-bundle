@@ -9,11 +9,6 @@
         }
     ],
     "license": "PolyForm-Noncommercial-1.0.0",
-    "require": {
-        "arnaudmoncondhuy/synapse-admin": "@dev",
-        "arnaudmoncondhuy/synapse-chat": "@dev",
-        "arnaudmoncondhuy/synapse-core": "@dev"
-    },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.93",
         "symplify/monorepo-builder": "^12.0",
