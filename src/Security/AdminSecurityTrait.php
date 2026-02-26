@@ -27,11 +27,15 @@ trait AdminSecurityTrait
     /**
      * Vérifie la validité du jeton CSRF si le manager est disponible.
      */
-    protected function validateCsrfToken(Request $request, ?CsrfTokenManagerInterface $csrfTokenManager): void
+    protected function validateCsrfToken(Request $request, ?CsrfTokenManagerInterface $csrfTokenManager, string $tokenId = 'synapse_admin'): void
     {
         if ($csrfTokenManager) {
-            $token = $request->request->get('_csrf_token') ?? $request->headers->get('X-CSRF-Token');
-            if (!$this->isCsrfTokenValid('synapse_admin', (string) $token)) {
+            $token = $request->request->get('_csrf_token')
+                ?? $request->request->get('_token')
+                ?? $request->request->get('token')
+                ?? $request->headers->get('X-CSRF-Token');
+
+            if (!$this->isCsrfTokenValid($tokenId, (string) $token)) {
                 throw new AccessDeniedHttpException('Invalid CSRF token.');
             }
         }

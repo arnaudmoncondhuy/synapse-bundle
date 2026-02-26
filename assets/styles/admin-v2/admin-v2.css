@@ -1,0 +1,194 @@
+/**
+ * Synapse Admin V2 - Point d'entrée CSS principal
+ *
+ * Import order matters : variables → reset → layout → components
+ */
+
+/* ── Fondations ────────────────────────────────────────────────────────── */
+@import '_variables.css';
+@import '_reset.css';
+@import '_layout.css';
+
+/* ── Composants ────────────────────────────────────────────────────────── */
+@import 'components/_card.css';
+@import 'components/_button.css';
+@import 'components/_badge.css';
+@import 'components/_form.css';
+@import 'components/_alert.css';
+@import 'components/_kpi.css';
+@import 'components/_collapsible.css';
+@import 'components/_table.css';
+
+/* ── Utilities ─────────────────────────────────────────────────────────── */
+
+/* Form inline (remplace style="display:inline" sur les forms dans les cartes) */
+.sv2-form-inline {
+    display: inline;
+}
+
+/* Divider */
+.sv2-divider {
+    border: none;
+    border-top: 1px solid var(--sv2-border-light);
+    margin: var(--sv2-space-lg) 0;
+}
+
+/* Spacers */
+.sv2-mt-0 {
+    margin-top: 0 !important;
+}
+
+.sv2-mt-sm {
+    margin-top: var(--sv2-space-sm) !important;
+}
+
+.sv2-mt-md {
+    margin-top: var(--sv2-space-md) !important;
+}
+
+.sv2-mt-lg {
+    margin-top: var(--sv2-space-lg) !important;
+}
+
+.sv2-mt-xl {
+    margin-top: var(--sv2-space-xl) !important;
+}
+
+.sv2-mb-0 {
+    margin-bottom: 0 !important;
+}
+
+.sv2-mb-sm {
+    margin-bottom: var(--sv2-space-sm) !important;
+}
+
+.sv2-mb-md {
+    margin-bottom: var(--sv2-space-md) !important;
+}
+
+.sv2-mb-lg {
+    margin-bottom: var(--sv2-space-lg) !important;
+}
+
+.sv2-mb-xl {
+    margin-bottom: var(--sv2-space-xl) !important;
+}
+
+/* Flex helpers */
+.sv2-flex {
+    display: flex;
+}
+
+.sv2-flex-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.sv2-items-center {
+    align-items: center;
+}
+
+.sv2-justify-between {
+    justify-content: space-between;
+}
+
+.sv2-gap-sm {
+    gap: var(--sv2-space-sm);
+}
+
+.sv2-gap-md {
+    gap: var(--sv2-space-md);
+}
+
+.sv2-gap-lg {
+    gap: var(--sv2-space-lg);
+}
+
+/* Text */
+.sv2-text-sm {
+    font-size: 0.85rem;
+}
+
+.sv2-text-xs {
+    font-size: 0.75rem;
+}
+
+.sv2-text-muted {
+    color: var(--sv2-text-secondary);
+}
+
+.sv2-text-tertiary {
+    color: var(--sv2-text-tertiary);
+}
+
+.sv2-text-primary {
+    color: var(--sv2-primary);
+}
+
+.sv2-font-mono {
+    font-family: var(--sv2-font-mono);
+}
+
+.sv2-font-bold {
+    font-weight: 700;
+}
+
+/* Truncate */
+.sv2-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Responsive helpers */
+.sv2-hide-mobile {
+    @media (max-width: 768px) {
+        display: none;
+    }
+}
+
+/* Skeleton loader */
+.sv2-skeleton {
+    background: linear-gradient(90deg, var(--sv2-border-light) 25%, var(--sv2-border) 50%, var(--sv2-border-light) 75%);
+    background-size: 200% 100%;
+    animation: sv2-skeleton 1.5s ease infinite;
+    border-radius: var(--sv2-radius-sm);
+}
+
+@keyframes sv2-skeleton {
+    from {
+        background-position: 200% 0;
+    }
+
+    to {
+        background-position: -200% 0;
+    }
+}
+
+/* Tooltip (CSS-only) */
+[data-sv2-tooltip] {
+    position: relative;
+}
+
+[data-sv2-tooltip]::after {
+    content: attr(data-sv2-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 10px;
+    background: var(--sv2-text-primary);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: var(--sv2-radius-sm);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--sv2-transition-fast);
+    z-index: var(--sv2-z-dropdown);
+}
+
+[data-sv2-tooltip]:hover::after {
+    opacity: 1;
+}

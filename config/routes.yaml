@@ -2,6 +2,10 @@ synapse_admin:
     resource: '@SynapseBundle/src/Admin/Controller/'
     type: attribute
 
+synapse_admin_v2:
+    resource: '@SynapseBundle/src/AdminV2/Controller/'
+    type: attribute
+
 synapse_api:
     resource: '@SynapseBundle/src/Core/Controller/Api/'
     type: attribute

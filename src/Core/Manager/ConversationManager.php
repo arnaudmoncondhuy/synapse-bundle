@@ -252,6 +252,34 @@ class ConversationManager
     }
 
     /**
+     * Récupère toutes les conversations (accès administrateur Break-Glass)
+     *
+     * Aucun filtrage par owner — réservé à l'administration uniquement.
+     * Toujours auditer cet accès dans le contrôleur appelant.
+     *
+     * @param int $limit   Nombre maximum de résultats par page
+     * @param int $offset  Décalage pour la pagination
+     * @return SynapseConversation[]
+     */
+    public function getAllConversations(int $limit = 50, int $offset = 0): array
+    {
+        return $this->getConversationRepo()->findBy(
+            [],
+            ['createdAt' => 'DESC'],
+            $limit,
+            $offset,
+        );
+    }
+
+    /**
+     * Compte toutes les conversations (accès administrateur Break-Glass)
+     */
+    public function countAllConversations(): int
+    {
+        return $this->getConversationRepo()->count([]);
+    }
+
+    /**
      * Récupère les messages d'une conversation avec déchiffrement
      *
      * @param SynapseConversation $conversation SynapseConversation

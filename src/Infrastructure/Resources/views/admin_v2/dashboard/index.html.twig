@@ -1,0 +1,296 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Tableau de bord | Synapse Admin V2{% endblock %}
+
+{% block v2_breadcrumb %}
+    <span class="sv2-topbar__breadcrumb-sep">›</span>
+    <span class="sv2-topbar__current">Tableau de bord</span>
+{% endblock %}
+
+{% block v2_content %}
+
+{# ─────────────────────────────────────────────────────────────────────────────
+   En-tête de page
+   ─────────────────────────────────────────────────────────────────────────── #}
+<div class="sv2-page-header">
+    <div class="sv2-page-header__info">
+        <h1 class="sv2-page-title">
+            <span class="sv2-page-title__icon" style="background:var(--sv2-primary-light);color:var(--sv2-primary);">
+                <i data-lucide="layout-dashboard"></i>
+            </span>
+            Tableau de bord
+        </h1>
+        <p class="sv2-page-subtitle">
+            Vue d'ensemble de votre instance Synapse — utilisation, coûts et état du système.
+        </p>
+    </div>
+    <div class="sv2-page-header__actions">
+        {% if active_preset %}
+            <div style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.875rem;background:var(--sv2-success-bg);border:1px solid var(--sv2-success-border);border-radius:var(--sv2-radius-full);font-size:0.8rem;font-weight:600;color:var(--sv2-success);">
+                <span class="sv2-dot sv2-dot--success"></span>
+                {{ active_preset.name }}
+            </div>
+        {% else %}
+            <a href="{{ path('synapse_v2_admin_presets') }}" class="sv2-btn sv2-btn--outline">
+                <i data-lucide="plus"></i>
+                Créer un preset
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+{# ─────────────────────────────────────────────────────────────────────────────
+   KPIs — grille 4 colonnes
+   ─────────────────────────────────────────────────────────────────────────── #}
+<div class="sv2-grid sv2-grid--4 sv2-mb-xl">
+
+    {# Tokens consommés (7j) #}
+    <div class="sv2-card sv2-card--hover">
+        <div class="sv2-kpi">
+            <div class="sv2-kpi__icon sv2-kpi__icon--primary">
+                <i data-lucide="zap"></i>
+            </div>
+            <div class="sv2-kpi__body">
+                <div class="sv2-kpi__label">Tokens (7 jours)</div>
+                <div class="sv2-kpi__value">{{ (kpis.tokens_7d ?? 0)|number_format(0, ',', ' ') }}</div>
+                <div class="sv2-kpi__sub">
+                    <i data-lucide="dollar-sign" style="width:12px;height:12px;"></i>
+                    ~${{ kpis.tokens_cost|number_format(4) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Souvenirs mémorisés #}
+    <div class="sv2-card sv2-card--hover">
+        <div class="sv2-kpi">
+            <div class="sv2-kpi__icon sv2-kpi__icon--success">
+                <i data-lucide="sparkles"></i>
+            </div>
+            <div class="sv2-kpi__body">
+                <div class="sv2-kpi__label">Souvenirs</div>
+                <div class="sv2-kpi__value">{{ kpis.total_memories ?? 0 }}</div>
+                <div class="sv2-kpi__sub">mémorisés par les utilisateurs</div>
+            </div>
+        </div>
+    </div>
+
+    {# Providers actifs #}
+    <div class="sv2-card sv2-card--hover">
+        <div class="sv2-kpi">
+            <div class="sv2-kpi__icon {% if kpis.active_providers > 0 %}sv2-kpi__icon--success{% else %}sv2-kpi__icon--danger{% endif %}">
+                <i data-lucide="plug"></i>
+            </div>
+            <div class="sv2-kpi__body">
+                <div class="sv2-kpi__label">Providers actifs</div>
+                <div class="sv2-kpi__value">{{ kpis.active_providers ?? 0 }}</div>
+                <div class="sv2-kpi__sub">configurés et activés</div>
+            </div>
+        </div>
+    </div>
+
+    {# Preset actif #}
+    <div class="sv2-card sv2-card--hover">
+        <div class="sv2-kpi">
+            <div class="sv2-kpi__icon sv2-kpi__icon--primary">
+                <i data-lucide="sliders-horizontal"></i>
+            </div>
+            <div class="sv2-kpi__body">
+                <div class="sv2-kpi__label">Preset actif</div>
+                <div class="sv2-kpi__value" style="font-size:1.1rem;">
+                    {{ active_preset ? active_preset.name : '—' }}
+                </div>
+                <div class="sv2-kpi__sub">
+                    {{ active_preset ? active_preset.providerName ~ ' / ' ~ active_preset.model : 'Aucun preset activé' }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{# ─────────────────────────────────────────────────────────────────────────────
+   Grille 2 colonnes : Activité + Providers
+   ─────────────────────────────────────────────────────────────────────────── #}
+<div class="sv2-grid sv2-grid--2 sv2-mb-xl">
+
+    {# ── Activité (30j) ──────────────────────────────────────────────────── #}
+    <div class="sv2-card">
+        <div class="sv2-card__header">
+            <div class="sv2-card__header-icon" style="background:var(--sv2-primary-light);color:var(--sv2-primary);">
+                <i data-lucide="bar-chart-3"></i>
+            </div>
+            <div>
+                <div class="sv2-card__title">Activité tokens (30 jours)</div>
+                <div class="sv2-card__subtitle">Consommation quotidienne</div>
+            </div>
+            <div class="sv2-card__header-actions">
+                <a href="{{ path('synapse_v2_admin_analytics') }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+                    Voir tout <i data-lucide="arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        <div class="sv2-card__body sv2-card__body--compact">
+            {% if daily_usage is empty %}
+                <div class="sv2-empty" style="padding:2rem;">
+                    <div class="sv2-empty__icon"><i data-lucide="bar-chart-2"></i></div>
+                    <p class="sv2-empty__description">Aucune donnée d'activité pour cette période.</p>
+                </div>
+            {% else %}
+                {% set max_tokens = 1 %}
+                {% for day in daily_usage %}
+                    {% if (day.total_tokens ?? 0) > max_tokens %}
+                        {% set max_tokens = day.total_tokens %}
+                    {% endif %}
+                {% endfor %}
+
+                <div class="sv2-chart">
+                    {% for day in daily_usage|slice(-15) %}
+                        <div class="sv2-chart__row">
+                            <span class="sv2-chart__label">{{ day.date|date('d/m') }}</span>
+                            <div class="sv2-chart__track">
+                                <div class="sv2-chart__bar"
+                                     style="width: {{ max_tokens > 0 ? ((day.total_tokens ?? 0) / max_tokens * 100)|round ~ '%' : '0%' }}">
+                                </div>
+                            </div>
+                            <span class="sv2-chart__value">{{ ((day.total_tokens ?? 0) / 1000)|number_format(1) }}k</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Providers ───────────────────────────────────────────────────────── #}
+    <div class="sv2-card">
+        <div class="sv2-card__header">
+            <div class="sv2-card__header-icon" style="background:hsl(258,85%,95%);color:var(--sv2-primary);">
+                <i data-lucide="plug"></i>
+            </div>
+            <div>
+                <div class="sv2-card__title">Fournisseurs</div>
+                <div class="sv2-card__subtitle">État des providers LLM</div>
+            </div>
+            <div class="sv2-card__header-actions">
+                <a href="{{ path('synapse_v2_admin_providers') }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+                    Gérer <i data-lucide="arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        <div class="sv2-card__body sv2-card__body--flush">
+            {% if active_providers is empty %}
+                <div class="sv2-empty" style="padding:2rem;">
+                    <div class="sv2-empty__icon"><i data-lucide="plug-zap"></i></div>
+                    <p class="sv2-empty__description">Aucun provider configuré.</p>
+                    <a href="{{ path('synapse_v2_admin_providers') }}" class="sv2-btn sv2-btn--primary sv2-btn--sm sv2-mt-md">
+                        Ajouter un provider
+                    </a>
+                </div>
+            {% else %}
+                <div style="padding: 0.5rem 0;">
+                    {% for provider in active_providers %}
+                        <div class="sv2-stat-row" style="padding: 0.75rem 1.5rem;">
+                            <div class="sv2-stat-row__label">
+                                <i data-lucide="server"></i>
+                                <span>{{ provider.label ?? provider.name }}</span>
+                            </div>
+                            <span class="sv2-badge sv2-badge--success">
+                                <i data-lucide="check-circle-2"></i>
+                                Actif
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{# ─────────────────────────────────────────────────────────────────────────────
+   Usage par modèle
+   ─────────────────────────────────────────────────────────────────────────── #}
+{% if usage_by_model is not empty %}
+<div class="sv2-card sv2-mb-xl">
+    <div class="sv2-card__header">
+        <div class="sv2-card__header-icon" style="background:hsl(38,90%,95%);color:var(--sv2-warning);">
+            <i data-lucide="cpu"></i>
+        </div>
+        <div>
+            <div class="sv2-card__title">Top modèles (7 jours)</div>
+            <div class="sv2-card__subtitle">Consommation par modèle LLM</div>
+        </div>
+    </div>
+    <div class="sv2-card__body sv2-card__body--compact">
+        <div style="display:flex;flex-direction:column;gap:0.5rem;">
+            {% for model in usage_by_model|first(6) %}
+                <div class="sv2-stat-row">
+                    <div class="sv2-stat-row__label">
+                        <i data-lucide="cpu"></i>
+                        <span>{{ model.model_id ?? 'Inconnu' }}</span>
+                    </div>
+                    <div class="sv2-stat-row__value">
+                        {{ ((model.total_tokens ?? 0) / 1000)|number_format(1) }}k tokens
+                        {% if model.cost is defined and model.cost > 0 %}
+                            · <span class="sv2-text-muted">${{ model.cost|number_format(3) }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ─────────────────────────────────────────────────────────────────────────────
+   Quick Links sections
+   ─────────────────────────────────────────────────────────────────────────── #}
+<div class="sv2-grid sv2-grid--3">
+
+    <a href="{{ path('synapse_v2_admin_presets') }}" class="sv2-card sv2-card--hover" style="text-decoration:none;display:block;">
+        <div class="sv2-card__body sv2-card__body--compact">
+            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.625rem;">
+                <div class="sv2-kpi__icon sv2-kpi__icon--primary" style="width:36px;height:36px;border-radius:0.625rem;">
+                    <i data-lucide="sliders-horizontal" style="width:16px;height:16px;"></i>
+                </div>
+                <strong style="font-size:0.9rem;color:var(--sv2-text-primary);">Presets LLM</strong>
+            </div>
+            <p style="font-size:0.8rem;color:var(--sv2-text-secondary);margin:0;">
+                Configurez les paramètres de génération IA (température, top-p, modèle…)
+            </p>
+        </div>
+    </a>
+
+    <a href="{{ path('synapse_v2_admin_embeddings') }}" class="sv2-card sv2-card--hover" style="text-decoration:none;display:block;">
+        <div class="sv2-card__body sv2-card__body--compact">
+            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.625rem;">
+                <div class="sv2-kpi__icon sv2-kpi__icon--success" style="width:36px;height:36px;border-radius:0.625rem;">
+                    <i data-lucide="database-zap" style="width:16px;height:16px;"></i>
+                </div>
+                <strong style="font-size:0.9rem;color:var(--sv2-text-primary);">Embeddings & RAG</strong>
+            </div>
+            <p style="font-size:0.8rem;color:var(--sv2-text-secondary);margin:0;">
+                Paramétrez votre base vectorielle, modèles d'embedding et stratégie de chunking.
+            </p>
+        </div>
+    </a>
+
+    <a href="{{ path('synapse_v2_admin_memories') }}" class="sv2-card sv2-card--hover" style="text-decoration:none;display:block;">
+        <div class="sv2-card__body sv2-card__body--compact">
+            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.625rem;">
+                <div class="sv2-kpi__icon sv2-kpi__icon--info" style="width:36px;height:36px;border-radius:0.625rem;background:var(--sv2-info-bg);color:var(--sv2-info);">
+                    <i data-lucide="sparkles" style="width:16px;height:16px;"></i>
+                </div>
+                <strong style="font-size:0.9rem;color:var(--sv2-text-primary);">
+                    Souvenirs
+                    <span class="sv2-badge sv2-badge--primary" style="margin-left:0.4rem;font-size:0.6rem;vertical-align:middle;">Nouveau</span>
+                </strong>
+            </div>
+            <p style="font-size:0.8rem;color:var(--sv2-text-secondary);margin:0;">
+                Visualisez et gérez les mémoires confirmées par vos utilisateurs.
+            </p>
+        </div>
+    </a>
+
+</div>
+{% endblock %}

@@ -1,0 +1,199 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Outils | Conversation | Synapse Admin V2
+{% endblock %}
+
+{# ──────────────────────────────────────────────────────────────────────────────
+   FIL D'ARIANE — injecté dans la topbar via base.html.twig
+   Règle : toujours dans v2_breadcrumb, jamais dans v2_content
+   ────────────────────────────────────────────────────────────────────────────── #}
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Conversation</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">Outils</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	{# ──────────────────────────────────────────────────────────────────────────────
+	   EN-TÊTE
+	   ────────────────────────────────────────────────────────────────────────────── #}
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--primary">
+					<i data-lucide="wrench"></i>
+				</span>
+				Catalogue des Outils
+			</h1>
+			<p class="sv2-page-subtitle">
+				Outils exposés à l'IA. Ces fonctions sont appelables par le modèle lors
+				            d'une conversation selon les autorisations configurées.
+			</p>
+		</div>
+		{# Pas d'action de page : les outils sont définis en code, pas dans l'UI #}
+	</div>
+
+	{# ──────────────────────────────────────────────────────────────────────────────
+	   STATS RAPIDES (section essentielle)
+	   ────────────────────────────────────────────────────────────────────────────── #}
+	<div class="sv2-grid sv2-grid--3 sv2-mb-xl">
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--primary">
+					<i data-lucide="wrench"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Outils enregistrés</div>
+					<div class="sv2-kpi__value">{{ tools|length }}</div>
+					<div class="sv2-kpi__sub">disponibles pour le modèle</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--success">
+					<i data-lucide="check-circle-2"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Actifs (Function Calling)</div>
+					<div class="sv2-kpi__value">{{ tools|length }}</div>
+					<div class="sv2-kpi__sub">exposés à l'IA automatiquement</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--info">
+					<i data-lucide="code-2"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Type d'enregistrement</div>
+					<div class="sv2-kpi__value sv2-text-sm">Auto</div>
+					<div class="sv2-kpi__sub">via ToolRegistry (code)</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ──────────────────────────────────────────────────────────────────────────────
+	   TABLEAU DES OUTILS
+	   Pattern tableau : sv2-card > sv2-table-container > sv2-table
+	   Règle : sv2-table-cell-label pour Nom + sous-titre (class PHP)
+	   ────────────────────────────────────────────────────────────────────────────── #}
+	<div class="sv2-card">
+		<div class="sv2-card__header">
+			<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+				<i data-lucide="list"></i>
+			</div>
+			<div>
+				<div class="sv2-card__title">Outils disponibles</div>
+				<div class="sv2-card__subtitle">
+					Enregistrés via le service
+					<code>ToolRegistry</code>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-table-container">
+			<table class="sv2-table">
+				<thead>
+					<tr>
+						<th>Outil</th>
+						<th>Description</th>
+						<th>Implémentation</th>
+						<th>Statut</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for tool in tools %}
+						<tr>
+
+							{# ── Nom de l'outil ──────────────────────────────── #}
+							<td>
+								<div class="sv2-table-cell-label">
+									<div class="sv2-table-cell-label__icon sv2-kpi__icon--primary">
+										<i data-lucide="wrench"></i>
+									</div>
+									<div>
+										<div class="sv2-table-cell-label__title">{{ tool.name }}</div>
+										<div class="sv2-table-cell-label__sub sv2-font-mono">
+											{{ tool.name|lower|replace({' ': '_'}) }}
+										</div>
+									</div>
+								</div>
+							</td>
+
+							{# ── Description ─────────────────────────────────── #}
+							<td class="sv2-table__cell--muted">
+								{{ tool.description|length > 120
+                                ? tool.description|slice(0, 120) ~ ' …'
+                                : tool.description }}
+							</td>
+
+							{# ── Classe PHP ──────────────────────────────────── #}
+							<td>
+								{# Afficher uniquement le nom court de la classe (sans namespace) #}
+								{% set classParts = tool.class|split('\\') %}
+								<span class="sv2-badge sv2-badge--neutral" data-sv2-tooltip="{{ tool.class }}">
+									<i data-lucide="code-2"></i>
+									{{ classParts|last }}
+								</span>
+							</td>
+
+							{# ── Statut — toujours actif car enregistré dans le registry #}
+							<td>
+								<span class="sv2-badge sv2-badge--success">
+									<i data-lucide="circle-check"></i>
+									Actif
+								</span>
+							</td>
+
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="4">
+								<div class="sv2-empty">
+									<div class="sv2-empty__icon">
+										<i data-lucide="wrench"></i>
+									</div>
+									<div class="sv2-empty__title">Aucun outil enregistré</div>
+									<p class="sv2-empty__description">
+										Implémentez des classes
+										<code>ToolInterface</code>
+										et
+										                                    déclarez-les comme services pour qu'elles apparaissent ici.
+									</p>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	{# ──────────────────────────────────────────────────────────────────────────────
+	   NOTE INFORMATIVE — Composant sv2-alert
+	   Utilisé pour les informations contextuelles non critiques
+	   ────────────────────────────────────────────────────────────────────────────── #}
+	{% if tools is not empty %}
+		<div class="sv2-alert sv2-alert--info sv2-mt-xl">
+			<i data-lucide="info"></i>
+			<div>
+				<strong>Comment fonctionnent les outils ?</strong>
+				L'IA peut appeler ces fonctions durant une conversation si le modèle actif
+				            supporte le
+				<em>Function Calling</em>. Les outils sont transmis automatiquement
+					            dans le contexte de chaque requête via le
+				<code>ToolRegistry</code>.
+			</div>
+		</div>
+	{% endif %}
+
+{% endblock %}

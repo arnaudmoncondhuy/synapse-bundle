@@ -1,0 +1,169 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Debug Logs | Système | Synapse Admin V2
+{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Système</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">Debug LLM</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--warning">
+					<i data-lucide="bug"></i>
+				</span>
+				Journaux de debug
+			</h1>
+			<p class="sv2-page-subtitle">
+				Traces des échanges LLM enregistrées quand le mode debug est actif sur la configuration.
+				            Activez le mode debug dans
+				<a href="{{ path('synapse_v2_admin_settings') }}">Paramètres</a>.
+			</p>
+		</div>
+		<div class="sv2-page-header__actions">
+			{% if logs|length > 0 %}
+				<form action="{{ path('synapse_v2_admin_debug_clear') }}" method="POST">
+					<input type="hidden" name="token" value="{{ csrf_token('debug_clear') }}">
+					<button type="submit" class="sv2-btn sv2-btn--danger sv2-btn--sm" onclick="return confirm('Supprimer les {{ total }} logs de debug ?')">
+						<i data-lucide="trash-2"></i>
+						Vider les logs
+					</button>
+				</form>
+			{% endif %}
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="sv2-grid sv2-grid--3 sv2-mb-xl">
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--warning">
+					<i data-lucide="bug"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Logs en base</div>
+					<div class="sv2-kpi__value">{{ total }}</div>
+					<div class="sv2-kpi__sub">traces LLM stockées</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--info">
+					<i data-lucide="eye"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Affichés</div>
+					<div class="sv2-kpi__value">{{ logs|length }}</div>
+					<div class="sv2-kpi__sub">100 derniers max</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--{{ logs|length > 0 ? 'warning' : 'success' }}">
+					<i data-lucide="{{ logs|length > 0 ? 'activity' : 'check-circle-2' }}"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Mode debug</div>
+					<div class="sv2-kpi__value">{{ logs|length > 0 ? 'Actif' : 'Inactif' }}</div>
+					<div class="sv2-kpi__sub">selon Paramètres</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Journal ───────────────────────────────────────────────────────────────── #}
+	{% if logs|length == 0 %}
+		<div class="sv2-card">
+			<div class="sv2-empty">
+				<div class="sv2-empty__icon">
+					<i data-lucide="bug-off"></i>
+				</div>
+				<div class="sv2-empty__title">Aucun log de debug</div>
+				<p class="sv2-empty__description">
+					Activez le
+					<strong>mode debug</strong>
+					dans les
+					<a href="{{ path('synapse_v2_admin_settings') }}">Paramètres globaux</a>
+					puis relancez quelques échanges pour voir les traces apparaître ici.
+				</p>
+			</div>
+		</div>
+	{% else %}
+
+		<div class="sv2-card">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--warning">
+					<i data-lucide="list-ordered"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Traces récentes</div>
+					<div class="sv2-card__subtitle">Chaque ligne correspond à un échange LLM tracé</div>
+				</div>
+			</div>
+
+			<div class="sv2-table-container">
+				<table class="sv2-table">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Module</th>
+							<th>Modèle</th>
+							<th>Tokens</th>
+							<th>Date</th>
+							<th class="sv2-table__cell--actions">Détail</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for log in logs %}
+							{% set data = log.data ?? {} %}
+							<tr>
+								<td class="sv2-table__cell--mono sv2-text-xs">
+									{{ log.debugId|slice(0, 8) }}…
+								</td>
+								<td>
+									<span class="sv2-badge sv2-badge--neutral">
+										{{ data.module ?? '—' }}
+									</span>
+								</td>
+								<td class="sv2-table__cell--mono sv2-text-xs">
+									{{ data.model ?? '—' }}
+								</td>
+								<td class="sv2-table__cell--mono">
+									{% set tokens = data.usage ?? data.token_usage ?? null %}
+									{% if tokens %}
+										{{ (tokens.total_tokens ?? (tokens.prompt_tokens ?? 0) + (tokens.completion_tokens ?? 0)) }}
+									{% else %}
+										—
+									{% endif %}
+								</td>
+								<td class="sv2-table__cell--muted">
+									{{ log.createdAt is defined ? log.createdAt|date('d/m H:i:s') : '—' }}
+								</td>
+								<td class="sv2-table__cell--actions">
+									<a href="{{ path('synapse_debug_show', {id: log.debugId}) }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm sv2-btn--icon" target="_blank" data-sv2-tooltip="Ouvrir le rapport détaillé">
+										<i data-lucide="external-link"></i>
+									</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+	{% endif %}
+
+{% endblock %}

@@ -3,7 +3,15 @@ services:
         autowire: true
         autoconfigure: true
 
-    # ── UI Layout Resolution ──────────────────────────────────────────────────
+    # ── Controllers Admin V2 (autoloading récursif) ───────────────────────────
+    # Couvre PlaceholderController + tous les sous-dossiers :
+    # Intelligence/, Conversation/, Memoire/, Usage/, etc.
+    # Tout nouveau contrôleur dans AdminV2/ sera automatiquement enregistré.
+    ArnaudMoncondhuy\SynapseBundle\AdminV2\Controller\:
+        resource: '../src/AdminV2/Controller/'
+        tags: ['controller.service_arguments']
+
+    # ── Layout ────────────────────────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Admin\Layout\SynapseLayoutResolver:
         arguments:
             $layoutMode: '%synapse.ui.layout_mode%'
@@ -18,98 +26,66 @@ services:
     ArnaudMoncondhuy\SynapseBundle\MessageHandler\:
         resource: '../src/MessageHandler/'
 
-    # ── Controllers ───────────────────────────────────────────────────────────
+    # ── Controllers V1 (Admin — individuels) ──────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ChatUiController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\DashboardController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api\ChatApiController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api\ConversationApiController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Core\Controller\Api\ResetController:
         tags: ['controller.service_arguments']
 
-
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ProvidersController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ModelsController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\PresetsController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\PresetTestController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ToolsController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\SettingsController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\EmbeddingSettingsController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\DebugLogsController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\DebugController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\AnalyticsController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     ArnaudMoncondhuy\SynapseBundle\Admin\Controller\ConversationController:
-        autowire: true
-        autoconfigure: true
         tags: ['controller.service_arguments']
 
     # ── Accounting (Admin feature) ────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseBundle\Core\Accounting\TokenAccountingService: ~
 
-    # ── Debug Logging (Admin override) ─────────────────────────────────────────
-    # When admin is enabled, use DoctrineAdminLogger instead of MonologDebugLogger
-    # This allows the admin dashboard to see lightweight metadata in the database
+    # ── Debug Logging (Admin override) ───────────────────────────────────────
+    # Quand l'admin est activé, utilise DoctrineAdminLogger (stockage DB)
+    # au lieu de MonologDebugLogger (logs filesystem)
     ArnaudMoncondhuy\SynapseBundle\Storage\Logger\DoctrineAdminLogger:
         arguments:
             $em: '@doctrine.orm.entity_manager'
             $repository: '@ArnaudMoncondhuy\SynapseBundle\Storage\Repository\SynapseDebugLogRepository'
         public: false
 
-    # Override the default interface alias to use DoctrineAdminLogger when admin is enabled
     ArnaudMoncondhuy\SynapseBundle\Contract\SynapseDebugLoggerInterface:
         alias: ArnaudMoncondhuy\SynapseBundle\Storage\Logger\DoctrineAdminLogger

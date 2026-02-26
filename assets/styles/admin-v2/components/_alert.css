@@ -1,0 +1,153 @@
+/**
+ * Synapse Admin V2 - Alerts & Flash Messages
+ */
+
+/* ── Alert base ──────────────────────────────────────────────────────────────── */
+
+.sv2-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sv2-space-md);
+    padding: var(--sv2-space-md) var(--sv2-space-lg);
+    border-radius: var(--sv2-radius-lg);
+    margin-bottom: var(--sv2-space-md);
+    border: 1px solid transparent;
+    line-height: 1.5;
+}
+
+.sv2-alert__icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.sv2-alert__icon i {
+    width: 18px;
+    height: 18px;
+}
+
+.sv2-alert__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.sv2-alert__title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.sv2-alert__message {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── Variantes ───────────────────────────────────────────────────────────────── */
+
+.sv2-alert--success {
+    background: var(--sv2-success-bg);
+    border-color: var(--sv2-success-border);
+    color: var(--sv2-success);
+}
+
+.sv2-alert--warning {
+    background: var(--sv2-warning-bg);
+    border-color: var(--sv2-warning-border);
+    color: hsl(38, 92%, 28%);
+}
+
+.sv2-alert--danger {
+    background: var(--sv2-danger-bg);
+    border-color: var(--sv2-danger-border);
+    color: var(--sv2-danger);
+}
+
+.sv2-alert--info {
+    background: var(--sv2-info-bg);
+    border-color: var(--sv2-info-border);
+    color: var(--sv2-info);
+}
+
+.sv2-alert--primary {
+    background: var(--sv2-primary-light);
+    border-color: var(--sv2-primary-border);
+    color: var(--sv2-primary-dark);
+}
+
+/* ── Flash messages (auto-dismiss avec animation) ─────────────────────────── */
+
+.sv2-flash-container {
+    position: fixed;
+    top: var(--sv2-space-lg);
+    right: var(--sv2-space-lg);
+    z-index: var(--sv2-z-toast);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sv2-space-sm);
+    max-width: 400px;
+    pointer-events: none;
+}
+
+.sv2-flash {
+    pointer-events: all;
+    display: flex;
+    align-items: center;
+    gap: var(--sv2-space-md);
+    padding: var(--sv2-space-sm) var(--sv2-space-md);
+    border-radius: var(--sv2-radius-lg);
+    box-shadow: var(--sv2-shadow-lg);
+    backdrop-filter: blur(8px);
+    border: 1px solid transparent;
+    animation: sv2-slide-in 0.3s var(--sv2-transition-spring) both;
+}
+
+.sv2-flash i {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.sv2-flash__text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    flex: 1;
+}
+
+.sv2-flash--success {
+    background: rgba(240, 253, 244, 0.95);
+    border-color: var(--sv2-success-border);
+    color: var(--sv2-success);
+}
+
+.sv2-flash--error {
+    background: rgba(254, 242, 242, 0.95);
+    border-color: var(--sv2-danger-border);
+    color: var(--sv2-danger);
+}
+
+.sv2-flash--warning {
+    background: rgba(255, 251, 235, 0.95);
+    border-color: var(--sv2-warning-border);
+    color: hsl(38, 92%, 30%);
+}
+
+@keyframes sv2-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(24px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* ── Inline dans les pages (non-toast) ───────────────────────────────────── */
+
+.sv2-inline-alerts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sv2-space-sm);
+    margin-bottom: var(--sv2-space-lg);
+}

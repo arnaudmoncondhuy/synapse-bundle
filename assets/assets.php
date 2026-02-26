@@ -16,6 +16,14 @@ return [
         'path' => 'styles/admin/synapse-admin.css',
         'entrypoint' => true,
     ],
+    'synapse/styles/admin-v2/admin-v2.css' => [
+        'path' => 'styles/admin-v2/admin-v2.css',
+        'entrypoint' => true,
+    ],
+    'synapse/styles/admin/synapse-admin-enhancements.css' => [
+        'path' => 'styles/admin/synapse-admin-enhancements.css',
+        'entrypoint' => true,
+    ],
     'synapse/styles/synapse.css' => [
         'path' => 'styles/synapse.css',
         'entrypoint' => true,

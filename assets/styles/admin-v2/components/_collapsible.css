@@ -1,0 +1,220 @@
+/**
+ * Synapse Admin V2 - Collapsible / Dual-Mode Sections
+ *
+ * Principe dual-mode :
+ * - Section "essentielle" toujours visible (novices)
+ * - Section <details> pliable pour les paramètres avancés (experts)
+ */
+
+/* ── Section essentielle ─────────────────────────────────────────────────────── */
+
+.sv2-section-essential {
+    background: var(--sv2-glass-bg);
+    backdrop-filter: var(--sv2-glass-backdrop);
+    border: 1px solid var(--sv2-glass-border);
+    border-radius: var(--sv2-radius-xl);
+    padding: var(--sv2-space-xl);
+    margin-bottom: var(--sv2-space-md);
+    box-shadow: var(--sv2-shadow-sm);
+}
+
+.sv2-section-essential__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sv2-space-xs);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--sv2-success);
+    background: var(--sv2-success-bg);
+    border: 1px solid var(--sv2-success-border);
+    padding: 2px 8px;
+    border-radius: var(--sv2-radius-full);
+    margin-bottom: var(--sv2-space-md);
+}
+
+/* ── Collapsible (section avancée) ──────────────────────────────────────────── */
+
+.sv2-collapsible {
+    margin-bottom: var(--sv2-space-md);
+}
+
+.sv2-collapsible__summary {
+    display: flex;
+    align-items: center;
+    gap: var(--sv2-space-md);
+    padding: var(--sv2-space-md) var(--sv2-space-lg);
+    background: var(--sv2-glass-bg);
+    backdrop-filter: var(--sv2-glass-backdrop);
+    border: 1px solid var(--sv2-border);
+    border-radius: var(--sv2-radius-lg);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--sv2-text-primary);
+    user-select: none;
+    transition: all var(--sv2-transition-base);
+}
+
+.sv2-collapsible__summary:hover {
+    border-color: var(--sv2-border-medium);
+    background: #fff;
+    box-shadow: var(--sv2-shadow-sm);
+}
+
+/* Quand ouvert */
+details[open]>.sv2-collapsible__summary {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-color: var(--sv2-border-light);
+    background: var(--sv2-primary-light);
+    border-color: var(--sv2-primary-border);
+    color: var(--sv2-primary-dark);
+}
+
+.sv2-collapsible__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--sv2-radius-sm);
+    background: var(--sv2-primary-light);
+    color: var(--sv2-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sv2-collapsible__icon i {
+    width: 16px;
+    height: 16px;
+}
+
+details[open]>.sv2-collapsible__summary .sv2-collapsible__icon {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--sv2-primary);
+}
+
+.sv2-collapsible__title {
+    flex: 1;
+}
+
+.sv2-collapsible__subtitle {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--sv2-text-tertiary);
+    margin-top: 2px;
+}
+
+details[open]>.sv2-collapsible__summary .sv2-collapsible__subtitle {
+    color: var(--sv2-primary);
+    opacity: 0.75;
+}
+
+.sv2-collapsible__badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: var(--sv2-radius-full);
+    background: rgba(148, 163, 184, 0.12);
+    color: var(--sv2-text-tertiary);
+    border: 1px solid var(--sv2-border);
+}
+
+.sv2-collapsible__chevron {
+    width: 20px;
+    height: 20px;
+    color: var(--sv2-text-tertiary);
+    transition: transform var(--sv2-transition-base);
+    flex-shrink: 0;
+}
+
+details[open]>.sv2-collapsible__summary .sv2-collapsible__chevron {
+    transform: rotate(180deg);
+    color: var(--sv2-primary);
+}
+
+/* Content */
+.sv2-collapsible__content {
+    background: var(--sv2-glass-bg);
+    border: 1px solid var(--sv2-primary-border);
+    border-top: none;
+    border-bottom-left-radius: var(--sv2-radius-lg);
+    border-bottom-right-radius: var(--sv2-radius-lg);
+    padding: var(--sv2-space-xl);
+    animation: sv2-expand 0.25s ease both;
+}
+
+@keyframes sv2-expand {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Smart presets cards (novice mode) ───────────────────────────────────────── */
+
+.sv2-smart-presets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--sv2-space-md);
+}
+
+.sv2-smart-preset {
+    position: relative;
+    cursor: pointer;
+}
+
+.sv2-smart-preset__input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.sv2-smart-preset__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sv2-space-sm);
+    padding: var(--sv2-space-lg);
+    background: var(--sv2-bg-surface);
+    border: 2px solid var(--sv2-border);
+    border-radius: var(--sv2-radius-lg);
+    transition: all var(--sv2-transition-base);
+}
+
+.sv2-smart-preset:hover .sv2-smart-preset__card {
+    border-color: var(--sv2-border-medium);
+    box-shadow: var(--sv2-shadow-md);
+    transform: translateY(-1px);
+}
+
+.sv2-smart-preset__input:checked+.sv2-smart-preset__card {
+    border-color: var(--sv2-primary);
+    background: var(--sv2-primary-light);
+    box-shadow: 0 0 0 3px var(--sv2-primary-fade);
+}
+
+.sv2-smart-preset__emoji {
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.sv2-smart-preset__name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--sv2-text-primary);
+}
+
+.sv2-smart-preset__desc {
+    font-size: 0.78rem;
+    color: var(--sv2-text-secondary);
+    line-height: 1.4;
+}

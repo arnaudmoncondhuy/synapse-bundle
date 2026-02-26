@@ -1,0 +1,113 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Santé système | Système | Synapse Admin V2
+{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Système</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">Santé</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--{{ overall_status == 'ok' ? 'success' : (overall_status == 'warning' ? 'warning' : 'danger') }}">
+					<i data-lucide="activity"></i>
+				</span>
+				Santé du système
+			</h1>
+			<p class="sv2-page-subtitle">
+				État des composants critiques de l'infrastructure Synapse.
+			</p>
+		</div>
+		<div class="sv2-page-header__actions">
+			<span class="sv2-badge sv2-badge--{{ overall_status == 'ok' ? 'success' : (overall_status == 'warning' ? 'warning' : 'danger') }}">
+				<i data-lucide="{{ overall_status == 'ok' ? 'check-circle-2' : (overall_status == 'warning' ? 'alert-triangle' : 'x-circle') }}"></i>
+				Statut global :
+				{{ overall_status == 'ok' ? 'Opérationnel' : (overall_status == 'warning' ? 'Avertissement' : 'Erreur') }}
+			</span>
+		</div>
+	</div>
+
+	{# ── Alerte si erreur ou warning ──────────────────────────────────────────── #}
+	{% if overall_status != 'ok' %}
+		<div class="sv2-alert sv2-alert--{{ overall_status == 'error' ? 'danger' : 'warning' }} sv2-mb-xl">
+			<i data-lucide="{{ overall_status == 'error' ? 'x-circle' : 'alert-triangle' }}"></i>
+			<div>
+				{% if overall_status == 'error' %}
+					<strong>Composant(s) en erreur.</strong>
+					Un ou plusieurs composants critiques ne répondent pas correctement.
+										                Consultez les détails ci-dessous et vérifiez les logs applicatifs.
+				{% else %}
+					<strong>Avertissement.</strong>
+					Certains composants fonctionnent mais nécessitent une attention.
+				{% endif %}
+			</div>
+		</div>
+	{% endif %}
+
+	{# ── Checks en grille ─────────────────────────────────────────────────────── #}
+	<div class="sv2-grid sv2-grid--2">
+
+		{% for key, check in checks %}
+			{% set cardVariant = check.status == 'ok' ? 'sv2-card--success' : (check.status == 'warning' ? 'sv2-card--warning' : 'sv2-card--danger') %}
+			{% set iconVariant = check.status == 'ok' ? 'success' : (check.status == 'warning' ? 'warning' : 'danger') %}
+			{% set statusIcon  = check.status == 'ok' ? 'check-circle-2' : (check.status == 'warning' ? 'alert-triangle' : 'x-circle') %}
+
+			<div class="sv2-card sv2-card--hover {{ cardVariant }}">
+				<div class="sv2-card__header">
+					<div class="sv2-card__header-icon sv2-kpi__icon--{{ iconVariant }}">
+						<i data-lucide="{{ check.icon }}"></i>
+					</div>
+					<div>
+						<div class="sv2-card__title">{{ check.label }}</div>
+						<div class="sv2-card__subtitle sv2-font-mono sv2-text-xs">{{ check.detail }}</div>
+					</div>
+					<div class="sv2-card__header-actions">
+						<span class="sv2-badge sv2-badge--{{ check.status == 'ok' ? 'success' : (check.status == 'warning' ? 'warning' : 'danger') }}">
+							<i data-lucide="{{ statusIcon }}"></i>
+							{{ check.status == 'ok' ? 'OK' : (check.status == 'warning' ? 'Warning' : 'Erreur') }}
+						</span>
+					</div>
+				</div>
+			</div>
+
+		{% endfor %}
+
+	</div>
+
+	{# ── Infos techniques ─────────────────────────────────────────────────────── #}
+	<div class="sv2-card sv2-mt-xl">
+		<div class="sv2-card__header">
+			<div class="sv2-card__header-icon sv2-kpi__icon--neutral">
+				<i data-lucide="info"></i>
+			</div>
+			<div>
+				<div class="sv2-card__title">Environnement</div>
+				<div class="sv2-card__subtitle">Informations techniques sur le runtime</div>
+			</div>
+		</div>
+		<div class="sv2-card__body">
+			<div class="sv2-grid sv2-grid--3">
+				<div>
+					<div class="sv2-text-xs sv2-text-tertiary sv2-font-bold">PHP</div>
+					<div class="sv2-font-mono sv2-text-sm sv2-mt-sm">{{ php_version }}</div>
+				</div>
+				<div>
+					<div class="sv2-text-xs sv2-text-tertiary sv2-font-bold">Symfony</div>
+					<div class="sv2-font-mono sv2-text-sm sv2-mt-sm">{{ symfony_version }}</div>
+				</div>
+				<div>
+					<div class="sv2-text-xs sv2-text-tertiary sv2-font-bold">Environnement</div>
+					<div class="sv2-font-mono sv2-text-sm sv2-mt-sm">{{ app.environment }}</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}

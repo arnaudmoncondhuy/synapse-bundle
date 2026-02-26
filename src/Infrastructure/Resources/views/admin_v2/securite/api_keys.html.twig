@@ -1,0 +1,187 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Clés API | Sécurité | Synapse Admin V2
+{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Sécurité</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">Clés API</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--primary">
+					<i data-lucide="key-round"></i>
+				</span>
+				Gestion des clés API
+			</h1>
+			<p class="sv2-page-subtitle">
+				Statut des secrets configurés par provider LLM. Les clés ne sont jamais affichées en clair.
+			</p>
+		</div>
+		<div class="sv2-page-header__actions">
+			<a href="{{ path('synapse_v2_admin_providers') }}" class="sv2-btn sv2-btn--outline sv2-btn--sm">
+				<i data-lucide="plug"></i>
+				Gérer les providers
+			</a>
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="sv2-grid sv2-grid--4 sv2-mb-xl">
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--neutral">
+					<i data-lucide="plug"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Providers</div>
+					<div class="sv2-kpi__value">{{ summary.total }}</div>
+					<div class="sv2-kpi__sub">au catalogue</div>
+				</div>
+			</div>
+		</div>
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--success">
+					<i data-lucide="key-round"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Clés configurées</div>
+					<div class="sv2-kpi__value">{{ summary.configured }}</div>
+					<div class="sv2-kpi__sub">secrets présents</div>
+				</div>
+			</div>
+		</div>
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--primary">
+					<i data-lucide="zap"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Actifs</div>
+					<div class="sv2-kpi__value">{{ summary.enabled }}</div>
+					<div class="sv2-kpi__sub">providers activés</div>
+				</div>
+			</div>
+		</div>
+		<div class="sv2-card sv2-card--hover {{ summary.missing_key > 0 ? 'sv2-card--warning' : 'sv2-card--success' }}">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--{{ summary.missing_key > 0 ? 'warning' : 'success' }}">
+					<i data-lucide="{{ summary.missing_key > 0 ? 'alert-triangle' : 'shield-check' }}"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Clés manquantes</div>
+					<div class="sv2-kpi__value">{{ summary.missing_key }}</div>
+					<div class="sv2-kpi__sub">{{ summary.missing_key > 0 ? 'providers actifs sans clé' : 'tout est configuré' }}</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{% if summary.missing_key > 0 %}
+		<div class="sv2-alert sv2-alert--warning sv2-mb-xl">
+			<i data-lucide="alert-triangle"></i>
+			<div>
+				<strong>{{ summary.missing_key }}
+					provider(s) actif(s) sans clé API.</strong>
+				Ces providers ne pourront pas traiter de requêtes. Configurez leurs secrets
+				        dans
+				<a href="{{ path('synapse_v2_admin_providers') }}">Fournisseurs</a>.
+			</div>
+		</div>
+	{% endif %}
+
+	{# ── Tableau providers ─────────────────────────────────────────────────────── #}
+	<div class="sv2-card">
+		<div class="sv2-card__header">
+			<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+				<i data-lucide="shield"></i>
+			</div>
+			<div>
+				<div class="sv2-card__title">Secrets par provider</div>
+				<div class="sv2-card__subtitle">Les clés ne sont jamais affichées — uniquement leur présence</div>
+			</div>
+		</div>
+		<div class="sv2-table-container">
+			<table class="sv2-table">
+				<thead>
+					<tr>
+						<th>Provider</th>
+						<th>Clé API</th>
+						<th>Statut</th>
+						<th class="sv2-table__cell--actions">Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for provider in providers %}
+						<tr>
+							<td>
+								<div class="sv2-table-cell-label">
+									<div class="sv2-table-cell-label__icon sv2-kpi__icon--primary">
+										<i data-lucide="plug"></i>
+									</div>
+									<div>
+										<div class="sv2-table-cell-label__title">{{ provider.name }}</div>
+										<div class="sv2-table-cell-label__sub sv2-font-mono">{{ provider.type ?? provider.id }}</div>
+									</div>
+								</div>
+							</td>
+							<td>
+								{% if provider.isConfigured() %}
+									<span class="sv2-font-mono sv2-text-xs sv2-text-muted">
+										••••••••••••••••••••
+										<span class="sv2-badge sv2-badge--success">
+											<i data-lucide="check"></i>
+											Présente
+										</span>
+									</span>
+								{% else %}
+									<span class="sv2-badge sv2-badge--{{ provider.isEnabled() ? 'danger' : 'neutral' }}">
+										<i data-lucide="{{ provider.isEnabled() ? 'x-circle' : 'minus-circle' }}"></i>
+										{{ provider.isEnabled() ? 'Manquante' : 'Non configurée' }}
+									</span>
+								{% endif %}
+							</td>
+							<td>
+								{% if provider.isEnabled() %}
+									<span class="sv2-badge sv2-badge--success">
+										<i data-lucide="zap"></i>
+										Actif
+									</span>
+								{% else %}
+									<span class="sv2-badge sv2-badge--neutral">
+										<i data-lucide="circle-slash"></i>
+										Inactif
+									</span>
+								{% endif %}
+							</td>
+							<td class="sv2-table__cell--actions">
+								<a href="{{ path('synapse_v2_admin_providers') }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm sv2-btn--icon" data-sv2-tooltip="Configurer">
+									<i data-lucide="settings"></i>
+								</a>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="4">
+								<div class="sv2-empty">
+									<div class="sv2-empty__icon">
+										<i data-lucide="plug"></i>
+									</div>
+									<div class="sv2-empty__title">Aucun provider</div>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+{% endblock %}

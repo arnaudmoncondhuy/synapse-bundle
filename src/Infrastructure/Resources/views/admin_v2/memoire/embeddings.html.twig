@@ -1,0 +1,282 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Embeddings | Mémoire | Synapse Admin V2
+{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Mémoire</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">Embeddings</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--success">
+					<i data-lucide="database-zap"></i>
+				</span>
+				Embeddings & RAG
+			</h1>
+			<p class="sv2-page-subtitle">
+				Configurez le moteur sémantique de Synapse : modèle d'embedding,
+												            stratégie de chunking et vector store.
+			</p>
+		</div>
+	</div>
+
+	{# ── État de l'infrastructure ─────────────────────────────────────────────── #}
+	<div class="sv2-grid sv2-grid--3 sv2-mb-xl">
+
+		<div class="sv2-card sv2-card--hover {{ config.embeddingProvider ? 'sv2-card--success' : 'sv2-card--warning' }}">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon {{ config.embeddingProvider ? 'sv2-kpi__icon--success' : 'sv2-kpi__icon--warning' }}">
+					<i data-lucide="{{ config.embeddingProvider ? 'check-circle-2' : 'alert-triangle' }}"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Modèle d'Embedding</div>
+					<div class="sv2-kpi__value sv2-text-sm">
+						{{ config.embeddingModel ?: 'Non configuré' }}
+					</div>
+					<div class="sv2-kpi__sub">{{ config.embeddingProvider ?: '—' }}</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--primary">
+					<i data-lucide="layers"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Vector Store</div>
+					<div class="sv2-kpi__value sv2-text-sm">{{ config.vectorStore }}</div>
+					<div class="sv2-kpi__sub">
+						{% if db_is_postgres %}
+							PostgreSQL
+							{% if db_vector_ready %}
+								<span class="sv2-badge sv2-badge--success sv2-text-xs">
+									<i data-lucide="check"></i>
+									pgvector
+								</span>
+							{% else %}
+								<span class="sv2-badge sv2-badge--warning sv2-text-xs">
+									pgvector manquant
+								</span>
+							{% endif %}
+						{% else %}
+							SQLite / MySQL
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--neutral">
+					<i data-lucide="scissors"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Chunking</div>
+					<div class="sv2-kpi__value sv2-text-sm">{{ config.chunkingStrategy }}</div>
+					<div class="sv2-kpi__sub">
+						{{ config.chunkSize }}
+						car. /
+						{{ config.chunkOverlap }}
+						chevauchement
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Formulaire de configuration ──────────────────────────────────────────── #}
+	<form action="{{ path('synapse_v2_admin_embeddings') }}" method="POST">
+		<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_admin_embeddings') }}">
+
+		<div
+			class="sv2-grid sv2-grid--2">
+
+			{# Carte 1 : Modèle d'embedding #}
+			<div class="sv2-card">
+				<div class="sv2-card__header">
+					<div class="sv2-card__header-icon sv2-kpi__icon--success">
+						<i data-lucide="cpu"></i>
+					</div>
+					<div>
+						<div class="sv2-card__title">Modèle d'Embedding</div>
+						<div class="sv2-card__subtitle">Fournisseur et modèle actifs</div>
+					</div>
+				</div>
+				<div class="sv2-card__body sv2-card__body--compact">
+
+					<div class="sv2-form-group">
+						<label class="sv2-label" for="embedding_provider">Fournisseur</label>
+						<select id="embedding_provider" name="embedding_provider" class="sv2-select">
+							<option value="">— Sélectionner —</option>
+							{% for provider in active_providers %}
+								<option value="{{ provider.name }}" {{ config.embeddingProvider == provider.name ? 'selected' : '' }}>
+									{{ provider.label }}
+								</option>
+							{% endfor %}
+						</select>
+					</div>
+
+					<div class="sv2-form-group sv2-mt-md">
+						<label class="sv2-label" for="embedding_model">Modèle</label>
+						<input type="text" id="embedding_model" name="embedding_model" class="sv2-input" value="{{ config.embeddingModel }}" placeholder="Ex : text-embedding-004">
+					</div>
+
+					<div class="sv2-form-group sv2-mt-md">
+						<label class="sv2-label" for="embedding_dimension">
+							Dimensions
+							<span class="sv2-badge sv2-badge--neutral sv2-ml-sm">optionnel</span>
+						</label>
+						<input type="number" id="embedding_dimension" name="embedding_dimension" class="sv2-input" value="{{ config.embeddingDimension }}" placeholder="Ex : 768 ou 1536">
+						<p class="sv2-text-xs sv2-text-tertiary sv2-mt-sm">
+							Laissez vide pour utiliser la dimension par défaut du modèle.
+						</p>
+					</div>
+
+				</div>
+			</div>
+
+			{# Carte 2 : Vector Store & Chunking #}
+			<div class="sv2-card">
+				<div class="sv2-card__header">
+					<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+						<i data-lucide="layers"></i>
+					</div>
+					<div>
+						<div class="sv2-card__title">Stockage & Chunking</div>
+						<div class="sv2-card__subtitle">Vector store et stratégie de découpage</div>
+					</div>
+				</div>
+				<div class="sv2-card__body sv2-card__body--compact">
+
+					<div class="sv2-form-group">
+						<label class="sv2-label" for="vector_store">Vector Store</label>
+						<select id="vector_store" name="vector_store" class="sv2-select">
+							{% for alias in available_vector_stores %}
+								<option value="{{ alias }}" {{ config.vectorStore == alias ? 'selected' : '' }}>
+									{{ alias }}
+								</option>
+							{% endfor %}
+						</select>
+					</div>
+
+					<div class="sv2-form-group sv2-mt-md">
+						<label class="sv2-label" for="chunking_strategy">Stratégie de chunking</label>
+						<select id="chunking_strategy" name="chunking_strategy" class="sv2-select">
+							{% for strategy in ['recursive', 'sentence', 'paragraph', 'fixed'] %}
+								<option value="{{ strategy }}" {{ config.chunkingStrategy == strategy ? 'selected' : '' }}>
+									{{ strategy|capitalize }}
+								</option>
+							{% endfor %}
+						</select>
+					</div>
+
+					<div class="sv2-grid sv2-grid--2 sv2-mt-md">
+						<div class="sv2-form-group">
+							<label class="sv2-label" for="chunk_size">Taille chunk</label>
+							<input type="number" id="chunk_size" name="chunk_size" class="sv2-input" value="{{ config.chunkSize }}" min="100" max="20000">
+						</div>
+						<div class="sv2-form-group">
+							<label class="sv2-label" for="chunk_overlap">Chevauchement</label>
+							<input type="number" id="chunk_overlap" name="chunk_overlap" class="sv2-input" value="{{ config.chunkOverlap }}" min="0">
+						</div>
+					</div>
+
+				</div>
+				<div class="sv2-card__footer">
+					<button type="submit" class="sv2-btn sv2-btn--primary">
+						<i data-lucide="save"></i>
+						Enregistrer
+					</button>
+					{# Test d'embedding rapide via JS #}
+					<button type="button" id="btn-test-embedding" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+						<i data-lucide="flask-conical"></i>
+						Tester l'embedding
+					</button>
+				</div>
+			</div>
+
+		</div>
+
+	</form>
+
+	{# Panel de test (caché par défaut) #}
+	<div id="panel-test" hidden class="sv2-card sv2-mt-xl">
+		<div class="sv2-card__header">
+			<div class="sv2-card__header-icon sv2-kpi__icon--info">
+				<i data-lucide="flask-conical"></i>
+			</div>
+			<div class="sv2-card__title">Test d'embedding</div>
+		</div>
+		<div class="sv2-card__body sv2-card__body--compact">
+			<div class="sv2-form-group">
+				<label class="sv2-label" for="test-text">Texte de test</label>
+				<input type="text" id="test-text" class="sv2-input" value="La mémoire contextuelle améliore les conversations IA." placeholder="Entrez un texte à vectoriser…">
+			</div>
+			<div id="test-result" class="sv2-mt-md"></div>
+		</div>
+	</div>
+
+	<script>
+		document.getElementById('btn-test-embedding') ?. addEventListener('click', async function () {
+const panel = document.getElementById('panel-test');
+panel.hidden = false;
+panel.scrollIntoView({behavior: 'smooth'});
+
+const text = document.getElementById('test-text').value;
+const resultDiv = document.getElementById('test-result');
+resultDiv.innerHTML = '<span class="sv2-text-tertiary">Génération en cours…</span>';
+
+try {
+const res = await fetch('{{ path('synapse_v2_admin_embeddings_test') }}', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/x-www-form-urlencoded'
+},
+body: new URLSearchParams(
+{_token: '{{ csrf_token('synapse_v2_admin_embeddings_test') }}', text: text}
+)
+});
+const data = await res.json();
+if (data.success) {
+resultDiv.innerHTML = `
+                <div class="sv2-flex sv2-gap-md sv2-items-center">
+                    <span class="sv2-badge sv2-badge--success">
+                        <i data-lucide="check-circle-2"></i> Succès
+                    </span>
+                    <span class="sv2-text-sm sv2-text-muted">
+                        Dimension : <strong>${
+data.dimension
+}</strong>
+                        &nbsp;·&nbsp; Temps : <strong>${
+data.time_ms
+}ms</strong>
+                    </span>
+                </div>`;
+} else {
+resultDiv.innerHTML = `<span class="sv2-badge sv2-badge--danger"><i data-lucide="x-circle"></i> ${
+data.error
+}</span>`;
+}
+if (window.lucide) 
+lucide.createIcons();
+
+
+
+} catch (e) {
+resultDiv.innerHTML = '<span class="sv2-badge sv2-badge--danger">Erreur réseau</span>';
+}
+});
+	</script>
+
+{% endblock %}

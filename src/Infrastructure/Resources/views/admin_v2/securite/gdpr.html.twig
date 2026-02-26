@@ -1,0 +1,206 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}RGPD | Sécurité | Synapse Admin V2
+{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Sécurité</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">RGPD</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--success">
+					<i data-lucide="shield-check"></i>
+				</span>
+				Conformité RGPD
+			</h1>
+			<p class="sv2-page-subtitle">
+				Politique de rétention des données, statistiques de stockage et liens vers les outils de conformité.
+			</p>
+		</div>
+		<div class="sv2-page-header__actions">
+			<a href="{{ path('synapse_v2_admin_settings') }}" class="sv2-btn sv2-btn--outline sv2-btn--sm">
+				<i data-lucide="settings"></i>
+				Modifier la rétention
+			</a>
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="sv2-grid sv2-grid--3 sv2-mb-xl">
+
+		<div class="sv2-card sv2-card--hover sv2-card--{{ config.retentionDays <= 30 ? 'success' : (config.retentionDays <= 90 ? 'warning' : '') }}">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--{{ config.retentionDays <= 30 ? 'success' : (config.retentionDays <= 90 ? 'warning' : 'neutral') }}">
+					<i data-lucide="clock"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Rétention active</div>
+					<div class="sv2-kpi__value">{{ config.retentionDays }}
+						j</div>
+					<div class="sv2-kpi__sub">
+						{{ config.retentionDays <= 30 ? 'Bonne pratique RGPD' : (config.retentionDays <= 90 ? 'Acceptable' : 'À revoir') }}
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--primary">
+					<i data-lucide="messages-square"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Conversations stockées</div>
+					<div class="sv2-kpi__value">{{ total_conversations }}</div>
+					<div class="sv2-kpi__sub">données personnelles actives</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--{{ config.debugMode ? 'warning' : 'success' }}">
+					<i data-lucide="{{ config.debugMode ? 'bug' : 'shield' }}"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Mode debug</div>
+					<div class="sv2-kpi__value">{{ config.debugMode ? 'Actif' : 'Désactivé' }}</div>
+					<div class="sv2-kpi__sub">
+						{{ config.debugMode ? 'Attention : données LLM enregistrées' : 'Données LLM non enregistrées' }}
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{% if config.debugMode %}
+		<div class="sv2-alert sv2-alert--warning sv2-mb-xl">
+			<i data-lucide="bug"></i>
+			<div>
+				<strong>Mode debug actif.</strong>
+				Les échanges LLM (prompts, réponses) sont
+							        enregistrés en base de données. Désactivez-le en production pour limiter les données personnelles stockées.
+				<a href="{{ path('synapse_v2_admin_settings') }}">Modifier dans Paramètres</a>.
+			</div>
+		</div>
+	{% endif %}
+
+	{# ── Politique de rétention ───────────────────────────────────────────────── #}
+	<div class="sv2-grid sv2-grid--2 sv2-mb-xl">
+
+		<div class="sv2-card">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--success">
+					<i data-lucide="clock"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Politique de rétention</div>
+					<div class="sv2-card__subtitle">Configuration actuelle</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--compact">
+				<div class="sv2-grid sv2-grid--2">
+					<div>
+						<div class="sv2-text-xs sv2-text-tertiary sv2-font-bold">Durée de rétention</div>
+						<div class="sv2-font-mono sv2-text-sm sv2-mt-sm">{{ config.retentionDays }}
+							jours</div>
+					</div>
+					<div>
+						<div class="sv2-text-xs sv2-text-tertiary sv2-font-bold">Langue du contexte</div>
+						<div class="sv2-font-mono sv2-text-sm sv2-mt-sm">{{ config.contextLanguage|upper }}</div>
+					</div>
+				</div>
+			</div>
+			<div class="sv2-card__footer">
+				<a href="{{ path('synapse_v2_admin_settings') }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+					<i data-lucide="edit-3"></i>
+					Modifier
+				</a>
+			</div>
+		</div>
+
+		<div class="sv2-card">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--neutral">
+					<i data-lucide="check-circle-2"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Checklist RGPD basique</div>
+					<div class="sv2-card__subtitle">Points de conformité identifiés</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--compact">
+				<div class="sv2-flex sv2-flex-col sv2-gap-sm">
+
+					<div class="sv2-flex sv2-items-center sv2-gap-sm">
+						{% if config.retentionDays <= 90 %}
+							<i data-lucide="check-circle-2" class="sv2-text-success"></i>
+						{% else %}
+							<i data-lucide="alert-triangle" class="sv2-text-warning"></i>
+						{% endif %}
+						<span class="sv2-text-sm">Rétention ≤ 90 jours</span>
+					</div>
+
+					<div class="sv2-flex sv2-items-center sv2-gap-sm">
+						{% if not config.debugMode %}
+							<i data-lucide="check-circle-2" class="sv2-text-success"></i>
+						{% else %}
+							<i data-lucide="alert-triangle" class="sv2-text-warning"></i>
+						{% endif %}
+						<span class="sv2-text-sm">Mode debug désactivé (pas d'enregistrement extra)</span>
+					</div>
+
+					<div class="sv2-flex sv2-items-center sv2-gap-sm">
+						<i data-lucide="check-circle-2" class="sv2-text-success"></i>
+						<span class="sv2-text-sm">Isolation des données par propriétaire (owner)</span>
+					</div>
+
+					<div class="sv2-flex sv2-items-center sv2-gap-sm">
+						<i data-lucide="check-circle-2" class="sv2-text-success"></i>
+						<span class="sv2-text-sm">Chiffrement des conversations (si activé)</span>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Actions RGPD ─────────────────────────────────────────────────────────── #}
+	<div class="sv2-card">
+		<div class="sv2-card__header">
+			<div class="sv2-card__header-icon sv2-kpi__icon--neutral">
+				<i data-lucide="wrench"></i>
+			</div>
+			<div>
+				<div class="sv2-card__title">Actions de conformité</div>
+				<div class="sv2-card__subtitle">Outils pour répondre aux demandes d'exercice des droits</div>
+			</div>
+		</div>
+		<div class="sv2-card__body sv2-card__body--compact">
+			<div class="sv2-grid sv2-grid--3">
+				<a href="{{ path('synapse_v2_admin_history') }}" class="sv2-btn sv2-btn--outline sv2-btn--sm">
+					<i data-lucide="messages-square"></i>
+					Voir les conversations (Break-Glass)
+				</a>
+				<a href="{{ path('synapse_v2_admin_audit') }}" class="sv2-btn sv2-btn--outline sv2-btn--sm">
+					<i data-lucide="scroll-text"></i>
+					Journal d'audit LLM
+				</a>
+				<a href="{{ path('synapse_v2_admin_settings') }}" class="sv2-btn sv2-btn--outline sv2-btn--sm">
+					<i data-lucide="settings"></i>
+					Modifier la rétention
+				</a>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}

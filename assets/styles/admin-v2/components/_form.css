@@ -1,0 +1,269 @@
+/**
+ * Synapse Admin V2 - Forms
+ */
+
+/* ── Form group ──────────────────────────────────────────────────────────────── */
+
+.sv2-fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sv2-field {
+    margin-bottom: var(--sv2-space-lg);
+}
+
+.sv2-field+.sv2-field {
+    /* déjà géré par margin-bottom */
+}
+
+.sv2-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--sv2-text-primary);
+    margin-bottom: var(--sv2-space-xs);
+}
+
+.sv2-label--required::after {
+    content: ' *';
+    color: var(--sv2-danger);
+    font-weight: 700;
+}
+
+.sv2-hint {
+    font-size: 0.78rem;
+    color: var(--sv2-text-tertiary);
+    margin-top: 0.375rem;
+    line-height: 1.4;
+}
+
+/* ── Contrôles ───────────────────────────────────────────────────────────────── */
+
+.sv2-input,
+.sv2-select,
+.sv2-textarea {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1.5px solid var(--sv2-border);
+    border-radius: var(--sv2-radius-md);
+    font-family: var(--sv2-font-sans);
+    font-size: 0.9rem;
+    color: var(--sv2-text-primary);
+    transition: all var(--sv2-transition-fast);
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.sv2-input:hover,
+.sv2-select:hover,
+.sv2-textarea:hover {
+    border-color: var(--sv2-border-medium);
+    background: #fff;
+}
+
+.sv2-input:focus,
+.sv2-select:focus,
+.sv2-textarea:focus {
+    outline: none;
+    border-color: var(--sv2-primary);
+    background: #fff;
+    box-shadow: 0 0 0 3px var(--sv2-primary-fade);
+}
+
+.sv2-input::placeholder,
+.sv2-textarea::placeholder {
+    color: var(--sv2-text-tertiary);
+}
+
+.sv2-textarea {
+    resize: vertical;
+    min-height: 120px;
+    line-height: 1.6;
+}
+
+/* ── Select custom arrow ─────────────────────────────────────────────────────── */
+
+.sv2-select-wrapper {
+    position: relative;
+}
+
+.sv2-select-wrapper::after {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    right: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--sv2-text-tertiary);
+}
+
+/* ── Range ───────────────────────────────────────────────────────────────────── */
+
+.sv2-range {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: var(--sv2-radius-full);
+    background: var(--sv2-border);
+    outline: none;
+    cursor: pointer;
+}
+
+.sv2-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--sv2-primary);
+    box-shadow: 0 2px 6px var(--sv2-primary-glow);
+    transition: box-shadow var(--sv2-transition-fast);
+}
+
+.sv2-range::-webkit-slider-thumb:hover {
+    box-shadow: 0 3px 10px var(--sv2-primary-glow);
+    transform: scale(1.1);
+}
+
+/* ── Toggle switch ────────────────────────────────────────────────────────────── */
+
+.sv2-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sv2-space-sm);
+    cursor: pointer;
+}
+
+.sv2-toggle__input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.sv2-toggle__track {
+    width: 44px;
+    height: 24px;
+    border-radius: var(--sv2-radius-full);
+    background: var(--sv2-border);
+    transition: background var(--sv2-transition-base);
+    position: relative;
+    flex-shrink: 0;
+}
+
+.sv2-toggle__thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: var(--sv2-shadow-sm);
+    transition: transform var(--sv2-transition-spring);
+}
+
+.sv2-toggle__input:checked+.sv2-toggle__track {
+    background: var(--sv2-primary);
+}
+
+.sv2-toggle__input:checked+.sv2-toggle__track .sv2-toggle__thumb {
+    transform: translateX(20px);
+}
+
+.sv2-toggle__label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--sv2-text-primary);
+    user-select: none;
+}
+
+/* ── Form sections ───────────────────────────────────────────────────────────── */
+
+.sv2-form-section {
+    margin-bottom: var(--sv2-space-2xl);
+}
+
+.sv2-form-section__title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--sv2-text-tertiary);
+    margin-bottom: var(--sv2-space-md);
+    padding-bottom: var(--sv2-space-sm);
+    border-bottom: 1px solid var(--sv2-border-light);
+    display: flex;
+    align-items: center;
+    gap: var(--sv2-space-sm);
+}
+
+/* ── Sticky save bar ─────────────────────────────────────────────────────────── */
+
+.sv2-sticky-save {
+    position: sticky;
+    bottom: var(--sv2-space-lg);
+    z-index: var(--sv2-z-sticky);
+    display: flex;
+    align-items: center;
+    gap: var(--sv2-space-md);
+    padding: var(--sv2-space-md) var(--sv2-space-lg);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--sv2-border);
+    border-radius: var(--sv2-radius-xl);
+    box-shadow: var(--sv2-shadow-lg);
+    margin-top: var(--sv2-space-xl);
+}
+
+.sv2-sticky-save__info {
+    font-size: 0.85rem;
+    color: var(--sv2-text-secondary);
+}
+
+.sv2-sticky-save__actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--sv2-space-sm);
+}
+
+/* ── Input avec icône ────────────────────────────────────────────────────────── */
+
+.sv2-input-group {
+    position: relative;
+}
+
+.sv2-input-group .sv2-input {
+    padding-left: 2.5rem;
+}
+
+.sv2-input-group__icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--sv2-text-tertiary);
+    pointer-events: none;
+}
+
+.sv2-input-group__icon i {
+    width: 16px;
+    height: 16px;
+}
+
+/* ── Code textarea ───────────────────────────────────────────────────────────── */
+
+.sv2-textarea--code {
+    font-family: var(--sv2-font-mono);
+    font-size: 0.85rem;
+    background: var(--sv2-bg-app);
+    line-height: 1.5;
+}

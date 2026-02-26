@@ -1,0 +1,110 @@
+{#
+    Synapse Admin V2 — Base Layout
+
+    BLOCS DISPONIBLES :
+    - v2_page_title   : Titre de l'onglet (ex: "Intelligence | Synapse Admin V2")
+    - v2_stylesheets  : CSS supplémentaires (après le CSS V2)
+    - v2_head_scripts : Scripts dans <head>
+    - v2_breadcrumb   : Fil d'Ariane dans la topbar
+    - v2_topbar_actions : Boutons/actions à droite de la topbar
+    - v2_content      : Zone de contenu principale ← À surcharger
+    - v2_body_scripts : Scripts avant </body>
+#}
+<!DOCTYPE html>
+<html lang="fr" class="sv2-root">
+<head>
+    {% block v2_meta %}
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="robots" content="noindex, nofollow">
+    {% endblock %}
+
+    <title>{% block v2_page_title %}Synapse Admin V2{% endblock %}</title>
+
+    {# CSRF token global #}
+    {% if csrf_token is defined %}
+        <meta name="synapse-csrf" content="{{ csrf_token('synapse_admin') }}">
+    {% endif %}
+
+    {% block v2_stylesheets %}
+        {# Google Fonts : Plus Jakarta Sans #}
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+        {# Synapse Admin V2 Design System #}
+        <link rel="stylesheet" href="{{ asset('synapse/styles/admin-v2/admin-v2.css') }}">
+
+        {# Slot pour surcharger les tokens de couleur (thème projet) #}
+        {% block v2_theme %}{% endblock %}
+    {% endblock %}
+
+    {% block v2_head_scripts %}
+        {# ImportMap Symfony AssetMapper — nécessaire en mode dev #}
+        {{ importmap('app') }}
+        {# Lucide Icons #}
+        <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    {% endblock %}
+</head>
+<body>
+<div class="sv2-shell">
+
+    {# ═══════════════════════════════════════════════════════════════════════
+       SIDEBAR
+       ═══════════════════════════════════════════════════════════════════════ #}
+    {% block v2_sidebar %}
+        {% include '@Synapse/admin_v2/layout/_sidebar.html.twig' %}
+    {% endblock %}
+
+    {# ═══════════════════════════════════════════════════════════════════════
+       MAIN
+       ═══════════════════════════════════════════════════════════════════════ #}
+    <main class="sv2-main">
+
+        {# Topbar sticky #}
+        <div class="sv2-topbar">
+            <nav class="sv2-topbar__breadcrumb" aria-label="Fil d'ariane">
+                <a href="{{ path('synapse_v2_admin_dashboard') }}">
+                    <i data-lucide="home" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Admin V2
+                </a>
+                {% block v2_breadcrumb %}{% endblock %}
+            </nav>
+
+            <div class="sv2-topbar__actions">
+                {% block v2_topbar_actions %}
+                    {# Lien retour V1 #}
+                    <a href="{{ path('synapse_admin_dashboard') }}"
+                       class="sv2-btn sv2-btn--ghost sv2-btn--sm"
+                       data-sv2-tooltip="Retour à l'Admin V1 (legacy)">
+                        <i data-lucide="arrow-left"></i>
+                        Admin V1
+                    </a>
+                {% endblock %}
+            </div>
+        </div>
+
+        {# Flash messages #}
+        {% block v2_flash %}
+            {% include '@Synapse/admin_v2/layout/_flash.html.twig' %}
+        {% endblock %}
+
+        {# Contenu de la page #}
+        <div class="sv2-content">
+            {% block v2_content %}{% endblock %}
+        </div>
+
+    </main>
+</div>
+
+{% block v2_body_scripts %}
+    <script>
+        // Init Lucide icons after DOM ready
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    </script>
+{% endblock %}
+</body>
+</html>

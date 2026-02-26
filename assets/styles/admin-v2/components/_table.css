@@ -1,0 +1,120 @@
+/**
+ * Synapse Admin V2 - Tables
+ */
+
+/* ── Container ───────────────────────────────────────────────────────────────── */
+
+.sv2-table-container {
+    overflow-x: auto;
+    border-radius: var(--sv2-radius-lg);
+    border: 1px solid var(--sv2-border);
+}
+
+/* ── Table ───────────────────────────────────────────────────────────────────── */
+
+.sv2-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────────── */
+
+.sv2-table th {
+    text-align: left;
+    padding: 0.875rem var(--sv2-space-lg);
+    background: var(--sv2-bg-app);
+    color: var(--sv2-text-tertiary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    border-bottom: 1px solid var(--sv2-border);
+    white-space: nowrap;
+}
+
+.sv2-table th:first-child {
+    border-top-left-radius: var(--sv2-radius-lg);
+}
+
+.sv2-table th:last-child {
+    border-top-right-radius: var(--sv2-radius-lg);
+}
+
+/* ── Cells ───────────────────────────────────────────────────────────────────── */
+
+.sv2-table td {
+    padding: var(--sv2-space-md) var(--sv2-space-lg);
+    border-bottom: 1px solid var(--sv2-border-light);
+    color: var(--sv2-text-primary);
+    vertical-align: middle;
+}
+
+.sv2-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.sv2-table tbody tr {
+    background: var(--sv2-bg-surface);
+    transition: background var(--sv2-transition-fast);
+}
+
+.sv2-table tbody tr:hover {
+    background: rgba(139, 92, 246, 0.02);
+}
+
+/* ── Cell variants ────────────────────────────────────────────────────────────── */
+
+.sv2-table__cell--muted {
+    color: var(--sv2-text-tertiary);
+    font-size: 0.8rem;
+}
+
+.sv2-table__cell--mono {
+    font-family: var(--sv2-font-mono);
+    font-size: 0.82rem;
+}
+
+.sv2-table__cell--actions {
+    text-align: right;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--sv2-space-xs);
+}
+
+/* ── Info avec icône dans cellule ────────────────────────────────────────────── */
+
+.sv2-table-cell-label {
+    display: flex;
+    align-items: center;
+    gap: var(--sv2-space-sm);
+}
+
+.sv2-table-cell-label__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--sv2-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sv2-table-cell-label__icon i {
+    width: 16px;
+    height: 16px;
+}
+
+.sv2-table-cell-label__title {
+    font-weight: 600;
+    color: var(--sv2-text-primary);
+    font-size: 0.875rem;
+}
+
+.sv2-table-cell-label__sub {
+    font-size: 0.75rem;
+    color: var(--sv2-text-tertiary);
+    margin-top: 1px;
+}

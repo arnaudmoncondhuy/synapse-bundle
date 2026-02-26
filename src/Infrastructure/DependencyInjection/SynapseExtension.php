@@ -187,6 +187,7 @@ class SynapseExtension extends Extension implements PrependExtensionInterface
         // Load admin services (conditionally, if admin is enabled)
         if ($config['admin']['enabled'] ?? false) {
             $loader->load('admin.yaml');
+            $loader->load('admin_v2.yaml');
         }
 
         // ── ConversationManager Configuration ────────────────────────────────

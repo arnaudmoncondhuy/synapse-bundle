@@ -1,0 +1,176 @@
+/**
+ * Synapse Admin V2 - Design Tokens
+ * Namespace: .sv2-*
+ *
+ * ─── Glassmorphism Design System ─────────────────────────────────────────────
+ *
+ * Ces variables peuvent être surchargées par le projet hôte :
+ *   :root { --sv2-hue: 220; --sv2-accent: #your-color; }
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+:root {
+   /* =========================================================================
+       BRAND — Teinte principale (overridable)
+       ========================================================================= */
+   --sv2-hue: 258;
+   /* Violet Synapse */
+   --sv2-sat: 85%;
+
+   /* Couleur primaire dynamique */
+   --sv2-primary: hsl(var(--sv2-hue), var(--sv2-sat), 58%);
+   --sv2-primary-dark: hsl(var(--sv2-hue), var(--sv2-sat), 45%);
+   --sv2-primary-light: hsl(var(--sv2-hue), var(--sv2-sat), 96%);
+   --sv2-primary-glow: hsl(var(--sv2-hue), var(--sv2-sat), 60%, 0.35);
+   --sv2-primary-fade: hsl(var(--sv2-hue), var(--sv2-sat), 85%, 0.25);
+   --sv2-primary-border: hsl(var(--sv2-hue), var(--sv2-sat), 78%, 0.4);
+
+   /* =========================================================================
+       COULEURS SÉMANTIQUES
+       ========================================================================= */
+   --sv2-success: hsl(152, 72%, 40%);
+   --sv2-success-bg: hsl(152, 72%, 95%);
+   --sv2-success-border: hsl(152, 72%, 80%);
+
+   --sv2-warning: hsl(38, 92%, 50%);
+   --sv2-warning-bg: hsl(38, 92%, 95%);
+   --sv2-warning-border: hsl(38, 92%, 75%);
+
+   --sv2-danger: hsl(350, 82%, 56%);
+   --sv2-danger-bg: hsl(350, 82%, 96%);
+   --sv2-danger-border: hsl(350, 82%, 80%);
+
+   --sv2-info: hsl(205, 90%, 52%);
+   --sv2-info-bg: hsl(205, 90%, 95%);
+   --sv2-info-border: hsl(205, 90%, 78%);
+
+   /* =========================================================================
+       PALETTE FOND — Dark glass sidebar + Light main
+       ========================================================================= */
+
+   /* Sidebar (dark glass) */
+   --sv2-sidebar-bg: hsl(225, 35%, 8%);
+   --sv2-sidebar-glass: rgba(15, 20, 40, 0.85);
+   --sv2-sidebar-border: rgba(255, 255, 255, 0.06);
+   --sv2-sidebar-width: 260px;
+
+   /* Section labels sidebar */
+   --sv2-sidebar-label: hsl(225, 12%, 55%);
+   --sv2-sidebar-text: hsl(225, 12%, 85%);
+   --sv2-sidebar-text-active: #ffffff;
+
+   /* Fond main content */
+   --sv2-bg-app: hsl(225, 25%, 96%);
+   --sv2-bg-surface: #ffffff;
+   --sv2-bg-elevated: hsl(225, 25%, 99%);
+
+   /* Fond glassmorphism pour cards */
+   --sv2-glass-bg: rgba(255, 255, 255, 0.75);
+   --sv2-glass-border: rgba(255, 255, 255, 0.45);
+   --sv2-glass-backdrop: blur(16px) saturate(180%);
+
+   /* =========================================================================
+       TEXTE
+       ========================================================================= */
+   --sv2-text-primary: hsl(225, 35%, 14%);
+   --sv2-text-secondary: hsl(225, 18%, 44%);
+   --sv2-text-tertiary: hsl(225, 12%, 64%);
+   --sv2-text-inverse: #ffffff;
+   --sv2-text-link: var(--sv2-primary);
+
+   /* =========================================================================
+       BORDURES
+       ========================================================================= */
+   --sv2-border: hsl(225, 20%, 88%);
+   --sv2-border-light: hsl(225, 20%, 93%);
+   --sv2-border-medium: hsl(225, 18%, 80%);
+
+   /* =========================================================================
+       OMBRES — Layered pour profondeur
+       ========================================================================= */
+   --sv2-shadow-xs: 0 1px 2px rgba(15, 20, 60, 0.04);
+   --sv2-shadow-sm: 0 2px 6px rgba(15, 20, 60, 0.06), 0 1px 2px rgba(15, 20, 60, 0.04);
+   --sv2-shadow-md: 0 4px 16px rgba(15, 20, 60, 0.08), 0 2px 4px rgba(15, 20, 60, 0.05);
+   --sv2-shadow-lg: 0 12px 32px rgba(15, 20, 60, 0.12), 0 4px 8px rgba(15, 20, 60, 0.06);
+   --sv2-shadow-xl: 0 24px 56px rgba(15, 20, 60, 0.16), 0 8px 16px rgba(15, 20, 60, 0.08);
+
+   /* Ombre colorée primaire (hover, active) */
+   --sv2-shadow-primary: 0 8px 24px var(--sv2-primary-glow);
+
+   /* =========================================================================
+       SPACING
+       ========================================================================= */
+   --sv2-space-xs: 0.25rem;
+   /* 4px  */
+   --sv2-space-sm: 0.5rem;
+   /* 8px  */
+   --sv2-space-md: 1rem;
+   /* 16px */
+   --sv2-space-lg: 1.5rem;
+   /* 24px */
+   --sv2-space-xl: 2rem;
+   /* 32px */
+   --sv2-space-2xl: 3rem;
+   /* 48px */
+   --sv2-space-3xl: 4rem;
+   /* 64px */
+
+   /* =========================================================================
+       BORDER RADIUS
+       ========================================================================= */
+   --sv2-radius-xs: 0.25rem;
+   /* 4px  */
+   --sv2-radius-sm: 0.5rem;
+   /* 8px  */
+   --sv2-radius-md: 0.75rem;
+   /* 12px */
+   --sv2-radius-lg: 1rem;
+   /* 16px */
+   --sv2-radius-xl: 1.25rem;
+   /* 20px */
+   --sv2-radius-2xl: 1.5rem;
+   /* 24px */
+   --sv2-radius-full: 9999px;
+
+   /* =========================================================================
+       TYPOGRAPHIE
+       ========================================================================= */
+   --sv2-font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+   --sv2-font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+   --sv2-line-height: 1.6;
+
+   /* =========================================================================
+       COULEURS PAR DOMAINE MÉTIER (pour les icônes sidebar)
+       ========================================================================= */
+   --sv2-domain-intelligence: hsl(258, 85%, 60%);
+   /* Violet — Intelligence */
+   --sv2-domain-conversation: hsl(196, 90%, 48%);
+   /* Cyan    — Conversation */
+   --sv2-domain-memory: hsl(155, 70%, 42%);
+   /* Vert    — Mémoire */
+   --sv2-domain-usage: hsl(38, 90%, 52%);
+   /* Orange  — Usage */
+   --sv2-domain-security: hsl(350, 78%, 55%);
+   /* Rouge   — Sécurité */
+   --sv2-domain-system: hsl(225, 18%, 52%);
+   /* Gris    — Système */
+
+   /* =========================================================================
+       TRANSITIONS
+       ========================================================================= */
+   --sv2-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+   --sv2-transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+   --sv2-transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+   --sv2-transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+   /* =========================================================================
+       Z-INDEX
+       ========================================================================= */
+   --sv2-z-sidebar: 100;
+   --sv2-z-header: 90;
+   --sv2-z-sticky: 80;
+   --sv2-z-dropdown: 200;
+   --sv2-z-modal: 300;
+   --sv2-z-toast: 400;
+}

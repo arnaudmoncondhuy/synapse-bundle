@@ -1,0 +1,157 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Paramètres | Conversation | Synapse Admin V2
+{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Conversation</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">Paramètres</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--primary">
+					<i data-lucide="message-square-more"></i>
+				</span>
+				Paramètres globaux
+			</h1>
+			<p class="sv2-page-subtitle">
+				Configurez les comportements globaux de Synapse : langue de contexte, prompt système,
+								            rétention RGPD et mode debug.
+			</p>
+		</div>
+	</div>
+
+	{# ── Formulaire de paramètres ─────────────────────────────────────────────── #}
+	<form action="{{ path('synapse_v2_admin_settings') }}" method="POST">
+		<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_admin_settings') }}">
+
+		<div
+			class="sv2-grid sv2-grid--2">
+
+			{# ── Carte 1 : Langue & Comportement ──────────────────────────────── #}
+			<div class="sv2-card">
+				<div class="sv2-card__header">
+					<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+						<i data-lucide="languages"></i>
+					</div>
+					<div>
+						<div class="sv2-card__title">Langue & Comportement</div>
+						<div class="sv2-card__subtitle">Contexte de génération et debug</div>
+					</div>
+				</div>
+				<div class="sv2-card__body sv2-card__body--compact">
+
+					<div class="sv2-form-group">
+						<label class="sv2-label" for="context_language">
+							Langue de contexte
+						</label>
+						<select id="context_language" name="context_language" class="sv2-select">
+							{% for code, name in languages %}
+								<option value="{{ code }}" {{ config.contextLanguage == code ? 'selected' : '' }}>
+									{{ name }}
+								</option>
+							{% endfor %}
+						</select>
+						<p class="sv2-text-xs sv2-text-tertiary sv2-mt-sm">
+							Langue utilisée pour les instructions internes de l'IA.
+						</p>
+					</div>
+
+					<div class="sv2-form-group sv2-mt-md">
+						<label class="sv2-label sv2-flex sv2-gap-sm sv2-items-center">
+							<input type="checkbox" name="debug_mode" value="1" {{ config.debugMode ? 'checked' : '' }}>
+							Mode debug global
+						</label>
+						<p class="sv2-text-xs sv2-text-tertiary sv2-mt-sm">
+							Enregistre tous les échanges LLM en base de données.
+							<span class="sv2-badge sv2-badge--warning sv2-text-xs sv2-ml-sm">
+								<i data-lucide="alert-triangle"></i>
+								Impact performance
+							</span>
+						</p>
+					</div>
+
+				</div>
+			</div>
+
+			{# ── Carte 2 : Rétention RGPD ─────────────────────────────────────── #}
+			<div class="sv2-card">
+				<div class="sv2-card__header">
+					<div class="sv2-card__header-icon sv2-kpi__icon--warning">
+						<i data-lucide="shield"></i>
+					</div>
+					<div>
+						<div class="sv2-card__title">Rétention des données</div>
+						<div class="sv2-card__subtitle">Conformité RGPD</div>
+					</div>
+				</div>
+				<div class="sv2-card__body sv2-card__body--compact">
+
+					<div class="sv2-form-group">
+						<label class="sv2-label" for="retention_days">
+							Durée de rétention
+							<span class="sv2-badge sv2-badge--neutral sv2-ml-sm">
+								{{ config.retentionDays }}
+								jours actuellement
+							</span>
+						</label>
+						<input type="number" id="retention_days" name="retention_days" class="sv2-input" value="{{ config.retentionDays }}" min="1" max="3650">
+						<p class="sv2-text-xs sv2-text-tertiary sv2-mt-sm">
+							Les conversations plus anciennes seront automatiquement purgées.
+														                        (1 jour → 10 ans)
+						</p>
+					</div>
+
+					<div class="sv2-alert sv2-alert--info sv2-mt-md">
+						<i data-lucide="info"></i>
+						<div>
+							La purge automatique s'exécute quotidiennement via le scheduler Symfony.
+						</div>
+					</div>
+
+				</div>
+			</div>
+
+		</div>
+
+		{# ── Carte 3 : Prompt système ─────────────────────────────────────────── #}
+		<div class="sv2-card sv2-mt-xl">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+					<i data-lucide="file-text"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Prompt système global</div>
+					<div class="sv2-card__subtitle">
+						S'ajoute au prompt système de base — appliqué à tous les presets
+					</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--compact">
+				<div class="sv2-form-group">
+					<label class="sv2-label" for="system_prompt">
+						Instructions personnalisées
+					</label>
+					<textarea id="system_prompt" name="system_prompt" class="sv2-input" rows="6" placeholder="Ex : Tu es un assistant IA spécialisé dans... Réponds toujours en français...">{{ config.systemPrompt }}</textarea>
+					<p class="sv2-text-xs sv2-text-tertiary sv2-mt-sm">
+						Laissez vide pour utiliser uniquement le prompt système du bundle.
+					</p>
+				</div>
+			</div>
+			<div class="sv2-card__footer">
+				<button type="submit" class="sv2-btn sv2-btn--primary">
+					<i data-lucide="save"></i>
+					Enregistrer les paramètres
+				</button>
+			</div>
+		</div>
+
+	</form>
+
+{% endblock %}

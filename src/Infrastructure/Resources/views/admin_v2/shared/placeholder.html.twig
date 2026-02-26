@@ -1,0 +1,46 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}{{ page_title ?? 'Coming Soon' }} | Synapse Admin V2{% endblock %}
+
+{% block v2_breadcrumb %}
+    {% if breadcrumb_section is defined %}
+        <span class="sv2-topbar__breadcrumb-sep">›</span>
+        <span>{{ breadcrumb_section }}</span>
+    {% endif %}
+    <span class="sv2-topbar__breadcrumb-sep">›</span>
+    <span class="sv2-topbar__current">{{ page_title ?? 'Bientôt disponible' }}</span>
+{% endblock %}
+
+{% block v2_content %}
+<div class="sv2-page-header">
+    <div class="sv2-page-header__info">
+        <h1 class="sv2-page-title">
+            <span class="sv2-page-title__icon"
+                  style="background:{{ icon_bg ?? 'var(--sv2-primary-light)' }}; color:{{ icon_color ?? 'var(--sv2-primary)' }};">
+                <i data-lucide="{{ icon ?? 'sparkles' }}"></i>
+            </span>
+            {{ page_title ?? 'Bientôt disponible' }}
+        </h1>
+        {% if page_subtitle is defined %}
+            <p class="sv2-page-subtitle">{{ page_subtitle }}</p>
+        {% endif %}
+    </div>
+</div>
+
+{# Zone Coming Soon #}
+<div class="sv2-card">
+    <div class="sv2-empty" style="padding: 6rem 2rem;">
+        <div class="sv2-empty__icon" style="width:80px;height:80px;background:var(--sv2-primary-light);color:var(--sv2-primary);">
+            <i data-lucide="{{ icon ?? 'construction' }}" style="width:36px;height:36px;"></i>
+        </div>
+        <h2 class="sv2-empty__title">{{ page_title ?? 'Fonctionnalité en cours de développement' }}</h2>
+        <p class="sv2-empty__description">
+            {{ coming_soon_message ?? 'Cette section sera disponible dans une prochaine version de l\'Admin V2. Elle est déjà planifiée dans la feuille de route Synapse.' }}
+        </p>
+        <a href="{{ path('synapse_v2_admin_dashboard') }}" class="sv2-btn sv2-btn--primary" style="margin-top:1.5rem;">
+            <i data-lucide="arrow-left"></i>
+            Retour au tableau de bord
+        </a>
+    </div>
+</div>
+{% endblock %}

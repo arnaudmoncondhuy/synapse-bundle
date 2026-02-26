@@ -1,0 +1,246 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Analytics | Usage | Synapse Admin V2
+{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Usage</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">Analytics</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--primary">
+					<i data-lucide="bar-chart-3"></i>
+				</span>
+				Analytics
+			</h1>
+			<p class="sv2-page-subtitle">
+				Consommation de tokens, coûts et activité sur
+				{{ period_label }}.
+			</p>
+		</div>
+		<div
+			class="sv2-page-header__actions">
+			{# Sélecteur de période #}
+			<div class="sv2-flex sv2-gap-sm">
+				{% for days, label in {7: '7j', 30: '30j', 90: '90j'} %}
+					<a href="{{ path('synapse_v2_admin_analytics', {period: days}) }}" class="sv2-btn sv2-btn--sm {{ period == days ? 'sv2-btn--primary' : 'sv2-btn--ghost' }}">
+						{{ label }}
+					</a>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="sv2-grid sv2-grid--4 sv2-mb-xl">
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--primary">
+					<i data-lucide="zap"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Tokens totaux</div>
+					<div class="sv2-kpi__value">
+						{{ ((stats.total_tokens ?? 0) / 1000)|number_format(1) }}k
+					</div>
+					<div class="sv2-kpi__sub">{{ period_label }}</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--warning">
+					<i data-lucide="dollar-sign"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Coût estimé</div>
+					<div class="sv2-kpi__value">
+						${{ (stats.cost ?? 0)|number_format(4) }}
+					</div>
+					<div class="sv2-kpi__sub">{{ period_label }}</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--success">
+					<i data-lucide="message-circle"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Conversations</div>
+					<div class="sv2-kpi__value">{{ conversation_stats.count ?? 0 }}</div>
+					<div class="sv2-kpi__sub">
+						{{ ((conversation_stats.total_tokens ?? 0) / 1000)|number_format(1) }}k tokens
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--info">
+					<i data-lucide="activity"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Requêtes totales</div>
+					<div class="sv2-kpi__value">{{ stats.total_requests ?? 0 }}</div>
+					<div class="sv2-kpi__sub">toutes sources</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Graphique d'activité + Usage par module ──────────────────────────────── #}
+	<div
+		class="sv2-grid sv2-grid--2 sv2-mb-xl">
+
+		{# Activité quotidienne #}
+		<div class="sv2-card">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+					<i data-lucide="bar-chart-2"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Activité quotidienne</div>
+					<div class="sv2-card__subtitle">Tokens consommés par jour</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--compact">
+				{% if daily_usage is empty %}
+					<div class="sv2-empty">
+						<div class="sv2-empty__icon">
+							<i data-lucide="bar-chart-2"></i>
+						</div>
+						<p class="sv2-empty__description">Aucune donnée sur cette période.</p>
+					</div>
+				{% else %}
+					{% set max_tokens = 1 %}
+					{% for day in daily_usage %}
+						{% if (day.total_tokens ?? 0) > max_tokens %}
+							{% set max_tokens = day.total_tokens %}
+						{% endif %}
+					{% endfor %}
+					<div class="sv2-chart">
+						{% for day in daily_usage|slice(-15) %}
+							<div class="sv2-chart__row">
+								<span class="sv2-chart__label">{{ day.date|date('d/m') }}</span>
+								<div class="sv2-chart__track">
+									<div class="sv2-chart__bar" style="width: {{ max_tokens > 0 ? ((day.total_tokens ?? 0) / max_tokens * 100)|round ~ '%' : '0%' }}"></div>
+								</div>
+								<span class="sv2-chart__value">
+									{{ ((day.total_tokens ?? 0) / 1000)|number_format(1) }}k
+								</span>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+			</div>
+		</div>
+
+		{# Usage par module #}
+		<div class="sv2-card">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--success">
+					<i data-lucide="layers"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Usage par module</div>
+					<div class="sv2-card__subtitle">Répartition des tokens</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--flush">
+				{% if usage_by_module is empty %}
+					<div class="sv2-empty">
+						<div class="sv2-empty__icon">
+							<i data-lucide="layers"></i>
+						</div>
+						<p class="sv2-empty__description">Aucune donnée sur cette période.</p>
+					</div>
+				{% else %}
+					{% for module, data in usage_by_module %}
+						<div class="sv2-stat-row">
+							<div class="sv2-stat-row__label">
+								<i data-lucide="{{ module == 'chat' ? 'message-circle' : (module == 'embedding' ? 'database-zap' : 'cpu') }}"></i>
+								<span>{{ module|capitalize }}</span>
+							</div>
+							<div class="sv2-stat-row__value">
+								{{ ((data.total_tokens ?? 0) / 1000)|number_format(1) }}k tokens
+							</div>
+						</div>
+					{% endfor %}
+				{% endif %}
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Top modèles ──────────────────────────────────────────────────────────── #}
+	{% if usage_by_model is not empty %}
+		<div class="sv2-card">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--neutral">
+					<i data-lucide="cpu"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Top modèles</div>
+					<div class="sv2-card__subtitle">Consommation par modèle —
+						{{ period_label }}</div>
+				</div>
+			</div>
+			<div class="sv2-table-container">
+				<table class="sv2-table">
+					<thead>
+						<tr>
+							<th>Modèle</th>
+							<th>Requêtes</th>
+							<th>Tokens</th>
+							<th>Coût estimé</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for model in usage_by_model|slice(0, 10) %}
+							<tr>
+								<td>
+									<div class="sv2-table-cell-label">
+										<div class="sv2-table-cell-label__icon sv2-kpi__icon--neutral">
+											<i data-lucide="cpu"></i>
+										</div>
+										<div>
+											<div class="sv2-table-cell-label__title">
+												{{ model.model_id ?? 'Inconnu' }}
+											</div>
+										</div>
+									</div>
+								</td>
+								<td class="sv2-table__cell--mono">{{ model.count ?? 0 }}</td>
+								<td class="sv2-table__cell--mono">
+									{{ ((model.total_tokens ?? 0) / 1000)|number_format(1) }}k
+								</td>
+								<td class="sv2-table__cell--mono">
+									{% if model.cost is defined and model.cost > 0 %}
+										${{ model.cost|number_format(3) }}
+									{% else %}
+										<span class="sv2-text-tertiary">—</span>
+									{% endif %}
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	{% endif %}
+
+{% endblock %}

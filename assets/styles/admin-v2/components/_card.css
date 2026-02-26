@@ -1,0 +1,167 @@
+/**
+ * Synapse Admin V2 - Cards
+ */
+
+/* ── Card de base ──────────────────────────────────────────────────────────── */
+
+.sv2-card {
+    background: var(--sv2-glass-bg);
+    backdrop-filter: var(--sv2-glass-backdrop);
+    -webkit-backdrop-filter: var(--sv2-glass-backdrop);
+    border: 1px solid var(--sv2-glass-border);
+    border-radius: var(--sv2-radius-xl);
+    box-shadow: var(--sv2-shadow-sm);
+    overflow: hidden;
+    transition: transform var(--sv2-transition-base), box-shadow var(--sv2-transition-base);
+}
+
+.sv2-card--hover:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sv2-shadow-lg);
+}
+
+.sv2-card--active {
+    border-color: var(--sv2-primary-border);
+    box-shadow: var(--sv2-shadow-md), 0 0 0 3px var(--sv2-primary-fade);
+}
+
+/* ── Card header ────────────────────────────────────────────────────────────── */
+
+.sv2-card__header {
+    padding: var(--sv2-space-lg) var(--sv2-space-xl);
+    border-bottom: 1px solid var(--sv2-border-light);
+    display: flex;
+    align-items: center;
+    gap: var(--sv2-space-md);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 100%);
+}
+
+.sv2-card__header-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--sv2-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sv2-card__header-icon i {
+    width: 20px;
+    height: 20px;
+}
+
+.sv2-card__title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--sv2-text-primary);
+}
+
+.sv2-card__subtitle {
+    font-size: 0.82rem;
+    color: var(--sv2-text-tertiary);
+    margin-top: 2px;
+}
+
+.sv2-card__header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--sv2-space-sm);
+}
+
+/* ── Card body ──────────────────────────────────────────────────────────────── */
+
+.sv2-card__body {
+    padding: var(--sv2-space-xl);
+}
+
+.sv2-card__body--compact {
+    padding: var(--sv2-space-lg);
+}
+
+.sv2-card__body--flush {
+    padding: 0;
+}
+
+/* ── Card footer ─────────────────────────────────────────────────────────────── */
+
+.sv2-card__footer {
+    padding: var(--sv2-space-md) var(--sv2-space-xl);
+    border-top: 1px solid var(--sv2-border-light);
+    background: rgba(249, 250, 251, 0.5);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--sv2-space-sm);
+}
+
+/* Groupe d'actions (boutons) : peut rétrécir et passer à la ligne pour éviter le débordement */
+.sv2-card__footer .sv2-flex {
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
+/* ── Card variantes ─────────────────────────────────────────────────────────── */
+
+.sv2-card--primary {
+    border-color: var(--sv2-primary-border);
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, var(--sv2-glass-bg) 100%);
+}
+
+.sv2-card--success {
+    border-color: var(--sv2-success-border);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.04) 0%, var(--sv2-glass-bg) 100%);
+}
+
+.sv2-card--warning {
+    border-color: var(--sv2-warning-border);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.04) 0%, var(--sv2-glass-bg) 100%);
+}
+
+.sv2-card--danger {
+    border-color: var(--sv2-danger-border);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.04) 0%, var(--sv2-glass-bg) 100%);
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────────── */
+
+.sv2-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sv2-space-3xl) var(--sv2-space-xl);
+    text-align: center;
+    gap: var(--sv2-space-md);
+}
+
+.sv2-empty__icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--sv2-radius-2xl);
+    background: var(--sv2-border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sv2-text-tertiary);
+}
+
+.sv2-empty__icon i {
+    width: 28px;
+    height: 28px;
+}
+
+.sv2-empty__title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--sv2-text-primary);
+}
+
+.sv2-empty__description {
+    font-size: 0.9rem;
+    color: var(--sv2-text-secondary);
+    max-width: 360px;
+    line-height: 1.6;
+}

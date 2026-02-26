@@ -1,0 +1,267 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Presets | Intelligence | Synapse Admin V2
+{% endblock %}
+
+{# ──────────────────────────────────────────────────────────────────────────────
+   FIL D'ARIANE — injecté dans la topbar via base.html.twig
+   Règle : toujours ici, jamais dans v2_content.
+   ────────────────────────────────────────────────────────────────────────────── #}
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_v2_admin_providers') }}" class="sv2-topbar__breadcrumb">Intelligence</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">Presets</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	{# ──────────────────────────────────────────────────────────────────────────────
+				   EN-TÊTE DE PAGE
+				   - Icône : sv2-page-title__icon + sv2-kpi__icon--[color] (jamais sv2-badge--*)
+				   - Titre h1 : sv2-page-title
+				   - Sous-titre : sv2-page-subtitle (max ~120 caractères)
+				   - Actions : sv2-page-header__actions (sv2-btn--primary pour l'action principale)
+				   ────────────────────────────────────────────────────────────────────────────── #}
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--primary">
+					<i data-lucide="sliders-horizontal"></i>
+				</span>
+				Presets de Génération
+			</h1>
+			<p class="sv2-page-subtitle">
+				Configurez et activez vos profils LLM. Un seul preset peut être actif
+																            à la fois — il s'applique à l'ensemble du système Synapse.
+			</p>
+		</div>
+		<div class="sv2-page-header__actions">
+			<a href="{{ path('synapse_v2_admin_presets_new') }}" class="sv2-btn sv2-btn--primary">
+				<i data-lucide="plus"></i>
+				Nouveau Preset
+			</a>
+		</div>
+	</div>
+
+	{# ──────────────────────────────────────────────────────────────────────────────
+				   GRILLE DE PRESETS
+				   - sv2-grid--2 : 2 colonnes fluides (auto-fill, min 360px)
+				   - sv2-card--active + sv2-card--success : mise en valeur du preset actif
+				   - Dual-Mode : info essentielle visible + paramètres dans sv2-collapsible
+				   ────────────────────────────────────────────────────────────────────────────── #}
+	<div class="sv2-grid sv2-grid--2">
+		{% for item in presets %}
+			{% set preset = item.entity %}
+			{% set caps   = item.caps %}
+
+			<div
+				class="sv2-card sv2-card--hover {{ preset.isActive ? 'sv2-card--active sv2-card--success' : '' }}">
+
+				{# ────────────────────────────────────────────────────────────────
+																               HEADER — Identification + état + actions rapides
+																               Règle : sv2-card__header-icon + sv2-kpi__icon--[color]
+																               ──────────────────────────────────────────────────────────────── #}
+				<div class="sv2-card__header">
+					<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+						<i data-lucide="sliders-horizontal"></i>
+					</div>
+
+					<div
+						class="sv2-flex sv2-flex-col sv2-gap-sm">
+						{# Ligne 1 : Nom + badge "Actif" sur la même ligne #}
+						<div class="sv2-flex sv2-items-center sv2-gap-sm">
+							<span class="sv2-card__title">{{ preset.name }}</span>
+							{% if preset.isActive %}
+								<span class="sv2-badge sv2-badge--success">
+									<i data-lucide="check-circle-2"></i>
+									Actif
+								</span>
+							{% endif %}
+						</div>
+						{# Ligne 2 : Badges provider / modèle #}
+						<div class="sv2-flex sv2-gap-sm sv2-items-center">
+							<span class="sv2-badge sv2-badge--neutral">
+								<i data-lucide="{{ preset.providerName == 'gemini' ? 'zap' : 'cloud' }}"></i>
+								{{ preset.providerName|upper }}
+							</span>
+							<span class="sv2-badge sv2-badge--neutral sv2-truncate">
+								<i data-lucide="cpu"></i>
+								{{ preset.model }}
+							</span>
+						</div>
+					</div>
+
+				</div>
+
+				{# ────────────────────────────────────────────────────────────────
+																               BODY — Dual-Mode
+																               MODE ESSENTIEL : capacités du modèle en icônes + tooltip
+																               MODE AVANCÉ    : paramètres techniques dans sv2-collapsible
+																               ──────────────────────────────────────────────────────────────── #}
+				<div
+					class="sv2-card__body sv2-card__body--compact">
+
+					{# ── Mode Essentiel : Capacités ────────────────────────────── #}
+					<div class="sv2-flex sv2-gap-sm sv2-items-center sv2-mb-md">
+						<span class="sv2-text-xs sv2-text-tertiary">Capacités</span>
+						{# Icônes simples + tooltip : plus lisibles que des gros badges #}
+						{% if caps.thinking %}
+							<i data-lucide="brain" class="sv2-text-primary" data-sv2-tooltip="Thinking / Raisonnement avancé"></i>
+						{% endif %}
+						{% if caps.functionCalling %}
+							<i data-lucide="wrench" class="sv2-text-muted" data-sv2-tooltip="Function Calling (Tool Use)"></i>
+						{% endif %}
+						{% if caps.streaming %}
+							<i data-lucide="activity" class="sv2-text-muted" data-sv2-tooltip="Réponse en streaming"></i>
+						{% endif %}
+						{% if caps.safetySettings %}
+							<i data-lucide="shield" class="sv2-text-muted" data-sv2-tooltip="Safety Settings configurables"></i>
+						{% endif %}
+					</div>
+
+					{# ── Mode Avancé : Paramètres techniques ───────────────────── #}
+					<details class="sv2-collapsible">
+						<summary class="sv2-collapsible__summary">
+							<div class="sv2-collapsible__icon">
+								<i data-lucide="settings-2"></i>
+							</div>
+							<div class="sv2-collapsible__title">
+								Paramètres techniques
+								{# Résumé visible sans ouvrir : donne envie de lire si pertinent #}
+								<div class="sv2-collapsible__subtitle">
+									Temp.
+									{{ preset.generationTemperature }}
+									· Top-P
+									{{ preset.generationTopP }}
+									{% if preset.generationMaxOutputTokens %}
+										· Max
+										{{ preset.generationMaxOutputTokens }}
+										tokens
+									{% endif %}
+								</div>
+							</div>
+							<i data-lucide="chevron-down" class="sv2-collapsible__chevron"></i>
+						</summary>
+
+						<div
+							class="sv2-collapsible__content">
+							{# Grille 3 colonnes pour les métriques numériques #}
+							<div class="sv2-grid sv2-grid--3">
+								<div>
+									<div class="sv2-text-xs sv2-text-tertiary sv2-font-bold">Température</div>
+									<div class="sv2-font-mono sv2-text-sm sv2-mt-sm">
+										{{ preset.generationTemperature }}
+									</div>
+								</div>
+								<div>
+									<div class="sv2-text-xs sv2-text-tertiary sv2-font-bold">Top-P</div>
+									<div class="sv2-font-mono sv2-text-sm sv2-mt-sm">
+										{{ preset.generationTopP }}
+									</div>
+								</div>
+								<div>
+									<div class="sv2-text-xs sv2-text-tertiary sv2-font-bold">Max Tokens</div>
+									<div class="sv2-font-mono sv2-text-sm sv2-mt-sm">
+										{{ preset.generationMaxOutputTokens ?: '∞' }}
+									</div>
+								</div>
+							</div>
+
+							{# Aperçu du prompt système (s'il existe) #}
+							{% set systemPrompt = preset.providerOptions.system_instruction
+                            |default(preset.providerOptions.system_prompt|default(null)) %}
+							{% if systemPrompt %}
+								<hr class="sv2-divider">
+								<p class="sv2-text-xs sv2-text-tertiary sv2-font-bold sv2-mb-sm">
+									Prompt Système
+								</p>
+								<p
+									class="sv2-text-sm sv2-text-muted">
+									{# Tronqué à 200 chars — filtre slice natif Twig, pas u.truncate #}
+									{{ systemPrompt|length > 200
+                                    ? systemPrompt|slice(0, 200) ~ ' …'
+                                    : systemPrompt }}
+								</p>
+							{% endif %}
+						</div>
+					</details>
+				</div>
+
+				{# ────────────────────────────────────────────────────────────────
+																               FOOTER — Actions principales
+																               - sv2-btn--ghost  : action secondaire (Tester)
+																               - sv2-btn--outline : activation (presets inactifs uniquement ; actif = badge en header)
+																               ──────────────────────────────────────────────────────────────── #}
+				{# ── Footer — Actions ────────────────────────────────────────────── #}
+				<div
+					class="sv2-card__footer">
+
+					{# Gauche : actions secondaires #}
+					<div class="sv2-flex sv2-gap-sm">
+						<a href="{{ path('synapse_v2_admin_presets_edit', {id: preset.id}) }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+							<i data-lucide="edit-3"></i>
+							Modifier
+						</a>
+
+						<form action="{{ path('synapse_v2_admin_presets_test', {id: preset.id}) }}" method="POST" class="sv2-form-inline">
+							<button type="submit" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+								<i data-lucide="flask-conical"></i>
+								Tester
+							</button>
+						</form>
+
+						<form action="{{ path('synapse_v2_admin_presets_clone', {id: preset.id}) }}" method="POST" class="sv2-form-inline">
+							<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_preset_clone_' ~ preset.id) }}">
+							<button type="submit" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+								<i data-lucide="copy"></i>
+								Dupliquer
+							</button>
+						</form>
+
+						{% if not preset.isActive %}
+							<form action="{{ path('synapse_v2_admin_presets_delete', {id: preset.id}) }}" method="POST" class="sv2-form-inline" onsubmit="return confirm('Supprimer le preset \" {{ preset.name|e('js') }} \" ?')">
+								<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_preset_delete_' ~ preset.id) }}">
+								<button type="submit" class="sv2-btn sv2-btn--outline-danger sv2-btn--sm">
+									<i data-lucide="trash-2"></i>
+									Supprimer
+								</button>
+							</form>
+						{% endif %}
+					</div>
+					{# Droite : bouton Activer uniquement pour les presets inactifs (indicateur actif = badge en header) #}
+					{% if not preset.isActive %}
+						<form action="{{ path('synapse_v2_admin_presets_activate', {id: preset.id}) }}" method="POST">
+							<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_preset_activate_' ~ preset.id) }}">
+							<button type="submit" class="sv2-btn sv2-btn--outline sv2-btn--sm">
+								<i data-lucide="check-circle-2"></i>
+								Activer
+							</button>
+						</form>
+					{% endif %}
+
+				</div>
+
+			</div>
+		{% else %}
+			{# ── État vide : sv2-empty avec icon + titre + description + CTA ── #}
+			<div class="sv2-card">
+				<div class="sv2-empty">
+					<div class="sv2-empty__icon">
+						<i data-lucide="sliders-horizontal"></i>
+					</div>
+					<div class="sv2-empty__title">Aucun preset configuré</div>
+					<p class="sv2-empty__description">
+						Créez votre premier profil de génération LLM pour commencer
+																								                    à utiliser Synapse avec votre configuration optimale.
+					</p>
+					<a href="{{ path('synapse_v2_admin_presets_new') }}" class="sv2-btn sv2-btn--primary sv2-mt-md">
+						<i data-lucide="plus"></i>
+						Créer mon premier preset
+					</a>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+
+{% endblock %}

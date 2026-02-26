@@ -1,0 +1,266 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Modèles | Intelligence | Synapse Admin V2
+{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Intelligence</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">Modèles</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--primary">
+					<i data-lucide="cpu"></i>
+				</span>
+				Catalogue des Modèles
+			</h1>
+			<p class="sv2-page-subtitle">
+				Gérez les capacités, l'activation et les tarifs de vos modèles LLM.
+																            Seuls les modèles dont le fournisseur est configuré apparaissent ici.
+			</p>
+		</div>
+		<div class="sv2-page-header__actions" id="filters-toolbar">
+			<button type="button" id="filter-thinking" onclick="toggleFilter('thinking', this)" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+				<i data-lucide="brain"></i>
+				Thinking
+			</button>
+			<button type="button" id="filter-tools" onclick="toggleFilter('tools', this)" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+				<i data-lucide="wrench"></i>
+				Tools
+			</button>
+			<button type="button" onclick="resetFilters()" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+				<i data-lucide="x"></i>
+				Réinitialiser
+			</button>
+		</div>
+	</div>
+
+	{# ── Tableau ──────────────────────────────────────────────────────────────── #}
+	<div class="sv2-card">
+		<div class="sv2-table-container">
+			<table class="sv2-table" id="table-models">
+				<thead>
+					<tr>
+						<th>Modèle / Label</th>
+						<th>Fournisseur</th>
+						<th>Capacités</th>
+						<th>Pricing (1M tokens)</th>
+						<th>Statut</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for model in models %}
+						{# Identifiant CSS safe (les points/deux-points brisent les id CSS) #}
+						{% set safeId = model.id|replace({'.': '-', ':': '-'}) %}
+
+						<tr
+							class="model-row" data-thinking="{{ model.capabilities.thinking ? '1' : '0' }}" data-tools="{{ model.capabilities.functionCalling ? '1' : '0' }}">
+
+							{# Modèle #}
+							<td>
+								<div class="sv2-table-cell-label">
+									<div class="sv2-table-cell-label__icon sv2-kpi__icon--neutral">
+										<i data-lucide="cpu"></i>
+									</div>
+									<div>
+										<div class="sv2-table-cell-label__title">{{ model.label }}</div>
+										<div class="sv2-table-cell-label__sub sv2-font-mono">{{ model.id }}</div>
+									</div>
+								</div>
+							</td>
+
+							{# Fournisseur #}
+							<td>
+								<span class="sv2-badge sv2-badge--neutral">
+									<i data-lucide="{{ model.provider == 'gemini' ? 'zap' : (model.provider == 'ovh' ? 'cloud' : 'server') }}"></i>
+									{{ model.provider|upper }}
+								</span>
+							</td>
+
+							{# Capacités — icônes compactes avec tooltip #}
+							<td>
+								<div class="sv2-flex sv2-gap-sm sv2-items-center">
+									{% if model.capabilities.thinking %}
+										<i data-lucide="brain" class="sv2-text-primary" data-sv2-tooltip="Thinking"></i>
+									{% endif %}
+									{% if model.capabilities.functionCalling %}
+										<i data-lucide="wrench" class="sv2-text-muted" data-sv2-tooltip="Tool Use"></i>
+									{% endif %}
+									{% if model.capabilities.streaming %}
+										<i data-lucide="activity" class="sv2-text-muted" data-sv2-tooltip="Streaming"></i>
+									{% endif %}
+									{% if model.capabilities.safetySettings %}
+										<i data-lucide="shield" class="sv2-text-muted" data-sv2-tooltip="Safety"></i>
+									{% endif %}
+								</div>
+							</td>
+
+							{# Pricing — deux lignes In / Out #}
+							<td class="sv2-table__cell--mono sv2-text-sm">
+								<div>
+									<span class="sv2-text-tertiary sv2-text-xs">In.</span>
+									{% if model.pricing_input %}
+										{{ model.pricing_input|number_format(4) }}{{ model.currency }}
+									{% else %}
+										<span class="sv2-text-tertiary">—</span>
+									{% endif %}
+								</div>
+								<div>
+									<span class="sv2-text-tertiary sv2-text-xs">Out.</span>
+									{% if model.pricing_output %}
+										{{ model.pricing_output|number_format(4) }}{{ model.currency }}
+									{% else %}
+										<span class="sv2-text-tertiary">—</span>
+									{% endif %}
+								</div>
+							</td>
+
+							{# Statut #}
+							<td>
+								{% if model.is_enabled %}
+									<span class="sv2-badge sv2-badge--success">
+										<i data-lucide="circle-check"></i>
+										Activé
+									</span>
+								{% else %}
+									<span class="sv2-badge sv2-badge--neutral">
+										<i data-lucide="circle-slash"></i>
+										Désactivé
+									</span>
+								{% endif %}
+							</td>
+
+							{# Actions #}
+							<td>
+								<div class="sv2-flex sv2-gap-sm sv2-items-center">
+									<form action="{{ path('synapse_v2_admin_models_toggle', {modelId: model.id}) }}" method="POST">
+										<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_model_toggle_' ~ model.id) }}">
+										<button type="submit" class="sv2-btn sv2-btn--ghost sv2-btn--sm sv2-btn--icon" data-sv2-tooltip="{{ model.is_enabled ? 'Désactiver' : 'Activer' }}">
+											<i data-lucide="{{ model.is_enabled ? 'eye-off' : 'eye' }}"></i>
+										</button>
+									</form>
+									<button type="button" onclick="toggleSettings('{{ safeId }}')" class="sv2-btn sv2-btn--ghost sv2-btn--sm sv2-btn--icon" data-sv2-tooltip="Configurer">
+										<i data-lucide="settings"></i>
+									</button>
+								</div>
+							</td>
+						</tr>
+
+						{# Ligne de paramètres avancés (cachée par défaut) #}
+						<tr id="settings-{{ safeId }}" hidden class="settings-row">
+							<td colspan="6">
+								<form action="{{ path('synapse_v2_admin_models_pricing', {modelId: model.id}) }}" method="POST" class="sv2-collapsible__content">
+									<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_model_pricing_' ~ model.id) }}">
+									<div class="sv2-grid sv2-grid--3">
+										<div>
+											<label class="sv2-text-xs sv2-text-tertiary sv2-font-bold">
+												Libellé personnalisé
+											</label>
+											<input type="text" name="label" value="{{ model.label }}" class="sv2-input sv2-mt-sm">
+										</div>
+										<div>
+											<label class="sv2-text-xs sv2-text-tertiary sv2-font-bold">
+												Tarif Input ({{ model.currency }}/1M tokens)
+											</label>
+											<input type="number" name="pricing_input" step="0.0001" min="0" value="{{ model.pricing_input }}" class="sv2-input sv2-mt-sm" placeholder="Ex : 0.075">
+										</div>
+										<div>
+											<label class="sv2-text-xs sv2-text-tertiary sv2-font-bold">
+												Tarif Output ({{ model.currency }}/1M tokens)
+											</label>
+											<input type="number" name="pricing_output" step="0.0001" min="0" value="{{ model.pricing_output }}" class="sv2-input sv2-mt-sm" placeholder="Ex : 0.30">
+										</div>
+									</div>
+									<div class="sv2-flex sv2-gap-sm sv2-mt-md">
+										<button type="submit" class="sv2-btn sv2-btn--primary sv2-btn--sm">
+											<i data-lucide="save"></i>
+											Enregistrer
+										</button>
+										<button type="button" onclick="toggleSettings('{{ safeId }}')" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+											Annuler
+										</button>
+									</div>
+								</form>
+							</td>
+						</tr>
+
+					{% else %}
+						<tr>
+							<td colspan="6">
+								<div class="sv2-empty">
+									<div class="sv2-empty__icon">
+										<i data-lucide="cpu"></i>
+									</div>
+									<div class="sv2-empty__title">Aucun modèle disponible</div>
+									<p class="sv2-empty__description">
+										Assurez-vous qu'au moins un fournisseur est actif et configuré.
+									</p>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<script>
+		/* ── Filtres par capacités ─────────────────────────────────────────── */
+const activeFilters = new Set();
+
+function toggleFilter(cap, btn) {
+if (activeFilters.has(cap)) {
+activeFilters.delete(cap);
+btn.classList.remove('sv2-btn--outline');
+btn.classList.add('sv2-btn--ghost');
+} else {
+activeFilters.add(cap);
+btn.classList.remove('sv2-btn--ghost');
+btn.classList.add('sv2-btn--outline');
+} applyFilters();
+}
+
+function applyFilters() {
+document.querySelectorAll('.model-row').forEach(row => {
+const show = [... activeFilters].every(cap => row.dataset[cap] === '1');
+row.hidden = ! show;
+const settingsId = row.nextElementSibling;
+if (settingsId && settingsId.classList.contains('settings-row')) {
+if (! show) 
+settingsId.hidden = true;
+
+
+
+}
+});
+}
+
+function resetFilters() {
+activeFilters.clear();
+document.getElementById('filter-thinking').classList.remove('sv2-btn--outline');
+document.getElementById('filter-thinking').classList.add('sv2-btn--ghost');
+document.getElementById('filter-tools').classList.remove('sv2-btn--outline');
+document.getElementById('filter-tools').classList.add('sv2-btn--ghost');
+document.querySelectorAll('.model-row').forEach(row => row.hidden = false);
+}
+
+/* ── Panneau de paramètres inline ────────────────────────────────── */
+function toggleSettings(safeId) {
+const row = document.getElementById('settings-' + safeId);
+if (row) 
+row.hidden = ! row.hidden;
+
+
+
+}
+	</script>
+
+{% endblock %}

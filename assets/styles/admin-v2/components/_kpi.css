@@ -1,0 +1,207 @@
+/**
+ * Synapse Admin V2 - KPI Cards & Charts
+ */
+
+/* ── KPI Card ────────────────────────────────────────────────────────────────── */
+
+.sv2-kpi {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sv2-space-md);
+    padding: var(--sv2-space-lg) var(--sv2-space-xl);
+}
+
+.sv2-kpi__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--sv2-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform var(--sv2-transition-spring);
+}
+
+.sv2-kpi__icon i {
+    width: 24px;
+    height: 24px;
+}
+
+.sv2-card:hover .sv2-kpi__icon {
+    transform: scale(1.08);
+}
+
+/* Couleurs KPI */
+.sv2-kpi__icon--primary {
+    background: var(--sv2-primary-light);
+    color: var(--sv2-primary);
+}
+
+.sv2-kpi__icon--success {
+    background: var(--sv2-success-bg);
+    color: var(--sv2-success);
+}
+
+.sv2-kpi__icon--warning {
+    background: var(--sv2-warning-bg);
+    color: var(--sv2-warning);
+}
+
+.sv2-kpi__icon--danger {
+    background: var(--sv2-danger-bg);
+    color: var(--sv2-danger);
+}
+
+.sv2-kpi__icon--info {
+    background: var(--sv2-info-bg);
+    color: var(--sv2-info);
+}
+
+.sv2-kpi__icon--neutral {
+    background: var(--sv2-border-light);
+    color: var(--sv2-text-secondary);
+}
+
+
+.sv2-kpi__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.sv2-kpi__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--sv2-text-tertiary);
+    margin-bottom: 0.375rem;
+}
+
+.sv2-kpi__value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--sv2-text-primary);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+}
+
+.sv2-kpi__sub {
+    font-size: 0.8rem;
+    color: var(--sv2-text-tertiary);
+    margin-top: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* ── Trend indicator ─────────────────────────────────────────────────────────── */
+
+.sv2-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.sv2-trend i {
+    width: 12px;
+    height: 12px;
+}
+
+.sv2-trend--up {
+    color: var(--sv2-success);
+}
+
+.sv2-trend--down {
+    color: var(--sv2-danger);
+}
+
+.sv2-trend--flat {
+    color: var(--sv2-text-tertiary);
+}
+
+/* ── Activity bar chart ──────────────────────────────────────────────────────── */
+
+.sv2-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0 var(--sv2-space-xl) var(--sv2-space-lg);
+}
+
+.sv2-chart__row {
+    display: grid;
+    grid-template-columns: 36px 1fr 50px;
+    align-items: center;
+    gap: var(--sv2-space-sm);
+}
+
+.sv2-chart__label {
+    font-size: 0.72rem;
+    color: var(--sv2-text-tertiary);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.sv2-chart__track {
+    height: 8px;
+    background: var(--sv2-border-light);
+    border-radius: var(--sv2-radius-full);
+    overflow: hidden;
+}
+
+.sv2-chart__bar {
+    height: 100%;
+    border-radius: var(--sv2-radius-full);
+    background: linear-gradient(90deg, var(--sv2-primary-light) 0%, var(--sv2-primary) 100%);
+    min-width: 2px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sv2-chart__value {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--sv2-text-secondary);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+/* ── Stat row (usage par module) ─────────────────────────────────────────────── */
+
+.sv2-stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sv2-space-sm) 0;
+    border-bottom: 1px solid var(--sv2-border-light);
+    gap: var(--sv2-space-md);
+}
+
+.sv2-stat-row:last-child {
+    border-bottom: none;
+}
+
+.sv2-stat-row__label {
+    display: flex;
+    align-items: center;
+    gap: var(--sv2-space-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--sv2-text-secondary);
+}
+
+.sv2-stat-row__label i {
+    width: 14px;
+    height: 14px;
+    color: var(--sv2-text-tertiary);
+}
+
+.sv2-stat-row__value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--sv2-text-primary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}

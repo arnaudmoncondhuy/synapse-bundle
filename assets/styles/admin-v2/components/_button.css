@@ -1,0 +1,181 @@
+/**
+ * Synapse Admin V2 - Buttons
+ */
+
+.sv2-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--sv2-radius-md);
+    font-family: var(--sv2-font-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: all var(--sv2-transition-base);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.sv2-btn i {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* ── Tailles ─────────────────────────────────────────────────────────────────── */
+
+.sv2-btn--sm {
+    padding: 0.4rem 0.875rem;
+    font-size: 0.8rem;
+    border-radius: var(--sv2-radius-sm);
+}
+
+.sv2-btn--sm i {
+    width: 14px;
+    height: 14px;
+}
+
+.sv2-btn--lg {
+    padding: 0.875rem 1.75rem;
+    font-size: 1rem;
+    border-radius: var(--sv2-radius-lg);
+}
+
+.sv2-btn--lg i {
+    width: 20px;
+    height: 20px;
+}
+
+.sv2-btn--icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: var(--sv2-radius-md);
+}
+
+/* ── Primaire ──────────────────────────────────────────────────────────────── */
+
+.sv2-btn--primary {
+    background: linear-gradient(135deg, var(--sv2-primary) 0%, var(--sv2-primary-dark) 100%);
+    color: white;
+    box-shadow: 0 2px 8px var(--sv2-primary-glow), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.sv2-btn--primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--sv2-shadow-primary);
+    filter: brightness(1.06);
+}
+
+.sv2-btn--primary:active {
+    transform: translateY(0);
+    filter: brightness(0.96);
+}
+
+/* ── Secondaire / Ghost ──────────────────────────────────────────────────────── */
+
+.sv2-btn--ghost {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--sv2-border);
+    color: var(--sv2-text-primary);
+    box-shadow: var(--sv2-shadow-xs);
+}
+
+.sv2-btn--ghost:hover {
+    background: #fff;
+    border-color: var(--sv2-border-medium);
+    box-shadow: var(--sv2-shadow-sm);
+    transform: translateY(-1px);
+}
+
+/* ── Outline primary ─────────────────────────────────────────────────────────── */
+
+.sv2-btn--outline {
+    background: transparent;
+    border: 1.5px solid var(--sv2-primary-border);
+    color: var(--sv2-primary);
+}
+
+.sv2-btn--outline:hover {
+    background: var(--sv2-primary-light);
+    border-color: var(--sv2-primary);
+    transform: translateY(-1px);
+}
+
+/* ── Danger ──────────────────────────────────────────────────────────────────── */
+
+.sv2-btn--danger {
+    background: linear-gradient(135deg, var(--sv2-danger) 0%, hsl(350, 82%, 45%) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+}
+
+.sv2-btn--danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+    filter: brightness(1.08);
+}
+
+/* ── Outline danger ──────────────────────────────────────────────────────────── */
+
+.sv2-btn--outline-danger {
+    background: transparent;
+    border: 1.5px solid var(--sv2-danger-border);
+    color: var(--sv2-danger);
+}
+
+.sv2-btn--outline-danger:hover {
+    background: var(--sv2-danger-bg);
+    border-color: var(--sv2-danger);
+}
+
+/* ── Success ─────────────────────────────────────────────────────────────────── */
+
+.sv2-btn--success {
+    background: linear-gradient(135deg, var(--sv2-success) 0%, hsl(152, 72%, 32%) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+.sv2-btn--success:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.07);
+}
+
+/* ── Disabled ────────────────────────────────────────────────────────────────── */
+
+.sv2-btn:disabled,
+.sv2-btn--disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none !important;
+    filter: none !important;
+    box-shadow: none !important;
+}
+
+/* ── Loading spinner ────────────────────────────────────────────────────────── */
+
+.sv2-btn--loading {
+    pointer-events: none;
+}
+
+.sv2-btn--loading::after {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: sv2-spin 0.6s linear infinite;
+}
+
+@keyframes sv2-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -1,0 +1,99 @@
+/**
+ * Synapse Admin V2 - Badges
+ */
+
+.sv2-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--sv2-radius-full);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.sv2-badge i {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+}
+
+.sv2-badge--success {
+    background: linear-gradient(135deg, hsl(152, 72%, 88%) 0%, hsl(152, 72%, 92%) 100%);
+    color: hsl(152, 72%, 28%);
+    border: 1px solid hsl(152, 72%, 78%);
+}
+
+.sv2-badge--warning {
+    background: linear-gradient(135deg, hsl(38, 92%, 88%) 0%, hsl(38, 92%, 93%) 100%);
+    color: hsl(38, 92%, 30%);
+    border: 1px solid hsl(38, 92%, 76%);
+}
+
+.sv2-badge--danger {
+    background: linear-gradient(135deg, hsl(350, 82%, 90%) 0%, hsl(350, 82%, 93%) 100%);
+    color: hsl(350, 82%, 38%);
+    border: 1px solid hsl(350, 82%, 80%);
+}
+
+.sv2-badge--primary {
+    background: linear-gradient(135deg, hsl(258, 85%, 90%) 0%, hsl(258, 85%, 94%) 100%);
+    color: hsl(258, 85%, 42%);
+    border: 1px solid hsl(258, 85%, 80%);
+}
+
+.sv2-badge--neutral {
+    background: var(--sv2-border-light);
+    color: var(--sv2-text-secondary);
+    border: 1px solid var(--sv2-border);
+}
+
+.sv2-badge--info {
+    background: linear-gradient(135deg, hsl(205, 90%, 88%) 0%, hsl(205, 90%, 93%) 100%);
+    color: hsl(205, 90%, 30%);
+    border: 1px solid hsl(205, 90%, 76%);
+}
+
+/* ── Badge dot (statut simple) ────────────────────────────────────────────── */
+
+.sv2-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--sv2-radius-full);
+    flex-shrink: 0;
+}
+
+.sv2-dot--success {
+    background: var(--sv2-success);
+    box-shadow: 0 0 0 2px var(--sv2-success-bg);
+}
+
+.sv2-dot--warning {
+    background: var(--sv2-warning);
+    box-shadow: 0 0 0 2px var(--sv2-warning-bg);
+}
+
+.sv2-dot--danger {
+    background: var(--sv2-danger);
+    box-shadow: 0 0 0 2px var(--sv2-danger-bg);
+}
+
+.sv2-dot--neutral {
+    background: var(--sv2-text-tertiary);
+}
+
+/* ── Status pill (avec label + dot) ─────────────────────────────────────── */
+
+.sv2-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--sv2-text-secondary);
+}

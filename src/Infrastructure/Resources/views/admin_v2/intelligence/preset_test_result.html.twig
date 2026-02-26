@@ -1,0 +1,159 @@
+{# Fragment HTML injecté dans #result-container par le polling JS — pas d'extend #}
+
+<div class="sv2-page-header sv2-mt-xl">
+	<div class="sv2-page-header__info">
+		<h2 class="sv2-page-title">
+			<span class="sv2-page-title__icon sv2-kpi__icon--{{ report.all_critical_ok ? 'success' : 'warning' }}">
+				<i data-lucide="{{ report.all_critical_ok ? 'check-circle-2' : 'alert-triangle' }}"></i>
+			</span>
+			Résultat du test
+		</h2>
+	</div>
+	<div class="sv2-page-header__actions">
+		<span class="sv2-badge sv2-badge--{{ report.all_critical_ok ? 'success' : 'warning' }}">
+			<i data-lucide="{{ report.all_critical_ok ? 'check-circle-2' : 'alert-triangle' }}"></i>
+			{{ report.all_critical_ok ? 'SUCCÈS' : 'VÉRIFICATION REQUISE' }}
+		</span>
+	</div>
+</div>
+
+{# Vérifications critiques #}
+<div class="sv2-card sv2-mb-lg">
+	<div class="sv2-card__header">
+		<div class="sv2-card__header-icon sv2-kpi__icon--{{ report.all_critical_ok ? 'success' : 'warning' }}">
+			<i data-lucide="shield-check"></i>
+		</div>
+		<div>
+			<div class="sv2-card__title">Vérifications critiques</div>
+		</div>
+	</div>
+	<div class="sv2-card__body sv2-card__body--compact sv2-flex sv2-flex-col sv2-gap-sm">
+		<div class="sv2-flex sv2-items-center sv2-gap-sm sv2-p-sm sv2-bg-subtle sv2-rounded">
+			<i data-lucide="{{ report.critical_checks.response_not_empty ? 'check-circle-2' : 'x-circle' }}" class="sv2-text-{{ report.critical_checks.response_not_empty ? 'success' : 'danger' }}"></i>
+			<span class="sv2-text-sm">La réponse de l'IA n'est pas vide</span>
+		</div>
+		<div class="sv2-flex sv2-items-center sv2-gap-sm sv2-p-sm sv2-bg-subtle sv2-rounded">
+			<i data-lucide="{{ report.critical_checks.debug_saved_in_db ? 'check-circle-2' : 'x-circle' }}" class="sv2-text-{{ report.critical_checks.debug_saved_in_db ? 'success' : 'danger' }}"></i>
+			<span class="sv2-text-sm">Debug enregistré (ID:
+				{{ report.debug_id ?? '–' }})</span>
+		</div>
+		{% if report.critical_checks.streaming_enabled is defined %}
+			<div class="sv2-flex sv2-items-center sv2-gap-sm sv2-p-sm sv2-bg-subtle sv2-rounded">
+				<i data-lucide="{{ report.critical_checks.streaming_works ? 'check-circle-2' : 'alert-triangle' }}" class="sv2-text-{{ report.critical_checks.streaming_works ? 'success' : 'warning' }}"></i>
+				<span class="sv2-text-sm">Mode streaming opérationnel</span>
+			</div>
+		{% endif %}
+	</div>
+</div>
+
+{# Réponse IA #}
+<div class="sv2-card sv2-mb-lg">
+	<div class="sv2-card__header">
+		<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+			<i data-lucide="message-square-text"></i>
+		</div>
+		<div>
+			<div class="sv2-card__title">Réponse du LLM (test)</div>
+		</div>
+	</div>
+	<div class="sv2-card__body sv2-card__body--compact">
+		<div class="sv2-code-block sv2-font-mono sv2-text-sm">{{ report.ai_response ?? 'Pas de réponse' }}</div>
+		{% if report.ai_response_streaming %}
+			<div class="sv2-card__subtitle sv2-mt-md sv2-mb-sm">Mode streaming</div>
+			<div class="sv2-code-block sv2-font-mono sv2-text-sm">{{ report.ai_response_streaming }}</div>
+		{% endif %}
+	</div>
+</div>
+
+{# Rapport d'analyse #}
+<div class="sv2-card sv2-mb-lg">
+	<div class="sv2-card__header">
+		<div class="sv2-card__header-icon sv2-kpi__icon--neutral">
+			<i data-lucide="file-search"></i>
+		</div>
+		<div>
+			<div class="sv2-card__title">Rapport d'analyse expert</div>
+		</div>
+	</div>
+	<div class="sv2-card__body sv2-card__body--compact">
+		<div id="analysis-rendered" class="sv2-prose sv2-mb-md"></div>
+		<details>
+			<summary class="sv2-text-sm sv2-text-muted" style="cursor:pointer">Texte brut</summary>
+			<pre class="sv2-code-block sv2-font-mono sv2-text-xs sv2-mt-sm" style="overflow:auto;max-height:300px">{{ report.analysis }}</pre>
+		</details>
+	</div>
+</div>
+
+{# Consommation #}
+<div class="sv2-card sv2-mb-lg">
+	<div class="sv2-card__header">
+		<div class="sv2-card__header-icon sv2-kpi__icon--info">
+			<i data-lucide="activity"></i>
+		</div>
+		<div>
+			<div class="sv2-card__title">Consommation tokens</div>
+		</div>
+	</div>
+	<div class="sv2-table-container">
+		<table class="sv2-table">
+			<thead>
+				<tr>
+					<th>Mode</th>
+					<th>Prompt</th>
+					<th>Completion</th>
+					<th>Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Sync</td>
+					<td>{{ report.usage_test.prompt_tokens ?? 0 }}</td>
+					<td>{{ report.usage_test.completion_tokens ?? 0 }}</td>
+					<td class="sv2-font-bold">{{ report.usage_test.total_tokens ?? 0 }}</td>
+				</tr>
+				{% if report.usage_test_streaming %}
+					<tr>
+						<td>Streaming</td>
+						<td>{{ report.usage_test_streaming.prompt_tokens ?? 0 }}</td>
+						<td>{{ report.usage_test_streaming.completion_tokens ?? 0 }}</td>
+						<td class="sv2-font-bold">{{ report.usage_test_streaming.total_tokens ?? 0 }}</td>
+					</tr>
+				{% endif %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{# Actions #}
+<div class="sv2-flex sv2-gap-md sv2-justify-center sv2-mt-lg">
+	{% if report.debug_id %}
+		<a href="{{ path('synapse_debug_show', {id: report.debug_id}) }}" target="_blank" class="sv2-btn sv2-btn--outline sv2-btn--sm">
+			<i data-lucide="bug"></i>
+			Debug Sync
+		</a>
+	{% endif %}
+	{% if report.debug_id_streaming %}
+		<a href="{{ path('synapse_debug_show', {id: report.debug_id_streaming}) }}" target="_blank" class="sv2-btn sv2-btn--outline sv2-btn--sm">
+			<i data-lucide="bug"></i>
+			Debug Stream
+		</a>
+	{% endif %}
+	<a href="{{ path('synapse_v2_admin_presets') }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+		<i data-lucide="arrow-left"></i>
+		Retour aux presets
+	</a>
+</div>
+
+<script>
+	(function () {
+const raw = document.getElementById('analysis-rendered');
+const rawEl = document.getElementById('analysis-raw');
+if (raw && rawEl) {
+const text = rawEl ? rawEl.textContent : '';
+raw.innerHTML = text.replace(/\n/g, '<br>');
+}
+if (typeof lucide !== 'undefined') 
+lucide.createIcons();
+
+})();
+</script>

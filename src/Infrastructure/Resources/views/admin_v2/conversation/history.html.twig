@@ -1,0 +1,241 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Historique | Conversation | Synapse Admin V2
+{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Conversation</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">Historique</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--warning">
+					<i data-lucide="messages-square"></i>
+				</span>
+				Historique global
+			</h1>
+			<p class="sv2-page-subtitle">
+				Accès Break-Glass : toutes les conversations de tous les utilisateurs.
+				            Chaque consultation est enregistrée dans les logs d'audit.
+			</p>
+		</div>
+		<div class="sv2-page-header__actions">
+			<span class="sv2-badge sv2-badge--warning">
+				<i data-lucide="shield-alert"></i>
+				Break-Glass — Accès audité
+			</span>
+		</div>
+	</div>
+
+	{# ── Alerte RGPD ──────────────────────────────────────────────────────────── #}
+	<div class="sv2-alert sv2-alert--warning sv2-mb-xl">
+		<i data-lucide="shield-alert"></i>
+		<div>
+			<strong>Avertissement RGPD.</strong>
+			Cet accès vous permet de lire des conversations
+			        privées. Votre identité, l'heure et l'adresse IP sont enregistrées dans le journal d'audit.
+			        N'utilisez cet outil que dans le cadre de votre mission.
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="sv2-grid sv2-grid--3 sv2-mb-xl">
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--primary">
+					<i data-lucide="messages-square"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Conversations totales</div>
+					<div class="sv2-kpi__value">{{ total }}</div>
+					<div class="sv2-kpi__sub">toutes périodes confondues</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--info">
+					<i data-lucide="file-text"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Cette page</div>
+					<div class="sv2-kpi__value">{{ conversations|length }}</div>
+					<div class="sv2-kpi__sub">sur
+						{{ limit }}
+						max par page</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--neutral">
+					<i data-lucide="layers"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Pages</div>
+					<div class="sv2-kpi__value">{{ page }}
+						/
+						{{ pages }}</div>
+					<div class="sv2-kpi__sub">pagination
+						{{ limit }}/page</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Tableau des conversations ─────────────────────────────────────────────── #}
+	<div class="sv2-card">
+		<div class="sv2-card__header">
+			<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+				<i data-lucide="list"></i>
+			</div>
+			<div>
+				<div class="sv2-card__title">Conversations</div>
+				<div class="sv2-card__subtitle">
+					Triées par date de création décroissante · Accès complet Break-Glass
+				</div>
+			</div>
+		</div>
+
+		<div class="sv2-table-container">
+			<table class="sv2-table">
+				<thead>
+					<tr>
+						<th>Conversation</th>
+						<th>Propriétaire</th>
+						<th>Messages</th>
+						<th>Créée le</th>
+						<th>Statut</th>
+						<th class="sv2-table__cell--actions">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for conversation in conversations %}
+						<tr>
+
+							{# ── Titre / ID ──────────────────────────────────── #}
+							<td>
+								<div class="sv2-table-cell-label">
+									<div class="sv2-table-cell-label__icon sv2-kpi__icon--primary">
+										<i data-lucide="message-circle"></i>
+									</div>
+									<div>
+										<div class="sv2-table-cell-label__title">
+											{{ conversation.title ?: 'Sans titre' }}
+										</div>
+										<div class="sv2-table-cell-label__sub sv2-font-mono">
+											{{ conversation.id|slice(0, 8) }}…
+										</div>
+									</div>
+								</div>
+							</td>
+
+							{# ── Propriétaire ────────────────────────────────── #}
+							<td>
+								<div class="sv2-table-cell-label">
+									<div class="sv2-table-cell-label__icon sv2-kpi__icon--neutral">
+										<i data-lucide="user"></i>
+									</div>
+									<div>
+										<div class="sv2-table-cell-label__title">
+											{{ conversation.owner.identifier ?? '—' }}
+										</div>
+									</div>
+								</div>
+							</td>
+
+							{# ── Nombre de messages ──────────────────────────── #}
+							<td class="sv2-table__cell--mono">
+								{{ conversation.messages|length }}
+							</td>
+
+							{# ── Date ────────────────────────────────────────── #}
+							<td class="sv2-table__cell--muted">
+								{{ conversation.createdAt|date('d/m/Y H:i') }}
+							</td>
+
+							{# ── Statut ──────────────────────────────────────── #}
+							<td>
+								{% if conversation.status is defined %}
+									{% set statusVal = conversation.status.value ?? conversation.status %}
+									<span class="sv2-badge sv2-badge--{{ statusVal == 'active' ? 'success' : 'neutral' }}">
+										{{ statusVal|capitalize }}
+									</span>
+								{% else %}
+									<span class="sv2-badge sv2-badge--neutral">—</span>
+								{% endif %}
+							</td>
+
+							{# ── Actions ─────────────────────────────────────── #}
+							<td
+								class="sv2-table__cell--actions">
+								{# Lien vers la vue détaillée V1 (Break-Glass) #}
+								<a href="{{ path('synapse_admin_conversation_view', {id: conversation.id}) }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm sv2-btn--icon" data-sv2-tooltip="Voir la conversation">
+									<i data-lucide="eye"></i>
+								</a>
+							</td>
+
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="6">
+								<div class="sv2-empty">
+									<div class="sv2-empty__icon">
+										<i data-lucide="messages-square"></i>
+									</div>
+									<div class="sv2-empty__title">Aucune conversation</div>
+									<p class="sv2-empty__description">
+										Les conversations seront listées ici une fois que des utilisateurs
+										                                    auront commencé à interagir avec l'IA.
+									</p>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+		{# ── Pagination ──────────────────────────────────────────────────────── #}
+		{% if pages > 1 %}
+			<div class="sv2-card__footer sv2-justify-between">
+				<span class="sv2-text-sm sv2-text-muted">
+					Page
+					{{ page }}
+					sur
+					{{ pages }}
+					—
+					{{ total }}
+					conversation{{ total > 1 ? 's' : '' }}
+				</span>
+				<div class="sv2-flex sv2-gap-sm">
+					{% if page > 1 %}
+						<a href="{{ path('synapse_v2_admin_history', {page: page - 1}) }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+							<i data-lucide="chevron-left"></i>
+							Précédent
+						</a>
+					{% endif %}
+					{% if page < pages %}
+						<a href="{{ path('synapse_v2_admin_history', {page: page + 1}) }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+							Suivant
+							<i data-lucide="chevron-right"></i>
+						</a>
+					{% endif %}
+				</div>
+			</div>
+		{% endif %}
+
+	</div>
+
+{% endblock %}

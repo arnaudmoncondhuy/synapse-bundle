@@ -1,0 +1,168 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Audit & Logs | Sécurité | Synapse Admin V2
+{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Sécurité</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">Audit & Logs</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--warning">
+					<i data-lucide="scroll-text"></i>
+				</span>
+				Journal d'audit
+			</h1>
+			<p class="sv2-page-subtitle">
+				Traces des échanges LLM (mode debug actif) et accès administrateurs.
+			</p>
+		</div>
+		<div class="sv2-page-header__actions">
+			<span class="sv2-badge sv2-badge--neutral">
+				<i data-lucide="database"></i>
+				{{ total }}
+				entrée{{ total > 1 ? 's' : '' }}
+			</span>
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="sv2-grid sv2-grid--3 sv2-mb-xl">
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--warning">
+					<i data-lucide="bug"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Logs LLM enregistrés</div>
+					<div class="sv2-kpi__value">{{ total }}</div>
+					<div class="sv2-kpi__sub">traces debug en base</div>
+				</div>
+			</div>
+		</div>
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--info">
+					<i data-lucide="eye"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Affichés</div>
+					<div class="sv2-kpi__value">{{ logs|length }}</div>
+					<div class="sv2-kpi__sub">200 plus récents</div>
+				</div>
+			</div>
+		</div>
+		<div class="sv2-card sv2-card--hover">
+			<div class="sv2-kpi">
+				<div class="sv2-kpi__icon sv2-kpi__icon--neutral">
+					<i data-lucide="shield"></i>
+				</div>
+				<div class="sv2-kpi__body">
+					<div class="sv2-kpi__label">Accès Break-Glass</div>
+					<div class="sv2-kpi__value">—</div>
+					<div class="sv2-kpi__sub">dans les logs système</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{# ── Liens rapides ────────────────────────────────────────────────────────── #}
+	<div class="sv2-alert sv2-alert--info sv2-mb-xl">
+		<i data-lucide="info"></i>
+		<div>
+			Les accès Break-Glass (historique des conversations) sont enregistrés dans
+			        les
+			<strong>logs Symfony</strong>
+			(PSR Logger niveau warning).
+			        Consultez
+			<code>var/log/dev.log</code>
+			ou votre agrégateur de logs pour les auditer.
+			<br>Le journal ci-dessous concerne uniquement les
+			<strong>traces d'échanges LLM</strong>
+			(actives quand le
+			<a href="{{ path('synapse_v2_admin_settings') }}">mode debug</a>
+			est activé).
+		</div>
+	</div>
+
+	{# ── Tableau logs ─────────────────────────────────────────────────────────── #}
+	{% if logs|length == 0 %}
+		<div class="sv2-card">
+			<div class="sv2-empty">
+				<div class="sv2-empty__icon">
+					<i data-lucide="scroll-text"></i>
+				</div>
+				<div class="sv2-empty__title">Aucun log d'audit</div>
+				<p class="sv2-empty__description">
+					Activez le
+					<a href="{{ path('synapse_v2_admin_settings') }}">mode debug</a>
+					pour enregistrer les traces LLM.
+				</p>
+			</div>
+		</div>
+	{% else %}
+		<div class="sv2-card">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--warning">
+					<i data-lucide="list-ordered"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Traces LLM récentes</div>
+					<div class="sv2-card__subtitle">200 dernières entrées · triées par date décroissante</div>
+				</div>
+				<div class="sv2-card__header-actions">
+					<a href="{{ path('synapse_v2_admin_debug') }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+						<i data-lucide="external-link"></i>
+						Vue complète
+					</a>
+				</div>
+			</div>
+			<div class="sv2-table-container">
+				<table class="sv2-table">
+					<thead>
+						<tr>
+							<th>ID Debug</th>
+							<th>Module</th>
+							<th>Modèle</th>
+							<th>Tokens</th>
+							<th>Date</th>
+							<th class="sv2-table__cell--actions">Rapport</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for log in logs %}
+							{% set data = log.data ?? {} %}
+							<tr>
+								<td class="sv2-table__cell--mono sv2-text-xs">{{ log.debugId|slice(0, 8) }}…</td>
+								<td>
+									<span class="sv2-badge sv2-badge--neutral">{{ data.module ?? '—' }}</span>
+								</td>
+								<td class="sv2-table__cell--mono sv2-text-xs">{{ data.model ?? '—' }}</td>
+								<td class="sv2-table__cell--mono">
+									{% set t = data.usage ?? data.token_usage ?? null %}
+									{{ t ? (t.total_tokens ?? (t.prompt_tokens ?? 0) + (t.completion_tokens ?? 0)) : '—' }}
+								</td>
+								<td class="sv2-table__cell--muted">
+									{{ log.createdAt is defined ? log.createdAt|date('d/m H:i:s') : '—' }}
+								</td>
+								<td class="sv2-table__cell--actions">
+									<a href="{{ path('synapse_debug_show', {id: log.debugId}) }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm sv2-btn--icon" target="_blank" data-sv2-tooltip="Rapport détaillé">
+										<i data-lucide="external-link"></i>
+									</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	{% endif %}
+
+{% endblock %}

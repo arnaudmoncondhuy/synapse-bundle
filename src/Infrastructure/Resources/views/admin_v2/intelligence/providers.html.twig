@@ -1,0 +1,154 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Fournisseurs | Intelligence | Synapse Admin V2
+{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Intelligence</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">Fournisseurs</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--primary">
+					<i data-lucide="plug"></i>
+				</span>
+				Fournisseurs LLM
+			</h1>
+			<p class="sv2-page-subtitle">
+				Configurez vos accès aux Large Language Models. Chaque fournisseur alimente
+																            vos presets de génération. Les credentials sont stockés de manière sécurisée.
+			</p>
+		</div>
+	</div>
+
+	{# ── Grille ───────────────────────────────────────────────────────────────── #}
+	<div class="sv2-grid sv2-grid--2">
+		{% for provider in providers %}
+
+			{# État du provider #}
+			{% if provider.isEnabled and provider.isConfigured %}
+				{% set variant = 'sv2-card--success' %}
+				{% set badge   = 'sv2-badge--success' %}
+				{% set icon    = 'check-circle-2' %}
+				{% set label   = 'Actif' %}
+			{% elseif provider.isEnabled and not provider.isConfigured %}
+				{% set variant = 'sv2-card--warning' %}
+				{% set badge   = 'sv2-badge--warning' %}
+				{% set icon    = 'alert-triangle' %}
+				{% set label   = 'Incomplet' %}
+			{% else %}
+				{% set variant = '' %}
+				{% set badge   = 'sv2-badge--neutral' %}
+				{% set icon    = 'circle-slash' %}
+				{% set label   = 'Désactivé' %}
+			{% endif %}
+
+			{% set providerIcon = provider.name == 'gemini' ? 'zap' : (provider.name == 'ovh' ? 'cloud' : 'server') %}
+
+			<div
+				class="sv2-card sv2-card--hover {{ variant }}">
+
+				{# Header #}
+				<div class="sv2-card__header">
+					<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+						<i data-lucide="{{ providerIcon }}"></i>
+					</div>
+					<div>
+						<div class="sv2-card__title">{{ provider.label }}</div>
+						<div class="sv2-card__subtitle sv2-font-mono">{{ provider.name }}</div>
+					</div>
+					<div class="sv2-card__header-actions">
+						<span class="sv2-badge {{ badge }}">
+							<i data-lucide="{{ icon }}"></i>
+							{{ label }}
+						</span>
+						{% if preset_count_by_provider[provider.id] is defined and preset_count_by_provider[provider.id] > 0 %}
+							<span class="sv2-badge sv2-badge--neutral">
+								<i data-lucide="sliders-horizontal"></i>
+								{{ preset_count_by_provider[provider.id] }}p
+							</span>
+						{% endif %}
+					</div>
+				</div>
+
+				{# Body #}
+				<div class="sv2-card__body sv2-card__body--compact">
+					{% if provider.isConfigured %}
+						<div class="sv2-flex sv2-flex-col sv2-gap-sm">
+							{% for key, value in provider.credentials %}
+								<div class="sv2-table-cell-label">
+									<div class="sv2-table-cell-label__icon sv2-kpi__icon--neutral">
+										<i data-lucide="key-round"></i>
+									</div>
+									<div>
+										<div class="sv2-table-cell-label__title">{{ key }}</div>
+										<div class="sv2-table-cell-label__sub sv2-font-mono sv2-truncate">
+											{% if value is not empty %}
+												●●●●●●●●
+												<span class="sv2-text-tertiary">(configuré)</span>
+											{% else %}
+												<em class="sv2-text-tertiary">Non renseigné</em>
+											{% endif %}
+										</div>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					{% else %}
+						<div class="sv2-empty">
+							<div class="sv2-empty__icon">
+								<i data-lucide="key-round"></i>
+							</div>
+							<p class="sv2-empty__description">
+								Aucun credential configuré. Cliquez sur "Configurer" pour renseigner
+																																                            les paramètres de connexion à ce fournisseur.
+							</p>
+						</div>
+					{% endif %}
+				</div>
+
+				{# Footer — Actions #}
+				<div class="sv2-card__footer">
+					<div class="sv2-flex sv2-gap-sm">
+						{% if provider.isConfigured %}
+							<a href="{{ path('synapse_admin_providers_test', {id: provider.id}) }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+								<i data-lucide="flask-conical"></i>
+								Tester
+							</a>
+						{% endif %}
+						<a href="{{ path('synapse_admin_providers_edit', {id: provider.id}) }}" class="sv2-btn sv2-btn--primary sv2-btn--sm">
+							<i data-lucide="settings"></i>
+							{{ provider.isConfigured ? 'Reconfigurer' : 'Configurer' }}
+						</a>
+					</div>
+					<span class="sv2-text-xs sv2-text-tertiary">
+						Màj
+						{{ provider.updatedAt|date('d/m/Y') }}
+					</span>
+				</div>
+
+			</div>
+		{% else %}
+			<div class="sv2-card">
+				<div class="sv2-empty">
+					<div class="sv2-empty__icon">
+						<i data-lucide="plug"></i>
+					</div>
+					<div class="sv2-empty__title">Aucun fournisseur trouvé</div>
+					<p class="sv2-empty__description">
+						Vérifiez la configuration de votre bundle Synapse.
+																								                    Les fournisseurs disponibles sont détectés automatiquement.
+					</p>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+
+{% endblock %}
