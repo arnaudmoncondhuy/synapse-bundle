@@ -13,24 +13,28 @@
       
       
       
+        <link rel="prev" href="../rle-management/">
+      
+      
+        <link rel="next" href="../semantic-memory/">
       
       
         
       
       
-      <link rel="icon" href="/assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
     
     
       
-        <title>Synapse</title>
+        <title>RAG & Mémoire Vectorielle - Synapse</title>
       
     
     
-      <link rel="stylesheet" href="/assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="/assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -49,7 +53,7 @@
       
     
     
-    <script>__md_scope=new URL("/",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -73,6 +77,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#mise-en-uvre-du-rag-memoire-vectorielle" class="md-skip">
+          Aller au contenu
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -83,7 +92,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="En-tête">
-    <a href="/." title="Synapse" class="md-header__button md-logo" aria-label="Synapse" data-md-component="logo">
+    <a href="../../.." title="Synapse" class="md-header__button md-logo" aria-label="Synapse" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -103,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              RAG & Mémoire Vectorielle
             
           </span>
         </div>
@@ -209,7 +218,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -226,6 +235,8 @@
   
   
   
+    
+  
   
     
     
@@ -233,11 +244,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="/core/getting-started/installation/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
           
   
   
@@ -260,7 +273,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/admin/interface/" class="md-tabs__link">
+        <a href="../../../admin/interface/" class="md-tabs__link">
           
   
   
@@ -280,7 +293,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/chat/utilisation/" class="md-tabs__link">
+        <a href="../../../chat/utilisation/" class="md-tabs__link">
           
   
   
@@ -314,7 +327,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/." title="Synapse" class="md-nav__button md-logo" aria-label="Synapse" data-md-component="logo">
+    <a href="../../.." title="Synapse" class="md-nav__button md-logo" aria-label="Synapse" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -332,7 +345,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -356,28 +369,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -395,7 +411,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -419,10 +435,13 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
@@ -431,7 +450,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_1" >
         
           
-          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="">
             
   
   
@@ -467,7 +486,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/getting-started/installation/" class="md-nav__link">
+      <a href="../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -495,7 +514,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/getting-started/quickstart/" class="md-nav__link">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
         
   
   
@@ -523,7 +542,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/getting-started/guide-integration-ia/" class="md-nav__link">
+      <a href="../../getting-started/guide-integration-ia/" class="md-nav__link">
         
   
   
@@ -556,28 +575,31 @@
                 
   
   
+    
   
   
+  
     
     
     
     
       
       
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
         
           
+          
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="">
             
   
   
@@ -595,7 +617,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -613,7 +635,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/guides/configuration/" class="md-nav__link">
+      <a href="../configuration/" class="md-nav__link">
         
   
   
@@ -641,7 +663,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/guides/ai-tools/" class="md-nav__link">
+      <a href="../ai-tools/" class="md-nav__link">
         
   
   
@@ -669,7 +691,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/guides/personas-presets/" class="md-nav__link">
+      <a href="../personas-presets/" class="md-nav__link">
         
   
   
@@ -697,7 +719,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/guides/rle-management/" class="md-nav__link">
+      <a href="../rle-management/" class="md-nav__link">
         
   
   
@@ -722,10 +744,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="/core/guides/rag-memory/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG & Mémoire Vectorielle
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -741,6 +790,98 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#etape-1-configuration-du-vector-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Étape 1 : Configuration du Vector Store
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Étape 1 : Configuration du Vector Store">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mode-doctrine-postgresql-recommande" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mode Doctrine / PostgreSQL (Recommandé)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#etape-2-configuration-du-chunking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧩 Étape 2 : Configuration du Chunking
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#etape-3-alimenter-la-memoire-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠 Étape 3 : Alimenter la mémoire (RAG)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comment-synapse-utilise-le-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧠 Comment Synapse utilise le RAG ?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memoire-semantique-active-human-in-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧬 Mémoire Sémantique Active (Human-in-the-loop)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -753,7 +894,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/guides/semantic-memory/" class="md-nav__link">
+      <a href="../semantic-memory/" class="md-nav__link">
         
   
   
@@ -795,10 +936,13 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
@@ -807,7 +951,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
         
           
-          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="">
             
   
   
@@ -897,7 +1041,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/chat-service/" class="md-nav__link">
+      <a href="../../reference/chat-service/" class="md-nav__link">
         
   
   
@@ -925,7 +1069,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/conversation-manager/" class="md-nav__link">
+      <a href="../../reference/conversation-manager/" class="md-nav__link">
         
   
   
@@ -1015,7 +1159,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/overview/" class="md-nav__link">
+      <a href="../../reference/contracts/overview/" class="md-nav__link">
         
   
   
@@ -1043,7 +1187,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/agent-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/agent-interface/" class="md-nav__link">
         
   
   
@@ -1071,7 +1215,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/ai-tool-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/ai-tool-interface/" class="md-nav__link">
         
   
   
@@ -1099,7 +1243,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/config-provider-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/config-provider-interface/" class="md-nav__link">
         
   
   
@@ -1127,7 +1271,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/context-provider-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/context-provider-interface/" class="md-nav__link">
         
   
   
@@ -1155,7 +1299,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/conversation-owner-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/conversation-owner-interface/" class="md-nav__link">
         
   
   
@@ -1183,7 +1327,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/embedding-client-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/embedding-client-interface/" class="md-nav__link">
         
   
   
@@ -1211,7 +1355,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/encryption-service-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/encryption-service-interface/" class="md-nav__link">
         
   
   
@@ -1239,7 +1383,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/llm-client-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/llm-client-interface/" class="md-nav__link">
         
   
   
@@ -1267,7 +1411,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/message-formatter-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/message-formatter-interface/" class="md-nav__link">
         
   
   
@@ -1295,7 +1439,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/permission-checker-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/permission-checker-interface/" class="md-nav__link">
         
   
   
@@ -1323,7 +1467,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/retention-policy-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/retention-policy-interface/" class="md-nav__link">
         
   
   
@@ -1351,7 +1495,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/text-splitter-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/text-splitter-interface/" class="md-nav__link">
         
   
   
@@ -1379,7 +1523,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/synapse-debug-logger-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/synapse-debug-logger-interface/" class="md-nav__link">
         
   
   
@@ -1407,7 +1551,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/contracts/vector-store-interface/" class="md-nav__link">
+      <a href="../../reference/contracts/vector-store-interface/" class="md-nav__link">
         
   
   
@@ -1497,7 +1641,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/events/overview/" class="md-nav__link">
+      <a href="../../reference/events/overview/" class="md-nav__link">
         
   
   
@@ -1525,7 +1669,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/events/generation-started-event/" class="md-nav__link">
+      <a href="../../reference/events/generation-started-event/" class="md-nav__link">
         
   
   
@@ -1553,7 +1697,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/events/pre-prompt-event/" class="md-nav__link">
+      <a href="../../reference/events/pre-prompt-event/" class="md-nav__link">
         
   
   
@@ -1581,7 +1725,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/events/chunk-received-event/" class="md-nav__link">
+      <a href="../../reference/events/chunk-received-event/" class="md-nav__link">
         
   
   
@@ -1609,7 +1753,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/events/tool-call-requested-event/" class="md-nav__link">
+      <a href="../../reference/events/tool-call-requested-event/" class="md-nav__link">
         
   
   
@@ -1637,7 +1781,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/events/tool-call-completed-event/" class="md-nav__link">
+      <a href="../../reference/events/tool-call-completed-event/" class="md-nav__link">
         
   
   
@@ -1665,7 +1809,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/events/generation-completed-event/" class="md-nav__link">
+      <a href="../../reference/events/generation-completed-event/" class="md-nav__link">
         
   
   
@@ -1693,7 +1837,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/events/exchange-completed-event/" class="md-nav__link">
+      <a href="../../reference/events/exchange-completed-event/" class="md-nav__link">
         
   
   
@@ -1783,7 +1927,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/shared/message-role/" class="md-nav__link">
+      <a href="../../reference/shared/message-role/" class="md-nav__link">
         
   
   
@@ -1811,7 +1955,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/shared/conversation-status/" class="md-nav__link">
+      <a href="../../reference/shared/conversation-status/" class="md-nav__link">
         
   
   
@@ -1839,7 +1983,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/shared/memory-scope/" class="md-nav__link">
+      <a href="../../reference/shared/memory-scope/" class="md-nav__link">
         
   
   
@@ -1875,7 +2019,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/entities/" class="md-nav__link">
+      <a href="../../reference/entities/" class="md-nav__link">
         
   
   
@@ -1903,7 +2047,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/cli/" class="md-nav__link">
+      <a href="../../reference/cli/" class="md-nav__link">
         
   
   
@@ -1931,7 +2075,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/reference/implementation-guide/" class="md-nav__link">
+      <a href="../../reference/implementation-guide/" class="md-nav__link">
         
   
   
@@ -1973,10 +2117,13 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
@@ -1985,7 +2132,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_4" >
         
           
-          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2_4" id="__nav_2_4_label" tabindex="">
             
   
   
@@ -2021,7 +2168,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/explanation/architecture/" class="md-nav__link">
+      <a href="../../explanation/architecture/" class="md-nav__link">
         
   
   
@@ -2049,7 +2196,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/explanation/security/" class="md-nav__link">
+      <a href="../../explanation/security/" class="md-nav__link">
         
   
   
@@ -2077,7 +2224,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/explanation/gemini-context/" class="md-nav__link">
+      <a href="../../explanation/gemini-context/" class="md-nav__link">
         
   
   
@@ -2113,7 +2260,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/core/changelog/" class="md-nav__link">
+      <a href="../../changelog/" class="md-nav__link">
         
   
   
@@ -2202,7 +2349,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/admin/interface/" class="md-nav__link">
+      <a href="../../../admin/interface/" class="md-nav__link">
         
   
   
@@ -2291,7 +2438,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/chat/utilisation/" class="md-nav__link">
+      <a href="../../../chat/utilisation/" class="md-nav__link">
         
   
   
@@ -2336,6 +2483,88 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#etape-1-configuration-du-vector-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚀 Étape 1 : Configuration du Vector Store
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚀 Étape 1 : Configuration du Vector Store">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mode-doctrine-postgresql-recommande" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mode Doctrine / PostgreSQL (Recommandé)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#etape-2-configuration-du-chunking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧩 Étape 2 : Configuration du Chunking
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#etape-3-alimenter-la-memoire-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🛠 Étape 3 : Alimenter la mémoire (RAG)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comment-synapse-utilise-le-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧠 Comment Synapse utilise le RAG ?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#memoire-semantique-active-human-in-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧬 Mémoire Sémantique Active (Human-in-the-loop)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -2348,8 +2577,78 @@
               
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+                  
 
+
+
+<h1 id="mise-en-uvre-du-rag-memoire-vectorielle">Mise en œuvre du RAG (Mémoire Vectorielle)</h1>
+<p>Le RAG (<em>Retrieval-Augmented Generation</em>) permet à l'IA d'accéder à vos propres documents (PDF, Doc, Base de données) pour répondre de manière précise et sourcée, tout en s'affranchissant des limites de la fenêtre de contexte.</p>
+<hr />
+<h2 id="etape-1-configuration-du-vector-store">🚀 Étape 1 : Configuration du Vector Store</h2>
+<p>Synapse Core supporte plusieurs modes de stockage via l'option <code>vector_store.default</code>.</p>
+<h3 id="mode-doctrine-postgresql-recommande">Mode Doctrine / PostgreSQL (Recommandé)</h3>
+<p>Si vous utilisez PostgreSQL avec l'extension <code>pgvector</code>, Synapse utilisera des requêtes natives ultra-performantes.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># config/packages/synapse.yaml</span>
+<span class="nt">synapse</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">vector_store</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">doctrine</span>
+</code></pre></div>
+<blockquote>
+<p>[!IMPORTANT]
+N'oubliez pas d'exécuter <code>php bin/console doctrine:schema:update --force</code> pour créer la table <code>synapse_vector_memory</code>.</p>
+</blockquote>
+<hr />
+<h2 id="etape-2-configuration-du-chunking">🧩 Étape 2 : Configuration du Chunking</h2>
+<p>Avant d'être mémorisés, les documents doivent être découpés. Vous pouvez régler ces paramètres dans l'<strong>Admin Synapse</strong> (Onglet Embeddings) :</p>
+<ol>
+<li><strong>Stratégie</strong> : Choisissez <code>Recursive</code> pour un découpage qui respecte les paragraphes.</li>
+<li><strong>Taille des segments</strong> : 1000 caractères est un bon compromis.</li>
+<li><strong>Overlap</strong> : 200 caractères permettent de garder le fil entre deux segments.</li>
+</ol>
+<hr />
+<h2 id="etape-3-alimenter-la-memoire-rag">🛠 Étape 3 : Alimenter la mémoire (RAG)</h2>
+<p>Pour ajouter des documents à la mémoire de l'IA, utilisez le <code>MemoryManager</code> (recommandé) ou directement le <code>VectorStoreInterface</code> :</p>
+<div class="highlight"><pre><span></span><code><span class="x">use ArnaudMoncondhuy\SynapseCore\Core\Memory\MemoryManager;</span>
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Shared\Enum\MemoryScope;</span>
+
+<span class="x">public function indexDocument(string $text, MemoryManager $memory, string $userId)</span>
+<span class="x">{</span>
+<span class="x">    $memory-&gt;remember(</span>
+<span class="x">        text: $text,</span>
+<span class="x">        scope: MemoryScope::USER,</span>
+<span class="x">        userId: $userId,</span>
+<span class="x">        sourceType: &#39;document&#39;</span>
+<span class="x">    );</span>
+<span class="x">}</span>
+</code></pre></div>
+<hr />
+<h2 id="comment-synapse-utilise-le-rag">🧠 Comment Synapse utilise le RAG ?</h2>
+<p>Lors d'une conversation, Synapse Core :
+1.  Vectorise la question de l'utilisateur.
+2.  Recherche les <strong>N</strong> segments les plus proches dans le <code>VectorStore</code> (filtré par <code>user_id</code>).
+3.  Injecte ces segments dans le prompt sous forme de "Contexte de référence".
+4.  L'IA répond en se basant sur ces documents.</p>
+<blockquote>
+<p>[!TIP]
+Vous pouvez surveiller les requêtes RAG et les scores de similarité en activant le <code>debug_mode</code> dans la configuration.</p>
+</blockquote>
+<hr />
+<h2 id="memoire-semantique-active-human-in-the-loop">🧬 Mémoire Sémantique Active (Human-in-the-loop)</h2>
+<p>En plus du RAG classique (documents pré-indexés), Synapse Core dispose d'un système de <strong>mémoire conversationnelle</strong> où le LLM peut proposer de retenir des informations importantes avec le consentement de l'utilisateur.</p>
+<p>👉 Voir le guide dédié : <a href="../semantic-memory/">Mémoire Sémantique</a></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
               </article>
             </div>
           
@@ -2392,10 +2691,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "/", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate"], "search": "/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": null}</script>
     
     
-      <script src="/assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
