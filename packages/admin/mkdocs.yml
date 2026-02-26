@@ -1,0 +1,4 @@
+site_name: admin
+
+nav:
+  - Interface d'Administration: interface.md

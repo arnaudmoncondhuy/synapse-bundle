@@ -1,0 +1,74 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ArnaudMoncondhuy\SynapseAdmin\Infrastructure\DependencyInjection;
+
+use ArnaudMoncondhuy\SynapseAdmin\Admin\Twig\SynapseRuntime;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+
+/**
+ * Extension du bundle SynapseAdmin.
+ *
+ * Responsabilités :
+ * 1. Enregistrer les chemins Twig pour les templates admin (V1 + V2)
+ * 2. Configurer AssetMapper pour les assets admin
+ * 3. Charger les services admin
+ * 4. Configurer les globals Twig (SynapseRuntime)
+ */
+class SynapseAdminExtension extends Extension implements PrependExtensionInterface
+{
+    /**
+     * Pré-configuration des autres bundles (Twig, AssetMapper).
+     */
+    public function prepend(ContainerBuilder $container): void
+    {
+        // Enregistrement du namespace Twig @Synapse
+        $viewsPath = \dirname(__DIR__, 2) . '/Resources/views';
+        if (!is_dir($viewsPath)) {
+            // Fallback for vendor install
+            $viewsPath = \dirname(__DIR__) . '/Resources/views';
+        }
+
+        $container->prependExtensionConfig('twig', [
+            'paths' => [
+                $viewsPath => 'Synapse',
+            ],
+        ]);
+
+        // Enregistrement des assets pour AssetMapper
+        $assetsPath = \dirname(__DIR__, 3) . '/assets';
+        $container->prependExtensionConfig('framework', [
+            'asset_mapper' => [
+                'paths' => [
+                    $assetsPath => 'synapse-admin',
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Chargement principal de la configuration du bundle.
+     */
+    public function load(array $configs, ContainerBuilder $container): void
+    {
+        $loader = new YamlFileLoader($container, new FileLocator(\dirname(__DIR__, 3) . '/config'));
+        $loader->load('admin.yaml');
+        $loader->load('admin_v2.yaml');
+
+        // Configure SynapseRuntime with version parameter from core
+        if ($container->hasParameter('synapse.version')) {
+            $container->getDefinition(SynapseRuntime::class)
+                ->setArgument('$version', '%synapse.version%');
+        }
+    }
+
+    public function getAlias(): string
+    {
+        return 'synapse_admin';
+    }
+}
