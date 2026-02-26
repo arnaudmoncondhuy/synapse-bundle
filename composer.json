@@ -1,6 +1,6 @@
 {
     "name": "arnaudmoncondhuy/synapse-monorepo",
-    "description": "Monorepo root — dev only, not published on Packagist",
+    "description": "Synapse — Bundles Symfony pour l'intégration IA (LLM). Monorepo : synapse-core, synapse-admin, synapse-chat.",
     "type": "project",
     "private": true,
     "authors": [
