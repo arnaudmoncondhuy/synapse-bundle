@@ -138,7 +138,7 @@ PolyForm Noncommercial 1.0.0 (usage non-commercial uniquement)
 
 ## Support
 
-- 📖 [Documentation Admin UI](https://synapse-bundle.readthedocs.io/admin)
+- 📖 [Documentation Admin](https://arnaudmoncondhuy.github.io/synapse-bundle/admin/)
 - 🐛 [Issues](https://github.com/arnaudmoncondhuy/synapse-bundle/issues)
 
 ## Auteur

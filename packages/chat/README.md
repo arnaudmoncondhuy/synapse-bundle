@@ -186,7 +186,7 @@ PolyForm Noncommercial 1.0.0 (usage non-commercial uniquement)
 
 ## Support
 
-- 📖 [Documentation Chat Widget](https://synapse-bundle.readthedocs.io/chat)
+- 📖 [Documentation Chat](https://arnaudmoncondhuy.github.io/synapse-bundle/chat/)
 - 🐛 [Issues](https://github.com/arnaudmoncondhuy/synapse-bundle/issues)
 
 ## Auteur
