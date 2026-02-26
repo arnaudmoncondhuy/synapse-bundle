@@ -70,6 +70,9 @@ class DebugLogSubscriber implements EventSubscriberInterface
             'streaming_enabled'  => $config['streaming_enabled'] ?? false,
         ];
 
+        // Capture tool definitions for display
+        $toolDefinitions = $prompt['toolDefinitions'] ?? [];
+
         $this->debugAccumulator = [
             'system_prompt'       => $systemInstruction,
             'config'              => $config,
@@ -78,6 +81,7 @@ class DebugLogSubscriber implements EventSubscriberInterface
             'history_size'        => count($prompt['contents'] ?? []),
             'turns'               => [],
             'tool_executions'     => [],
+            'tool_definitions'    => $toolDefinitions,
             'raw_request_body'    => null,
             'raw_response'        => [],
             'raw_api_chunks'      => [],
@@ -167,6 +171,9 @@ class DebugLogSubscriber implements EventSubscriberInterface
             }
         }
 
+        // Extract tool usage from history (which tool calls were made and their results)
+        $this->debugAccumulator['tool_usage'] = $this->extractToolUsage();
+
         // Complete the debug accumulator with final metadata
         $this->debugAccumulator['model']    = $event->getModel();
         $this->debugAccumulator['provider'] = $event->getProvider();
@@ -188,14 +195,56 @@ class DebugLogSubscriber implements EventSubscriberInterface
 
         // Store complete debug data in cache for quick retrieval (1 day TTL)
         $debugId = $event->getDebugId();
-        error_log("DebugLogSubscriber: Storing cache for {$debugId} with " . count($this->debugAccumulator['turns'] ?? []) . " turns");
-        $this->cache->get("synapse_debug_{$debugId}", function (ItemInterface $item) use ($debugId) {
+        $this->cache->get("synapse_debug_{$debugId}", function (ItemInterface $item) {
             $item->expiresAfter(86400); // 24 hours
-            error_log("DebugLogSubscriber: Cache callback executed for {$debugId}");
             return $this->debugAccumulator;
         });
 
         // Clean up
         $this->debugAccumulator = [];
+    }
+
+    /**
+     * Extract tool usage from conversation history.
+     * 
+     * Pairs assistant tool_calls with their corresponding tool results.
+     */
+    private function extractToolUsage(): array
+    {
+        $toolUsage = [];
+        $history = $this->debugAccumulator['history'] ?? [];
+
+        // Build a map of tool_call_id => tool call info
+        $toolCallMap = [];
+        foreach ($history as $msg) {
+            if ($msg['role'] === 'assistant' && !empty($msg['tool_calls'])) {
+                foreach ($msg['tool_calls'] as $tc) {
+                    $toolCallId = $tc['id'] ?? null;
+                    if ($toolCallId) {
+                        $toolCallMap[$toolCallId] = [
+                            'function_name' => $tc['function']['name'] ?? null,
+                            'function_args' => $tc['function']['arguments'] ?? null,
+                        ];
+                    }
+                }
+            }
+        }
+
+        // Now find tool results paired with these calls
+        foreach ($history as $msg) {
+            if ($msg['role'] === 'tool' && !empty($msg['tool_call_id'])) {
+                $toolCallId = $msg['tool_call_id'];
+                if (isset($toolCallMap[$toolCallId])) {
+                    $toolUsage[] = [
+                        'tool_call_id'   => $toolCallId,
+                        'tool_name'      => $toolCallMap[$toolCallId]['function_name'],
+                        'tool_args'      => $toolCallMap[$toolCallId]['function_args'],
+                        'tool_result'    => $msg['content'] ?? null,
+                    ];
+                }
+            }
+        }
+
+        return $toolUsage;
     }
 }

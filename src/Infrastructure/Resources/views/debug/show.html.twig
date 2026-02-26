@@ -345,9 +345,90 @@
 
 			<!-- Tab: Tools -->
 			<div id="tools" class="tab-content">
-				<h3>Exécutions d'outils</h3>
+				<h3>📋 Outils disponibles envoyés au LLM</h3>
+				{% if debug.tool_definitions %}
+					{% if debug.tool_definitions | length > 0 %}
+						<p style="color: #4b5563; font-size: 12px; margin-bottom: 12px;">
+							{{ debug.tool_definitions | length }} outil(s) disponible(s) pour ce modèle.
+						</p>
+						{% for toolDef in debug.tool_definitions %}
+							<div class="turn">
+								<div class="turn-header">🛠️ {{ toolDef.name ?? toolDef.function.name ?? '?' }}</div>
+								<strong>Description:</strong>
+								<p style="color: #374151; margin: 8px 0;">
+									{{ toolDef.description ?? toolDef.function.description ?? '—' }}
+								</p>
+								
+								{% set parameters = toolDef.parameters ?? (toolDef.function.parameters ?? null) %}
+								{% if parameters %}
+									<strong>Paramètres:</strong>
+									<pre>{{ parameters | json_encode }}</pre>
+								{% endif %}
+								
+								{% set properties = toolDef.properties ?? (parameters.properties ?? null) %}
+								{% if properties and properties is iterable and properties | length > 0 %}
+									<strong>Champs attendus:</strong>
+									<ul style="margin: 8px 0 8px 20px;">
+										{% for propName, propDef in properties %}
+											<li>
+												<code>{{ propName }}</code>
+												{% if propDef.type is defined %}<span style="color: #6b7280;">({{ propDef.type }})</span>{% endif %}
+												{% if propDef.description is defined %}<br><span style="color: #6b7280; font-size: 0.9em;">{{ propDef.description }}</span>{% endif %}
+											</li>
+										{% endfor %}
+									</ul>
+								{% endif %}
+							</div>
+						{% endfor %}
+					{% else %}
+						<p style="color: #6b7280;">Aucun outil envoyé au LLM.</p>
+					{% endif %}
+				{% else %}
+					<p style="color: #6b7280;">Aucun outil envoyé au LLM.</p>
+				{% endif %}
+
+				<h3 style="margin-top: 30px;">🎯 Outils utilisés par le LLM</h3>
+				{% if debug.tool_usage %}
+					{% if debug.tool_usage | length > 0 %}
+						<p style="color: #4b5563; font-size: 12px; margin-bottom: 12px;">
+							{{ debug.tool_usage | length }} outil(s) ont été appelé(s).
+						</p>
+						{% for usage in debug.tool_usage %}
+							<div class="turn">
+								<div class="turn-header">✅ {{ usage.tool_name }}</div>
+								
+								<strong style="color: #059669;">📥 Paramètres envoyés:</strong>
+								{% if usage.tool_args %}
+									<pre>{{ usage.tool_args is iterable ? usage.tool_args | json_encode : usage.tool_args }}</pre>
+								{% else %}
+									<p style="color: #6b7280;">Aucun paramètre.</p>
+								{% endif %}
+
+								<strong style="color: #dc2626; margin-top: 12px; display: block;">📤 Résultat retourné:</strong>
+								{% if usage.tool_result %}
+									<pre>{{ usage.tool_result is iterable ? usage.tool_result | json_encode : usage.tool_result }}</pre>
+								{% else %}
+									<p style="color: #6b7280;">Aucun résultat.</p>
+								{% endif %}
+								
+								<p style="color: #9ca3af; font-size: 11px; margin-top: 8px;">
+									ID d'appel: <code>{{ usage.tool_call_id }}</code>
+								</p>
+							</div>
+						{% endfor %}
+					{% else %}
+						<p style="color: #6b7280;">Aucun outil n'a été utilisé par le LLM.</p>
+					{% endif %}
+				{% else %}
+					<p style="color: #6b7280;">Aucune utilisation d'outil enregistrée.</p>
+				{% endif %}
+
+				<h3 style="margin-top: 30px;">📊 Exécutions d'outils (côté système)</h3>
 				{% if debug.tool_executions %}
 					{% if debug.tool_executions | length > 0 %}
+						<p style="color: #4b5563; font-size: 12px; margin-bottom: 12px;">
+							Résumé des exécutions effectuées par le système.
+						</p>
 						{% for tool in debug.tool_executions %}
 							<div class="turn">
 								<div class="turn-header">🔧 {{ tool.tool }}</div>
@@ -358,10 +439,10 @@
 							</div>
 						{% endfor %}
 					{% else %}
-						<p style="color: #6b7280;">Aucun outil exécuté.</p>
+						<p style="color: #6b7280;">Aucun outil exécuté côté système.</p>
 					{% endif %}
 				{% else %}
-					<p style="color: #6b7280;">Aucune exécution d'outil.</p>
+					<p style="color: #6b7280;">Aucune exécution d'outil côté système.</p>
 				{% endif %}
 			</div>
 		</div>
