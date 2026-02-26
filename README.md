@@ -1,13 +1,13 @@
-# 🧠 SynapseBundle
+# 🧠 Synapse
 
 **L'intelligence artificielle, intégrée nativement dans Symfony.**
 
-SynapseBundle est une solution industrielle pour déployer des agents IA autonomes, des chatbots et des outils de raisonnement complexes dans vos applications Symfony. Conçu pour l'agnosticisme et la sécurité, il supporte les meilleurs modèles du marché (Google Gemini, OVH AI Endpoints, OpenAI) avec une interface d'administration "Premium" prête à l'emploi.
+Synapse est un écosystème de bundles Symfony pour déployer des agents IA autonomes, des chatbots et des outils de raisonnement dans vos applications. Le projet est organisé en **monorepo** avec trois packages : **Core** (orchestration headless), **Admin** (interface d'administration), **Chat** (UI et API chat).
 
 ---
 
 <p align="center">
-  <a href="https://arnaudmoncondhuy.github.io/synapse-bundle/"><strong>Explorer la Documentation Officielle »</strong></a>
+  <a href="https://arnaudmoncondhuy.github.io/synapse-bundle/"><strong>Explorer la Documentation »</strong></a>
 </p>
 
 ---
@@ -24,60 +24,62 @@ SynapseBundle est une solution industrielle pour déployer des agents IA autonom
 
 ## 🚀 Installation Rapide
 
-### 1. Téléchargement
+### 1. Packages
+
+**Core** (requis) :
 
 ```bash
-composer require arnaudmoncondhuy/synapse-bundle
+composer require arnaudmoncondhuy/synapse-core
 ```
 
-### 2. Configuration Minimale
+**Admin** et **Chat** (optionnels) :
+
+```bash
+composer require arnaudmoncondhuy/synapse-admin arnaudmoncondhuy/synapse-chat
+```
+
+### 2. Configuration minimale (Core)
 
 ```yaml
-# config/packages/synapse.yaml
-synapse:
-    persistence:
-        enabled: true
-        conversation_class: App\Entity\Conversation
-        message_class: App\Entity\Message
+# config/packages/synapse_core.yaml (ou synapse.yaml selon votre config)
+synapse_core:
+  persistence:
+    enabled: true
+    conversation_class: App\Entity\Conversation
+    message_class: App\Entity\Message
 ```
 
-## 📖 Comment l'utiliser ?
+## 📖 Utilisation
 
-### Le composant Chat (Plug-and-Play)
-Intégrez une interface de chat complète inspirée de Gemini en une seule ligne :
+### Composant Chat (avec synapse-chat)
 
 ```twig
 {{ include('@Synapse/chat/component.html.twig') }}
 ```
 
-### Le service Chat (Usage Programmatique)
-Prenez le contrôle total de l'IA dans vos services :
+### Service Chat (usage programmatique, Core)
 
 ```php
 $result = $chatService->ask(
     message: "Analyse ce rapport trimestriel",
     options: ['persona' => 'expert_analyste']
 );
-
 echo $result['answer'];
 ```
 
-## 📚 Ressources et Documentation
+## 📚 Documentation
 
-Pour exploiter tout le potentiel de SynapseBundle, consultez notre **[Documentation Officielle](https://arnaudmoncondhuy.github.io/synapse-bundle/)** :
+La documentation est générée depuis ce dépôt et publiée sur **[GitHub Pages](https://arnaudmoncondhuy.github.io/synapse-bundle/)**. Elle est organisée en trois sections :
 
-- � **[Guide d'Installation](https://arnaudmoncondhuy.github.io/synapse-bundle/getting-started/installation/)**
-- ⚙️ **[Référence de Configuration](https://arnaudmoncondhuy.github.io/synapse-bundle/guides/configuration/)**
-- 👮 **[Interface d'Administration](https://arnaudmoncondhuy.github.io/synapse-bundle/admin/interface/)**
-- 🏗 **[Créer des Outils IA](https://arnaudmoncondhuy.github.io/synapse-bundle/guides/ai-tools/)**
-- 🔌 **[Référence des Contrats/Interfaces](https://arnaudmoncondhuy.github.io/synapse-bundle/reference/contracts/overview/)**
+- **[Synapse Core](https://arnaudmoncondhuy.github.io/synapse-bundle/core/)** — Installation, configuration, guides (outils IA, personas, RAG, mémoire), référence technique (contrats, événements, CLI).
+- **[Synapse Admin](https://arnaudmoncondhuy.github.io/synapse-bundle/admin/)** — Interface d'administration.
+- **[Synapse Chat](https://arnaudmoncondhuy.github.io/synapse-bundle/chat/)** — Routes API, CSRF, intégration du composant chat.
 
-## 🏗️ Architecture Technique
+## 🏗️ Architecture
 
-Synapse suit une architecture en couches pour garantir la séparation des responsabilités :
-- **Couche Contrats** : Interfaces strictes pour les clients LLM, Vector Stores et Formatters.
-- **Couche Core** : Managers de conversations et orchestration des événements.
-- **Couche Admin** : Contrôleurs et vues Twig isolés pour la gestion métier.
+- **Synapse Core** : Contrats (LLM, Vector Store, Formatters), orchestration, persistance Doctrine, événements.
+- **Synapse Admin** : Contrôleurs et vues Twig pour la gestion des providers, presets et conversations.
+- **Synapse Chat** : API HTTP (chat, reset, CSRF) et composant Stimulus/Twig pour l'UI de chat.
 
 ## 🧪 Tests et Fiabilité
 
