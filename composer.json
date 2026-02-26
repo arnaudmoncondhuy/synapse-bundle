@@ -9,6 +9,7 @@
             "email": "arnaudmoncondhuy@gmail.com"
         }
     ],
+    "license": "PolyForm-Noncommercial-1.0.0",
     "require": {
         "arnaudmoncondhuy/synapse-admin": "@dev",
         "arnaudmoncondhuy/synapse-chat": "@dev",
