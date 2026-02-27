@@ -1,6 +1,6 @@
 {
     "name": "arnaudmoncondhuy/synapse-bundle",
-    "description": "Synapse — Bundles Symfony pour l'intégration IA (LLM). Monorepo : synapse-core, synapse-admin, synapse-chat.",
+    "description": "Bundle Synapse complet — orchestration IA pour Symfony avec admin et chat intégrés.",
     "type": "symfony-bundle",
     "authors": [
         {
@@ -9,27 +9,52 @@
         }
     ],
     "license": "PolyForm-Noncommercial-1.0.0",
+    "require": {
+        "arnaudmoncondhuy/synapse-core": "dev-main",
+        "arnaudmoncondhuy/synapse-admin": "dev-main",
+        "arnaudmoncondhuy/synapse-chat": "dev-main"
+    },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.93",
-        "symplify/monorepo-builder": "^12.0",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpstan/phpstan-symfony": "^2.0",
         "symfony/process": "^8.0",
-        "symfony/test-pack": "^1.2"
+        "symfony/test-pack": "^1.2",
+        "symplify/monorepo-builder": "^12.0",
+        "arnaudmoncondhuy/synapse-core": "@dev",
+        "arnaudmoncondhuy/synapse-admin": "@dev",
+        "arnaudmoncondhuy/synapse-chat": "@dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "ArnaudMoncondhuy\\SynapseCore\\": "packages/core/src/",
+            "ArnaudMoncondhuy\\SynapseAdmin\\": "packages/admin/src/",
+            "ArnaudMoncondhuy\\SynapseChat\\": "packages/chat/src/"
+        }
     },
     "repositories": [
         {
             "type": "path",
             "url": "packages/core",
-            "options": {"symlink": true}
+            "options": {
+                "symlink": true
+            }
         },
         {
             "type": "path",
             "url": "packages/admin",
-            "options": {"symlink": true}
+            "options": {
+                "symlink": true
+            }
         },
         {
             "type": "path",
             "url": "packages/chat",
-            "options": {"symlink": true}
+            "options": {
+                "symlink": true
+            }
         }
     ],
     "config": {
@@ -42,7 +67,8 @@
     "scripts": {
         "validate-monorepo": "vendor/bin/monorepo-builder validate",
         "merge": "vendor/bin/monorepo-builder merge",
-        "release": "vendor/bin/monorepo-builder release"
+        "release": "vendor/bin/monorepo-builder release",
+        "phpstan": "vendor/bin/phpstan analyse"
     },
     "minimum-stability": "dev",
     "prefer-stable": true
