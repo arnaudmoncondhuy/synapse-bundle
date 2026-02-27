@@ -1,0 +1,115 @@
+/**
+ * Synapse Admin V2 - Onboarding Banner
+ */
+
+.sv2-onboarding-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--sv2-primary-light) 0%, hsl(258, 85%, 93%) 100%);
+    border: 2px solid var(--sv2-primary-border);
+    border-radius: var(--sv2-radius-xl);
+    border-left: 4px solid var(--sv2-primary);
+}
+
+.sv2-onboarding-banner__content {
+    flex: 1;
+}
+
+.sv2-onboarding-banner__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--sv2-primary);
+}
+
+.sv2-onboarding-banner__header i {
+    width: 20px;
+    height: 20px;
+    animation: sv2-bounce 2s ease-in-out infinite;
+}
+
+@keyframes sv2-bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+.sv2-onboarding-banner__steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sv2-onboarding-banner__step {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--sv2-text-primary);
+    font-weight: 500;
+}
+
+.sv2-onboarding-banner__number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    background: var(--sv2-primary);
+    color: white;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.sv2-onboarding-banner__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+    .sv2-onboarding-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .sv2-onboarding-banner__actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 640px) {
+    .sv2-onboarding-banner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .sv2-onboarding-banner__actions {
+        flex-direction: column;
+    }
+
+    .sv2-onboarding-banner__actions .sv2-btn {
+        width: 100%;
+    }
+}

@@ -60,33 +60,38 @@
 
 /* ── Primaire ──────────────────────────────────────────────────────────────── */
 
-.sv2-btn--primary {
+.sv2-btn--primary,
+a.sv2-btn--primary {
     background: linear-gradient(135deg, var(--sv2-primary) 0%, var(--sv2-primary-dark) 100%);
     color: white;
     box-shadow: 0 2px 8px var(--sv2-primary-glow), 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-.sv2-btn--primary:hover {
+.sv2-btn--primary:hover,
+a.sv2-btn--primary:hover {
     transform: translateY(-1px);
     box-shadow: var(--sv2-shadow-primary);
     filter: brightness(1.06);
 }
 
-.sv2-btn--primary:active {
+.sv2-btn--primary:active,
+a.sv2-btn--primary:active {
     transform: translateY(0);
     filter: brightness(0.96);
 }
 
 /* ── Secondaire / Ghost ──────────────────────────────────────────────────────── */
 
-.sv2-btn--ghost {
+.sv2-btn--ghost,
+a.sv2-btn--ghost {
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid var(--sv2-border);
     color: var(--sv2-text-primary);
     box-shadow: var(--sv2-shadow-xs);
 }
 
-.sv2-btn--ghost:hover {
+.sv2-btn--ghost:hover,
+a.sv2-btn--ghost:hover {
     background: #fff;
     border-color: var(--sv2-border-medium);
     box-shadow: var(--sv2-shadow-sm);
@@ -95,13 +100,15 @@
 
 /* ── Outline primary ─────────────────────────────────────────────────────────── */
 
-.sv2-btn--outline {
+.sv2-btn--outline,
+a.sv2-btn--outline {
     background: transparent;
     border: 1.5px solid var(--sv2-primary-border);
     color: var(--sv2-primary);
 }
 
-.sv2-btn--outline:hover {
+.sv2-btn--outline:hover,
+a.sv2-btn--outline:hover {
     background: var(--sv2-primary-light);
     border-color: var(--sv2-primary);
     transform: translateY(-1px);
@@ -109,13 +116,15 @@
 
 /* ── Danger ──────────────────────────────────────────────────────────────────── */
 
-.sv2-btn--danger {
+.sv2-btn--danger,
+a.sv2-btn--danger {
     background: linear-gradient(135deg, var(--sv2-danger) 0%, hsl(350, 82%, 45%) 100%);
     color: white;
     box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
 }
 
-.sv2-btn--danger:hover {
+.sv2-btn--danger:hover,
+a.sv2-btn--danger:hover {
     transform: translateY(-1px);
     box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
     filter: brightness(1.08);
@@ -123,26 +132,30 @@
 
 /* ── Outline danger ──────────────────────────────────────────────────────────── */
 
-.sv2-btn--outline-danger {
+.sv2-btn--outline-danger,
+a.sv2-btn--outline-danger {
     background: transparent;
     border: 1.5px solid var(--sv2-danger-border);
     color: var(--sv2-danger);
 }
 
-.sv2-btn--outline-danger:hover {
+.sv2-btn--outline-danger:hover,
+a.sv2-btn--outline-danger:hover {
     background: var(--sv2-danger-bg);
     border-color: var(--sv2-danger);
 }
 
 /* ── Success ─────────────────────────────────────────────────────────────────── */
 
-.sv2-btn--success {
+.sv2-btn--success,
+a.sv2-btn--success {
     background: linear-gradient(135deg, var(--sv2-success) 0%, hsl(152, 72%, 32%) 100%);
     color: white;
     box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
 }
 
-.sv2-btn--success:hover {
+.sv2-btn--success:hover,
+a.sv2-btn--success:hover {
     transform: translateY(-1px);
     filter: brightness(1.07);
 }
