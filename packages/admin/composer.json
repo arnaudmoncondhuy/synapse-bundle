@@ -1,7 +1,7 @@
 {
     "name": "arnaudmoncondhuy/synapse-admin",
     "type": "symfony-bundle",
-    "description": "Admin UI for Synapse — V1 and V2 administration interfaces for managing AI presets, providers, conversations and memories.",
+    "description": "Interface d'administration pour Synapse — Interfaces d'administration V1 et V2 pour gérer les présets IA, fournisseurs, conversations et mémoires.",
     "license": "PolyForm-Noncommercial-1.0.0",
     "keywords": ["symfony", "ai", "admin", "bundle", "llm", "backoffice"],
     "authors": [
