@@ -1,5 +1,5 @@
 site_name: Synapse
-site_description: Bundles Symfony pour intégrer l'IA (LLM) à vos applications — Core, Admin, Chat.
+site_description: Bundles Symfony pour l'orchestration IA (LLM) — Choisissez entre Core, Admin, Chat ou le bundle complet.
 site_author: Arnaud Moncondhuy
 
 theme:
