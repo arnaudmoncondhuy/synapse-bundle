@@ -3,10 +3,8 @@ services:
         autowire: true
         autoconfigure: true
 
-    # ── Controllers & Core Services ──────────────────────────────────────────
-    ArnaudMoncondhuy\SynapseCore\Core\Controller\:
-        resource: '../src/Core/Controller/'
-        tags: ['controller.service_arguments']
+    # ── Core Services ───────────────────────────────────────────────────────────
+    # Note: Controllers are now in synapse-chat package (configured in synapse-chat/config/chat.yaml)
 
     ArnaudMoncondhuy\SynapseCore\Core\Manager\:
         resource: '../src/Core/Manager/'
