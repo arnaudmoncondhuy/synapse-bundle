@@ -13,13 +13,13 @@ jobs:
       matrix:
         package:
           - local: packages/core
-            remote: https://x-access-token:${{ secrets.SYNAPSE_SPLIT_TOKEN }}@github.com/arnaudmoncondhuy/synapse-core.git
+            repo: synapse-core
             name: Core
           - local: packages/admin
-            remote: https://x-access-token:${{ secrets.SYNAPSE_SPLIT_TOKEN }}@github.com/arnaudmoncondhuy/synapse-admin.git
+            repo: synapse-admin
             name: Admin
           - local: packages/chat
-            remote: https://x-access-token:${{ secrets.SYNAPSE_SPLIT_TOKEN }}@github.com/arnaudmoncondhuy/synapse-chat.git
+            repo: synapse-chat
             name: Chat
     steps:
       - uses: actions/checkout@v4
@@ -29,5 +29,5 @@ jobs:
       - name: Split ${{ matrix.package.name }} package
         run: |
           git subtree split --prefix=${{ matrix.package.local }} -b split-branch
-          git push ${{ matrix.package.remote }} split-branch:main --force
+          git push https://x-access-token:${{ secrets.SYNAPSE_SPLIT_TOKEN }}@github.com/arnaudmoncondhuy/${{ matrix.package.repo }}.git split-branch:main --force
           git branch -D split-branch
