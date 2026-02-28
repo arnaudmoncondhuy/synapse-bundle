@@ -691,7 +691,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/personas-presets/" class="md-nav__link">
+      <a href="../../guides/personas-presets.md" class="md-nav__link">
         
   
   
@@ -1982,6 +1982,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#entites-de-suivi-quotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entités de suivi &amp; Quotas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#entites-rag-memoire-semantique" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2493,6 +2504,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#entites-de-suivi-quotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entités de suivi &amp; Quotas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#entites-rag-memoire-semantique" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2546,9 +2568,17 @@
 </ul>
 <h2 id="entites-de-configuration">Entités de configuration</h2>
 <ul>
-<li><strong>SynapsePreset</strong> : Configuration technique d'un modèle (température, outils, etc.).</li>
+<li><strong>SynapsePreset</strong> : Configuration technique d’un modèle (température, outils, etc.).</li>
 <li><strong>SynapseProvider</strong> : Credentials chiffrés pour les fournisseurs (Gemini, OpenAI).</li>
+<li><strong>SynapseModel</strong> : Métadonnées et tarification des modèles LLM.</li>
+<li><strong>SynapseMission</strong> : Configuration d’agent (system prompt, preset, ton).</li>
+<li><strong>SynapseTone</strong> : Styles de réponse (emoji, instructions de ton).</li>
 <li><strong>SynapseConfig</strong> : Paramètres globaux (Rétention, Langue, Chunking, Vector Store actif).</li>
+</ul>
+<h2 id="entites-de-suivi-quotas">Entités de suivi &amp; Quotas</h2>
+<ul>
+<li><strong>SynapseTokenUsage</strong> : Historique exhaustif de la consommation de jetons et des coûts.</li>
+<li><strong>SynapseSpendingLimit</strong> : Plafonds de dépense par utilisateur, mission ou preset.</li>
 </ul>
 <h2 id="entites-rag-memoire-semantique">Entités RAG &amp; Mémoire Sémantique</h2>
 <h3 id="synapsevectormemory"><code>SynapseVectorMemory</code></h3>

@@ -747,7 +747,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/guides/personas-presets/" class="md-nav__link">
+      <a href="core/guides/personas-presets.md" class="md-nav__link">
         
   
   
@@ -2465,21 +2465,19 @@
 <h1 id="bienvenue-sur-synapse">Bienvenue sur Synapse</h1>
 <p>Synapse est un écosystème de bundles Symfony pour intégrer des capacités d’Intelligence Artificielle (LLM) au cœur de vos applications. Le projet est organisé en <strong>monorepo</strong> avec trois packages :</p>
 <ul>
-<li><strong>Synapse Core</strong> (<code>arnaudmoncondhuy/synapse-core</code>) : API headless, contrats, ChatService, persistance, RAG, CLI.</li>
-<li><strong>Synapse Admin</strong> (<code>arnaudmoncondhuy/synapse-admin</code>) : interface d’administration pour configurer modèles, presets et outils.</li>
-<li><strong>Synapse Chat</strong> (<code>arnaudmoncondhuy/synapse-chat</code>) : API HTTP et composant front pour le chat (streaming, CSRF).</li>
+<li><strong>Synapse Core</strong> (<code>arnaudmoncondhuy/synapse-core</code>) : API headless, contrats, <strong>Accounting (coûts)</strong>, <strong>Quotas</strong>, Missions &amp; Tons, RAG, CLI (<strong>Doctor</strong>).</li>
+<li><strong>Synapse Admin</strong> (<code>arnaudmoncondhuy/synapse-admin</code>) : interface d’administration <strong>V2</strong> (Dashboard, Analytics, Monitoring).</li>
+<li><strong>Synapse Chat</strong> (<code>arnaudmoncondhuy/synapse-chat</code>) : API HTTP, composant front, <strong>Auto-titling</strong> et sécurité CSRF.</li>
 </ul>
 <h2 id="installation-rapide">Installation rapide</h2>
 <div class="highlight"><pre><span></span><code>composer<span class="w"> </span>require<span class="w"> </span>arnaudmoncondhuy/synapse-core
-</code></pre></div>
-<p>Pour l’interface d’administration et l’UI de chat :</p>
-<div class="highlight"><pre><span></span><code>composer<span class="w"> </span>require<span class="w"> </span>arnaudmoncondhuy/synapse-admin<span class="w"> </span>arnaudmoncondhuy/synapse-chat
+php<span class="w"> </span>bin/console<span class="w"> </span>synapse:doctor<span class="w"> </span>--init
 </code></pre></div>
 <h2 id="documentation">Documentation</h2>
 <ul>
-<li><strong>[Synapse Core]</strong> : prise en main, configuration, guides (outils IA, personas, RAG, mémoire), référence technique (contrats, événements, CLI) et architecture.</li>
-<li><strong>[Synapse Admin]</strong> : utilisation de l’interface d’administration.</li>
-<li><strong>[Synapse Chat]</strong> : utilisation du bundle chat (routes, CSRF, intégration front).</li>
+<li><strong>[Synapse Core]</strong> : Prise en main, Accounting, Quotas, Missions, RAG et CLI (Doctor).</li>
+<li><strong>[Synapse Admin]</strong> : Utilisation de l’interface d’administration V2 et Analytics.</li>
+<li><strong>[Synapse Chat]</strong> : Utilisation du bundle chat, auto-titling et sécurité.</li>
 </ul>
 <p>Utilisez le menu de navigation pour accéder à chaque section.</p>
 

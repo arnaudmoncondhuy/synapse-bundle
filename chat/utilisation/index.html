@@ -678,7 +678,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/guides/personas-presets/" class="md-nav__link">
+      <a href="../../core/guides/personas-presets.md" class="md-nav__link">
         
   
   
@@ -2374,17 +2374,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#routes-exposees" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Routes exposées
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#protection-csrf" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2471,17 +2460,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#routes-exposees" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Routes exposées
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#protection-csrf" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2536,11 +2514,11 @@
 <h2 id="installation">Installation</h2>
 <div class="highlight"><pre><span></span><code>composer<span class="w"> </span>require<span class="w"> </span>arnaudmoncondhuy/synapse-core<span class="w"> </span>arnaudmoncondhuy/synapse-chat
 </code></pre></div>
-<h2 id="routes-exposees">Routes exposées</h2>
 <ul>
-<li><strong>POST <code>/synapse/api/chat</code></strong> : envoi d’un message et réception de la réponse (streaming NDJSON ou JSON).</li>
+<li><strong>POST <code>/synapse/api/chat</code></strong> : envoi d’un message et réception de la réponse.</li>
+<li><strong>POST <code>/synapse/api/estimate-cost</code></strong> : estimation du coût d'un message avant envoi.</li>
 <li><strong>POST <code>/synapse/api/conversation/reset</code></strong> : réinitialisation de la conversation courante.</li>
-<li><strong>API Mémoire</strong> : endpoints pour la mémoire vectorielle / sémantique (selon la configuration Core).</li>
+<li><strong>Auto-titling</strong> : Le bundle génère automatiquement un titre après le premier échange (événement <code>title</code> envoyé en NDJSON).</li>
 </ul>
 <h2 id="protection-csrf">Protection CSRF</h2>
 <p>Le bundle applique une protection CSRF sur les requêtes POST/PUT/DELETE. Le jeton est exposé via :</p>

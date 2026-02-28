@@ -568,15 +568,26 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-creation-des-entites-optionnel-mais-recommande" class="md-nav__link">
+  <a href="#2-initialisation-rapide-recommande" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Création des entités (Optionnel mais recommandé)
+        2. Initialisation Rapide (Recommandé)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Création des entités (Optionnel mais recommandé)">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-configuration-manuelle-expert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Configuration Manuelle (Expert)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Configuration Manuelle (Expert)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -832,7 +843,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/personas-presets/" class="md-nav__link">
+      <a href="../../guides/personas-presets.md" class="md-nav__link">
         
   
   
@@ -2537,15 +2548,26 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-creation-des-entites-optionnel-mais-recommande" class="md-nav__link">
+  <a href="#2-initialisation-rapide-recommande" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Création des entités (Optionnel mais recommandé)
+        2. Initialisation Rapide (Recommandé)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Création des entités (Optionnel mais recommandé)">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-configuration-manuelle-expert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Configuration Manuelle (Expert)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Configuration Manuelle (Expert)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2637,8 +2659,18 @@
 <p>Utilisez Composer pour ajouter le bundle à votre projet :</p>
 <div class="highlight"><pre><span></span><code>composer<span class="w"> </span>require<span class="w"> </span>arnaudmoncondhuy/synapse-core
 </code></pre></div>
-<h2 id="2-creation-des-entites-optionnel-mais-recommande">2. Création des entités (Optionnel mais recommandé)</h2>
-<p>Si vous souhaitez enregistrer les conversations en base de données, vous devez créer deux entités dans votre application qui étendent les classes de base du bundle.</p>
+<h2 id="2-initialisation-rapide-recommande">2. Initialisation Rapide (Recommandé)</h2>
+<p>Plutôt que de configurer manuellement les entités et fichiers, utilisez l'assistant de diagnostic pour initialiser votre projet en une commande :</p>
+<div class="highlight"><pre><span></span><code>php<span class="w"> </span>bin/console<span class="w"> </span>synapse:doctor<span class="w"> </span>--init
+</code></pre></div>
+<p>Cette commande va :
+1. Créer le fichier <code>config/packages/synapse.yaml</code> avec les réglages par défaut.
+2. Générer les entités <code>SynapseConversation</code> et <code>SynapseMessage</code> dans <code>src/Entity/</code>.
+3. Ajouter le chargeur de routes Synapse dans <code>config/routes.yaml</code>.
+4. Configurer un <code>security.yaml</code> fonctionnel avec un utilisateur <code>admin</code> / <code>admin</code>.</p>
+<hr />
+<h2 id="3-configuration-manuelle-expert">3. Configuration Manuelle (Expert)</h2>
+<p>Si vous préférez tout configurer vous-même, suivez les étapes ci-dessous.</p>
 <h3 id="entite-conversation">Entité Conversation</h3>
 <div class="highlight"><pre><span></span><code><span class="x">// src/Entity/Conversation.php</span>
 <span class="x">namespace App\Entity;</span>

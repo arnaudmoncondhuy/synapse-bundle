@@ -691,7 +691,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/personas-presets/" class="md-nav__link">
+      <a href="../../guides/personas-presets.md" class="md-nav__link">
         
   
   
@@ -1988,6 +1988,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#synapsedoctor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        synapse:doctor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#synapsepurge" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2443,6 +2454,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#synapsedoctor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        synapse:doctor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#synapsepurge" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2483,6 +2505,24 @@
 
 <h1 id="commandes-cli">Commandes CLI</h1>
 <p>Le bundle fournit des commandes pour la maintenance et le debug.</p>
+<h2 id="synapsedoctor"><code>synapse:doctor</code></h2>
+<p>La commande la plus importante pour la maintenance. Elle diagnostique et répare automatiquement les problèmes d'intégration.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Lancer le diagnostic</span>
+php<span class="w"> </span>bin/console<span class="w"> </span>synapse:doctor
+
+<span class="c1"># Réparer les problèmes détectés</span>
+php<span class="w"> </span>bin/console<span class="w"> </span>synapse:doctor<span class="w"> </span>--fix
+
+<span class="c1"># Initialisation complète (nouveau projet)</span>
+php<span class="w"> </span>bin/console<span class="w"> </span>synapse:doctor<span class="w"> </span>--init
+</code></pre></div>
+<p><strong>Actions effectuées par le doctor :</strong>
+- Vérification version PHP et extensions (Sodium).
+- Inscription des bundles dans <code>bundles.php</code>.
+- Diagnostic des entités personnalisées et création si nécessaire.
+- Vérification du mapping <code>AssetMapper</code> (Stimulus).
+- Vérification de la sécurité (firewalls, access_control) et génération de config.
+- Vérification des routes et de la base de données (PostgreSQL, pgvector).</p>
 <h2 id="synapsepurge"><code>synapse:purge</code></h2>
 <p>Purge les conversations trop anciennes selon la politique de rétention définie dans <code>synapse.yaml</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Simulation</span>
