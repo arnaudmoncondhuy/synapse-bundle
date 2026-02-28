@@ -462,15 +462,16 @@
 						</details>
 					</div>
 
-					<div class="sv2-card__footer sv2-card__footer--no-wrap">
-						<div class="sv2-flex sv2-gap-md sv2-items-center sv2-flex-wrap">
+					<div class="sv2-card__footer" style="overflow: visible;">
+						<div class="sv2-flex sv2-gap-md sv2-items-center sv2-flex-wrap" style="position: relative; z-index: 10;">
 							{# Modifier #}
-							<a href="{{ path('synapse_v2_admin_presets_edit', {id: preset.id}) }}"
-							   class="sv2-btn sv2-btn--ghost sv2-btn--icon sv2-btn--sm"
-							   data-sv2-tooltip="Modifier"
-							   data-sv2-tooltip-placement="top">
-								<i data-lucide="edit-3"></i>
-							</a>
+							<form action="{{ path('synapse_v2_admin_presets_edit', {id: preset.id}) }}" method="GET" class="sv2-form-inline">
+								<button type="submit"
+										class="sv2-btn sv2-btn--ghost sv2-btn--icon sv2-btn--sm"
+										data-sv2-tooltip="Modifier">
+									<i data-lucide="edit-3"></i>
+								</button>
+							</form>
 
 							{# Tester #}
 							<form action="{{ path('synapse_v2_admin_presets_test', {id: preset.id}) }}" method="POST" class="sv2-form-inline">
