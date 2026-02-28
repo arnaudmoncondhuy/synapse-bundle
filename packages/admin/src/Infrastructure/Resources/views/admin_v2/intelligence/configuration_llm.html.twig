@@ -462,12 +462,13 @@
 						</details>
 					</div>
 
-					<div class="sv2-card__footer">
-						<div class="sv2-flex sv2-gap-md sv2-items-center">
+					<div class="sv2-card__footer sv2-card__footer--no-wrap">
+						<div class="sv2-flex sv2-gap-md sv2-items-center sv2-flex-wrap">
 							{# Modifier #}
 							<a href="{{ path('synapse_v2_admin_presets_edit', {id: preset.id}) }}"
 							   class="sv2-btn sv2-btn--ghost sv2-btn--icon sv2-btn--sm"
-							   data-sv2-tooltip="Modifier">
+							   data-sv2-tooltip="Modifier"
+							   data-sv2-tooltip-placement="top">
 								<i data-lucide="edit-3"></i>
 							</a>
 
@@ -476,6 +477,7 @@
 								<button type="submit"
 										class="sv2-btn sv2-btn--ghost sv2-btn--icon sv2-btn--sm"
 										data-sv2-tooltip="{% if isValid %}Tester{% else %}Non valide{% endif %}"
+										data-sv2-tooltip-placement="top"
 										{% if not isValid %}disabled{% endif %}>
 									<i data-lucide="flask-conical"></i>
 								</button>
@@ -486,36 +488,36 @@
 								<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_preset_clone_' ~ preset.id) }}">
 								<button type="submit"
 										class="sv2-btn sv2-btn--ghost sv2-btn--icon sv2-btn--sm"
-										data-sv2-tooltip="Dupliquer">
+										data-sv2-tooltip="Dupliquer"
+										data-sv2-tooltip-placement="top">
 									<i data-lucide="copy"></i>
 								</button>
 							</form>
 
 							{# Supprimer #}
-							{% if not preset.isActive %}
-								<form action="{{ path('synapse_v2_admin_presets_delete', {id: preset.id}) }}" method="POST" class="sv2-form-inline"
-								      onsubmit="return confirm('Supprimer le preset &quot;{{ preset.name|e('js') }}&quot; ?')">
-									<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_preset_delete_' ~ preset.id) }}">
-									<button type="submit"
-											class="sv2-btn sv2-btn--ghost sv2-btn--icon sv2-btn--sm sv2-text-danger"
-											data-sv2-tooltip="Supprimer">
-										<i data-lucide="trash-2"></i>
-									</button>
-								</form>
-							{% endif %}
+							<form action="{{ path('synapse_v2_admin_presets_delete', {id: preset.id}) }}" method="POST" class="sv2-form-inline"
+							      onsubmit="return confirm('Supprimer le preset &quot;{{ preset.name|e('js') }}&quot; ?')">
+								<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_preset_delete_' ~ preset.id) }}">
+								<button type="submit"
+										class="sv2-btn sv2-btn--ghost sv2-btn--icon sv2-btn--sm sv2-text-danger"
+										data-sv2-tooltip="{% if preset.isActive %}Actif (non supprimable){% else %}Supprimer{% endif %}"
+										data-sv2-tooltip-placement="top"
+										{% if preset.isActive %}disabled{% endif %}>
+									<i data-lucide="trash-2"></i>
+								</button>
+							</form>
 
 							{# Activer #}
-							{% if not preset.isActive %}
-								<form action="{{ path('synapse_v2_admin_presets_activate', {id: preset.id}) }}" method="POST" class="sv2-form-inline">
-									<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_preset_activate_' ~ preset.id) }}">
-									<button type="submit"
-											class="sv2-btn sv2-btn--ghost sv2-btn--icon sv2-btn--sm"
-											data-sv2-tooltip="{% if isValid %}Activer{% else %}{{ invalidReason }}{% endif %}"
-											{% if not isValid %}disabled{% endif %}>
-										<i data-lucide="check-circle-2"></i>
-									</button>
-								</form>
-							{% endif %}
+							<form action="{{ path('synapse_v2_admin_presets_activate', {id: preset.id}) }}" method="POST" class="sv2-form-inline">
+								<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_preset_activate_' ~ preset.id) }}">
+								<button type="submit"
+										class="sv2-btn sv2-btn--ghost sv2-btn--icon sv2-btn--sm"
+										data-sv2-tooltip="{% if preset.isActive %}Déjà actif{% elseif isValid %}Activer{% else %}{{ invalidReason }}{% endif %}"
+										data-sv2-tooltip-placement="top"
+										{% if preset.isActive or not isValid %}disabled{% endif %}>
+									<i data-lucide="check-circle-2"></i>
+								</button>
+							</form>
 						</div>
 					</div>
 
