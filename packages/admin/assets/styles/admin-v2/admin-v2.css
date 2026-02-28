@@ -19,6 +19,7 @@
 @import 'components/_collapsible.css';
 @import 'components/_table.css';
 @import 'components/_onboarding.css';
+@import 'components/_tabs.css';
 
 /* ── Utilities ─────────────────────────────────────────────────────────── */
 
@@ -166,7 +167,7 @@
     }
 }
 
-/* Tooltip (CSS-only) */
+/* Tooltip (CSS-only) — désactivé dans les .sv2-card (overflow:hidden les bloque) */
 [data-sv2-tooltip] {
     position: relative;
 }
@@ -192,4 +193,26 @@
 
 [data-sv2-tooltip]:hover::after {
     opacity: 1;
+}
+
+/* Dans les cartes, les tooltips CSS sont bloqués par overflow:hidden — le JS prend le relais */
+.sv2-card [data-sv2-tooltip]::after {
+    display: none;
+}
+
+/* Tooltip JS global (positionné sur le body avec position:fixed) */
+#sv2-tooltip-global {
+    position: fixed;
+    padding: 4px 10px;
+    background: var(--sv2-text-primary);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: var(--sv2-radius-sm);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+    transform: translateX(-50%);
 }
