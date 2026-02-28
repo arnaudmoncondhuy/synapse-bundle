@@ -1,0 +1,26 @@
+includes:
+    - vendor/phpstan/phpstan-symfony/extension.neon
+    - vendor/phpstan/phpstan-symfony/rules.neon
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-phpunit/rules.neon
+    - vendor/phpstan/phpstan-deprecation-rules/rules.neon
+
+parameters:
+    level: 5
+    paths:
+        - packages
+    excludePaths:
+        - packages/*/vendor/*
+        - packages/*/tests/*
+    treatPhpDocTypesAsCertain: false
+    # bootstrapFiles:
+    #    - vendor/autoload.php
+
+# symfony:
+#    # Chemin vers le conteneur XML si disponible après compilation
+#    # container_xml_path: var/cache/dev/App_KernelDevDebugContainer.xml
+#
+    ignoreErrors:
+        -
+            message: '#Property .*::\$id \(int\|null\) is never assigned int so it can be removed from the property type\.#'
+            path: packages/core/src/Storage/Entity/*

@@ -32,7 +32,6 @@ class ModelsController extends AbstractController
     public function __construct(
         private SynapseModelRepository $modelRepo,
         private SynapseProviderRepository $providerRepo,
-        private SynapsePresetRepository $presetRepo,
         private ModelCapabilityRegistry $capabilityRegistry,
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,

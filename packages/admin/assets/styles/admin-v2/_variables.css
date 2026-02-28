@@ -173,4 +173,12 @@
    --sv2-z-dropdown: 200;
    --sv2-z-modal: 300;
    --sv2-z-toast: 400;
+
+   /* =========================================================================
+       FENÊTRES FLOTTANTES (modales / dialogs)
+       Surchargez dans le projet hôte pour adapter la taille.
+       ========================================================================= */
+   --sv2-modal-max-width: 32rem;   /* 512px */
+   --sv2-modal-max-height: 90vh;
+   --sv2-modal-min-width: 20rem;   /* 320px */
 }

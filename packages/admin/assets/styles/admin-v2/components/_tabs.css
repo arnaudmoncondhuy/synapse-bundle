@@ -1,0 +1,62 @@
+/**
+ * Synapse Admin V2 — Composant Onglets (sv2-tabs / sv2-tab)
+ *
+ * Usage :
+ *   <div class="sv2-tabs">
+ *     <a href="?tab=foo" class="sv2-tab sv2-tab--active">Foo</a>
+ *     <a href="?tab=bar" class="sv2-tab">Bar</a>
+ *   </div>
+ *
+ * Design : ligne soulignée sous l'onglet actif, fond subtil au survol.
+ * Intègre les icônes Lucide (inline SVG via data-lucide).
+ */
+
+/* ── Conteneur ─────────────────────────────────────────────────────────── */
+.sv2-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--sv2-border-light);
+    margin-bottom: 0; /* la marge est gérée par sv2-mb-* dans le template */
+}
+
+/* ── Onglet individuel ──────────────────────────────────────────────────── */
+.sv2-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sv2-space-sm);
+    padding: var(--sv2-space-sm) var(--sv2-space-lg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--sv2-text-secondary);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px; /* recouvre le border-bottom du conteneur */
+    transition: color var(--sv2-transition-fast), border-color var(--sv2-transition-fast), background var(--sv2-transition-fast);
+    border-radius: var(--sv2-radius-sm) var(--sv2-radius-sm) 0 0;
+    white-space: nowrap;
+}
+
+.sv2-tab svg,
+.sv2-tab [data-lucide] {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+/* ── Hover ─────────────────────────────────────────────────────────────── */
+.sv2-tab:hover {
+    color: var(--sv2-text-primary);
+    background: var(--sv2-primary-light);
+}
+
+/* ── Actif ─────────────────────────────────────────────────────────────── */
+.sv2-tab--active {
+    color: var(--sv2-primary);
+    border-bottom-color: var(--sv2-primary);
+    font-weight: 600;
+}
+
+.sv2-tab--active:hover {
+    background: var(--sv2-primary-light);
+    color: var(--sv2-primary-dark);
+}

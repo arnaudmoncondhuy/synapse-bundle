@@ -1,11 +1,7 @@
 synapse_admin:
-    resource: '@SynapseAdmin/src/Admin/Controller/'
+    resource: '@SynapseAdminBundle/src/Admin/Controller/'
     type: attribute
 
 synapse_admin_v2:
-    resource: '@SynapseAdmin/src/AdminV2/Controller/'
-    type: attribute
-
-synapse_api:
-    resource: '@SynapseChat/src/Core/Controller/Api/'
+    resource: '@SynapseAdminBundle/src/AdminV2/Controller/'
     type: attribute

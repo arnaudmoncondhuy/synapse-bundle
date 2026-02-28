@@ -2,26 +2,21 @@
 
 Synapse est un écosystème de bundles Symfony pour intégrer des capacités d’Intelligence Artificielle (LLM) au cœur de vos applications. Le projet est organisé en **monorepo** avec trois packages :
 
-- **Synapse Core** (`arnaudmoncondhuy/synapse-core`) : API headless, contrats, ChatService, persistance, RAG, CLI.
-- **Synapse Admin** (`arnaudmoncondhuy/synapse-admin`) : interface d’administration pour configurer modèles, presets et outils.
-- **Synapse Chat** (`arnaudmoncondhuy/synapse-chat`) : API HTTP et composant front pour le chat (streaming, CSRF).
+- **Synapse Core** (`arnaudmoncondhuy/synapse-core`) : API headless, contrats, **Accounting (coûts)**, **Quotas**, Missions & Tons, RAG, CLI (**Doctor**).
+- **Synapse Admin** (`arnaudmoncondhuy/synapse-admin`) : interface d’administration **V2** (Dashboard, Analytics, Monitoring).
+- **Synapse Chat** (`arnaudmoncondhuy/synapse-chat`) : API HTTP, composant front, **Auto-titling** et sécurité CSRF.
 
 ## Installation rapide
 
 ```bash
 composer require arnaudmoncondhuy/synapse-core
-```
-
-Pour l’interface d’administration et l’UI de chat :
-
-```bash
-composer require arnaudmoncondhuy/synapse-admin arnaudmoncondhuy/synapse-chat
+php bin/console synapse:doctor --init
 ```
 
 ## Documentation
 
-- **[Synapse Core]** : prise en main, configuration, guides (outils IA, personas, RAG, mémoire), référence technique (contrats, événements, CLI) et architecture.
-- **[Synapse Admin]** : utilisation de l’interface d’administration.
-- **[Synapse Chat]** : utilisation du bundle chat (routes, CSRF, intégration front).
+- **[Synapse Core]** : Prise en main, Accounting, Quotas, Missions, RAG et CLI (Doctor).
+- **[Synapse Admin]** : Utilisation de l’interface d’administration V2 et Analytics.
+- **[Synapse Chat]** : Utilisation du bundle chat, auto-titling et sécurité.
 
 Utilisez le menu de navigation pour accéder à chaque section.

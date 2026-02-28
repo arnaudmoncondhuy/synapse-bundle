@@ -15,16 +15,14 @@ Synapse est un écosystème de bundles Symfony pour déployer des agents IA auto
 ## ✨ Points Forts
 
 - 🤖 **Agnosticisme LLM** : Standardisation sur le format OpenAI pour passer de Gemini à OVH ou OpenAI sans changer une ligne de code.
-- 🔧 **Agents Autonomes** : Créez des agents spécialisés avec leurs propres instructions, outils et configurations LLM via `AgentInterface`.
-- � **Function Calling** : Système de plugins ultra-simple pour permettre à l'IA d'interagir avec vos services via `AiToolInterface`.
-- 📡 **Streaming Natif** : UX fluide avec des réponses en temps réel (NDJSON).
-- � **Coffre-fort Intégré** : Chiffrement AES-256 de bout en bout des messages et des clés API via `libsodium`.
-- 🎨 **Admin Interface Premium** : Dashboard analytique, gestion des consommations (tokens/coûts), presets et debug logs en temps réel.
-- � **Contextualisation Infinie** : Gestion intelligente de l'historique et injection de contexte dynamique.
+- 🔧 **Agents & Missions** : Créez des agents spécialisés avec leurs propres instructions (Missions), tons de réponse et outils via `AgentInterface`.
+- 💰 **Suivi des Coûts (Accounting)** : Tracking précis des tokens (input/output/thinking), estimation avant requête et gestion multi-devises (EUR/USD).
+- 📉 **Quotas & Limites** : Plafonds de dépense configurables par utilisateur, mission ou preset avec fenêtres glissantes et calendaires.
+- 🩺 **Synapse Doctor** : Assistant de diagnostic intégré pour automatiser l'installation et la réparation (`php bin/console synapse:doctor`).
+- 📡 **Streaming & Auto-titling** : UX fluide avec réponses en temps réel et génération automatique des titres de conversation.
+- 🎨 **Admin V2 Premium** : Dashboard analytique moderne, gestion de la mémoire sémantique et monitoring temps réel.
 
 ## 🚀 Installation Rapide
-
-### 1. Packages
 
 **Core** (requis) :
 
@@ -37,6 +35,18 @@ composer require arnaudmoncondhuy/synapse-core
 ```bash
 composer require arnaudmoncondhuy/synapse-admin arnaudmoncondhuy/synapse-chat
 ```
+
+### 2. Initialisation Automatique
+
+Utilisez l'assistant de diagnostic pour configurer automatiquement votre projet (entités, security.yaml, routes, configurations) :
+
+```bash
+php bin/console synapse:doctor --init
+```
+
+> [!NOTE]
+> En mode `--init`, Synapse crée un utilisateur de développement par défaut : `admin` / `admin`.
+
 
 ### 2. Configuration minimale (Core)
 
@@ -62,18 +72,18 @@ synapse_core:
 ```php
 $result = $chatService->ask(
     message: "Analyse ce rapport trimestriel",
-    options: ['persona' => 'expert_analyste']
+    options: ['tone' => 'expert_analyste']
 );
 echo $result['answer'];
 ```
 
-## 📚 Documentation
+## 📖 Documentation
 
 La documentation est générée depuis ce dépôt et publiée sur **[GitHub Pages](https://arnaudmoncondhuy.github.io/synapse-bundle/)**. Elle est organisée en trois sections :
 
-- **[Synapse Core](https://arnaudmoncondhuy.github.io/synapse-bundle/core/)** — Installation, configuration, guides (outils IA, personas, RAG, mémoire), référence technique (contrats, événements, CLI).
-- **[Synapse Admin](https://arnaudmoncondhuy.github.io/synapse-bundle/admin/)** — Interface d'administration.
-- **[Synapse Chat](https://arnaudmoncondhuy.github.io/synapse-bundle/chat/)** — Routes API, CSRF, intégration du composant chat.
+- **[Synapse Core](https://arnaudmoncondhuy.github.io/synapse-bundle/core/)** — Architecture headless, contrats, **Accounting (coûts)**, **Quotas**, **Missions**, RAG, mémoire et CLI (**Synapse Doctor**).
+- **[Synapse Admin](https://arnaudmoncondhuy.github.io/synapse-bundle/admin/)** — Interface d'administration **V2**, Dashboard Analytics et monitoring.
+- **[Synapse Chat](https://arnaudmoncondhuy.github.io/synapse-bundle/chat/)** — Routes API, composants front, **Auto-titling** et sécurité CSRF.
 
 ## 🏗️ Architecture
 

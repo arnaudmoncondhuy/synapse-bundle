@@ -1,0 +1,45 @@
+/**
+ * Fenêtres flottantes (modales / dialogs)
+ * Taille paramétrable via _variables.css :
+ *   --sv2-modal-max-width, --sv2-modal-max-height, --sv2-modal-min-width
+ */
+.sv2-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 20, 40, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: calc(var(--sv2-z-modal) - 1);
+}
+
+.sv2-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: var(--sv2-modal-min-width);
+    max-width: var(--sv2-modal-max-width);
+    max-height: var(--sv2-modal-max-height);
+    overflow: auto;
+    background: var(--sv2-bg-surface);
+    border-radius: var(--sv2-radius-lg);
+    box-shadow: var(--sv2-shadow-xl);
+    border: 1px solid var(--sv2-border-light);
+    z-index: var(--sv2-z-modal);
+}
+
+.sv2-modal--sm {
+    max-width: 24rem;
+}
+
+.sv2-modal--lg {
+    max-width: 48rem;
+}
+
+.sv2-modal--xl {
+    max-width: 64rem;
+}
+
+.sv2-modal--full-height {
+    max-height: var(--sv2-modal-max-height);
+    height: var(--sv2-modal-max-height);
+}

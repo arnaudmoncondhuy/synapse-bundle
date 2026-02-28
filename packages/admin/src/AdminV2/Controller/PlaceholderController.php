@@ -58,12 +58,15 @@ class PlaceholderController extends AbstractController
     }
     */
 
+    // Désactivé car migré vers Intelligence/ToneController.php
+    /*
     #[Route('/intelligence/personas', name: 'personas')]
     public function personas(): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
         return $this->placeholder('Personas', 'user-circle', 'Intelligence', 'Gérez les identités et rôles de votre IA. Définissez des personnalités, tons de voix et prompts système par persona.');
     }
+    */
 
     // ─── Conversation — À MIGRER depuis V1 ────────────────────────────────────
 
@@ -138,12 +141,15 @@ class PlaceholderController extends AbstractController
     }
     */
 
+    // Désactivé — migré vers Usage/QuotasController.php
+    /*
     #[Route('/usage/quotas', name: 'quotas')]
     public function quotas(): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
         return $this->placeholder('Quotas', 'gauge', 'Usage', 'Définissez des limites de tokens par utilisateur, équipe ou globalement pour maîtriser vos coûts.');
     }
+    */
 
     #[Route('/usage/export', name: 'export')]
     public function export(): Response

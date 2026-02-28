@@ -11,11 +11,6 @@ services:
         resource: '../src/AdminV2/Controller/'
         tags: ['controller.service_arguments']
 
-    # ── Layout ────────────────────────────────────────────────────────────────
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Layout\SynapseLayoutResolver:
-        arguments:
-            $layoutMode: '%synapse.ui.layout_mode%'
-
     # ── Twig Integration ──────────────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseAdmin\Admin\Twig\SynapseRuntime:
         tags: ['twig.runtime']

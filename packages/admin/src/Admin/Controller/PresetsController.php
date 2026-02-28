@@ -239,13 +239,7 @@ class PresetsController extends AbstractController
 
         // Parse JSON providerOptions (from hidden field synchronized by JS)
         $providerOptions = [];
-        if (!empty($data['provider_options'])) {
-            try {
-                $providerOptions = json_decode($data['provider_options'], associative: true) ?? [];
-            } catch (\Throwable) {
-                $providerOptions = [];
-            }
-        }
+        $providerOptions = json_decode($data['provider_options'], true) ?: [];
 
         // Get model capabilities
         $caps = $this->capabilityRegistry->getCapabilities($modelName);
@@ -350,7 +344,7 @@ class PresetsController extends AbstractController
             foreach ($safetyFilters as $filter) {
                 if (isset($options['safety_settings']['thresholds'][$filter]) && !empty($options['safety_settings']['thresholds'][$filter])) {
                     $value = $options['safety_settings']['thresholds'][$filter];
-                    if ($value !== '' && !in_array($value, $validBlockLevels, true)) {
+                    if (!in_array($value, $validBlockLevels, true)) {
                         unset($options['safety_settings']['thresholds'][$filter]);
                     }
                 }

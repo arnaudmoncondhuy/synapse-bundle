@@ -1,0 +1,165 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}{{ provider.label }} | Fournisseurs | Synapse Admin V2{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_v2_admin_configuration_llm', {tab: 'fournisseurs'}) }}" class="sv2-topbar__breadcrumb">Fournisseurs</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">{{ provider.label }}</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--primary">
+					<i data-lucide="plug"></i>
+				</span>
+				{{ provider.label }}
+			</h1>
+			<p class="sv2-page-subtitle">
+				Configurez les identifiants d'accès pour ce fournisseur LLM.
+			</p>
+		</div>
+	</div>
+
+	<form method="post" action="{{ path('synapse_v2_admin_providers_edit', {id: provider.id}) }}">
+		<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_provider_edit_' ~ provider.id) }}">
+
+		{# ── Informations générales ────────────────────────────────────────────── #}
+		<div class="sv2-card sv2-mb-lg">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+					<i data-lucide="info"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Informations générales</div>
+					<div class="sv2-card__subtitle">Identité et statut du fournisseur</div>
+				</div>
+			</div>
+
+			<div class="sv2-card__body">
+				<div class="sv2-form-group">
+					<label for="label" class="sv2-label">Nom affiché</label>
+					<input type="text" id="label" name="label" value="{{ provider.label }}" class="sv2-input" required>
+					<p class="sv2-text-xs sv2-text-tertiary sv2-mt-sm">
+						Nom visible dans l'interface admin et les presets.
+					</p>
+				</div>
+
+				<div class="sv2-form-group sv2-mt-md">
+					<label class="sv2-checkbox">
+						<input type="checkbox" name="is_enabled" value="1" {% if provider.isEnabled %}checked{% endif %}>
+						<span class="sv2-checkbox__label">Fournisseur activé</span>
+					</label>
+					<p class="sv2-text-xs sv2-text-tertiary sv2-mt-sm">
+						Un fournisseur désactivé ne peut pas être utilisé dans les presets ni pour générer du contenu.
+					</p>
+				</div>
+			</div>
+		</div>
+
+		{# ── Configuration des accès ───────────────────────────────────────────── #}
+		{% if fields is defined and fields is not empty %}
+			<div class="sv2-card sv2-mb-lg">
+				<div class="sv2-card__header">
+					<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+						<i data-lucide="key-round"></i>
+					</div>
+					<div>
+						<div class="sv2-card__title">Configuration des accès</div>
+						<div class="sv2-card__subtitle">Identifiants et clés API</div>
+					</div>
+				</div>
+
+				<div class="sv2-card__body">
+					{% set creds = provider.credentials %}
+					{% for name, config in fields %}
+						<div class="sv2-form-group">
+							<label for="{{ name }}" class="sv2-label">
+								{{ config.label }}
+								{% if config.required|default(false) %}
+									<span class="sv2-text-danger">*</span>
+								{% endif %}
+							</label>
+
+							{% if config.type == 'select' %}
+								<select id="{{ name }}" name="{{ name }}" class="sv2-input" {% if config.required|default(false) %}required{% endif %}>
+									<option value="">— Sélectionner —</option>
+									{% for value, label in config.options %}
+										<option value="{{ value }}" {% if (creds[name]|default(config.value|default(''))) == value %}selected{% endif %}>
+											{{ label }}
+										</option>
+									{% endfor %}
+								</select>
+
+							{% elseif config.type == 'textarea' %}
+								<textarea id="{{ name }}" name="{{ name }}" class="sv2-input sv2-input--mono" rows="8" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) and (creds[name]|default('')) is empty %}required{% endif %}></textarea>
+								{% if (creds[name]|default('')) is not empty %}
+									<p class="sv2-text-xs sv2-text-success sv2-mt-sm">
+										<i data-lucide="check-circle-2"></i>
+										Valeur déjà configurée. Laissez vide pour conserver, remplissez pour modifier.
+									</p>
+								{% endif %}
+
+							{% elseif config.type == 'password' %}
+								<input type="password" id="{{ name }}" name="{{ name }}" class="sv2-input" placeholder="{% if (creds[name]|default('')) is not empty %}Valeur configurée — laisser vide pour conserver{% else %}{{ config.placeholder|default('') }}{% endif %}" {% if config.required|default(false) and (creds[name]|default('')) is empty %}required{% endif %}>
+								{% if (creds[name]|default('')) is not empty %}
+									<p class="sv2-text-xs sv2-text-success sv2-mt-sm">
+										<i data-lucide="check-circle-2"></i>
+										Valeur déjà configurée. Laissez vide pour conserver, remplissez pour modifier.
+									</p>
+								{% endif %}
+
+							{% else %}
+								<input type="text" id="{{ name }}" name="{{ name }}" value="{{ (creds[name]|default(config.value|default(''))) }}" class="sv2-input" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) %}required{% endif %}>
+							{% endif %}
+
+							{% if config.help is defined %}
+								<p class="sv2-text-xs sv2-text-tertiary sv2-mt-sm">{{ config.help|raw }}</p>
+							{% endif %}
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+
+		{# ── Fallback JSON brut ────────────────────────────────────────────────── #}
+		{% else %}
+			<div class="sv2-card sv2-mb-lg">
+				<div class="sv2-card__header">
+					<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+						<i data-lucide="braces"></i>
+					</div>
+					<div>
+						<div class="sv2-card__title">Credentials (JSON)</div>
+						<div class="sv2-card__subtitle">Format JSON brut</div>
+					</div>
+				</div>
+
+				<div class="sv2-card__body">
+					<div class="sv2-form-group">
+						<label for="credentials_raw" class="sv2-label">Données JSON</label>
+						<textarea id="credentials_raw" name="credentials_raw" class="sv2-input sv2-input--mono" rows="10">{{ provider.credentials|json_encode(constant('JSON_PRETTY_PRINT')) }}</textarea>
+					</div>
+				</div>
+			</div>
+		{% endif %}
+
+		{# ── Actions ───────────────────────────────────────────────────────────── #}
+		<div class="sv2-sticky-save">
+			<a href="#" class="sv2-btn sv2-btn--primary" onclick="document.querySelector('form').submit(); return false;">
+				<i data-lucide="save"></i>
+				Enregistrer
+			</a>
+			<a href="{{ path('synapse_v2_admin_configuration_llm', {tab: 'fournisseurs'}) }}" class="sv2-btn sv2-btn--ghost">
+				<i data-lucide="x"></i>
+				Annuler
+			</a>
+		</div>
+
+	</form>
+
+{% endblock %}

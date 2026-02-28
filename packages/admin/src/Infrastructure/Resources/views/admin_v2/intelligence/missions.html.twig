@@ -1,0 +1,154 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}Missions | Intelligence | Synapse Admin V2{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_v2_admin_providers') }}" class="sv2-topbar__breadcrumb">Intelligence</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-current">Missions</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--primary">
+					<i data-lucide="target"></i>
+				</span>
+				Missions d'agents
+			</h1>
+			<p class="sv2-page-subtitle">
+				Configurez des profils d'agents préconfigurés combinant un prompt système, un modèle LLM et un ton de réponse.
+				Utilisez <code style="font-size: 0.875rem;">ChatService::ask($msg, ['mission' => 'cle'])</code> pour les invoquer.
+			</p>
+		</div>
+		<div class="sv2-page-header__actions">
+			<a href="{{ path('synapse_v2_admin_missions_new') }}" class="sv2-btn sv2-btn--primary">
+				<i data-lucide="plus"></i>
+				Nouvelle mission
+			</a>
+		</div>
+	</div>
+
+	<div class="sv2-grid sv2-grid--2">
+		{% for mission in missions %}
+			<div class="sv2-card sv2-card--hover {{ not mission.isActive ? 'sv2-card--inactive' : '' }}">
+
+				<div class="sv2-card__header">
+					<div class="sv2-card__header-icon sv2-kpi__icon--primary" style="font-size: 1.5rem; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center;">
+						{{ mission.emoji }}
+					</div>
+
+					<div class="sv2-flex sv2-flex-col sv2-gap-sm">
+						<div class="sv2-flex sv2-items-center sv2-gap-sm">
+							<span class="sv2-card__title">{{ mission.name }}</span>
+							{% if mission.isBuiltin %}
+								<span class="sv2-badge sv2-badge--neutral" data-sv2-tooltip="Mission intégrée au bundle — ne peut pas être supprimée">
+									<i data-lucide="lock"></i>
+									Builtin
+								</span>
+							{% endif %}
+							{% if not mission.isActive %}
+								<span class="sv2-badge sv2-badge--warning">
+									<i data-lucide="eye-off"></i>
+									Inactif
+								</span>
+							{% endif %}
+						</div>
+						<div class="sv2-text-sm sv2-text-muted">
+							<code class="sv2-font-mono" style="font-size: 0.75rem;">{{ mission.key }}</code>
+						</div>
+					</div>
+				</div>
+
+				<div class="sv2-card__body sv2-card__body--compact">
+					<p class="sv2-text-sm sv2-text-muted sv2-mb-md">{{ mission.description }}</p>
+
+					<div class="sv2-flex sv2-flex-col sv2-gap-sm sv2-text-xs sv2-text-muted">
+						{% if mission.preset %}
+							<div class="sv2-flex sv2-items-center sv2-gap-xs">
+								<i data-lucide="settings" style="width: 1rem; height: 1rem;"></i>
+								<span><strong>Preset:</strong> {{ mission.preset.name }}</span>
+							</div>
+						{% endif %}
+						{% if mission.tone %}
+							<div class="sv2-flex sv2-items-center sv2-gap-xs">
+								<i data-lucide="mic-2" style="width: 1rem; height: 1rem;"></i>
+								<span><strong>Ton:</strong> {{ mission.tone.name }} ({{ mission.tone.emoji }})</span>
+							</div>
+						{% endif %}
+					</div>
+
+					<details class="sv2-collapsible" style="margin-top: 1rem;">
+						<summary class="sv2-collapsible__summary">
+							<div class="sv2-collapsible__icon">
+								<i data-lucide="file-text"></i>
+							</div>
+							<div class="sv2-collapsible__title">
+								Prompt système
+								<div class="sv2-collapsible__subtitle">
+									{{ mission.systemPrompt|slice(0, 60) ~ '…' }}
+								</div>
+							</div>
+							<i data-lucide="chevron-down" class="sv2-collapsible__chevron"></i>
+						</summary>
+						<div class="sv2-collapsible__content">
+							<p class="sv2-text-sm sv2-font-mono" style="white-space: pre-wrap; word-break: break-word;">{{ mission.systemPrompt }}</p>
+						</div>
+					</details>
+				</div>
+
+				<div class="sv2-card__footer" style="overflow: visible;">
+					<div class="sv2-flex sv2-gap-md sv2-items-center" style="position: relative; z-index: 10;">
+
+						{# Modifier #}
+						<form action="{{ path('synapse_v2_admin_missions_edit', {id: mission.id}) }}" method="GET" class="sv2-form-inline">
+							<button type="submit" class="sv2-btn sv2-btn--ghost sv2-btn--icon sv2-btn--sm" data-sv2-tooltip="Modifier">
+								<i data-lucide="edit-3"></i>
+							</button>
+						</form>
+
+						{# Activer / Désactiver #}
+						<form action="{{ path('synapse_v2_admin_missions_toggle', {id: mission.id}) }}" method="POST" class="sv2-form-inline">
+							<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_mission_toggle_' ~ mission.id) }}">
+							<button type="submit" class="sv2-btn sv2-btn--ghost sv2-btn--icon sv2-btn--sm"
+									data-sv2-tooltip="{{ mission.isActive ? 'Désactiver' : 'Activer' }}">
+								{% if mission.isActive %}
+									<i data-lucide="eye-off"></i>
+								{% else %}
+									<i data-lucide="eye"></i>
+								{% endif %}
+							</button>
+						</form>
+
+						{# Supprimer (désactivé si builtin) #}
+						<form action="{{ path('synapse_v2_admin_missions_delete', {id: mission.id}) }}" method="POST" class="sv2-form-inline"
+							{% if not mission.isBuiltin %}onsubmit="return confirm('Supprimer la mission « {{ mission.name }} » ?')"{% endif %}>
+							<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_mission_delete_' ~ mission.id) }}">
+							<button type="submit" class="sv2-btn sv2-btn--ghost sv2-btn--icon sv2-btn--sm sv2-text-danger"
+									data-sv2-tooltip="{{ mission.isBuiltin ? 'Builtin — non supprimable' : 'Supprimer' }}"
+									{% if mission.isBuiltin %}disabled{% endif %}>
+								<i data-lucide="trash-2"></i>
+							</button>
+						</form>
+
+					</div>
+				</div>
+
+			</div>
+		{% else %}
+			<div class="sv2-empty-state" style="grid-column: 1 / -1;">
+				<i data-lucide="target" class="sv2-empty-state__icon"></i>
+				<p class="sv2-empty-state__title">Aucune mission configurée</p>
+				<p class="sv2-empty-state__subtitle">Lancez la fixture ou créez votre première mission personnalisée.</p>
+				<a href="{{ path('synapse_v2_admin_missions_new') }}" class="sv2-btn sv2-btn--primary sv2-mt-md">
+					<i data-lucide="plus"></i>
+					Créer une mission
+				</a>
+			</div>
+		{% endfor %}
+	</div>
+
+{% endblock %}

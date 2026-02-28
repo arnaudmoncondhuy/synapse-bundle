@@ -7,9 +7,9 @@
 
 {% block v2_breadcrumb %}
 	<span class="sv2-topbar__breadcrumb-sep">›</span>
-	<a href="#" class="sv2-topbar__breadcrumb">Intelligence</a>
+	<a href="{{ path('synapse_v2_admin_configuration_llm') }}" class="sv2-topbar__breadcrumb">Intelligence</a>
 	<span class="sv2-topbar__breadcrumb-sep">›</span>
-	<a href="{{ path('synapse_v2_admin_presets') }}" class="sv2-topbar__breadcrumb">Presets</a>
+	<a href="{{ path('synapse_v2_admin_configuration_llm', {tab: 'presets'}) }}" class="sv2-topbar__breadcrumb">Presets</a>
 	<span class="sv2-topbar__breadcrumb-sep">›</span>
 	<span class="sv2-topbar__current">{{ is_new ? 'Nouveau' : preset.name }}</span>
 {% endblock %}
@@ -33,7 +33,7 @@
 			</p>
 		</div>
 		<div class="sv2-page-header__actions">
-			<a href="{{ path('synapse_v2_admin_presets') }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+			<a href="{{ path('synapse_v2_admin_configuration_llm', {tab: 'presets'}) }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
 				<i data-lucide="arrow-left"></i>
 				Retour
 			</a>
@@ -256,7 +256,7 @@
 				<i data-lucide="save"></i>
 				{{ is_new ? 'Créer le preset' : 'Enregistrer les modifications' }}
 			</button>
-			<a href="{{ path('synapse_v2_admin_presets') }}" class="sv2-btn sv2-btn--ghost">
+			<a href="{{ path('synapse_v2_admin_configuration_llm', {tab: 'presets'}) }}" class="sv2-btn sv2-btn--ghost">
 				Annuler
 			</a>
 		</div>

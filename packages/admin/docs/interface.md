@@ -11,11 +11,21 @@ Par défaut, l'interface est accessible via l'URL : `/synapse/admin`.
 ---
 
 ## 📊 Tableau de Bord (Dashboard)
-Le point central pour monitorer la santé de votre système IA :
-*   **KPIs Temps Réel** : Nombre de conversations actives sur les dernières 24h.
-*   **Statistiques de Consommation** : Suivi précis du nombre de tokens utilisés et estimation du coût financier sur 7 jours.
-*   **Graphiques de Tendance** : Visualisation de l'usage quotidien sur 30 jours.
+
+Le Dashboard de l'**Admin V2** est le point central pour monitorer votre système :
+*   **Analytics de Consommation** : Vue d'ensemble des tokens utilisés et des coûts associés par jour/mois.
+*   **Monitoring par Module** : Suivi détaillé de l'usage (Chat, Missions, Tâches système).
 *   **État des Services** : Liste des providers (Gemini, OpenAI, etc.) actuellement activés.
+
+---
+
+## 💰 Gestion des Quotas (Spending Limits)
+
+Nouveauté majeure de la V2, cette page permet de définir des limites de dépense :
+*   **Plafonds par utilisateur** : Bridez la consommation de vos utilisateurs (ex: 5€ / mois).
+*   **Plafonds par mission** : Limitez le budget d'un agent spécifique.
+*   **Périodes glissantes** : Gestion intelligente des quotas sur 24h ou 30 jours via le cache.
+
 
 ---
 

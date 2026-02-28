@@ -57,11 +57,16 @@ composer require arnaudmoncondhuy/synapse-admin:^0.1
 - Intégration Symfony Security
 - Chiffrement des credentials sensibles
 
-### 🎯 Features avancées
-- **Hybrid HTML/JSON form pattern** - Formulaires générés dynamiquement
-- **Provider-agnostic UI** - Les champs s'adapent au provider sélectionné
-- **Live preset testing** - Test les presets sans vraie requête LLM
-- **NDJSON streaming** - Réponses streamées en real-time
+### 📊 Analytics & Quotas
+- **Dashboard Principal** - Vue d'ensemble de la consommation (tokens & coûts)
+- **Monitoring d'Usage** - Historique détaillé des appels LLM par module
+- **Gestion des Quotas** - Interface pour définir les limites de dépense (Spending Limits)
+- **Modèles & Tarifs** - Configuration des prix par million de tokens
+
+### 🎛️ Architecture Admin V2
+- **Hybrid HTML/JSON form pattern** - Formulaires dynamiques s'adaptant au provider LLM
+- **Live preset testing** - Test des presets avec streaming en temps réel dans l'admin
+- **Gestion des Missions** - Interface de configuration des agents (Missions & Tons)
 
 ## Configuration
 

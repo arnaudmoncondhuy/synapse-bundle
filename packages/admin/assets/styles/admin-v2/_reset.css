@@ -91,6 +91,11 @@ html.sv2-root body {
 .sv2-root button {
     cursor: pointer;
     border: none;
+}
+
+/* Reset background uniquement pour les boutons sans classe sv2-btn */
+/* Les variantes (.sv2-btn--primary, --ghost, etc.) gèrent leur propre background */
+.sv2-root button:not(.sv2-btn) {
     background: none;
 }
 

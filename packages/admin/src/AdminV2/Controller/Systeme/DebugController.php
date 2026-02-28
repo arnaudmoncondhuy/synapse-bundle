@@ -27,7 +27,6 @@ class DebugController extends AbstractController
 
     public function __construct(
         private SynapseDebugLogRepository $debugLogRepo,
-        private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {}
