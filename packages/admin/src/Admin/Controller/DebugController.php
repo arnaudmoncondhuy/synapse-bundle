@@ -23,8 +23,7 @@ class DebugController extends AbstractController
     public function __construct(
         private SynapseDebugLogRepository $debugLogRepo,
         private CacheInterface $cache,
-    ) {
-    }
+    ) {}
 
     /**
      * Affiche le rapport de debug pour un échange spécifique.
@@ -56,15 +55,13 @@ class DebugController extends AbstractController
             if ($debugLog !== null) {
                 $data = $debugLog->getData();
                 // Re-populate cache for next time
-                if ($data !== null) {
-                    try {
-                        $this->cache->get("synapse_debug_{$id}", function (ItemInterface $item) use ($data) {
-                            $item->expiresAfter(86400);
-                            return $data;
-                        });
-                    } catch (\Exception $e) {
-                        // Cache write error, but data is still available
-                    }
+                try {
+                    $this->cache->get("synapse_debug_{$id}", function (ItemInterface $item) use ($data) {
+                        $item->expiresAfter(86400);
+                        return $data;
+                    });
+                } catch (\Exception $e) {
+                    // Cache write error, but data is still available
                 }
             }
         }
@@ -74,8 +71,8 @@ class DebugController extends AbstractController
         }
 
         // Debug: log what we're about to render
-        error_log("DebugController: Rendering with data keys: " . implode(', ', is_array($data) ? array_keys($data) : array_keys((array)$data)));
-        error_log("DebugController: Turns count: " . (count($data['turns'] ?? $data->turns ?? []) ?? 0));
+        error_log("DebugController: Rendering with data keys: " . implode(', ', array_keys($data)));
+        error_log("DebugController: Turns count: " . count($data['turns'] ?? []));
 
         return $this->render('@Synapse/debug/show.html.twig', [
             'id' => $id,

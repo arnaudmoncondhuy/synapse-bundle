@@ -48,7 +48,7 @@ class MemoryController extends AbstractController
             $offset
         );
         $total = $this->memoryRepository->count([]);
-        $pages = $limit > 0 ? (int) ceil($total / $limit) : 1;
+        $pages = (int) ceil($total / $limit);
 
         return $this->render('@Synapse/admin_v2/memoire/memories.html.twig', [
             'memories' => $memories,

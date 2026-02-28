@@ -114,7 +114,7 @@ class ModelController extends AbstractController
         $status = $model->isEnabled() ? 'activé' : 'désactivé';
         $this->addFlash('success', sprintf('Le modèle "%s" a été %s.', $modelId, $status));
 
-        return $this->redirectToRoute('synapse_v2_admin_models');
+        return $this->redirectToRoute('synapse_v2_admin_configuration_llm', ['tab' => 'modeles']);
     }
 
     /**
@@ -152,6 +152,6 @@ class ModelController extends AbstractController
 
         $this->addFlash('success', sprintf('Configuration du modèle "%s" mise à jour.', $modelId));
 
-        return $this->redirectToRoute('synapse_v2_admin_models');
+        return $this->redirectToRoute('synapse_v2_admin_configuration_llm', ['tab' => 'modeles']);
     }
 }

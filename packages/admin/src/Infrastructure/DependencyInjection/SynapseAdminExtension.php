@@ -40,15 +40,19 @@ class SynapseAdminExtension extends Extension implements PrependExtensionInterfa
             ],
         ]);
 
-        // Enregistrement des assets pour AssetMapper
-        $assetsPath = \dirname(__DIR__, 3) . '/assets';
-        $container->prependExtensionConfig('framework', [
-            'asset_mapper' => [
-                'paths' => [
-                    $assetsPath => 'synapse-admin',
+        // Enregistrement du chemin réel des assets admin dans AssetMapper.
+        // Cela permet à AssetMapper de valider les fichiers CSS référencés via les symlinks
+        // assets/synapse-admin → vendor/arnaudmoncondhuy/synapse-admin/assets (créés par synapse:doctor --fix).
+        if ($container->hasExtension('framework')) {
+            $assetsDir = realpath(\dirname(__DIR__, 3) . '/assets') ?: \dirname(__DIR__, 3) . '/assets';
+            $container->prependExtensionConfig('framework', [
+                'asset_mapper' => [
+                    'paths' => [
+                        $assetsDir => 'synapse-admin',
+                    ],
                 ],
-            ],
-        ]);
+            ]);
+        }
     }
 
     /**

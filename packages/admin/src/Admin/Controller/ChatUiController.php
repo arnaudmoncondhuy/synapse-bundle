@@ -39,9 +39,10 @@ class ChatUiController extends AbstractController
         $history = [];
         $currentConversationId = $request->query->get('conversation', '');
         $user = $this->getUser();
+        $owner = $user instanceof \ArnaudMoncondhuy\SynapseCore\Contract\ConversationOwnerInterface ? $user : null;
 
         if (!empty($currentConversationId) && $this->conversationManager) {
-            $conversation = $this->conversationManager->getConversation($currentConversationId, $user);
+            $conversation = $this->conversationManager->getConversation($currentConversationId, $owner);
             if ($conversation) {
                 $history = $this->conversationManager->getHistoryArray($conversation);
             }

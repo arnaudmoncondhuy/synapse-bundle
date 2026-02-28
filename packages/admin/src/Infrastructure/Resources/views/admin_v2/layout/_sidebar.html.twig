@@ -1,8 +1,14 @@
 {#
-    Synapse Admin V2 — Sidebar Navigation Métier
+    Synapse Admin V2 — Sidebar Navigation
 
-    Inclus automatiquement depuis base.html.twig.
-    Peut être surchargé via le bloc v2_sidebar.
+    Structure :
+    - Tableau de bord
+    - 🧠 Intelligence  : Configuration LLM (hub onglets) · Assistants · Personnalisation
+    - 💬 Chat          : Paramètres · Outils
+    - 🧩 Base de connaissance : Configuration (embeddings/RAG)
+    - 📈 Monitoring    : Analytics · Quotas · Export
+    - 🔒 Sécurité      : Audit & Logs · Clés API · RGPD
+    - ⚙️  Système       : Debug · Santé · À propos
 #}
 {% set route = app.request.attributes.get('_route') %}
 
@@ -23,8 +29,7 @@
         {# ── Tableau de bord ──────────────────────────────────────────── #}
         <div class="sv2-nav__group">
             <a href="{{ path('synapse_v2_admin_dashboard') }}"
-               class="sv2-nav__link {% if route in ['synapse_v2_admin_dashboard'] %}is-active{% endif %}"
-               data-domain="system">
+               class="sv2-nav__link {% if route == 'synapse_v2_admin_dashboard' %}is-active{% endif %}">
                 <span class="sv2-nav__icon"><i data-lucide="layout-dashboard"></i></span>
                 Tableau de bord
             </a>
@@ -35,110 +40,89 @@
         {# ─────────────────────────────────────────────────────────────── #}
         <div class="sv2-nav__section">🧠 Intelligence</div>
         <div class="sv2-nav__group">
-            <a href="{{ path('synapse_v2_admin_providers') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_providers' %}is-active{% endif %}"
-               data-domain="intelligence">
-                <span class="sv2-nav__icon"><i data-lucide="plug"></i></span>
-                Fournisseurs
+
+            {# Configuration LLM — hub onglets (fournisseurs + modèles + presets) #}
+            <a href="{{ path('synapse_v2_admin_configuration_llm') }}"
+               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_configuration_llm' or route starts with 'synapse_v2_admin_providers' or route starts with 'synapse_v2_admin_models' or route starts with 'synapse_v2_admin_presets' %}is-active{% endif %}">
+                <span class="sv2-nav__icon"><i data-lucide="settings-2"></i></span>
+                Configuration LLM
             </a>
-            <a href="{{ path('synapse_v2_admin_models') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_models' %}is-active{% endif %}"
-               data-domain="intelligence">
-                <span class="sv2-nav__icon"><i data-lucide="cpu"></i></span>
-                Modèles
+
+            {# Assistants (ex Missions) #}
+            <a href="{{ path('synapse_v2_admin_missions') }}"
+               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_missions' %}is-active{% endif %}">
+                <span class="sv2-nav__icon"><i data-lucide="bot"></i></span>
+                Assistants
             </a>
-            <a href="{{ path('synapse_v2_admin_presets') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_presets' %}is-active{% endif %}"
-               data-domain="intelligence">
-                <span class="sv2-nav__icon"><i data-lucide="sliders-horizontal"></i></span>
-                Presets
+
+            {# Personnalisation (ex Tons de réponse) #}
+            <a href="{{ path('synapse_v2_admin_tones') }}"
+               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_tones' %}is-active{% endif %}">
+                <span class="sv2-nav__icon"><i data-lucide="mic-2"></i></span>
+                Personnalisation
             </a>
-            <a href="{{ path('synapse_v2_admin_personas') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_personas' %}is-active{% endif %}"
-               data-domain="intelligence">
-                <span class="sv2-nav__icon"><i data-lucide="user-circle"></i></span>
-                Personas
-                <span class="sv2-nav__badge">Soon</span>
-            </a>
+
         </div>
 
         {# ─────────────────────────────────────────────────────────────── #}
-        {# 💬 CONVERSATION                                                 #}
+        {# 💬 CHAT                                                         #}
         {# ─────────────────────────────────────────────────────────────── #}
-        <div class="sv2-nav__section">💬 Conversation</div>
+        <div class="sv2-nav__section">💬 Chat</div>
         <div class="sv2-nav__group">
+
             <a href="{{ path('synapse_v2_admin_settings') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_settings' %}is-active{% endif %}"
-               data-domain="conversation">
+               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_settings' %}is-active{% endif %}">
                 <span class="sv2-nav__icon"><i data-lucide="message-square-more"></i></span>
                 Paramètres
             </a>
+
             <a href="{{ path('synapse_v2_admin_tools') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_tools' %}is-active{% endif %}"
-               data-domain="conversation">
+               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_tools' %}is-active{% endif %}">
                 <span class="sv2-nav__icon"><i data-lucide="wrench"></i></span>
                 Outils
             </a>
-            <a href="{{ path('synapse_v2_admin_history') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_history' %}is-active{% endif %}"
-               data-domain="conversation">
-                <span class="sv2-nav__icon"><i data-lucide="messages-square"></i></span>
-                Historique
-                <span class="sv2-nav__badge">Soon</span>
-            </a>
+
         </div>
 
         {# ─────────────────────────────────────────────────────────────── #}
-        {# 🧩 MÉMOIRE                                                      #}
+        {# 🧩 BASE DE CONNAISSANCE                                         #}
         {# ─────────────────────────────────────────────────────────────── #}
-        <div class="sv2-nav__section">🧩 Mémoire</div>
+        <div class="sv2-nav__section">🧩 Base de connaissance</div>
         <div class="sv2-nav__group">
+
             <a href="{{ path('synapse_v2_admin_embeddings') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_embeddings' %}is-active{% endif %}"
-               data-domain="memory">
+               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_embeddings' %}is-active{% endif %}">
                 <span class="sv2-nav__icon"><i data-lucide="database-zap"></i></span>
-                Embeddings
+                Configuration
             </a>
-            <a href="{{ path('synapse_v2_admin_documents') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_documents' %}is-active{% endif %}"
-               data-domain="memory">
-                <span class="sv2-nav__icon"><i data-lucide="files"></i></span>
-                Documents
-                <span class="sv2-nav__badge">Soon</span>
-            </a>
-            <a href="{{ path('synapse_v2_admin_memories') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_memories' %}is-active{% endif %}"
-               data-domain="memory">
-                <span class="sv2-nav__icon"><i data-lucide="sparkles"></i></span>
-                Souvenirs
-            </a>
+
         </div>
 
         {# ─────────────────────────────────────────────────────────────── #}
-        {# 📈 USAGE                                                        #}
+        {# 📈 MONITORING                                                   #}
         {# ─────────────────────────────────────────────────────────────── #}
-        <div class="sv2-nav__section">📈 Usage</div>
+        <div class="sv2-nav__section">📈 Monitoring</div>
         <div class="sv2-nav__group">
+
             <a href="{{ path('synapse_v2_admin_analytics') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_analytics' %}is-active{% endif %}"
-               data-domain="usage">
+               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_analytics' %}is-active{% endif %}">
                 <span class="sv2-nav__icon"><i data-lucide="bar-chart-3"></i></span>
                 Analytics
             </a>
+
             <a href="{{ path('synapse_v2_admin_quotas') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_quotas' %}is-active{% endif %}"
-               data-domain="usage">
+               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_quotas' %}is-active{% endif %}">
                 <span class="sv2-nav__icon"><i data-lucide="gauge"></i></span>
                 Quotas
-                <span class="sv2-nav__badge">Soon</span>
             </a>
+
             <a href="{{ path('synapse_v2_admin_export') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_export' %}is-active{% endif %}"
-               data-domain="usage">
+               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_export' %}is-active{% endif %}">
                 <span class="sv2-nav__icon"><i data-lucide="download"></i></span>
                 Export
                 <span class="sv2-nav__badge">Soon</span>
             </a>
+
         </div>
 
         {# ─────────────────────────────────────────────────────────────── #}
@@ -146,26 +130,20 @@
         {# ─────────────────────────────────────────────────────────────── #}
         <div class="sv2-nav__section">🔒 Sécurité</div>
         <div class="sv2-nav__group">
+
             <a href="{{ path('synapse_v2_admin_audit') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_audit' %}is-active{% endif %}"
-               data-domain="security">
+               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_audit' %}is-active{% endif %}">
                 <span class="sv2-nav__icon"><i data-lucide="scroll-text"></i></span>
                 Audit & Logs
             </a>
-            <a href="{{ path('synapse_v2_admin_api_keys') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_api_keys' %}is-active{% endif %}"
-               data-domain="security">
-                <span class="sv2-nav__icon"><i data-lucide="key-round"></i></span>
-                Clés API
-                <span class="sv2-nav__badge">Soon</span>
-            </a>
-            <a href="{{ path('synapse_v2_admin_gdpr') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_gdpr' %}is-active{% endif %}"
-               data-domain="security">
+
+<a href="{{ path('synapse_v2_admin_gdpr') }}"
+               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_gdpr' %}is-active{% endif %}">
                 <span class="sv2-nav__icon"><i data-lucide="shield-check"></i></span>
                 RGPD
                 <span class="sv2-nav__badge">Soon</span>
             </a>
+
         </div>
 
         {# ─────────────────────────────────────────────────────────────── #}
@@ -173,25 +151,26 @@
         {# ─────────────────────────────────────────────────────────────── #}
         <div class="sv2-nav__section">⚙️ Système</div>
         <div class="sv2-nav__group">
+
             <a href="{{ path('synapse_v2_admin_debug') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_debug' %}is-active{% endif %}"
-               data-domain="system">
+               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_debug' %}is-active{% endif %}">
                 <span class="sv2-nav__icon"><i data-lucide="bug"></i></span>
                 Debug
             </a>
+
             <a href="{{ path('synapse_v2_admin_health') }}"
-               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_health' %}is-active{% endif %}"
-               data-domain="system">
+               class="sv2-nav__link {% if route starts with 'synapse_v2_admin_health' %}is-active{% endif %}">
                 <span class="sv2-nav__icon"><i data-lucide="heart-pulse"></i></span>
                 Santé
                 <span class="sv2-nav__badge">Soon</span>
             </a>
+
             <a href="{{ path('synapse_v2_admin_about') }}"
-               class="sv2-nav__link {% if route == 'synapse_v2_admin_about' %}is-active{% endif %}"
-               data-domain="system">
+               class="sv2-nav__link {% if route == 'synapse_v2_admin_about' %}is-active{% endif %}">
                 <span class="sv2-nav__icon"><i data-lucide="info"></i></span>
                 À propos
             </a>
+
         </div>
 
     </nav>

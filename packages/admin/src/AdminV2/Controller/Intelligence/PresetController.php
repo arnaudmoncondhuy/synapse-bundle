@@ -59,6 +59,8 @@ class PresetController extends AbstractController
             fn(SynapsePreset $p) => [
                 'entity' => $p,
                 'caps'   => $this->capabilityRegistry->getCapabilities($p->getModel()),
+                'isValid' => $this->isPresetValid($p),
+                'invalidReason' => $this->getPresetInvalidReason($p),
             ],
             $presets
         );
@@ -69,6 +71,59 @@ class PresetController extends AbstractController
         return $this->render('@Synapse/admin_v2/intelligence/presets.html.twig', [
             'presets' => $presetsWithCaps,
         ]);
+    }
+
+    /**
+     * Vérifie si un preset est valide (provider configuré + modèle existe)
+     */
+    private function isPresetValid(SynapsePreset $preset): bool
+    {
+        // Vérifier que le provider et le modèle sont définis
+        $providerName = $preset->getProviderName();
+        $model = $preset->getModel();
+
+        if (empty($providerName) || empty($model)) {
+            return false;
+        }
+
+        // Vérifier que le provider est configuré
+        $provider = $this->providerRepo->findOneBy(['name' => $providerName]);
+        if (!$provider || !$provider->isConfigured()) {
+            return false;
+        }
+
+        // Vérifier que le modèle existe dans la registry
+        return $this->capabilityRegistry->isKnownModel($model);
+    }
+
+    /**
+     * Retourne la raison pour laquelle un preset est invalide
+     */
+    private function getPresetInvalidReason(SynapsePreset $preset): ?string
+    {
+        $providerName = $preset->getProviderName();
+        $model = $preset->getModel();
+
+        if (empty($providerName) || empty($model)) {
+            if (empty($providerName) && empty($model)) {
+                return 'Pas de provider ou de modèle configuré';
+            }
+            return empty($providerName) ? 'Aucun fournisseur défini' : 'Aucun modèle défini';
+        }
+
+        $provider = $this->providerRepo->findOneBy(['name' => $providerName]);
+        if (!$provider) {
+            return 'Fournisseur "' . $providerName . '" introuvable';
+        }
+        if (!$provider->isConfigured()) {
+            return 'Fournisseur "' . $provider->getLabel() . '" non configuré';
+        }
+
+        if (!$this->capabilityRegistry->isKnownModel($model)) {
+            return 'Modèle "' . $model . '" inexistant ou désactivé';
+        }
+
+        return null;
     }
 
     // ─── Nouveau ───────────────────────────────────────────────────────────────
@@ -88,7 +143,7 @@ class PresetController extends AbstractController
             $this->configProvider->clearCache();
 
             $this->addFlash('success', sprintf('Preset "%s" créé avec succès.', $preset->getName()));
-            return $this->redirectToRoute('synapse_v2_admin_presets');
+            return $this->redirectToRoute('synapse_v2_admin_configuration_llm', ['tab' => 'presets']);
         }
 
         // Pré-remplir avec les valeurs de config active
@@ -119,7 +174,7 @@ class PresetController extends AbstractController
             $this->configProvider->clearCache();
 
             $this->addFlash('success', sprintf('Preset "%s" mis à jour.', $preset->getName()));
-            return $this->redirectToRoute('synapse_v2_admin_presets');
+            return $this->redirectToRoute('synapse_v2_admin_configuration_llm', ['tab' => 'presets']);
         }
 
         return $this->render('@Synapse/admin_v2/intelligence/preset_edit.html.twig', [
@@ -139,6 +194,16 @@ class PresetController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_v2_preset_activate_' . $preset->getId());
 
+        // 🛡️ DÉFENSE : Vérifier que le preset est valide avant activation
+        if (!$this->isPresetValid($preset)) {
+            $this->addFlash('error', sprintf(
+                'Impossible d\'activer le preset "%s" : %s',
+                $preset->getName(),
+                $this->getPresetInvalidReason($preset)
+            ));
+            return $this->redirectToRoute('synapse_v2_admin_configuration_llm', ['tab' => 'presets']);
+        }
+
         $this->presetRepo->activate($preset);
         $this->configProvider->clearCache();
 
@@ -147,7 +212,7 @@ class PresetController extends AbstractController
             $preset->getName()
         ));
 
-        return $this->redirectToRoute('synapse_v2_admin_presets');
+        return $this->redirectToRoute('synapse_v2_admin_configuration_llm', ['tab' => 'presets']);
     }
 
     // ─── Clone ─────────────────────────────────────────────────────────────────
@@ -189,7 +254,7 @@ class PresetController extends AbstractController
 
         if ($preset->isActive()) {
             $this->addFlash('error', 'Impossible de supprimer le preset actif. Activez d\'abord un autre preset.');
-            return $this->redirectToRoute('synapse_v2_admin_presets');
+            return $this->redirectToRoute('synapse_v2_admin_configuration_llm', ['tab' => 'presets']);
         }
 
         $name = $preset->getName();
@@ -198,7 +263,7 @@ class PresetController extends AbstractController
         $this->configProvider->clearCache();
 
         $this->addFlash('success', sprintf('Preset "%s" supprimé.', $name));
-        return $this->redirectToRoute('synapse_v2_admin_presets');
+        return $this->redirectToRoute('synapse_v2_admin_configuration_llm', ['tab' => 'presets']);
     }
 
     // ─── Test (Messenger polling) ───────────────────────────────────────────────
@@ -215,10 +280,12 @@ class PresetController extends AbstractController
         $cacheKey = sprintf('synapse_preset_test_%d', $preset->getId());
 
         $this->cache->delete($cacheKey);
-        $this->cache->get($cacheKey, function (ItemInterface $item) {
+
+        $callback = function (ItemInterface $item): array {
             $item->expiresAfter(3600);
             return ['status' => 'pending', 'progress' => 0, 'report' => null];
-        });
+        };
+        $this->cache->get($cacheKey, $callback);
 
         return $this->render('@Synapse/admin_v2/intelligence/preset_test_waiting.html.twig', [
             'preset'    => $preset,
@@ -250,29 +317,36 @@ class PresetController extends AbstractController
             $isLocked = $this->cache->get($lockKey, fn() => false);
 
             if (!$isLocked) {
-                $this->cache->get($lockKey, function (ItemInterface $item) {
+                $this->cache->get($lockKey, function (ItemInterface $item): bool {
                     $item->expiresAfter(60);
                     return true;
                 });
 
                 try {
                     $data = $this->cache->get($cacheKey, fn() => null);
+                    if (!$data) {
+                        return new JsonResponse(['status' => 'not_found'], 404);
+                    }
+
                     $currentStep = 0;
                     if ($data['status'] === 'pending') {
                         $currentStep = 1;
                     } elseif ($data['status'] === 'processing') {
-                        if ($data['progress'] < 33)       $currentStep = 1;
-                        elseif ($data['progress'] < 66)   $currentStep = 2;
-                        elseif ($data['progress'] < 100)  $currentStep = 3;
+                        if (($data['progress'] ?? 0) < 33)       $currentStep = 1;
+                        elseif (($data['progress'] ?? 0) < 66)   $currentStep = 2;
+                        elseif (($data['progress'] ?? 0) < 100)  $currentStep = 3;
                     }
 
                     if ($currentStep > 0) {
                         $data['message'] = $this->presetValidatorAgent->getStepLabel($currentStep);
                         $this->cache->delete($cacheKey);
-                        $this->cache->get($cacheKey, function (ItemInterface $item) use ($data) {
+
+                        /** @var \Closure(ItemInterface): array $callback */
+                        $callback = function (ItemInterface $item) use ($data): array {
                             $item->expiresAfter(3600);
-                            return $data;
-                        });
+                            return (array) $data;
+                        };
+                        $this->cache->get($cacheKey, $callback);
 
                         if (function_exists('fastcgi_finish_request')) {
                             $data['is_processing_async'] = true;
@@ -293,17 +367,19 @@ class PresetController extends AbstractController
                             1 => 33,
                             2 => 66,
                             3 => 100,
-                            default => $data['progress']
                         };
                         $data['message']  = null;
                         $data['report']   = $report;
                         unset($data['is_processing_async']);
 
                         $this->cache->delete($cacheKey);
-                        $this->cache->get($cacheKey, function (ItemInterface $item) use ($data) {
+
+                        /** @var \Closure(ItemInterface): array $callbackAfter */
+                        $callbackAfter = function (ItemInterface $item) use ($data): array {
                             $item->expiresAfter(3600);
-                            return $data;
-                        });
+                            return (array) $data;
+                        };
+                        $this->cache->get($cacheKey, $callbackAfter);
 
                         if (isset($data['is_processing_async'])) {
                             exit;

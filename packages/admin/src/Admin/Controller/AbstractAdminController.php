@@ -114,13 +114,19 @@ abstract class AbstractAdminController extends AbstractController
                 $config->setModel($model);
             }
 
-            // Safety Settings
-            $config->setSafetyEnabled($request->request->getBoolean('safety_enabled'));
-            $config->setSafetyDefaultThreshold($request->request->get('safety_default_threshold', 'BLOCK_MEDIUM_AND_ABOVE'));
-            $config->setSafetyHateSpeech($request->request->get('safety_hate_speech', 'BLOCK_MEDIUM_AND_ABOVE'));
-            $config->setSafetyDangerousContent($request->request->get('safety_dangerous_content', 'BLOCK_MEDIUM_AND_ABOVE'));
-            $config->setSafetyHarassment($request->request->get('safety_harassment', 'BLOCK_MEDIUM_AND_ABOVE'));
-            $config->setSafetySexuallyExplicit($request->request->get('safety_sexually_explicit', 'BLOCK_MEDIUM_AND_ABOVE'));
+            // Safety Settings (Stored in providerOptions JSON)
+            $providerOptions = $config->getProviderOptions() ?? [];
+            $providerOptions['safety_settings'] = [
+                'enabled' => $request->request->getBoolean('safety_enabled'),
+                'default_threshold' => $request->request->get('safety_default_threshold', 'BLOCK_MEDIUM_AND_ABOVE'),
+                'thresholds' => [
+                    'HATE_SPEECH' => $request->request->get('safety_hate_speech', 'BLOCK_MEDIUM_AND_ABOVE'),
+                    'DANGEROUS_CONTENT' => $request->request->get('safety_dangerous_content', 'BLOCK_MEDIUM_AND_ABOVE'),
+                    'HARASSMENT' => $request->request->get('safety_harassment', 'BLOCK_MEDIUM_AND_ABOVE'),
+                    'SEXUALLY_EXPLICIT' => $request->request->get('safety_sexually_explicit', 'BLOCK_MEDIUM_AND_ABOVE'),
+                ]
+            ];
+            $config->setProviderOptions($providerOptions);
 
             // Generation Config
             $config->setGenerationTemperature((float) $request->request->get('generation_temperature', 1.0));
@@ -134,9 +140,6 @@ abstract class AbstractAdminController extends AbstractController
             $stopSeqStr = $request->request->get('generation_stop_sequences', '');
             $stopSequences = array_filter(array_map('trim', explode(',', $stopSeqStr)));
             $config->setGenerationStopSequences($stopSequences);
-
-            // Note: system_prompt, retention_days, context_language are now managed in SettingsController
-            // They are stored in SynapseConfig (global settings) instead of SynapsePreset.
 
             $entityManager->flush();
 

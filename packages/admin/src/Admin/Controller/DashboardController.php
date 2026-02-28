@@ -34,10 +34,8 @@ class DashboardController extends AbstractController
         private SynapseTokenUsageRepository $tokenUsageRepo,
         private SynapseProviderRepository $providerRepo,
         private SynapsePresetRepository $presetRepo,
-        private SynapseConfigRepository $configRepo,
         private SynapseVectorMemoryRepository $vectorMemoryRepo,
         private PermissionCheckerInterface $permissionChecker,
-        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
         #[\Symfony\Component\DependencyInjection\Attribute\Autowire(param: 'synapse.persistence.conversation_class')]
         private ?string $conversationClass = null,
     ) {}

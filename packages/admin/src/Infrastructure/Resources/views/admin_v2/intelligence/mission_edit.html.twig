@@ -1,0 +1,299 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}
+	{{ is_new ? 'Nouvelle mission' : 'Éditer : ' ~ mission.name }}
+	| Intelligence | Synapse Admin V2
+{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Intelligence</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_v2_admin_missions') }}" class="sv2-topbar__breadcrumb">Missions</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">{{ is_new ? 'Nouvelle' : mission.name }}</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--primary">
+					<i data-lucide="target"></i>
+				</span>
+				{{ is_new ? 'Nouvelle mission d\'agent' : 'Éditer : ' ~ mission.name }}
+			</h1>
+			<p class="sv2-page-subtitle">
+				{{ is_new
+				? 'Créez une mission qui combine un prompt système, un modèle LLM et un ton optionnel.'
+				: 'Modifiez cette mission. Les changements s\'appliquent immédiatement après sauvegarde.' }}
+			</p>
+		</div>
+		<div class="sv2-page-header__actions">
+			<a href="{{ path('synapse_v2_admin_missions') }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+				<i data-lucide="arrow-left"></i>
+				Retour
+			</a>
+		</div>
+	</div>
+
+	<form method="post" action="{{ is_new ? path('synapse_v2_admin_missions_new') : path('synapse_v2_admin_missions_edit', {id: mission.id}) }}">
+
+		<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_mission_edit') }}">
+
+		{# ── Identification ────────────────────────────────────────────────────── #}
+		<div class="sv2-card sv2-mb-lg">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+					<i data-lucide="tag"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Identification</div>
+					<div class="sv2-card__subtitle">Nom, emoji et clé technique</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--compact">
+
+				<div class="sv2-grid sv2-grid--3 sv2-mb-md">
+
+					<div class="sv2-form-group">
+						<label class="sv2-label" for="mission-emoji">Emoji</label>
+						<input type="text" id="mission-emoji" name="emoji" value="{{ mission.emoji }}"
+							class="sv2-input" placeholder="🎯" maxlength="10">
+					</div>
+
+					<div class="sv2-form-group" style="grid-column: span 2;">
+						<label class="sv2-label" for="mission-name">
+							Nom affiché <span class="sv2-required">*</span>
+						</label>
+						<input type="text" id="mission-name" name="name" value="{{ mission.name }}"
+							class="sv2-input" required placeholder="Ex : Support Client">
+					</div>
+
+				</div>
+
+				<div class="sv2-form-group">
+					<label class="sv2-label" for="mission-key">
+						Clé technique (slug) <span class="sv2-required">*</span>
+						{% if mission.isBuiltin %}
+							<span class="sv2-badge sv2-badge--neutral sv2-ml-sm" data-sv2-tooltip="La clé d'une mission builtin ne peut pas être modifiée">
+								<i data-lucide="lock"></i>
+								Verrouillée
+							</span>
+						{% endif %}
+					</label>
+					<input type="text" id="mission-key" name="key" value="{{ mission.key }}"
+						class="sv2-input sv2-font-mono"
+						{{ mission.isBuiltin ? 'readonly' : '' }}
+						required placeholder="ex: support_client"
+						pattern="[a-z0-9_]+" title="Lettres minuscules, chiffres et tirets bas uniquement">
+					<p class="sv2-help-text">Utilisée dans ChatService::ask(['mission' => '{{ mission.key ?: 'ma_mission' }}'])</p>
+				</div>
+
+			</div>
+		</div>
+
+		{# ── Description ──────────────────────────────────────────────────────── #}
+		<div class="sv2-card sv2-mb-lg">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+					<i data-lucide="info"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Description</div>
+					<div class="sv2-card__subtitle">Courte explication de la mission</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--compact">
+				<div class="sv2-form-group">
+					<label class="sv2-label" for="mission-description">Description <span class="sv2-required">*</span></label>
+					<textarea id="mission-description" name="description" class="sv2-input sv2-textarea" rows="2" required
+						placeholder="Ex : Agent spécialisé dans le support technique et la résolution rapide de problèmes.">{{ mission.description }}</textarea>
+				</div>
+			</div>
+		</div>
+
+		{# ── Prompt système ───────────────────────────────────────────────────── #}
+		<div class="sv2-card sv2-mb-lg">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+					<i data-lucide="file-text"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Prompt système</div>
+					<div class="sv2-card__subtitle">Instructions de la mission injectées dans le system prompt</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--compact">
+
+				<div class="sv2-alert sv2-alert--info sv2-mb-md">
+					<i data-lucide="info"></i>
+					<span>Cet objectif principal de la mission définit le rôle et le comportement de l'agent. Si un ton est assigné, ses instructions seront ajoutées après ce prompt.</span>
+				</div>
+
+				<div class="sv2-form-group">
+					<label class="sv2-label" for="mission-system-prompt">Prompt système <span class="sv2-required">*</span></label>
+					<textarea id="mission-system-prompt" name="system_prompt" class="sv2-input sv2-textarea sv2-font-mono" rows="10" required
+						placeholder="Tu es un agent support client...">{{ mission.systemPrompt }}</textarea>
+				</div>
+
+			</div>
+		</div>
+
+		{# ── Configuration ─────────────────────────────────────────────────────── #}
+		<div class="sv2-card sv2-mb-lg">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+					<i data-lucide="settings"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Configuration</div>
+					<div class="sv2-card__subtitle">Modèle LLM et ton de réponse optionnels</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--compact">
+
+				<div class="sv2-grid sv2-grid--2 sv2-gap-lg">
+
+					<div class="sv2-form-group">
+						<label class="sv2-label" for="mission-preset">
+							Preset LLM
+						</label>
+						<select id="mission-preset" name="preset_id" class="sv2-input">
+							<option value="">— Utilise le preset actif global —</option>
+							{% for preset in presets %}
+								<option value="{{ preset.id }}" {% if mission.preset and mission.preset.id == preset.id %}selected{% endif %}>
+									{{ preset.name }} ({{ preset.model }})
+								</option>
+							{% endfor %}
+						</select>
+						<p class="sv2-help-text">Sélectionnez un preset LLM spécifique ou laissez vide pour utiliser le preset global actif.</p>
+					</div>
+
+					<div class="sv2-form-group">
+						<label class="sv2-label" for="mission-tone">
+							Ton de réponse
+						</label>
+						<select id="mission-tone" name="tone_id" class="sv2-input">
+							<option value="">— Aucun ton spécifique —</option>
+							{% for tone in tones %}
+								<option value="{{ tone.id }}" {% if mission.tone and mission.tone.id == tone.id %}selected{% endif %}>
+									{{ tone.emoji }} {{ tone.name }}
+								</option>
+							{% endfor %}
+						</select>
+						<p class="sv2-help-text">Sélectionnez un ton pour modifier le style de communication, ou laissez vide pour ne pas ajouter d'instructions de ton.</p>
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+
+		{# ── Paramètres ───────────────────────────────────────────────────────── #}
+		<div class="sv2-card sv2-mb-lg">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+					<i data-lucide="settings-2"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Paramètres</div>
+					<div class="sv2-card__subtitle">Visibilité et ordre d'affichage</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--compact">
+
+				<div class="sv2-grid sv2-grid--2">
+
+					<div class="sv2-form-group">
+						<label class="sv2-label" for="mission-sort-order">Ordre d'affichage</label>
+						<input type="number" id="mission-sort-order" name="sort_order" value="{{ mission.sortOrder }}"
+							class="sv2-input" min="0" max="999" placeholder="0">
+						<p class="sv2-help-text">Plus petit = affiché en premier. Les missions builtin apparaissent en tête.</p>
+					</div>
+
+					<div class="sv2-form-group">
+						<div class="sv2-label">Visibilité</div>
+						<label class="sv2-toggle">
+							<input type="checkbox" name="is_active" id="mission-is-active" {{ mission.isActive ? 'checked' : '' }}>
+							<span class="sv2-toggle__slider"></span>
+							<span class="sv2-toggle__label">Activer cette mission</span>
+						</label>
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+
+		{# ── Limite de dépense (mission) — visible uniquement en édition ───────── #}
+		{% if not is_new and (spending_limit is defined) %}
+			<div class="sv2-card sv2-mb-lg">
+				<div class="sv2-card__header">
+					<div class="sv2-card__header-icon sv2-kpi__icon--warning">
+						<i data-lucide="gauge"></i>
+					</div>
+					<div>
+						<div class="sv2-card__title">Limite de dépense</div>
+						<div class="sv2-card__subtitle">Plafond de coût pour les conversations utilisant cette mission (optionnel)</div>
+					</div>
+				</div>
+				<div class="sv2-card__body sv2-card__body--compact">
+					<form method="post" action="{{ path('synapse_v2_admin_missions_limit', {id: mission.id}) }}">
+						<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_mission_limit_' ~ mission.id) }}">
+						<input type="hidden" name="action" value="save">
+
+						<div class="sv2-grid sv2-grid--2 sv2-mb-md">
+							<div class="sv2-form-group">
+								<label class="sv2-label" for="limit-amount">Montant max (devise de référence)</label>
+								<input type="text" id="limit-amount" name="amount" class="sv2-input" placeholder="10.00" value="{{ spending_limit.amount ?? '' }}" required>
+							</div>
+							<div class="sv2-form-group">
+								<label class="sv2-label" for="limit-currency">Devise</label>
+								<input type="text" id="limit-currency" name="currency" class="sv2-input" value="{{ spending_limit.currency ?? 'EUR' }}" maxlength="3">
+							</div>
+						</div>
+						<div class="sv2-form-group sv2-mb-md">
+							<label class="sv2-label" for="limit-period">Période</label>
+							<select id="limit-period" name="period" class="sv2-input">
+								{% for key, label in periods|default([]) %}
+									<option value="{{ key }}" {{ (spending_limit.period.value ?? '') == key ? 'selected' : '' }}>{{ label }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="sv2-form-group sv2-mb-md">
+							<label class="sv2-label" for="limit-name">Nom (optionnel)</label>
+							<input type="text" id="limit-name" name="name" class="sv2-input" placeholder="Ex : Limite mission support" value="{{ spending_limit.name ?? '' }}">
+						</div>
+						<div class="sv2-flex sv2-gap-md">
+							<button type="submit" class="sv2-btn sv2-btn--primary">
+								<i data-lucide="save"></i>
+								{{ spending_limit ? 'Mettre à jour la limite' : 'Ajouter une limite' }}
+							</button>
+							{% if spending_limit %}
+								<button type="submit" name="action" value="delete" class="sv2-btn sv2-btn--ghost sv2-text-danger" formaction="{{ path('synapse_v2_admin_missions_limit', {id: mission.id}) }}" onclick="return confirm('Supprimer la limite de dépense pour cette mission ?');">
+									<i data-lucide="trash-2"></i>
+									Supprimer
+								</button>
+							{% endif %}
+						</div>
+					</form>
+				</div>
+			</div>
+		{% endif %}
+
+		{# ── Actions ─────────────────────────────────────────────────────────── #}
+		<div class="sv2-flex sv2-gap-md sv2-justify-end sv2-mb-xl">
+			<a href="{{ path('synapse_v2_admin_missions') }}" class="sv2-btn sv2-btn--ghost">
+				Annuler
+			</a>
+			<button type="submit" class="sv2-btn sv2-btn--primary">
+				<i data-lucide="save"></i>
+				{{ is_new ? 'Créer la mission' : 'Enregistrer' }}
+			</button>
+		</div>
+
+	</form>
+
+{% endblock %}

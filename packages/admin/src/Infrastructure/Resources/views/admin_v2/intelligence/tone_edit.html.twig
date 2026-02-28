@@ -1,0 +1,193 @@
+{% extends '@Synapse/admin_v2/layout/base.html.twig' %}
+
+{% block v2_page_title %}
+	{{ is_new ? 'Nouveau ton' : 'Éditer : ' ~ tone.name }}
+	| Intelligence | Synapse Admin V2
+{% endblock %}
+
+{% block v2_breadcrumb %}
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="sv2-topbar__breadcrumb">Intelligence</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_v2_admin_tones') }}" class="sv2-topbar__breadcrumb">Tons de réponse</a>
+	<span class="sv2-topbar__breadcrumb-sep">›</span>
+	<span class="sv2-topbar__current">{{ is_new ? 'Nouveau' : tone.name }}</span>
+{% endblock %}
+
+{% block v2_content %}
+
+	<div class="sv2-page-header">
+		<div class="sv2-page-header__info">
+			<h1 class="sv2-page-title">
+				<span class="sv2-page-title__icon sv2-kpi__icon--primary">
+					<i data-lucide="mic-2"></i>
+				</span>
+				{{ is_new ? 'Nouveau ton de réponse' : 'Éditer : ' ~ tone.name }}
+			</h1>
+			<p class="sv2-page-subtitle">
+				{{ is_new
+				? 'Créez un ton personnalisé qui définit le style de communication de l\'IA.'
+				: 'Modifiez ce ton de réponse. Les changements s\'appliquent immédiatement après sauvegarde.' }}
+			</p>
+		</div>
+		<div class="sv2-page-header__actions">
+			<a href="{{ path('synapse_v2_admin_tones') }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+				<i data-lucide="arrow-left"></i>
+				Retour
+			</a>
+		</div>
+	</div>
+
+	<form method="post" action="{{ is_new ? path('synapse_v2_admin_tones_new') : path('synapse_v2_admin_tones_edit', {id: tone.id}) }}">
+
+		<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_tone_edit') }}">
+
+		{# ── Identification ────────────────────────────────────────────────────── #}
+		<div class="sv2-card sv2-mb-lg">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+					<i data-lucide="tag"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Identification</div>
+					<div class="sv2-card__subtitle">Nom, emoji et clé technique</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--compact">
+
+				<div class="sv2-grid sv2-grid--3 sv2-mb-md">
+
+					<div class="sv2-form-group">
+						<label class="sv2-label" for="tone-emoji">Emoji</label>
+						<input type="text" id="tone-emoji" name="emoji" value="{{ tone.emoji }}"
+							class="sv2-input" placeholder="🧐" maxlength="10">
+					</div>
+
+					<div class="sv2-form-group" style="grid-column: span 2;">
+						<label class="sv2-label" for="tone-name">
+							Nom affiché <span class="sv2-required">*</span>
+						</label>
+						<input type="text" id="tone-name" name="name" value="{{ tone.name }}"
+							class="sv2-input" required placeholder="Ex : L'Expert Technique">
+					</div>
+
+				</div>
+
+				<div class="sv2-form-group">
+					<label class="sv2-label" for="tone-key">
+						Clé technique (slug) <span class="sv2-required">*</span>
+						{% if tone.isBuiltin %}
+							<span class="sv2-badge sv2-badge--neutral sv2-ml-sm" data-sv2-tooltip="La clé d'un ton builtin ne peut pas être modifiée">
+								<i data-lucide="lock"></i>
+								Verrouillée
+							</span>
+						{% endif %}
+					</label>
+					<input type="text" id="tone-key" name="key" value="{{ tone.key }}"
+						class="sv2-input sv2-font-mono"
+						{{ tone.isBuiltin ? 'readonly' : '' }}
+						required placeholder="ex: expert_technique"
+						pattern="[a-z0-9_]+" title="Lettres minuscules, chiffres et tirets bas uniquement">
+					<p class="sv2-help-text">Utilisée dans ChatService::ask(['tone' => '{{ tone.key ?: 'ma_cle' }}'])</p>
+				</div>
+
+			</div>
+		</div>
+
+		{# ── Description ──────────────────────────────────────────────────────── #}
+		<div class="sv2-card sv2-mb-lg">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+					<i data-lucide="info"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Description</div>
+					<div class="sv2-card__subtitle">Courte explication affichée dans le sélecteur</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--compact">
+				<div class="sv2-form-group">
+					<label class="sv2-label" for="tone-description">Description <span class="sv2-required">*</span></label>
+					<textarea id="tone-description" name="description" class="sv2-input sv2-textarea" rows="2" required
+						placeholder="Ex : Mode professionnel, direct et structuré, sans fioritures.">{{ tone.description }}</textarea>
+				</div>
+			</div>
+		</div>
+
+		{# ── Prompt système ───────────────────────────────────────────────────── #}
+		<div class="sv2-card sv2-mb-lg">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+					<i data-lucide="file-text"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Prompt système</div>
+					<div class="sv2-card__subtitle">Instructions injectées dans le system prompt du LLM</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--compact">
+
+				<div class="sv2-alert sv2-alert--info sv2-mb-md">
+					<i data-lucide="info"></i>
+					<span>Ces instructions sont ajoutées à la fin du prompt système principal et s'appliquent <strong>uniquement au ton et au style</strong> — jamais au raisonnement ou aux contraintes techniques.</span>
+				</div>
+
+				<div class="sv2-form-group">
+					<label class="sv2-label" for="tone-system-prompt">Instructions <span class="sv2-required">*</span></label>
+					<textarea id="tone-system-prompt" name="system_prompt" class="sv2-input sv2-textarea sv2-font-mono" rows="8" required
+						placeholder="TON: Professionnel, Direct. FORMAT: Structure hiérarchisée. INTERDIT: Humour, blabla. OBJECTIF: Réponse exploitable en minimum de temps.">{{ tone.systemPrompt }}</textarea>
+				</div>
+
+			</div>
+		</div>
+
+		{# ── Paramètres ───────────────────────────────────────────────────────── #}
+		<div class="sv2-card sv2-mb-lg">
+			<div class="sv2-card__header">
+				<div class="sv2-card__header-icon sv2-kpi__icon--primary">
+					<i data-lucide="settings-2"></i>
+				</div>
+				<div>
+					<div class="sv2-card__title">Paramètres</div>
+					<div class="sv2-card__subtitle">Visibilité et ordre d'affichage</div>
+				</div>
+			</div>
+			<div class="sv2-card__body sv2-card__body--compact">
+
+				<div class="sv2-grid sv2-grid--2">
+
+					<div class="sv2-form-group">
+						<label class="sv2-label" for="tone-sort-order">Ordre d'affichage</label>
+						<input type="number" id="tone-sort-order" name="sort_order" value="{{ tone.sortOrder }}"
+							class="sv2-input" min="0" max="999" placeholder="0">
+						<p class="sv2-help-text">Plus petit = affiché en premier. Les tons builtin apparaissent en tête.</p>
+					</div>
+
+					<div class="sv2-form-group">
+						<div class="sv2-label">Visibilité</div>
+						<label class="sv2-toggle">
+							<input type="checkbox" name="is_active" id="tone-is-active" {{ tone.isActive ? 'checked' : '' }}>
+							<span class="sv2-toggle__slider"></span>
+							<span class="sv2-toggle__label">Activer ce ton (visible dans le sélecteur)</span>
+						</label>
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+
+		{# ── Actions ─────────────────────────────────────────────────────────── #}
+		<div class="sv2-flex sv2-gap-md sv2-justify-end sv2-mb-xl">
+			<a href="{{ path('synapse_v2_admin_tones') }}" class="sv2-btn sv2-btn--ghost">
+				Annuler
+			</a>
+			<button type="submit" class="sv2-btn sv2-btn--primary">
+				<i data-lucide="save"></i>
+				{{ is_new ? 'Créer le ton' : 'Enregistrer' }}
+			</button>
+		</div>
+
+	</form>
+
+{% endblock %}

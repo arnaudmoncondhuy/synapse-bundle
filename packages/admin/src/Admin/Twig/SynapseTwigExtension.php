@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseAdmin\Admin\Twig;
 
-use ArnaudMoncondhuy\SynapseAdmin\Admin\Layout\SynapseLayoutResolver;
 use ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface;
-use ArnaudMoncondhuy\SynapseCore\Core\PersonaRegistry;
+use ArnaudMoncondhuy\SynapseCore\Core\MissionRegistry;
+use ArnaudMoncondhuy\SynapseCore\Core\ToneRegistry;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapsePresetRepository;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -20,9 +20,8 @@ use Twig\TwigFunction;
 class SynapseTwigExtension extends AbstractExtension
 {
     public function __construct(
-        private PersonaRegistry $personaRegistry,
-        private SynapseLayoutResolver $layoutResolver,
-        private SynapsePresetRepository $presetRepository,
+        private ToneRegistry $toneRegistry,
+        private MissionRegistry $missionRegistry,
         private ?EncryptionServiceInterface $encryptionService = null,
     ) {}
 
@@ -41,7 +40,7 @@ class SynapseTwigExtension extends AbstractExtension
     /**
      * Enregistre les fonctions Twig personnalisées du bundle.
      *
-     * @return array<TwigFunction> Fonctions : {synapse_chat_widget, synapse_get_personas, synapse_admin_layout, synapse_config, synapse_version}
+     * @return array<TwigFunction> Fonctions : {synapse_chat_widget, synapse_get_tones, synapse_get_missions, synapse_config, synapse_version}
      */
     public function getFunctions(): array
     {
@@ -49,11 +48,11 @@ class SynapseTwigExtension extends AbstractExtension
             // Affiche le widget de chat complet (HTML + JS auto-connecté)
             new TwigFunction('synapse_chat_widget', [SynapseRuntime::class, 'renderWidget'], ['is_safe' => ['html']]),
 
-            // Retourne la liste des personas disponibles (pour créer un sélecteur par exemple)
-            new TwigFunction('synapse_get_personas', [$this->personaRegistry, 'getAll']),
+            // Retourne la liste des tons de réponse actifs (pour créer un sélecteur par exemple)
+            new TwigFunction('synapse_get_tones', [$this->toneRegistry, 'getAll']),
 
-            // Résout dynamiquement le layout admin à utiliser (standalone ou module)
-            new TwigFunction('synapse_admin_layout', [$this->layoutResolver, 'getAdminLayout']),
+            // Retourne la liste des missions d'agents actives (pour créer un sélecteur par exemple)
+            new TwigFunction('synapse_get_missions', [$this->missionRegistry, 'getAll']),
 
             // Récupère le preset actif (Entité)
             new TwigFunction('synapse_config', [$this, 'findActive']),

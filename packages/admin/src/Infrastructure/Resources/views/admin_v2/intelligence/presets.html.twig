@@ -78,6 +78,12 @@
 									Actif
 								</span>
 							{% endif %}
+							{% if not item['isValid'] %}
+								<span class="sv2-badge sv2-badge--warning" data-sv2-tooltip="{{ item['invalidReason'] }}">
+									<i data-lucide="alert-triangle"></i>
+									Non valide
+								</span>
+							{% endif %}
 						</div>
 						{# Ligne 2 : Badges provider / modèle #}
 						<div class="sv2-flex sv2-gap-sm sv2-items-center">
@@ -107,16 +113,16 @@
 						<span class="sv2-text-xs sv2-text-tertiary">Capacités</span>
 						{# Icônes simples + tooltip : plus lisibles que des gros badges #}
 						{% if caps.thinking %}
-							<i data-lucide="brain" class="sv2-text-primary" data-sv2-tooltip="Thinking / Raisonnement avancé"></i>
+							<i data-lucide="brain" class="sv2-text-muted" data-sv2-tooltip="Réflexion (thinking / raisonnement avancé)"></i>
 						{% endif %}
 						{% if caps.functionCalling %}
-							<i data-lucide="wrench" class="sv2-text-muted" data-sv2-tooltip="Function Calling (Tool Use)"></i>
+							<i data-lucide="wrench" class="sv2-text-muted" data-sv2-tooltip="Outils (appels de fonctions)"></i>
 						{% endif %}
 						{% if caps.streaming %}
 							<i data-lucide="activity" class="sv2-text-muted" data-sv2-tooltip="Réponse en streaming"></i>
 						{% endif %}
 						{% if caps.safetySettings %}
-							<i data-lucide="shield" class="sv2-text-muted" data-sv2-tooltip="Safety Settings configurables"></i>
+							<i data-lucide="shield" class="sv2-text-muted" data-sv2-tooltip="Paramètres de sécurité"></i>
 						{% endif %}
 					</div>
 
@@ -205,7 +211,7 @@
 						</a>
 
 						<form action="{{ path('synapse_v2_admin_presets_test', {id: preset.id}) }}" method="POST" class="sv2-form-inline">
-							<button type="submit" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+							<button type="submit" class="sv2-btn sv2-btn--ghost sv2-btn--sm" {% if not item['isValid'] %}disabled title="Ce preset n'est pas valide"{% endif %}>
 								<i data-lucide="flask-conical"></i>
 								Tester
 							</button>
@@ -233,7 +239,7 @@
 					{% if not preset.isActive %}
 						<form action="{{ path('synapse_v2_admin_presets_activate', {id: preset.id}) }}" method="POST">
 							<input type="hidden" name="_token" value="{{ csrf_token('synapse_v2_preset_activate_' ~ preset.id) }}">
-							<button type="submit" class="sv2-btn sv2-btn--outline sv2-btn--sm">
+							<button type="submit" class="sv2-btn sv2-btn--outline sv2-btn--sm" {% if not item['isValid'] %}disabled title="{{ item['invalidReason'] }}"{% endif %}>
 								<i data-lucide="check-circle-2"></i>
 								Activer
 							</button>

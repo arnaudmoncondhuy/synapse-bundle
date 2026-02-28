@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseAdmin\Admin\Controller;
 
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseProvider;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
@@ -33,7 +34,6 @@ class ProvidersController extends AbstractController
         private SynapseProviderRepository $providerRepo,
         private SynapsePresetRepository $presetRepo,
         private EntityManagerInterface $em,
-        private HttpClientInterface $httpClient,
         private LlmClientRegistry $clientRegistry,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,

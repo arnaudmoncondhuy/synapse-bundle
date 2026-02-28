@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseAdmin\Admin\Controller;
 
 use ArnaudMoncondhuy\SynapseCore\Core\Agent\PresetValidator\PresetValidatorAgent;
-use ArnaudMoncondhuy\SynapseBundle\Message\TestPresetMessage;
+use ArnaudMoncondhuy\SynapseCore\Message\TestPresetMessage;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapsePreset;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -95,13 +95,17 @@ class PresetTestController extends AbstractController
 
                 try {
                     $data = $this->cache->get($cacheKey, fn() => null);
+                    if (!$data) {
+                        return new JsonResponse(['status' => 'not_found'], 404);
+                    }
+
                     $currentStep = 0;
                     if ($data['status'] === 'pending') {
                         $currentStep = 1;
                     } elseif ($data['status'] === 'processing') {
-                        if ($data['progress'] < 33) $currentStep = 1;
-                        elseif ($data['progress'] < 66) $currentStep = 2;
-                        elseif ($data['progress'] < 100) $currentStep = 3;
+                        if (($data['progress'] ?? 0) < 33) $currentStep = 1;
+                        elseif (($data['progress'] ?? 0) < 66) $currentStep = 2;
+                        elseif (($data['progress'] ?? 0) < 100) $currentStep = 3;
                     }
 
                     if ($currentStep > 0) {
@@ -109,10 +113,13 @@ class PresetTestController extends AbstractController
                         $data['message'] = $this->agent->getStepLabel($currentStep);
 
                         $this->cache->delete($cacheKey);
-                        $this->cache->get($cacheKey, function (ItemInterface $item) use ($data) {
+
+                        /** @var \Closure(ItemInterface): array $callback */
+                        $callback = function (ItemInterface $item) use ($data): array {
                             $item->expiresAfter(3600);
-                            return $data;
-                        });
+                            return (array) $data;
+                        };
+                        $this->cache->get($cacheKey, $callback);
 
                         if (function_exists('fastcgi_finish_request')) {
                             $data['is_processing_async'] = true;
@@ -134,17 +141,19 @@ class PresetTestController extends AbstractController
                             1 => 33,
                             2 => 66,
                             3 => 100,
-                            default => $data['progress']
                         };
                         $data['message'] = null;
                         $data['report'] = $report;
                         unset($data['is_processing_async']);
 
                         $this->cache->delete($cacheKey);
-                        $this->cache->get($cacheKey, function (ItemInterface $item) use ($data) {
+
+                        /** @var \Closure(ItemInterface): array $callbackAfter */
+                        $callbackAfter = function (ItemInterface $item) use ($data): array {
                             $item->expiresAfter(3600);
-                            return $data;
-                        });
+                            return (array) $data;
+                        };
+                        $this->cache->get($cacheKey, $callbackAfter);
 
                         if (isset($data['is_processing_async'])) {
                             exit;

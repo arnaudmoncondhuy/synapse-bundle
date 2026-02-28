@@ -27,11 +27,11 @@
 			</p>
 		</div>
 		<div class="sv2-page-header__actions" id="filters-toolbar">
-			<button type="button" id="filter-thinking" onclick="toggleFilter('thinking', this)" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+			<button type="button" id="filter-thinking" onclick="toggleFilter('thinking', this)" class="sv2-btn sv2-btn--ghost sv2-btn--sm" data-sv2-tooltip="Filtrer les modèles avec réflexion (thinking)">
 				<i data-lucide="brain"></i>
 				Thinking
 			</button>
-			<button type="button" id="filter-tools" onclick="toggleFilter('tools', this)" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+			<button type="button" id="filter-tools" onclick="toggleFilter('tools', this)" class="sv2-btn sv2-btn--ghost sv2-btn--sm" data-sv2-tooltip="Filtrer les modèles avec appels d'outils">
 				<i data-lucide="wrench"></i>
 				Tools
 			</button>
@@ -89,16 +89,16 @@
 							<td>
 								<div class="sv2-flex sv2-gap-sm sv2-items-center">
 									{% if model.capabilities.thinking %}
-										<i data-lucide="brain" class="sv2-text-primary" data-sv2-tooltip="Thinking"></i>
+										<i data-lucide="brain" class="sv2-text-muted" data-sv2-tooltip="Réflexion (thinking / raisonnement avancé)"></i>
 									{% endif %}
 									{% if model.capabilities.functionCalling %}
-										<i data-lucide="wrench" class="sv2-text-muted" data-sv2-tooltip="Tool Use"></i>
+										<i data-lucide="wrench" class="sv2-text-muted" data-sv2-tooltip="Outils (appels de fonctions)"></i>
 									{% endif %}
 									{% if model.capabilities.streaming %}
-										<i data-lucide="activity" class="sv2-text-muted" data-sv2-tooltip="Streaming"></i>
+										<i data-lucide="activity" class="sv2-text-muted" data-sv2-tooltip="Réponse en streaming"></i>
 									{% endif %}
 									{% if model.capabilities.safetySettings %}
-										<i data-lucide="shield" class="sv2-text-muted" data-sv2-tooltip="Safety"></i>
+										<i data-lucide="shield" class="sv2-text-muted" data-sv2-tooltip="Paramètres de sécurité"></i>
 									{% endif %}
 								</div>
 							</td>

@@ -28,7 +28,6 @@ class AuditController extends AbstractController
     public function __construct(
         private SynapseDebugLogRepository $debugLogRepo,
         private PermissionCheckerInterface $permissionChecker,
-        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {}
 
     #[Route('', name: '', methods: ['GET'])]
