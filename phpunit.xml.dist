@@ -19,14 +19,20 @@
     </php>
 
     <testsuites>
-        <testsuite name="Project Test Suite">
-            <directory>tests</directory>
+        <testsuite name="unit">
+            <directory>packages/core/tests/Unit</directory>
+            <directory>packages/admin/tests/Unit</directory>
+        </testsuite>
+        <testsuite name="integration">
+            <directory>packages/core/tests/Integration</directory>
         </testsuite>
     </testsuites>
 
     <source>
         <include>
-            <directory suffix=".php">src</directory>
+            <directory suffix=".php">packages/core/src</directory>
+            <directory suffix=".php">packages/admin/src</directory>
+            <directory suffix=".php">packages/chat/src</directory>
         </include>
     </source>
 </phpunit>
