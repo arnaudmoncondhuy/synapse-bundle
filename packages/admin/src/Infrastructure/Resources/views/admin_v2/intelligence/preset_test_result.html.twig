@@ -7,6 +7,9 @@
 				<i data-lucide="{{ report.all_critical_ok ? 'check-circle-2' : 'alert-triangle' }}"></i>
 			</span>
 			Résultat du test
+			{% if preset is defined %}
+				<span class="sv2-text-muted sv2-text-sm sv2-font-normal">— {{ preset.name }}</span>
+			{% endif %}
 		</h2>
 	</div>
 	<div class="sv2-page-header__actions">
@@ -17,36 +20,159 @@
 	</div>
 </div>
 
-{# Vérifications critiques #}
-<div class="sv2-card sv2-mb-lg">
-	<div class="sv2-card__header">
-		<div class="sv2-card__header-icon sv2-kpi__icon--{{ report.all_critical_ok ? 'success' : 'warning' }}">
-			<i data-lucide="shield-check"></i>
-		</div>
-		<div>
-			<div class="sv2-card__title">Vérifications critiques</div>
-		</div>
-	</div>
-	<div class="sv2-card__body sv2-card__body--compact sv2-flex sv2-flex-col sv2-gap-sm">
-		<div class="sv2-flex sv2-items-center sv2-gap-sm sv2-p-sm sv2-bg-subtle sv2-rounded">
-			<i data-lucide="{{ report.critical_checks.response_not_empty ? 'check-circle-2' : 'x-circle' }}" class="sv2-text-{{ report.critical_checks.response_not_empty ? 'success' : 'danger' }}"></i>
-			<span class="sv2-text-sm">La réponse de l'IA n'est pas vide</span>
-		</div>
-		<div class="sv2-flex sv2-items-center sv2-gap-sm sv2-p-sm sv2-bg-subtle sv2-rounded">
-			<i data-lucide="{{ report.critical_checks.debug_saved_in_db ? 'check-circle-2' : 'x-circle' }}" class="sv2-text-{{ report.critical_checks.debug_saved_in_db ? 'success' : 'danger' }}"></i>
-			<span class="sv2-text-sm">Debug enregistré (ID:
-				{{ report.debug_id ?? '–' }})</span>
-		</div>
-		{% if report.critical_checks.streaming_enabled is defined %}
-			<div class="sv2-flex sv2-items-center sv2-gap-sm sv2-p-sm sv2-bg-subtle sv2-rounded">
-				<i data-lucide="{{ report.critical_checks.streaming_works ? 'check-circle-2' : 'alert-triangle' }}" class="sv2-text-{{ report.critical_checks.streaming_works ? 'success' : 'warning' }}"></i>
-				<span class="sv2-text-sm">Mode streaming opérationnel</span>
+{# ── Erreur LLM ────────────────────────────────────────────────────────────── #}
+{% if report.sync_error is defined and report.sync_error %}
+	<div class="sv2-card sv2-mb-lg" style="border-left: 4px solid var(--sv2-color-danger, #ef4444);">
+		<div class="sv2-card__header">
+			<div class="sv2-card__header-icon sv2-kpi__icon--danger">
+				<i data-lucide="alert-circle"></i>
 			</div>
-		{% endif %}
+			<div>
+				<div class="sv2-card__title">Erreur lors de l'appel LLM</div>
+				<div class="sv2-card__subtitle">L'appel au provider a échoué — vérifiez les credentials et l'URL de l'API</div>
+			</div>
+		</div>
+		<div class="sv2-card__body sv2-card__body--compact">
+			<pre class="sv2-code-block sv2-font-mono sv2-text-sm" style="color: var(--sv2-color-danger, #ef4444); white-space: pre-wrap; word-break: break-word;">{{ report.sync_error }}</pre>
+		</div>
 	</div>
-</div>
+{% endif %}
 
-{# Réponse IA #}
+{# ── Vérification configuration ────────────────────────────────────────────── #}
+{% if report.config_checks is defined %}
+	<div class="sv2-card sv2-mb-lg">
+		<div class="sv2-card__header">
+			<div class="sv2-card__header-icon sv2-kpi__icon--{{ report.config_ok ? 'success' : 'danger' }}">
+				<i data-lucide="settings-2"></i>
+			</div>
+			<div>
+				<div class="sv2-card__title">Vérification de la configuration</div>
+				<div class="sv2-card__subtitle">
+					{% if report.preset_info is defined %}
+						Provider :
+						<strong>{{ report.preset_info.provider }}</strong>
+						— Modèle :
+						<strong>{{ report.preset_info.model }}</strong>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+		<div class="sv2-card__body sv2-card__body--compact sv2-flex sv2-flex-col sv2-gap-sm">
+			{% if report.config_checks.provider_exists is defined %}
+				<div class="sv2-flex sv2-items-center sv2-gap-sm sv2-p-sm sv2-bg-subtle sv2-rounded">
+					<i data-lucide="{{ report.config_checks.provider_exists ? 'check-circle-2' : 'x-circle' }}" class="sv2-text-{{ report.config_checks.provider_exists ? 'success' : 'danger' }}"></i>
+					<span class="sv2-text-sm">Provider trouvé en base de données</span>
+				</div>
+			{% endif %}
+			{% if report.config_checks.provider_enabled is defined %}
+				<div class="sv2-flex sv2-items-center sv2-gap-sm sv2-p-sm sv2-bg-subtle sv2-rounded">
+					<i data-lucide="{{ report.config_checks.provider_enabled ? 'check-circle-2' : 'x-circle' }}" class="sv2-text-{{ report.config_checks.provider_enabled ? 'success' : 'danger' }}"></i>
+					<span class="sv2-text-sm">Provider activé</span>
+				</div>
+			{% endif %}
+			{% if report.config_checks.provider_configured is defined %}
+				<div class="sv2-flex sv2-items-center sv2-gap-sm sv2-p-sm sv2-bg-subtle sv2-rounded">
+					<i data-lucide="{{ report.config_checks.provider_configured ? 'check-circle-2' : 'x-circle' }}" class="sv2-text-{{ report.config_checks.provider_configured ? 'success' : 'danger' }}"></i>
+					<span class="sv2-text-sm">Credentials configurés (clé API)</span>
+				</div>
+			{% endif %}
+			{% if report.config_checks.model_known is defined %}
+				<div class="sv2-flex sv2-items-center sv2-gap-sm sv2-p-sm sv2-bg-subtle sv2-rounded">
+					<i data-lucide="{{ report.config_checks.model_known ? 'check-circle-2' : 'alert-triangle' }}" class="sv2-text-{{ report.config_checks.model_known ? 'success' : 'warning' }}"></i>
+					<span class="sv2-text-sm">Modèle connu dans la registry</span>
+				</div>
+			{% endif %}
+			{% if report.config_errors is defined and report.config_errors|length > 0 %}
+				<div class="sv2-mt-sm">
+					{% for error in report.config_errors %}
+						<div class="sv2-flex sv2-items-center sv2-gap-sm sv2-p-sm sv2-rounded" style="background: rgba(239,68,68,0.08); color: var(--sv2-color-danger, #ef4444);">
+							<i data-lucide="alert-circle"></i>
+							<span class="sv2-text-sm">{{ error }}</span>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+		</div>
+	</div>
+{% endif %}
+
+{# ── Vérifications critiques (appel LLM) ───────────────────────────────────── #}
+{% if report.critical_checks is defined %}
+	<div class="sv2-card sv2-mb-lg">
+		<div class="sv2-card__header">
+			<div class="sv2-card__header-icon sv2-kpi__icon--{{ report.all_critical_ok ? 'success' : 'warning' }}">
+				<i data-lucide="shield-check"></i>
+			</div>
+			<div>
+				<div class="sv2-card__title">Vérifications critiques — appel LLM</div>
+			</div>
+		</div>
+		<div class="sv2-card__body sv2-card__body--compact sv2-flex sv2-flex-col sv2-gap-sm">
+			<div class="sv2-flex sv2-items-center sv2-gap-sm sv2-p-sm sv2-bg-subtle sv2-rounded">
+				<i data-lucide="{{ report.critical_checks.response_not_empty ? 'check-circle-2' : 'x-circle' }}" class="sv2-text-{{ report.critical_checks.response_not_empty ? 'success' : 'danger' }}"></i>
+				<span class="sv2-text-sm">La réponse de l'IA n'est pas vide</span>
+			</div>
+			<div class="sv2-flex sv2-items-center sv2-gap-sm sv2-p-sm sv2-bg-subtle sv2-rounded">
+				<i data-lucide="{{ report.critical_checks.debug_saved_in_db ? 'check-circle-2' : 'x-circle' }}" class="sv2-text-{{ report.critical_checks.debug_saved_in_db ? 'success' : 'danger' }}"></i>
+				<span class="sv2-text-sm">Debug enregistré
+					{% if report.debug_id is defined and report.debug_id %}(ID :
+						{{ report.debug_id }}){% else %}(ID : –){% endif %}
+				</span>
+			</div>
+		</div>
+	</div>
+{% endif %}
+
+{# ── Comparaison des paramètres ─────────────────────────────────────────────── #}
+{% if report.params_comparison is defined and report.params_comparison|length > 0 %}
+	<div class="sv2-card sv2-mb-lg">
+		<div class="sv2-card__header">
+			<div class="sv2-card__header-icon sv2-kpi__icon--info">
+				<i data-lucide="sliders-horizontal"></i>
+			</div>
+			<div>
+				<div class="sv2-card__title">Comparaison des paramètres</div>
+				<div class="sv2-card__subtitle">Preset configuré vs paramètres réellement envoyés à l'API</div>
+			</div>
+		</div>
+		<div class="sv2-table-container">
+			<table class="sv2-table">
+				<thead>
+					<tr>
+						<th>Paramètre</th>
+						<th>Configuré dans le preset</th>
+						<th>Envoyé à l'API</th>
+						<th>Conforme</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for param, data in report.params_comparison %}
+						<tr>
+							<td class="sv2-font-mono sv2-text-sm">{{ param }}</td>
+							<td class="sv2-text-sm">{{ data.expected }}</td>
+							<td class="sv2-text-sm">{{ data.actual ?? '—' }}</td>
+							<td>
+								{% if data.ok %}
+									<span class="sv2-badge sv2-badge--success">
+										<i data-lucide="check"></i>
+										OK
+									</span>
+								{% else %}
+									<span class="sv2-badge sv2-badge--warning">
+										<i data-lucide="alert-triangle"></i>
+										Écart
+									</span>
+								{% endif %}
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+{% endif %}
+
+{# ── Réponse IA ─────────────────────────────────────────────────────────────── #}
 <div class="sv2-card sv2-mb-lg">
 	<div class="sv2-card__header">
 		<div class="sv2-card__header-icon sv2-kpi__icon--primary">
@@ -58,14 +184,10 @@
 	</div>
 	<div class="sv2-card__body sv2-card__body--compact">
 		<div class="sv2-code-block sv2-font-mono sv2-text-sm">{{ report.ai_response ?? 'Pas de réponse' }}</div>
-		{% if report.ai_response_streaming %}
-			<div class="sv2-card__subtitle sv2-mt-md sv2-mb-sm">Mode streaming</div>
-			<div class="sv2-code-block sv2-font-mono sv2-text-sm">{{ report.ai_response_streaming }}</div>
-		{% endif %}
 	</div>
 </div>
 
-{# Rapport d'analyse #}
+{# ── Rapport d'analyse ─────────────────────────────────────────────────────── #}
 <div class="sv2-card sv2-mb-lg">
 	<div class="sv2-card__header">
 		<div class="sv2-card__header-icon sv2-kpi__icon--neutral">
@@ -79,12 +201,12 @@
 		<div id="analysis-rendered" class="sv2-prose sv2-mb-md"></div>
 		<details>
 			<summary class="sv2-text-sm sv2-text-muted" style="cursor:pointer">Texte brut</summary>
-			<pre class="sv2-code-block sv2-font-mono sv2-text-xs sv2-mt-sm" style="overflow:auto;max-height:300px">{{ report.analysis }}</pre>
+			<pre id="analysis-raw" class="sv2-code-block sv2-font-mono sv2-text-xs sv2-mt-sm" style="overflow:auto;max-height:300px">{{ report.analysis }}</pre>
 		</details>
 	</div>
 </div>
 
-{# Consommation #}
+{# ── Consommation tokens ────────────────────────────────────────────────────── #}
 <div class="sv2-card sv2-mb-lg">
 	<div class="sv2-card__header">
 		<div class="sv2-card__header-icon sv2-kpi__icon--info">
@@ -98,47 +220,33 @@
 		<table class="sv2-table">
 			<thead>
 				<tr>
-					<th>Mode</th>
 					<th>Prompt</th>
 					<th>Completion</th>
+					<th>Thinking</th>
 					<th>Total</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
-					<td>Sync</td>
 					<td>{{ report.usage_test.prompt_tokens ?? 0 }}</td>
 					<td>{{ report.usage_test.completion_tokens ?? 0 }}</td>
+					<td>{{ report.usage_test.thinking_tokens ?? 0 }}</td>
 					<td class="sv2-font-bold">{{ report.usage_test.total_tokens ?? 0 }}</td>
 				</tr>
-				{% if report.usage_test_streaming %}
-					<tr>
-						<td>Streaming</td>
-						<td>{{ report.usage_test_streaming.prompt_tokens ?? 0 }}</td>
-						<td>{{ report.usage_test_streaming.completion_tokens ?? 0 }}</td>
-						<td class="sv2-font-bold">{{ report.usage_test_streaming.total_tokens ?? 0 }}</td>
-					</tr>
-				{% endif %}
 			</tbody>
 		</table>
 	</div>
 </div>
 
-{# Actions #}
+{# ── Actions ───────────────────────────────────────────────────────────────── #}
 <div class="sv2-flex sv2-gap-md sv2-justify-center sv2-mt-lg">
-	{% if report.debug_id %}
+	{% if report.debug_id is defined and report.debug_id %}
 		<a href="{{ path('synapse_debug_show', {id: report.debug_id}) }}" target="_blank" class="sv2-btn sv2-btn--outline sv2-btn--sm">
 			<i data-lucide="bug"></i>
-			Debug Sync
+			Voir le debug
 		</a>
 	{% endif %}
-	{% if report.debug_id_streaming %}
-		<a href="{{ path('synapse_debug_show', {id: report.debug_id_streaming}) }}" target="_blank" class="sv2-btn sv2-btn--outline sv2-btn--sm">
-			<i data-lucide="bug"></i>
-			Debug Stream
-		</a>
-	{% endif %}
-	<a href="{{ path('synapse_v2_admin_presets') }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+	<a href="{{ path('synapse_v2_admin_configuration_llm', {tab: 'presets'}) }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
 		<i data-lucide="arrow-left"></i>
 		Retour aux presets
 	</a>
@@ -146,14 +254,18 @@
 
 <script>
 	(function () {
-const raw = document.getElementById('analysis-rendered');
-const rawEl = document.getElementById('analysis-raw');
-if (raw && rawEl) {
-const text = rawEl ? rawEl.textContent : '';
-raw.innerHTML = text.replace(/\n/g, '<br>');
-}
-if (typeof lucide !== 'undefined') 
-lucide.createIcons();
-
-})();
+		const targetEl = document.getElementById('analysis-rendered');
+		const rawEl = document.getElementById('analysis-raw');
+		if (targetEl && rawEl) {
+			const text = rawEl.textContent || '';
+			if (typeof marked !== 'undefined') {
+				targetEl.innerHTML = marked.parse(text);
+			} else {
+				targetEl.innerHTML = text.replace(/\n/g, '<br>');
+			}
+		}
+		if (typeof lucide !== 'undefined') {
+			lucide.createIcons();
+		}
+	})();
 </script>

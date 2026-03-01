@@ -115,7 +115,7 @@ class MissionController extends AbstractController
             'tones'          => $tones,
             'spending_limit' => $spendingLimit,
             'periods'        => [
-                SpendingLimitPeriod::SLIDING_DAY->value => 'Glissante 24h',
+                SpendingLimitPeriod::SLIDING_DAY->value => 'Glissante (4h)',
                 SpendingLimitPeriod::SLIDING_MONTH->value => 'Glissante 30j',
                 SpendingLimitPeriod::CALENDAR_DAY->value => 'Jour calendaire',
                 SpendingLimitPeriod::CALENDAR_MONTH->value => 'Mois calendaire',

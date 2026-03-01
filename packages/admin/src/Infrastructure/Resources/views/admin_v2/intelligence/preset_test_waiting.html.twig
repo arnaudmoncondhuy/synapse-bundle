@@ -9,7 +9,7 @@
 	<span class="sv2-topbar__breadcrumb-sep">›</span>
 	<a href="#" class="sv2-topbar__breadcrumb">Intelligence</a>
 	<span class="sv2-topbar__breadcrumb-sep">›</span>
-	<a href="{{ path('synapse_v2_admin_presets') }}" class="sv2-topbar__breadcrumb">Presets</a>
+	<a href="{{ path('synapse_v2_admin_configuration_llm', {tab: 'presets'}) }}" class="sv2-topbar__breadcrumb">Presets</a>
 	<span class="sv2-topbar__breadcrumb-sep">›</span>
 	<span class="sv2-topbar__current">Test :
 		{{ preset.name }}</span>
@@ -27,136 +27,112 @@
 				{{ preset.name }}
 			</h1>
 			<p class="sv2-page-subtitle">
-				Analyse en cours — le preset est testé en 3 étapes via l'agent de validation.
+				Appel LLM réel en cours — vérification des paramètres envoyés et analyse automatique.
 			</p>
 		</div>
 		<div class="sv2-page-header__actions">
-			<a href="{{ path('synapse_v2_admin_presets') }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
+			<a href="{{ path('synapse_v2_admin_configuration_llm', {tab: 'presets'}) }}" class="sv2-btn sv2-btn--ghost sv2-btn--sm">
 				<i data-lucide="arrow-left"></i>
 				Retour aux presets
 			</a>
 		</div>
 	</div>
 
-	{# ── Progression ──────────────────────────────────────────────────────────── #}
+	{# ── Attente ───────────────────────────────────────────────────────────────── #}
 	<div class="sv2-card" id="waiting-card">
 		<div class="sv2-card__header">
 			<div class="sv2-card__header-icon sv2-kpi__icon--warning">
-				<i data-lucide="loader-2" id="spinner-icon"></i>
+				<i data-lucide="loader-2" style="animation: sv2-spin 1.5s linear infinite; display: inline-block;"></i>
 			</div>
 			<div>
-				<div class="sv2-card__title">Analyse en cours…</div>
-				<div class="sv2-card__subtitle" id="status-message">Initialisation du test</div>
+				<div class="sv2-card__title">Test en cours…</div>
+				<div class="sv2-card__subtitle" id="status-message">
+					Vérification config → appel LLM → analyse des résultats
+				</div>
 			</div>
 		</div>
 		<div class="sv2-card__body sv2-card__body--compact">
-			<div class="sv2-progress sv2-mb-lg">
-				<div class="sv2-progress__bar" id="progress-bar" style="width: 0%"></div>
+			<div class="sv2-progress sv2-mb-lg" style="position: relative; overflow: hidden;">
+				<div id="progress-bar" style="
+					position: absolute;
+					height: 100%;
+					width: 35%;
+					background: var(--sv2-color-warning, #f59e0b);
+					animation: sv2-indeterminate 2.1s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+				"></div>
 			</div>
 
-			<div class="sv2-grid sv2-grid--3">
-				<div class="sv2-card sv2-card--hover" id="step-1">
-					<div class="sv2-kpi">
-						<div class="sv2-kpi__icon sv2-kpi__icon--neutral" id="step-1-icon">
-							<i data-lucide="circle"></i>
-						</div>
-						<div class="sv2-kpi__body">
-							<div class="sv2-kpi__label">Étape 1</div>
-							<div class="sv2-kpi__value sv2-text-sm">Connexion provider</div>
-						</div>
-					</div>
-				</div>
-				<div class="sv2-card sv2-card--hover" id="step-2">
-					<div class="sv2-kpi">
-						<div class="sv2-kpi__icon sv2-kpi__icon--neutral" id="step-2-icon">
-							<i data-lucide="circle"></i>
-						</div>
-						<div class="sv2-kpi__body">
-							<div class="sv2-kpi__label">Étape 2</div>
-							<div class="sv2-kpi__value sv2-text-sm">Génération LLM</div>
-						</div>
-					</div>
-				</div>
-				<div class="sv2-card sv2-card--hover" id="step-3">
-					<div class="sv2-kpi">
-						<div class="sv2-kpi__icon sv2-kpi__icon--neutral" id="step-3-icon">
-							<i data-lucide="circle"></i>
-						</div>
-						<div class="sv2-kpi__body">
-							<div class="sv2-kpi__label">Étape 3</div>
-							<div class="sv2-kpi__value sv2-text-sm">Validation réponse</div>
-						</div>
-					</div>
-				</div>
+			<div class="sv2-alert sv2-alert--info">
+				<i data-lucide="info"></i>
+				<span>
+					Le test effectue un appel LLM réel avec debug activé, puis une analyse automatique.
+					Cela peut prendre jusqu'à
+					<strong>2 minutes</strong>
+					selon le provider. Veuillez ne pas quitter cette page.
+				</span>
 			</div>
 		</div>
 	</div>
 
 	<div id="result-container"></div>
 
+	<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+	<style>
+		@keyframes sv2-indeterminate {
+			0% { left: -35%; right: 100%; }
+			60% { left: 100%; right: -90%; }
+			100% { left: 100%; right: -90%; }
+		}
+		@keyframes sv2-spin {
+			from { transform: rotate(0deg); }
+			to { transform: rotate(360deg); }
+		}
+	</style>
+
 	<script>
 		const statusUrl = '{{ path('synapse_v2_admin_presets_test_status', {id: preset.id}) }}';
-let pollCount = 0;
+		let pollCount = 0;
+		const MAX_POLLS = 60; // 60 × 3s = 3 min max
 
-function updateStep(stepNum, status) {
-const iconEl = document.getElementById (`step-${stepNum}-icon`);
-if (! iconEl) 
-return;
+		function poll() {
+			fetch(statusUrl)
+				.then(r => {
+					// Le serveur renvoie du HTML quand le rapport est prêt
+					if (r.headers.get('content-type')?.includes('text/html')) {
+						return r.text().then(html => {
+							document.getElementById('waiting-card').style.display = 'none';
+							document.getElementById('result-container').innerHTML = html;
+							if (typeof lucide !== 'undefined') lucide.createIcons();
+						});
+					}
 
-iconEl.className = `sv2-kpi__icon sv2-kpi__icon--${
-status === 'done' ? 'success' : (status === 'current' ? 'warning' : 'neutral')
-}`;
-iconEl.innerHTML = `<i data-lucide="${
-status === 'done' ? 'check-circle-2' : (status === 'current' ? 'loader-2' : 'circle')
-}"></i>`;
-if (typeof lucide !== 'undefined') 
-lucide.createIcons();
+					return r.json().then(data => {
+						if (data.status === 'not_found') {
+							document.getElementById('status-message').textContent =
+								'Session expirée. Veuillez relancer le test.';
+							return;
+						}
 
-}
+						pollCount++;
+						if (pollCount < MAX_POLLS) {
+							setTimeout(poll, 3000);
+						} else {
+							document.getElementById('status-message').textContent =
+								'Délai dépassé (3 min). Vérifiez les logs serveur ou relancez le test.';
+						}
+					});
+				})
+				.catch(() => {
+					// Erreur réseau : réessayer dans 5s
+					if (pollCount < MAX_POLLS) {
+						pollCount++;
+						setTimeout(poll, 5000);
+					}
+				});
+		}
 
-function poll() {
-fetch(statusUrl).then(r => {
-if (r.headers.get('content-type') ?. includes('text/html')) {
-return r.text().then(html => {
-document.getElementById('waiting-card').style.display = 'none';
-document.getElementById('result-container').innerHTML = html;
-if (typeof lucide !== 'undefined') 
-lucide.createIcons();
-
-});
-}
-return r.json().then(data => {
-const progress = data.progress || 0;
-document.getElementById('progress-bar').style.width = progress + '%';
-if (data.message) 
-document.getElementById('status-message').textContent = data.message;
-
-
-if (progress >= 33) 
-updateStep(1, 'done');
- else if (progress > 0) 
-updateStep(1, 'current');
-
-if (progress >= 66) 
-updateStep(2, 'done');
- else if (progress >= 33) 
-updateStep(2, 'current');
-
-if (progress >= 100) 
-updateStep(3, 'done');
- else if (progress >= 66) 
-updateStep(3, 'current');
-
-
-if (data.status !== 'completed' && data.status !== 'error' && pollCount < 60) {
-pollCount++;
-setTimeout(poll, 1500);
-}
-});
-}).catch(() => setTimeout(poll, 2000));
-}
-
-document.addEventListener('DOMContentLoaded', () => setTimeout(poll, 800));
+		document.addEventListener('DOMContentLoaded', () => setTimeout(poll, 1000));
 	</script>
 
 {% endblock %}
