@@ -1,0 +1,184 @@
+/**
+ * Synapse Administration Synapse - Design Tokens
+ * Namespace: .synapse-admin-*
+ *
+ * ─── Glassmorphism Design System ─────────────────────────────────────────────
+ *
+ * Ces variables peuvent être surchargées par le projet hôte :
+ *   :root { --synapse-admin-hue: 220; --synapse-admin-accent: #your-color; }
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+:root {
+   /* =========================================================================
+       BRAND — Teinte principale (overridable)
+       ========================================================================= */
+   --synapse-admin-hue: 258;
+   /* Violet Synapse */
+   --synapse-admin-sat: 85%;
+
+   /* Couleur primaire dynamique */
+   --synapse-admin-primary: hsl(var(--synapse-admin-hue), var(--synapse-admin-sat), 58%);
+   --synapse-admin-primary-dark: hsl(var(--synapse-admin-hue), var(--synapse-admin-sat), 45%);
+   --synapse-admin-primary-light: hsl(var(--synapse-admin-hue), var(--synapse-admin-sat), 96%);
+   --synapse-admin-primary-glow: hsl(var(--synapse-admin-hue), var(--synapse-admin-sat), 60%, 0.35);
+   --synapse-admin-primary-fade: hsl(var(--synapse-admin-hue), var(--synapse-admin-sat), 85%, 0.25);
+   --synapse-admin-primary-border: hsl(var(--synapse-admin-hue), var(--synapse-admin-sat), 78%, 0.4);
+
+   /* =========================================================================
+       COULEURS SÉMANTIQUES
+       ========================================================================= */
+   --synapse-admin-success: hsl(152, 72%, 40%);
+   --synapse-admin-success-bg: hsl(152, 72%, 95%);
+   --synapse-admin-success-border: hsl(152, 72%, 80%);
+
+   --synapse-admin-warning: hsl(38, 92%, 50%);
+   --synapse-admin-warning-bg: hsl(38, 92%, 95%);
+   --synapse-admin-warning-border: hsl(38, 92%, 75%);
+
+   --synapse-admin-danger: hsl(350, 82%, 56%);
+   --synapse-admin-danger-bg: hsl(350, 82%, 96%);
+   --synapse-admin-danger-border: hsl(350, 82%, 80%);
+
+   --synapse-admin-info: hsl(205, 90%, 52%);
+   --synapse-admin-info-bg: hsl(205, 90%, 95%);
+   --synapse-admin-info-border: hsl(205, 90%, 78%);
+
+   /* =========================================================================
+       PALETTE FOND — Dark glass sidebar + Light main
+       ========================================================================= */
+
+   /* Sidebar (dark glass) */
+   --synapse-admin-sidebar-bg: hsl(225, 35%, 8%);
+   --synapse-admin-sidebar-glass: rgba(15, 20, 40, 0.85);
+   --synapse-admin-sidebar-border: rgba(255, 255, 255, 0.06);
+   --synapse-admin-sidebar-width: 260px;
+
+   /* Section labels sidebar */
+   --synapse-admin-sidebar-label: hsl(225, 12%, 55%);
+   --synapse-admin-sidebar-text: hsl(225, 12%, 85%);
+   --synapse-admin-sidebar-text-active: #ffffff;
+
+   /* Fond main content */
+   --synapse-admin-bg-app: hsl(225, 25%, 96%);
+   --synapse-admin-bg-surface: #ffffff;
+   --synapse-admin-bg-elevated: hsl(225, 25%, 99%);
+
+   /* Fond glassmorphism pour cards */
+   --synapse-admin-glass-bg: rgba(255, 255, 255, 0.75);
+   --synapse-admin-glass-border: rgba(255, 255, 255, 0.45);
+   --synapse-admin-glass-backdrop: blur(16px) saturate(180%);
+
+   /* =========================================================================
+       TEXTE
+       ========================================================================= */
+   --synapse-admin-text-primary: hsl(225, 35%, 14%);
+   --synapse-admin-text-secondary: hsl(225, 18%, 44%);
+   --synapse-admin-text-tertiary: hsl(225, 12%, 64%);
+   --synapse-admin-text-inverse: #ffffff;
+   --synapse-admin-text-link: var(--synapse-admin-primary);
+
+   /* =========================================================================
+       BORDURES
+       ========================================================================= */
+   --synapse-admin-border: hsl(225, 20%, 88%);
+   --synapse-admin-border-light: hsl(225, 20%, 93%);
+   --synapse-admin-border-medium: hsl(225, 18%, 80%);
+
+   /* =========================================================================
+       OMBRES — Layered pour profondeur
+       ========================================================================= */
+   --synapse-admin-shadow-xs: 0 1px 2px rgba(15, 20, 60, 0.04);
+   --synapse-admin-shadow-sm: 0 2px 6px rgba(15, 20, 60, 0.06), 0 1px 2px rgba(15, 20, 60, 0.04);
+   --synapse-admin-shadow-md: 0 4px 16px rgba(15, 20, 60, 0.08), 0 2px 4px rgba(15, 20, 60, 0.05);
+   --synapse-admin-shadow-lg: 0 12px 32px rgba(15, 20, 60, 0.12), 0 4px 8px rgba(15, 20, 60, 0.06);
+   --synapse-admin-shadow-xl: 0 24px 56px rgba(15, 20, 60, 0.16), 0 8px 16px rgba(15, 20, 60, 0.08);
+
+   /* Ombre colorée primaire (hover, active) */
+   --synapse-admin-shadow-primary: 0 8px 24px var(--synapse-admin-primary-glow);
+
+   /* =========================================================================
+       SPACING
+       ========================================================================= */
+   --synapse-admin-space-xs: 0.25rem;
+   /* 4px  */
+   --synapse-admin-space-sm: 0.5rem;
+   /* 8px  */
+   --synapse-admin-space-md: 1rem;
+   /* 16px */
+   --synapse-admin-space-lg: 1.5rem;
+   /* 24px */
+   --synapse-admin-space-xl: 2rem;
+   /* 32px */
+   --synapse-admin-space-2xl: 3rem;
+   /* 48px */
+   --synapse-admin-space-3xl: 4rem;
+   /* 64px */
+
+   /* =========================================================================
+       BORDER RADIUS
+       ========================================================================= */
+   --synapse-admin-radius-xs: 0.25rem;
+   /* 4px  */
+   --synapse-admin-radius-sm: 0.5rem;
+   /* 8px  */
+   --synapse-admin-radius-md: 0.75rem;
+   /* 12px */
+   --synapse-admin-radius-lg: 1rem;
+   /* 16px */
+   --synapse-admin-radius-xl: 1.25rem;
+   /* 20px */
+   --synapse-admin-radius-2xl: 1.5rem;
+   /* 24px */
+   --synapse-admin-radius-full: 9999px;
+
+   /* =========================================================================
+       TYPOGRAPHIE
+       ========================================================================= */
+   --synapse-admin-font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+   --synapse-admin-font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+   --synapse-admin-line-height: 1.6;
+
+   /* =========================================================================
+       COULEURS PAR DOMAINE MÉTIER (pour les icônes sidebar)
+       ========================================================================= */
+   --synapse-admin-domain-intelligence: hsl(258, 85%, 60%);
+   /* Violet — Intelligence */
+   --synapse-admin-domain-conversation: hsl(196, 90%, 48%);
+   /* Cyan    — Conversation */
+   --synapse-admin-domain-memory: hsl(155, 70%, 42%);
+   /* Vert    — Mémoire */
+   --synapse-admin-domain-usage: hsl(38, 90%, 52%);
+   /* Orange  — Usage */
+   --synapse-admin-domain-security: hsl(350, 78%, 55%);
+   /* Rouge   — Sécurité */
+   --synapse-admin-domain-system: hsl(225, 18%, 52%);
+   /* Gris    — Système */
+
+   /* =========================================================================
+       TRANSITIONS
+       ========================================================================= */
+   --synapse-admin-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+   --synapse-admin-transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+   --synapse-admin-transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+   --synapse-admin-transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+   /* =========================================================================
+       Z-INDEX
+       ========================================================================= */
+   --synapse-admin-z-sidebar: 100;
+   --synapse-admin-z-header: 90;
+   --synapse-admin-z-sticky: 80;
+   --synapse-admin-z-dropdown: 200;
+   --synapse-admin-z-modal: 300;
+   --synapse-admin-z-toast: 400;
+
+   /* =========================================================================
+       FENÊTRES FLOTTANTES (modales / dialogs)
+       Surchargez dans le projet hôte pour adapter la taille.
+       ========================================================================= */
+   --synapse-admin-modal-max-width: 32rem;   /* 512px */
+   --synapse-admin-modal-max-height: 90vh;
+   --synapse-admin-modal-min-width: 20rem;   /* 320px */
+}

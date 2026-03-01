@@ -1,0 +1,299 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}
+	{{ is_new ? 'Nouvelle mission' : 'Éditer : ' ~ mission.name }}
+	| Intelligence | Synapse Administration Synapse
+{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Intelligence</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_missions') }}" class="synapse-admin-topbar__breadcrumb">Missions</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">{{ is_new ? 'Nouvelle' : mission.name }}</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="target"></i>
+				</span>
+				{{ is_new ? 'Nouvelle mission d\'agent' : 'Éditer : ' ~ mission.name }}
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				{{ is_new
+				? 'Créez une mission qui combine un prompt système, un modèle LLM et un ton optionnel.'
+				: 'Modifiez cette mission. Les changements s\'appliquent immédiatement après sauvegarde.' }}
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			<a href="{{ path('synapse_admin_missions') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+				<i data-lucide="arrow-left"></i>
+				Retour
+			</a>
+		</div>
+	</div>
+
+	<form method="post" action="{{ is_new ? path('synapse_admin_missions_new') : path('synapse_admin_missions_edit', {id: mission.id}) }}">
+
+		<input type="hidden" name="_token" value="{{ csrf_token('synapse_mission_edit') }}">
+
+		{# ── Identification ────────────────────────────────────────────────────── #}
+		<div class="synapse-admin-card synapse-admin-mb-lg">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="tag"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Identification</div>
+					<div class="synapse-admin-card__subtitle">Nom, emoji et clé technique</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+				<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-md">
+
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label" for="mission-emoji">Emoji</label>
+						<input type="text" id="mission-emoji" name="emoji" value="{{ mission.emoji }}"
+							class="synapse-admin-input" placeholder="🎯" maxlength="10">
+					</div>
+
+					<div class="synapse-admin-form-group" style="grid-column: span 2;">
+						<label class="synapse-admin-label" for="mission-name">
+							Nom affiché <span class="synapse-admin-required">*</span>
+						</label>
+						<input type="text" id="mission-name" name="name" value="{{ mission.name }}"
+							class="synapse-admin-input" required placeholder="Ex : Support Client">
+					</div>
+
+				</div>
+
+				<div class="synapse-admin-form-group">
+					<label class="synapse-admin-label" for="mission-key">
+						Clé technique (slug) <span class="synapse-admin-required">*</span>
+						{% if mission.isBuiltin %}
+							<span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-ml-sm" data-synapse-admin-tooltip="La clé d'une mission builtin ne peut pas être modifiée">
+								<i data-lucide="lock"></i>
+								Verrouillée
+							</span>
+						{% endif %}
+					</label>
+					<input type="text" id="mission-key" name="key" value="{{ mission.key }}"
+						class="synapse-admin-input synapse-admin-font-mono"
+						{{ mission.isBuiltin ? 'readonly' : '' }}
+						required placeholder="ex: support_client"
+						pattern="[a-z0-9_]+" title="Lettres minuscules, chiffres et tirets bas uniquement">
+					<p class="synapse-admin-help-text">Utilisée dans ChatService::ask(['mission' => '{{ mission.key ?: 'ma_mission' }}'])</p>
+				</div>
+
+			</div>
+		</div>
+
+		{# ── Description ──────────────────────────────────────────────────────── #}
+		<div class="synapse-admin-card synapse-admin-mb-lg">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="info"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Description</div>
+					<div class="synapse-admin-card__subtitle">Courte explication de la mission</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				<div class="synapse-admin-form-group">
+					<label class="synapse-admin-label" for="mission-description">Description <span class="synapse-admin-required">*</span></label>
+					<textarea id="mission-description" name="description" class="synapse-admin-input synapse-admin-textarea" rows="2" required
+						placeholder="Ex : Agent spécialisé dans le support technique et la résolution rapide de problèmes.">{{ mission.description }}</textarea>
+				</div>
+			</div>
+		</div>
+
+		{# ── Prompt système ───────────────────────────────────────────────────── #}
+		<div class="synapse-admin-card synapse-admin-mb-lg">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="file-text"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Prompt système</div>
+					<div class="synapse-admin-card__subtitle">Instructions de la mission injectées dans le system prompt</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+				<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
+					<i data-lucide="info"></i>
+					<span>Cet objectif principal de la mission définit le rôle et le comportement de l'agent. Si un ton est assigné, ses instructions seront ajoutées après ce prompt.</span>
+				</div>
+
+				<div class="synapse-admin-form-group">
+					<label class="synapse-admin-label" for="mission-system-prompt">Prompt système <span class="synapse-admin-required">*</span></label>
+					<textarea id="mission-system-prompt" name="system_prompt" class="synapse-admin-input synapse-admin-textarea synapse-admin-font-mono" rows="10" required
+						placeholder="Tu es un agent support client...">{{ mission.systemPrompt }}</textarea>
+				</div>
+
+			</div>
+		</div>
+
+		{# ── Configuration ─────────────────────────────────────────────────────── #}
+		<div class="synapse-admin-card synapse-admin-mb-lg">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="settings"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Configuration</div>
+					<div class="synapse-admin-card__subtitle">Modèle LLM et ton de réponse optionnels</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+				<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-lg">
+
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label" for="mission-preset">
+							Preset LLM
+						</label>
+						<select id="mission-preset" name="preset_id" class="synapse-admin-input">
+							<option value="">— Utilise le preset actif global —</option>
+							{% for preset in presets %}
+								<option value="{{ preset.id }}" {% if mission.preset and mission.preset.id == preset.id %}selected{% endif %}>
+									{{ preset.name }} ({{ preset.model }})
+								</option>
+							{% endfor %}
+						</select>
+						<p class="synapse-admin-help-text">Sélectionnez un preset LLM spécifique ou laissez vide pour utiliser le preset global actif.</p>
+					</div>
+
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label" for="mission-tone">
+							Ton de réponse
+						</label>
+						<select id="mission-tone" name="tone_id" class="synapse-admin-input">
+							<option value="">— Aucun ton spécifique —</option>
+							{% for tone in tones %}
+								<option value="{{ tone.id }}" {% if mission.tone and mission.tone.id == tone.id %}selected{% endif %}>
+									{{ tone.emoji }} {{ tone.name }}
+								</option>
+							{% endfor %}
+						</select>
+						<p class="synapse-admin-help-text">Sélectionnez un ton pour modifier le style de communication, ou laissez vide pour ne pas ajouter d'instructions de ton.</p>
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+
+		{# ── Paramètres ───────────────────────────────────────────────────────── #}
+		<div class="synapse-admin-card synapse-admin-mb-lg">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="settings-2"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Paramètres</div>
+					<div class="synapse-admin-card__subtitle">Visibilité et ordre d'affichage</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+				<div class="synapse-admin-grid synapse-admin-grid--2">
+
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label" for="mission-sort-order">Ordre d'affichage</label>
+						<input type="number" id="mission-sort-order" name="sort_order" value="{{ mission.sortOrder }}"
+							class="synapse-admin-input" min="0" max="999" placeholder="0">
+						<p class="synapse-admin-help-text">Plus petit = affiché en premier. Les missions builtin apparaissent en tête.</p>
+					</div>
+
+					<div class="synapse-admin-form-group">
+						<div class="synapse-admin-label">Visibilité</div>
+						<label class="synapse-admin-toggle">
+							<input type="checkbox" name="is_active" id="mission-is-active" {{ mission.isActive ? 'checked' : '' }}>
+							<span class="synapse-admin-toggle__slider"></span>
+							<span class="synapse-admin-toggle__label">Activer cette mission</span>
+						</label>
+					</div>
+
+				</div>
+
+			</div>
+		</div>
+
+		{# ── Limite de dépense (mission) — visible uniquement en édition ───────── #}
+		{% if not is_new and (spending_limit is defined) %}
+			<div class="synapse-admin-card synapse-admin-mb-lg">
+				<div class="synapse-admin-card__header">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
+						<i data-lucide="gauge"></i>
+					</div>
+					<div>
+						<div class="synapse-admin-card__title">Limite de dépense</div>
+						<div class="synapse-admin-card__subtitle">Plafond de coût pour les conversations utilisant cette mission (optionnel)</div>
+					</div>
+				</div>
+				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+					<form method="post" action="{{ path('synapse_admin_missions_limit', {id: mission.id}) }}">
+						<input type="hidden" name="_token" value="{{ csrf_token('synapse_mission_limit_' ~ mission.id) }}">
+						<input type="hidden" name="action" value="save">
+
+						<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-md">
+							<div class="synapse-admin-form-group">
+								<label class="synapse-admin-label" for="limit-amount">Montant max (devise de référence)</label>
+								<input type="text" id="limit-amount" name="amount" class="synapse-admin-input" placeholder="10.00" value="{{ spending_limit.amount ?? '' }}" required>
+							</div>
+							<div class="synapse-admin-form-group">
+								<label class="synapse-admin-label" for="limit-currency">Devise</label>
+								<input type="text" id="limit-currency" name="currency" class="synapse-admin-input" value="{{ spending_limit.currency ?? 'EUR' }}" maxlength="3">
+							</div>
+						</div>
+						<div class="synapse-admin-form-group synapse-admin-mb-md">
+							<label class="synapse-admin-label" for="limit-period">Période</label>
+							<select id="limit-period" name="period" class="synapse-admin-input">
+								{% for key, label in periods|default([]) %}
+									<option value="{{ key }}" {{ (spending_limit.period.value ?? '') == key ? 'selected' : '' }}>{{ label }}</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div class="synapse-admin-form-group synapse-admin-mb-md">
+							<label class="synapse-admin-label" for="limit-name">Nom (optionnel)</label>
+							<input type="text" id="limit-name" name="name" class="synapse-admin-input" placeholder="Ex : Limite mission support" value="{{ spending_limit.name ?? '' }}">
+						</div>
+						<div class="synapse-admin-flex synapse-admin-gap-md">
+							<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
+								<i data-lucide="save"></i>
+								{{ spending_limit ? 'Mettre à jour la limite' : 'Ajouter une limite' }}
+							</button>
+							{% if spending_limit %}
+								<button type="submit" name="action" value="delete" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-text-danger" formaction="{{ path('synapse_admin_missions_limit', {id: mission.id}) }}" onclick="return confirm('Supprimer la limite de dépense pour cette mission ?');">
+									<i data-lucide="trash-2"></i>
+									Supprimer
+								</button>
+							{% endif %}
+						</div>
+					</form>
+				</div>
+			</div>
+		{% endif %}
+
+		{# ── Actions ─────────────────────────────────────────────────────────── #}
+		<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-justify-end synapse-admin-mb-xl">
+			<a href="{{ path('synapse_admin_missions') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
+				Annuler
+			</a>
+			<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
+				<i data-lucide="save"></i>
+				{{ is_new ? 'Créer la mission' : 'Enregistrer' }}
+			</button>
+		</div>
+
+	</form>
+
+{% endblock %}

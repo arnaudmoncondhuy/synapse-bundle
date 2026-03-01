@@ -1,0 +1,207 @@
+/**
+ * Synapse Administration Synapse - KPI Cards & Charts
+ */
+
+/* ── KPI Card ────────────────────────────────────────────────────────────────── */
+
+.synapse-admin-kpi {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--synapse-admin-space-md);
+    padding: var(--synapse-admin-space-lg) var(--synapse-admin-space-xl);
+}
+
+.synapse-admin-kpi__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--synapse-admin-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform var(--synapse-admin-transition-spring);
+}
+
+.synapse-admin-kpi__icon i {
+    width: 24px;
+    height: 24px;
+}
+
+.synapse-admin-card:hover .synapse-admin-kpi__icon {
+    transform: scale(1.08);
+}
+
+/* Couleurs KPI */
+.synapse-admin-kpi__icon--primary {
+    background: var(--synapse-admin-primary-light);
+    color: var(--synapse-admin-primary);
+}
+
+.synapse-admin-kpi__icon--success {
+    background: var(--synapse-admin-success-bg);
+    color: var(--synapse-admin-success);
+}
+
+.synapse-admin-kpi__icon--warning {
+    background: var(--synapse-admin-warning-bg);
+    color: var(--synapse-admin-warning);
+}
+
+.synapse-admin-kpi__icon--danger {
+    background: var(--synapse-admin-danger-bg);
+    color: var(--synapse-admin-danger);
+}
+
+.synapse-admin-kpi__icon--info {
+    background: var(--synapse-admin-info-bg);
+    color: var(--synapse-admin-info);
+}
+
+.synapse-admin-kpi__icon--neutral {
+    background: var(--synapse-admin-border-light);
+    color: var(--synapse-admin-text-secondary);
+}
+
+
+.synapse-admin-kpi__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.synapse-admin-kpi__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--synapse-admin-text-tertiary);
+    margin-bottom: 0.375rem;
+}
+
+.synapse-admin-kpi__value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--synapse-admin-text-primary);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+}
+
+.synapse-admin-kpi__sub {
+    font-size: 0.8rem;
+    color: var(--synapse-admin-text-tertiary);
+    margin-top: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/* ── Trend indicator ─────────────────────────────────────────────────────────── */
+
+.synapse-admin-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.synapse-admin-trend i {
+    width: 12px;
+    height: 12px;
+}
+
+.synapse-admin-trend--up {
+    color: var(--synapse-admin-success);
+}
+
+.synapse-admin-trend--down {
+    color: var(--synapse-admin-danger);
+}
+
+.synapse-admin-trend--flat {
+    color: var(--synapse-admin-text-tertiary);
+}
+
+/* ── Activity bar chart ──────────────────────────────────────────────────────── */
+
+.synapse-admin-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0 var(--synapse-admin-space-xl) var(--synapse-admin-space-lg);
+}
+
+.synapse-admin-chart__row {
+    display: grid;
+    grid-template-columns: 36px 1fr 50px;
+    align-items: center;
+    gap: var(--synapse-admin-space-sm);
+}
+
+.synapse-admin-chart__label {
+    font-size: 0.72rem;
+    color: var(--synapse-admin-text-tertiary);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.synapse-admin-chart__track {
+    height: 8px;
+    background: var(--synapse-admin-border-light);
+    border-radius: var(--synapse-admin-radius-full);
+    overflow: hidden;
+}
+
+.synapse-admin-chart__bar {
+    height: 100%;
+    border-radius: var(--synapse-admin-radius-full);
+    background: linear-gradient(90deg, var(--synapse-admin-primary-light) 0%, var(--synapse-admin-primary) 100%);
+    min-width: 2px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.synapse-admin-chart__value {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--synapse-admin-text-secondary);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+/* ── Stat row (usage par module) ─────────────────────────────────────────────── */
+
+.synapse-admin-stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--synapse-admin-space-sm) 0;
+    border-bottom: 1px solid var(--synapse-admin-border-light);
+    gap: var(--synapse-admin-space-md);
+}
+
+.synapse-admin-stat-row:last-child {
+    border-bottom: none;
+}
+
+.synapse-admin-stat-row__label {
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--synapse-admin-text-secondary);
+}
+
+.synapse-admin-stat-row__label i {
+    width: 14px;
+    height: 14px;
+    color: var(--synapse-admin-text-tertiary);
+}
+
+.synapse-admin-stat-row__value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--synapse-admin-text-primary);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}

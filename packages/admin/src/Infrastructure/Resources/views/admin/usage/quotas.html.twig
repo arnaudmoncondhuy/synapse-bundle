@@ -1,0 +1,385 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Quotas | Usage | Synapse Administration Synapse
+{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Usage</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">Quotas</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="gauge"></i>
+				</span>
+				Quotas & limites de coût
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Activez ou désactivez globalement les plafonds de dépense, et définissez des limites par utilisateur ou par preset. Le comptage des tokens reste toujours actif pour les statistiques.
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			<a href="{{ path('synapse_admin_analytics') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+				<i data-lucide="bar-chart-3"></i>
+				Analytics
+			</a>
+		</div>
+	</div>
+
+	{# ── Toggle global ───────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-card synapse-admin-mb-lg">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+				<i data-lucide="toggle-right"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Application des limites</div>
+				<div class="synapse-admin-card__subtitle">Quand désactivé, les plafonds ne bloquent plus les requêtes ; le comptage des tokens continue pour les stats.</div>
+			</div>
+			<div class="synapse-admin-card__header-actions">
+				<form method="post" action="{{ path('synapse_admin_quotas') }}" class="synapse-admin-form-inline">
+					<input type="hidden" name="_token" value="{{ csrf_token('synapse_admin_quotas') }}">
+					<input type="hidden" name="action" value="toggle_limits">
+					<input type="hidden" name="limits_enabled" value="{{ config.spendingLimitsEnabled ? '0' : '1' }}">
+					<button type="submit" class="synapse-admin-btn {{ config.spendingLimitsEnabled ? 'synapse-admin-btn--danger' : 'synapse-admin-btn--primary' }} synapse-admin-btn--sm">
+						{{ config.spendingLimitsEnabled ? 'Désactiver les limites' : 'Activer les limites' }}
+					</button>
+				</form>
+			</div>
+		</div>
+		<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+			<label class="synapse-admin-toggle">
+				<input type="checkbox" disabled {{ config.spendingLimitsEnabled ? 'checked' : '' }}>
+				<span class="synapse-admin-toggle__slider"></span>
+				<span class="synapse-admin-toggle__label">
+					Limites de coût {{ config.spendingLimitsEnabled ? 'actives' : 'désactivées' }}
+				</span>
+			</label>
+		</div>
+	</div>
+
+	{# ── Liste des plafonds + formulaire d'ajout ──────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-xl">
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="list"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Plafonds définis</div>
+					<div class="synapse-admin-card__subtitle">Par utilisateur ou par preset</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				{% if limits is empty %}
+					<p class="synapse-admin-text-secondary">Aucun plafond défini. Ajoutez-en un ci-contre.</p>
+				{% else %}
+					<div class="synapse-admin-table-wrapper">
+						<table class="synapse-admin-table">
+							<thead>
+								<tr>
+									<th>Périmètre</th>
+									<th>ID / Nom</th>
+									<th>Plafond</th>
+									<th>Période</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for limit in limits %}
+									<tr>
+										<td>
+											<span class="synapse-admin-badge synapse-admin-badge--neutral">
+												{{ limit.scope.value == 'user' ? 'Utilisateur' : (limit.scope.value == 'mission' ? 'Mission' : 'Preset') }}
+											</span>
+										</td>
+										<td>
+											{% if limit.scope.value == 'preset' and limit.scopeId is not empty and presets_by_id[limit.scopeId] is defined %}
+												{{ presets_by_id[limit.scopeId].name ?? limit.scopeId }}
+											{% elseif limit.scope.value == 'mission' and limit.scopeId is not empty and missions_by_id[limit.scopeId] is defined %}
+												{{ missions_by_id[limit.scopeId].name ?? limit.scopeId }}
+											{% else %}
+												{{ limit.name ?? limit.scopeId }}
+											{% endif %}
+										</td>
+										<td>{{ limit.amount }} {{ limit.currency }}</td>
+										<td class="synapse-admin-text-xs">
+											{% for key, label in periods %}
+												{% if key == limit.period.value %}{{ label }}{% endif %}
+											{% endfor %}
+										</td>
+										<td>
+											<form method="post" action="{{ path('synapse_admin_quotas') }}" class="synapse-admin-form-inline" onsubmit="return confirm('Supprimer cette limite ?');">
+												<input type="hidden" name="_token" value="{{ csrf_token('synapse_admin_quotas') }}">
+												<input type="hidden" name="action" value="delete_limit">
+												<input type="hidden" name="limit_id" value="{{ limit.id }}">
+												<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-text-danger" title="Supprimer">
+													<i data-lucide="trash-2"></i>
+												</button>
+											</form>
+										</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--success">
+					<i data-lucide="plus-circle"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Ajouter une limite</div>
+					<div class="synapse-admin-card__subtitle">Plafond de coût sur une fenêtre donnée</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				<form method="post" action="{{ path('synapse_admin_quotas') }}">
+					<input type="hidden" name="_token" value="{{ csrf_token('synapse_admin_quotas') }}">
+					<input type="hidden" name="action" value="add_limit">
+
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label">Périmètre</label>
+						<select name="scope" id="quota-scope" class="synapse-admin-input" required>
+							<option value="user">Utilisateur (ID)</option>
+							<option value="preset">Preset LLM</option>
+							<option value="mission">Mission (assistant)</option>
+						</select>
+					</div>
+
+					<div class="synapse-admin-form-group" id="quota-scope-user">
+						<label class="synapse-admin-label" for="scope_id_user">ID utilisateur</label>
+						<input type="text" id="scope_id_user" name="scope_id" class="synapse-admin-input synapse-admin-font-mono" placeholder="ex: 42 ou user_abc" maxlength="50">
+					</div>
+					<div class="synapse-admin-form-group" id="quota-scope-preset" style="display: none;">
+						<label class="synapse-admin-label" for="scope_id_preset">Preset</label>
+						<select id="scope_id_preset" class="synapse-admin-input">
+							<option value="">— Choisir un preset —</option>
+							{% for preset in presets %}
+								<option value="{{ preset.id }}">{{ preset.name }} ({{ preset.model }})</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="synapse-admin-form-group" id="quota-scope-mission" style="display: none;">
+						<label class="synapse-admin-label" for="scope_id_mission">Mission</label>
+						<select id="scope_id_mission" class="synapse-admin-input">
+							<option value="">— Choisir une mission —</option>
+							{% for mission in missions|default([]) %}
+								<option value="{{ mission.id }}">{{ mission.emoji }} {{ mission.name }}</option>
+							{% endfor %}
+						</select>
+					</div>
+
+					<div class="synapse-admin-grid synapse-admin-grid--2">
+						<div class="synapse-admin-form-group">
+							<label class="synapse-admin-label" for="amount">Montant max</label>
+							<input type="text" id="amount" name="amount" class="synapse-admin-input" placeholder="10.00" required>
+						</div>
+						<div class="synapse-admin-form-group">
+							<label class="synapse-admin-label" for="currency">Devise</label>
+							<input type="text" id="currency" name="currency" class="synapse-admin-input" value="EUR" maxlength="3">
+						</div>
+					</div>
+
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label" for="period">Période</label>
+						<select id="period" name="period" class="synapse-admin-input">
+							{% for key, label in periods %}
+								<option value="{{ key }}">{{ label }}</option>
+							{% endfor %}
+						</select>
+					</div>
+
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label" for="name">Nom (optionnel)</label>
+						<input type="text" id="name" name="name" class="synapse-admin-input" placeholder="Ex : Limite support">
+					</div>
+
+					<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
+						<i data-lucide="plus"></i>
+						Ajouter la limite
+					</button>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	{# ── Stats par utilisateur et par preset ───────────────────────────────────── #}
+	<div class="synapse-admin-page-header synapse-admin-mb-md">
+		<h2 class="synapse-admin-page-title synapse-admin-page-title--sm">
+			<i data-lucide="bar-chart-2"></i>
+			Consommation {{ period_label }}
+		</h2>
+		<div class="synapse-admin-flex synapse-admin-gap-sm">
+			{% for days, label in {7: '7j', 30: '30j', 90: '90j'} %}
+				<a href="{{ path('synapse_admin_quotas', {period: days}) }}" class="synapse-admin-btn synapse-admin-btn--sm {{ period == days ? 'synapse-admin-btn--primary' : 'synapse-admin-btn--ghost' }}">{{ label }}</a>
+			{% endfor %}
+		</div>
+	</div>
+
+	<div class="synapse-admin-grid synapse-admin-grid--3">
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="user"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Par utilisateur</div>
+					<div class="synapse-admin-card__subtitle">Tokens et coût (devise de référence)</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				{% if usage_by_user is empty %}
+					<p class="synapse-admin-text-secondary">Aucune donnée sur la période.</p>
+				{% else %}
+					<div class="synapse-admin-table-wrapper">
+						<table class="synapse-admin-table">
+							<thead>
+								<tr>
+									<th>Utilisateur</th>
+									<th>Requêtes</th>
+									<th>Tokens</th>
+									<th>Coût</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for row in usage_by_user %}
+									<tr>
+										<td class="synapse-admin-font-mono">{{ row.user_id }}</td>
+										<td>{{ row.count }}</td>
+										<td>{{ row.total_tokens|number_format(0, '', ' ') }}</td>
+										<td>{{ row.cost|number_format(4) }}</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="sliders-horizontal"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Par preset</div>
+					<div class="synapse-admin-card__subtitle">Tokens et coût (devise de référence)</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				{% if usage_by_preset is empty %}
+					<p class="synapse-admin-text-secondary">Aucune donnée sur la période.</p>
+				{% else %}
+					<div class="synapse-admin-table-wrapper">
+						<table class="synapse-admin-table">
+							<thead>
+								<tr>
+									<th>Preset</th>
+									<th>Requêtes</th>
+									<th>Tokens</th>
+									<th>Coût</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for row in usage_by_preset %}
+									<tr>
+										<td>{{ presets_by_id[row.preset_id].name ?? 'Preset #' ~ row.preset_id }}</td>
+										<td>{{ row.count }}</td>
+										<td>{{ row.total_tokens|number_format(0, '', ' ') }}</td>
+										<td>{{ row.cost|number_format(4) }}</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="target"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Par mission</div>
+					<div class="synapse-admin-card__subtitle">Tokens et coût (devise de référence)</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				{% if usage_by_mission is empty %}
+					<p class="synapse-admin-text-secondary">Aucune donnée sur la période.</p>
+				{% else %}
+					<div class="synapse-admin-table-wrapper">
+						<table class="synapse-admin-table">
+							<thead>
+								<tr>
+									<th>Mission</th>
+									<th>Requêtes</th>
+									<th>Tokens</th>
+									<th>Coût</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for row in usage_by_mission %}
+									<tr>
+										<td>{{ missions_by_id[row.mission_id].name ?? 'Mission #' ~ row.mission_id }}</td>
+										<td>{{ row.count }}</td>
+										<td>{{ row.total_tokens|number_format(0, '', ' ') }}</td>
+										<td>{{ row.cost|number_format(4) }}</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+
+	<script>
+		(function() {
+			var scopeSelect = document.getElementById('quota-scope');
+			if (!scopeSelect) return;
+			var scopeUser = document.getElementById('quota-scope-user');
+			var scopePreset = document.getElementById('quota-scope-preset');
+			var scopeMission = document.getElementById('quota-scope-mission');
+			var inputUser = document.getElementById('scope_id_user');
+			var selectPreset = document.getElementById('scope_id_preset');
+			var selectMission = document.getElementById('scope_id_mission');
+			function syncScopeId() {
+				var scope = scopeSelect.value;
+				scopeUser.style.display = scope === 'user' ? 'block' : 'none';
+				scopePreset.style.display = scope === 'preset' ? 'block' : 'none';
+				scopeMission.style.display = scope === 'mission' ? 'block' : 'none';
+				inputUser.name = scope === 'user' ? 'scope_id' : '';
+				inputUser.disabled = scope !== 'user';
+				selectPreset.name = scope === 'preset' ? 'scope_id' : '';
+				selectPreset.disabled = scope !== 'preset';
+				if (selectMission) {
+					selectMission.name = scope === 'mission' ? 'scope_id' : '';
+					selectMission.disabled = scope !== 'mission';
+				}
+			}
+			scopeSelect.addEventListener('change', syncScopeId);
+			syncScopeId();
+			scopeSelect.closest('form').addEventListener('submit', function() {
+				inputUser.removeAttribute('disabled');
+				selectPreset.removeAttribute('disabled');
+				if (selectMission) selectMission.removeAttribute('disabled');
+			});
+		})();
+	</script>
+{% endblock %}

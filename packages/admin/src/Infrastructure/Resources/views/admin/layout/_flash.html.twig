@@ -1,0 +1,49 @@
+{#
+    Synapse Administration Synapse — Flash Messages
+    Affiche les messages flash Symfony dans des toasts glassmorphism.
+#}
+{% set flashes_success = app.flashes('success') %}
+{% set flashes_error   = app.flashes('error') %}
+{% set flashes_warning = app.flashes('warning') %}
+
+{% if flashes_success or flashes_error or flashes_warning %}
+<div class="synapse-admin-flash-container" role="alert" aria-live="polite">
+    {% for message in flashes_success %}
+        <div class="synapse-admin-flash synapse-admin-flash--success">
+            <i data-lucide="check-circle-2"></i>
+            <span class="synapse-admin-flash__text">{{ message }}</span>
+        </div>
+    {% endfor %}
+
+    {% for message in flashes_error %}
+        <div class="synapse-admin-flash synapse-admin-flash--error">
+            <i data-lucide="alert-circle"></i>
+            <span class="synapse-admin-flash__text">{{ message }}</span>
+        </div>
+    {% endfor %}
+
+    {% for message in flashes_warning %}
+        <div class="synapse-admin-flash synapse-admin-flash--warning">
+            <i data-lucide="alert-triangle"></i>
+            <span class="synapse-admin-flash__text">{{ message }}</span>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    (function () {
+        // Auto-dismiss flash messages after 4 seconds
+        const container = document.querySelector('.synapse-admin-flash-container');
+        if (!container) return;
+
+        Array.from(container.children).forEach(function (flash, i) {
+            setTimeout(function () {
+                flash.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                flash.style.opacity = '0';
+                flash.style.transform = 'translateX(16px) scale(0.96)';
+                setTimeout(function () { flash.remove(); }, 400);
+            }, 4000 + i * 600);
+        });
+    })();
+</script>
+{% endif %}

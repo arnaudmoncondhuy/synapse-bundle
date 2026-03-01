@@ -1,0 +1,194 @@
+/**
+ * Synapse Administration Synapse - Buttons
+ */
+
+.synapse-admin-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: var(--synapse-admin-radius-md);
+    font-family: var(--synapse-admin-font-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: all var(--synapse-admin-transition-base);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.synapse-admin-btn i {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* ── Tailles ─────────────────────────────────────────────────────────────────── */
+
+.synapse-admin-btn--sm {
+    padding: 0.4rem 0.875rem;
+    font-size: 0.8rem;
+    border-radius: var(--synapse-admin-radius-sm);
+}
+
+.synapse-admin-btn--sm i {
+    width: 14px;
+    height: 14px;
+}
+
+.synapse-admin-btn--lg {
+    padding: 0.875rem 1.75rem;
+    font-size: 1rem;
+    border-radius: var(--synapse-admin-radius-lg);
+}
+
+.synapse-admin-btn--lg i {
+    width: 20px;
+    height: 20px;
+}
+
+.synapse-admin-btn--icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: var(--synapse-admin-radius-md);
+}
+
+/* ── Primaire ──────────────────────────────────────────────────────────────── */
+
+.synapse-admin-btn--primary,
+a.synapse-admin-btn--primary {
+    background: linear-gradient(135deg, var(--synapse-admin-primary) 0%, var(--synapse-admin-primary-dark) 100%);
+    color: white;
+    box-shadow: 0 2px 8px var(--synapse-admin-primary-glow), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.synapse-admin-btn--primary:hover,
+a.synapse-admin-btn--primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--synapse-admin-shadow-primary);
+    filter: brightness(1.06);
+}
+
+.synapse-admin-btn--primary:active,
+a.synapse-admin-btn--primary:active {
+    transform: translateY(0);
+    filter: brightness(0.96);
+}
+
+/* ── Secondaire / Ghost ──────────────────────────────────────────────────────── */
+
+.synapse-admin-btn--ghost,
+a.synapse-admin-btn--ghost {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--synapse-admin-border);
+    color: var(--synapse-admin-text-primary);
+    box-shadow: var(--synapse-admin-shadow-xs);
+}
+
+.synapse-admin-btn--ghost:hover,
+a.synapse-admin-btn--ghost:hover {
+    background: #fff;
+    border-color: var(--synapse-admin-border-medium);
+    box-shadow: var(--synapse-admin-shadow-sm);
+    transform: translateY(-1px);
+}
+
+/* ── Outline primary ─────────────────────────────────────────────────────────── */
+
+.synapse-admin-btn--outline,
+a.synapse-admin-btn--outline {
+    background: transparent;
+    border: 1.5px solid var(--synapse-admin-primary-border);
+    color: var(--synapse-admin-primary);
+}
+
+.synapse-admin-btn--outline:hover,
+a.synapse-admin-btn--outline:hover {
+    background: var(--synapse-admin-primary-light);
+    border-color: var(--synapse-admin-primary);
+    transform: translateY(-1px);
+}
+
+/* ── Danger ──────────────────────────────────────────────────────────────────── */
+
+.synapse-admin-btn--danger,
+a.synapse-admin-btn--danger {
+    background: linear-gradient(135deg, var(--synapse-admin-danger) 0%, hsl(350, 82%, 45%) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+}
+
+.synapse-admin-btn--danger:hover,
+a.synapse-admin-btn--danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+    filter: brightness(1.08);
+}
+
+/* ── Outline danger ──────────────────────────────────────────────────────────── */
+
+.synapse-admin-btn--outline-danger,
+a.synapse-admin-btn--outline-danger {
+    background: transparent;
+    border: 1.5px solid var(--synapse-admin-danger-border);
+    color: var(--synapse-admin-danger);
+}
+
+.synapse-admin-btn--outline-danger:hover,
+a.synapse-admin-btn--outline-danger:hover {
+    background: var(--synapse-admin-danger-bg);
+    border-color: var(--synapse-admin-danger);
+}
+
+/* ── Success ─────────────────────────────────────────────────────────────────── */
+
+.synapse-admin-btn--success,
+a.synapse-admin-btn--success {
+    background: linear-gradient(135deg, var(--synapse-admin-success) 0%, hsl(152, 72%, 32%) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+.synapse-admin-btn--success:hover,
+a.synapse-admin-btn--success:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.07);
+}
+
+/* ── Disabled ────────────────────────────────────────────────────────────────── */
+
+.synapse-admin-btn:disabled,
+.synapse-admin-btn--disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none !important;
+    filter: none !important;
+    box-shadow: none !important;
+}
+
+/* ── Loading spinner ────────────────────────────────────────────────────────── */
+
+.synapse-admin-btn--loading {
+    pointer-events: none;
+}
+
+.synapse-admin-btn--loading::after {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: synapse-admin-spin 0.6s linear infinite;
+}
+
+@keyframes synapse-admin-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

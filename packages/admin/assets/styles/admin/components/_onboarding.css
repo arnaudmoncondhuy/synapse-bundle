@@ -1,0 +1,115 @@
+/**
+ * Synapse Administration Synapse - Onboarding Banner
+ */
+
+.synapse-admin-onboarding-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--synapse-admin-primary-light) 0%, hsl(258, 85%, 93%) 100%);
+    border: 2px solid var(--synapse-admin-primary-border);
+    border-radius: var(--synapse-admin-radius-xl);
+    border-left: 4px solid var(--synapse-admin-primary);
+}
+
+.synapse-admin-onboarding-banner__content {
+    flex: 1;
+}
+
+.synapse-admin-onboarding-banner__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--synapse-admin-primary);
+}
+
+.synapse-admin-onboarding-banner__header i {
+    width: 20px;
+    height: 20px;
+    animation: synapse-admin-bounce 2s ease-in-out infinite;
+}
+
+@keyframes synapse-admin-bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+.synapse-admin-onboarding-banner__steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.synapse-admin-onboarding-banner__step {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--synapse-admin-text-primary);
+    font-weight: 500;
+}
+
+.synapse-admin-onboarding-banner__number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    background: var(--synapse-admin-primary);
+    color: white;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.synapse-admin-onboarding-banner__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+    .synapse-admin-onboarding-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .synapse-admin-onboarding-banner__actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 640px) {
+    .synapse-admin-onboarding-banner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .synapse-admin-onboarding-banner__actions {
+        flex-direction: column;
+    }
+
+    .synapse-admin-onboarding-banner__actions .synapse-admin-btn {
+        width: 100%;
+    }
+}

@@ -1,0 +1,206 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}RGPD | Sécurité | Synapse Administration Synapse
+{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Sécurité</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">RGPD</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--success">
+					<i data-lucide="shield-check"></i>
+				</span>
+				Conformité RGPD
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Politique de rétention des données, statistiques de stockage et liens vers les outils de conformité.
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			<a href="{{ path('synapse_admin_settings') }}" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
+				<i data-lucide="settings"></i>
+				Modifier la rétention
+			</a>
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
+
+		<div class="synapse-admin-card synapse-admin-card--hover synapse-admin-card--{{ config.retentionDays <= 30 ? 'success' : (config.retentionDays <= 90 ? 'warning' : '') }}">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ config.retentionDays <= 30 ? 'success' : (config.retentionDays <= 90 ? 'warning' : 'neutral') }}">
+					<i data-lucide="clock"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Rétention active</div>
+					<div class="synapse-admin-kpi__value">{{ config.retentionDays }}
+						j</div>
+					<div class="synapse-admin-kpi__sub">
+						{{ config.retentionDays <= 30 ? 'Bonne pratique RGPD' : (config.retentionDays <= 90 ? 'Acceptable' : 'À revoir') }}
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="messages-square"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Conversations stockées</div>
+					<div class="synapse-admin-kpi__value">{{ total_conversations }}</div>
+					<div class="synapse-admin-kpi__sub">données personnelles actives</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ config.debugMode ? 'warning' : 'success' }}">
+					<i data-lucide="{{ config.debugMode ? 'bug' : 'shield' }}"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Mode debug</div>
+					<div class="synapse-admin-kpi__value">{{ config.debugMode ? 'Actif' : 'Désactivé' }}</div>
+					<div class="synapse-admin-kpi__sub">
+						{{ config.debugMode ? 'Attention : données LLM enregistrées' : 'Données LLM non enregistrées' }}
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{% if config.debugMode %}
+		<div class="synapse-admin-alert synapse-admin-alert--warning synapse-admin-mb-xl">
+			<i data-lucide="bug"></i>
+			<div>
+				<strong>Mode debug actif.</strong>
+				Les échanges LLM (prompts, réponses) sont
+							        enregistrés en base de données. Désactivez-le en production pour limiter les données personnelles stockées.
+				<a href="{{ path('synapse_admin_settings') }}">Modifier dans Paramètres</a>.
+			</div>
+		</div>
+	{% endif %}
+
+	{# ── Politique de rétention ───────────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-xl">
+
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--success">
+					<i data-lucide="clock"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Politique de rétention</div>
+					<div class="synapse-admin-card__subtitle">Configuration actuelle</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				<div class="synapse-admin-grid synapse-admin-grid--2">
+					<div>
+						<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">Durée de rétention</div>
+						<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ config.retentionDays }}
+							jours</div>
+					</div>
+					<div>
+						<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">Langue du contexte</div>
+						<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ config.contextLanguage|upper }}</div>
+					</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__footer">
+				<a href="{{ path('synapse_admin_settings') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+					<i data-lucide="edit-3"></i>
+					Modifier
+				</a>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
+					<i data-lucide="check-circle-2"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Checklist RGPD basique</div>
+					<div class="synapse-admin-card__subtitle">Points de conformité identifiés</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+
+					<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
+						{% if config.retentionDays <= 90 %}
+							<i data-lucide="check-circle-2" class="synapse-admin-text-success"></i>
+						{% else %}
+							<i data-lucide="alert-triangle" class="synapse-admin-text-warning"></i>
+						{% endif %}
+						<span class="synapse-admin-text-sm">Rétention ≤ 90 jours</span>
+					</div>
+
+					<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
+						{% if not config.debugMode %}
+							<i data-lucide="check-circle-2" class="synapse-admin-text-success"></i>
+						{% else %}
+							<i data-lucide="alert-triangle" class="synapse-admin-text-warning"></i>
+						{% endif %}
+						<span class="synapse-admin-text-sm">Mode debug désactivé (pas d'enregistrement extra)</span>
+					</div>
+
+					<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
+						<i data-lucide="check-circle-2" class="synapse-admin-text-success"></i>
+						<span class="synapse-admin-text-sm">Isolation des données par propriétaire (owner)</span>
+					</div>
+
+					<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
+						<i data-lucide="check-circle-2" class="synapse-admin-text-success"></i>
+						<span class="synapse-admin-text-sm">Chiffrement des conversations (si activé)</span>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Actions RGPD ─────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-card">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
+				<i data-lucide="wrench"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Actions de conformité</div>
+				<div class="synapse-admin-card__subtitle">Outils pour répondre aux demandes d'exercice des droits</div>
+			</div>
+		</div>
+		<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+			<div class="synapse-admin-grid synapse-admin-grid--3">
+				<a href="{{ path('synapse_admin_history') }}" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
+					<i data-lucide="messages-square"></i>
+					Voir les conversations (Break-Glass)
+				</a>
+				<a href="{{ path('synapse_admin_audit') }}" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
+					<i data-lucide="scroll-text"></i>
+					Journal d'audit LLM
+				</a>
+				<a href="{{ path('synapse_admin_settings') }}" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
+					<i data-lucide="settings"></i>
+					Modifier la rétention
+				</a>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}

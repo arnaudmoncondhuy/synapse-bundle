@@ -1,0 +1,154 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Missions | Intelligence | Synapse Administration Synapse{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_providers') }}" class="synapse-admin-topbar__breadcrumb">Intelligence</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-current">Missions</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="target"></i>
+				</span>
+				Missions d'agents
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Configurez des profils d'agents préconfigurés combinant un prompt système, un modèle LLM et un ton de réponse.
+				Utilisez <code style="font-size: 0.875rem;">ChatService::ask($msg, ['mission' => 'cle'])</code> pour les invoquer.
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			<a href="{{ path('synapse_admin_missions_new') }}" class="synapse-admin-btn synapse-admin-btn--primary">
+				<i data-lucide="plus"></i>
+				Nouvelle mission
+			</a>
+		</div>
+	</div>
+
+	<div class="synapse-admin-grid synapse-admin-grid--2">
+		{% for mission in missions %}
+			<div class="synapse-admin-card synapse-admin-card--hover {{ not mission.isActive ? 'synapse-admin-card--inactive' : '' }}">
+
+				<div class="synapse-admin-card__header">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary" style="font-size: 1.5rem; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center;">
+						{{ mission.emoji }}
+					</div>
+
+					<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+						<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
+							<span class="synapse-admin-card__title">{{ mission.name }}</span>
+							{% if mission.isBuiltin %}
+								<span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="Mission intégrée au bundle — ne peut pas être supprimée">
+									<i data-lucide="lock"></i>
+									Builtin
+								</span>
+							{% endif %}
+							{% if not mission.isActive %}
+								<span class="synapse-admin-badge synapse-admin-badge--warning">
+									<i data-lucide="eye-off"></i>
+									Inactif
+								</span>
+							{% endif %}
+						</div>
+						<div class="synapse-admin-text-sm synapse-admin-text-muted">
+							<code class="synapse-admin-font-mono" style="font-size: 0.75rem;">{{ mission.key }}</code>
+						</div>
+					</div>
+				</div>
+
+				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+					<p class="synapse-admin-text-sm synapse-admin-text-muted synapse-admin-mb-md">{{ mission.description }}</p>
+
+					<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm synapse-admin-text-xs synapse-admin-text-muted">
+						{% if mission.preset %}
+							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
+								<i data-lucide="settings" style="width: 1rem; height: 1rem;"></i>
+								<span><strong>Preset:</strong> {{ mission.preset.name }}</span>
+							</div>
+						{% endif %}
+						{% if mission.tone %}
+							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
+								<i data-lucide="mic-2" style="width: 1rem; height: 1rem;"></i>
+								<span><strong>Ton:</strong> {{ mission.tone.name }} ({{ mission.tone.emoji }})</span>
+							</div>
+						{% endif %}
+					</div>
+
+					<details class="synapse-admin-collapsible" style="margin-top: 1rem;">
+						<summary class="synapse-admin-collapsible__summary">
+							<div class="synapse-admin-collapsible__icon">
+								<i data-lucide="file-text"></i>
+							</div>
+							<div class="synapse-admin-collapsible__title">
+								Prompt système
+								<div class="synapse-admin-collapsible__subtitle">
+									{{ mission.systemPrompt|slice(0, 60) ~ '…' }}
+								</div>
+							</div>
+							<i data-lucide="chevron-down" class="synapse-admin-collapsible__chevron"></i>
+						</summary>
+						<div class="synapse-admin-collapsible__content">
+							<p class="synapse-admin-text-sm synapse-admin-font-mono" style="white-space: pre-wrap; word-break: break-word;">{{ mission.systemPrompt }}</p>
+						</div>
+					</details>
+				</div>
+
+				<div class="synapse-admin-card__footer" style="overflow: visible;">
+					<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center" style="position: relative; z-index: 10;">
+
+						{# Modifier #}
+						<form action="{{ path('synapse_admin_missions_edit', {id: mission.id}) }}" method="GET" class="synapse-admin-form-inline">
+							<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="Modifier">
+								<i data-lucide="edit-3"></i>
+							</button>
+						</form>
+
+						{# Activer / Désactiver #}
+						<form action="{{ path('synapse_admin_missions_toggle', {id: mission.id}) }}" method="POST" class="synapse-admin-form-inline">
+							<input type="hidden" name="_token" value="{{ csrf_token('synapse_mission_toggle_' ~ mission.id) }}">
+							<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
+									data-synapse-admin-tooltip="{{ mission.isActive ? 'Désactiver' : 'Activer' }}">
+								{% if mission.isActive %}
+									<i data-lucide="eye-off"></i>
+								{% else %}
+									<i data-lucide="eye"></i>
+								{% endif %}
+							</button>
+						</form>
+
+						{# Supprimer (désactivé si builtin) #}
+						<form action="{{ path('synapse_admin_missions_delete', {id: mission.id}) }}" method="POST" class="synapse-admin-form-inline"
+							{% if not mission.isBuiltin %}onsubmit="return confirm('Supprimer la mission « {{ mission.name }} » ?')"{% endif %}>
+							<input type="hidden" name="_token" value="{{ csrf_token('synapse_mission_delete_' ~ mission.id) }}">
+							<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm synapse-admin-text-danger"
+									data-synapse-admin-tooltip="{{ mission.isBuiltin ? 'Builtin — non supprimable' : 'Supprimer' }}"
+									{% if mission.isBuiltin %}disabled{% endif %}>
+								<i data-lucide="trash-2"></i>
+							</button>
+						</form>
+
+					</div>
+				</div>
+
+			</div>
+		{% else %}
+			<div class="synapse-admin-empty-state" style="grid-column: 1 / -1;">
+				<i data-lucide="target" class="synapse-admin-empty-state__icon"></i>
+				<p class="synapse-admin-empty-state__title">Aucune mission configurée</p>
+				<p class="synapse-admin-empty-state__subtitle">Lancez la fixture ou créez votre première mission personnalisée.</p>
+				<a href="{{ path('synapse_admin_missions_new') }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-mt-md">
+					<i data-lucide="plus"></i>
+					Créer une mission
+				</a>
+			</div>
+		{% endfor %}
+	</div>
+
+{% endblock %}

@@ -1,0 +1,142 @@
+/**
+ * Synapse Administration Synapse - Reset
+ * Scoped to .synapse-admin-root to avoid bleeding into host project styles.
+ */
+
+/* ── Box model ──────────────────────────────────────────────────────────────── */
+.synapse-admin-root *,
+.synapse-admin-root *::before,
+.synapse-admin-root *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── Root ────────────────────────────────────────────────────────────────────── */
+/* Override explicite pour neutraliser les styles du projet hôte sur html/body */
+html.synapse-admin-root,
+html.synapse-admin-root body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--synapse-admin-bg-app);
+    color: var(--synapse-admin-text-primary);
+    font-family: var(--synapse-admin-font-sans);
+    font-size: 16px;
+    line-height: var(--synapse-admin-line-height);
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.synapse-admin-root {
+    font-family: var(--synapse-admin-font-sans);
+    font-size: 16px;
+    line-height: var(--synapse-admin-line-height);
+    color: var(--synapse-admin-text-primary);
+    background-color: var(--synapse-admin-bg-app);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-size-adjust: 100%;
+    min-height: 100dvh;
+}
+
+/* ── Typographie ─────────────────────────────────────────────────────────────── */
+.synapse-admin-root h1,
+.synapse-admin-root h2,
+.synapse-admin-root h3,
+.synapse-admin-root h4,
+.synapse-admin-root h5,
+.synapse-admin-root h6 {
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    color: var(--synapse-admin-text-primary);
+}
+
+.synapse-admin-root p {
+    color: var(--synapse-admin-text-secondary);
+    line-height: 1.65;
+}
+
+/* ── Liens ────────────────────────────────────────────────────────────────────── */
+.synapse-admin-root a {
+    text-decoration: none;
+    color: inherit;
+    transition: color var(--synapse-admin-transition-fast);
+}
+
+/* ── Images ───────────────────────────────────────────────────────────────────── */
+.synapse-admin-root img,
+.synapse-admin-root svg {
+    display: block;
+    max-width: 100%;
+}
+
+/* ── Listes ───────────────────────────────────────────────────────────────────── */
+.synapse-admin-root ul,
+.synapse-admin-root ol {
+    list-style: none;
+}
+
+/* ── Boutons & inputs ─────────────────────────────────────────────────────────── */
+.synapse-admin-root button,
+.synapse-admin-root input,
+.synapse-admin-root select,
+.synapse-admin-root textarea {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.synapse-admin-root button {
+    cursor: pointer;
+    border: none;
+}
+
+/* Reset background uniquement pour les boutons sans classe synapse-admin-btn */
+/* Les variantes (.synapse-admin-btn--primary, --ghost, etc.) gèrent leur propre background */
+.synapse-admin-root button:not(.synapse-admin-btn) {
+    background: none;
+}
+
+/* ── Tableaux ─────────────────────────────────────────────────────────────────── */
+.synapse-admin-root table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/* ── Details/Summary ─────────────────────────────────────────────────────────── */
+.synapse-admin-root details>summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+.synapse-admin-root details>summary::-webkit-details-marker {
+    display: none;
+}
+
+/* ── Scrollbar (Webkit) ──────────────────────────────────────────────────────── */
+.synapse-admin-root ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.synapse-admin-root ::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.synapse-admin-root ::-webkit-scrollbar-thumb {
+    background: var(--synapse-admin-border-medium);
+    border-radius: var(--synapse-admin-radius-full);
+}
+
+.synapse-admin-root ::-webkit-scrollbar-thumb:hover {
+    background: var(--synapse-admin-text-tertiary);
+}
+
+/* ── Focus Visible ───────────────────────────────────────────────────────────── */
+.synapse-admin-root :focus-visible {
+    outline: 2px solid var(--synapse-admin-primary);
+    outline-offset: 2px;
+    border-radius: var(--synapse-admin-radius-xs);
+}

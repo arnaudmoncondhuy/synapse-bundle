@@ -1,0 +1,99 @@
+/**
+ * Synapse Administration Synapse - Badges
+ */
+
+.synapse-admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: var(--synapse-admin-radius-full);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.synapse-admin-badge i {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+}
+
+.synapse-admin-badge--success {
+    background: linear-gradient(135deg, hsl(152, 72%, 88%) 0%, hsl(152, 72%, 92%) 100%);
+    color: hsl(152, 72%, 28%);
+    border: 1px solid hsl(152, 72%, 78%);
+}
+
+.synapse-admin-badge--warning {
+    background: linear-gradient(135deg, hsl(38, 92%, 88%) 0%, hsl(38, 92%, 93%) 100%);
+    color: hsl(38, 92%, 30%);
+    border: 1px solid hsl(38, 92%, 76%);
+}
+
+.synapse-admin-badge--danger {
+    background: linear-gradient(135deg, hsl(350, 82%, 90%) 0%, hsl(350, 82%, 93%) 100%);
+    color: hsl(350, 82%, 38%);
+    border: 1px solid hsl(350, 82%, 80%);
+}
+
+.synapse-admin-badge--primary {
+    background: linear-gradient(135deg, hsl(258, 85%, 90%) 0%, hsl(258, 85%, 94%) 100%);
+    color: hsl(258, 85%, 42%);
+    border: 1px solid hsl(258, 85%, 80%);
+}
+
+.synapse-admin-badge--neutral {
+    background: var(--synapse-admin-border-light);
+    color: var(--synapse-admin-text-secondary);
+    border: 1px solid var(--synapse-admin-border);
+}
+
+.synapse-admin-badge--info {
+    background: linear-gradient(135deg, hsl(205, 90%, 88%) 0%, hsl(205, 90%, 93%) 100%);
+    color: hsl(205, 90%, 30%);
+    border: 1px solid hsl(205, 90%, 76%);
+}
+
+/* ── Badge dot (statut simple) ────────────────────────────────────────────── */
+
+.synapse-admin-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--synapse-admin-radius-full);
+    flex-shrink: 0;
+}
+
+.synapse-admin-dot--success {
+    background: var(--synapse-admin-success);
+    box-shadow: 0 0 0 2px var(--synapse-admin-success-bg);
+}
+
+.synapse-admin-dot--warning {
+    background: var(--synapse-admin-warning);
+    box-shadow: 0 0 0 2px var(--synapse-admin-warning-bg);
+}
+
+.synapse-admin-dot--danger {
+    background: var(--synapse-admin-danger);
+    box-shadow: 0 0 0 2px var(--synapse-admin-danger-bg);
+}
+
+.synapse-admin-dot--neutral {
+    background: var(--synapse-admin-text-tertiary);
+}
+
+/* ── Status pill (avec label + dot) ─────────────────────────────────────── */
+
+.synapse-admin-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--synapse-admin-text-secondary);
+}

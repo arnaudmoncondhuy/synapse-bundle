@@ -1,0 +1,62 @@
+/**
+ * Synapse Administration Synapse — Composant Onglets (synapse-admin-tabs / synapse-admin-tab)
+ *
+ * Usage :
+ *   <div class="synapse-admin-tabs">
+ *     <a href="?tab=foo" class="synapse-admin-tab synapse-admin-tab--active">Foo</a>
+ *     <a href="?tab=bar" class="synapse-admin-tab">Bar</a>
+ *   </div>
+ *
+ * Design : ligne soulignée sous l'onglet actif, fond subtil au survol.
+ * Intègre les icônes Lucide (inline SVG via data-lucide).
+ */
+
+/* ── Conteneur ─────────────────────────────────────────────────────────── */
+.synapse-admin-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--synapse-admin-border-light);
+    margin-bottom: 0; /* la marge est gérée par synapse-admin-mb-* dans le template */
+}
+
+/* ── Onglet individuel ──────────────────────────────────────────────────── */
+.synapse-admin-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-sm);
+    padding: var(--synapse-admin-space-sm) var(--synapse-admin-space-lg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--synapse-admin-text-secondary);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px; /* recouvre le border-bottom du conteneur */
+    transition: color var(--synapse-admin-transition-fast), border-color var(--synapse-admin-transition-fast), background var(--synapse-admin-transition-fast);
+    border-radius: var(--synapse-admin-radius-sm) var(--synapse-admin-radius-sm) 0 0;
+    white-space: nowrap;
+}
+
+.synapse-admin-tab svg,
+.synapse-admin-tab [data-lucide] {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+/* ── Hover ─────────────────────────────────────────────────────────────── */
+.synapse-admin-tab:hover {
+    color: var(--synapse-admin-text-primary);
+    background: var(--synapse-admin-primary-light);
+}
+
+/* ── Actif ─────────────────────────────────────────────────────────────── */
+.synapse-admin-tab--active {
+    color: var(--synapse-admin-primary);
+    border-bottom-color: var(--synapse-admin-primary);
+    font-weight: 600;
+}
+
+.synapse-admin-tab--active:hover {
+    background: var(--synapse-admin-primary-light);
+    color: var(--synapse-admin-primary-dark);
+}

@@ -1,0 +1,133 @@
+{#
+    Synapse Administration — Base Layout
+
+    BLOCS DISPONIBLES :
+    - admin_page_title   : Titre de l'onglet (ex: "Intelligence | Administration Synapse")
+    - admin_stylesheets  : CSS supplémentaires
+    - admin_head_scripts : Scripts dans <head>
+    - admin_breadcrumb   : Fil d'Ariane dans la topbar
+    - admin_topbar_actions : Boutons/actions à droite de la topbar
+    - admin_content      : Zone de contenu principale ← À surcharger
+    - admin_body_scripts : Scripts avant </body>
+#}
+<!DOCTYPE html>
+<html lang="fr" class="synapse-admin-root">
+<head>
+    {% block admin_meta %}
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="robots" content="noindex, nofollow">
+    {% endblock %}
+
+    <title>{% block admin_page_title %}Synapse Administration Synapse{% endblock %}</title>
+
+    {# CSRF token global #}
+    {% if csrf_token is defined %}
+        <meta name="synapse-csrf" content="{{ csrf_token('synapse_admin') }}">
+    {% endif %}
+
+    {% block admin_stylesheets %}
+        {# Google Fonts : Plus Jakarta Sans #}
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+        {# Synapse Administration Synapse Design System #}
+        <link rel="stylesheet" href="{{ asset('synapse-admin/styles/admin/admin.css') }}">
+
+        {# Slot pour surcharger les tokens de couleur (thème projet) #}
+        {% block admin_theme %}{% endblock %}
+    {% endblock %}
+
+    {% block admin_head_scripts %}
+        {# ImportMap Symfony AssetMapper — nécessaire en mode dev #}
+        {{ importmap('app') }}
+        {# Lucide Icons #}
+        <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    {% endblock %}
+</head>
+<body>
+<div class="synapse-admin-shell">
+
+    {# ═══════════════════════════════════════════════════════════════════════
+       SIDEBAR
+       ═══════════════════════════════════════════════════════════════════════ #}
+    {% block admin_sidebar %}
+        {% include '@Synapse/admin/layout/_sidebar.html.twig' %}
+    {% endblock %}
+
+    {# ═══════════════════════════════════════════════════════════════════════
+       MAIN
+       ═══════════════════════════════════════════════════════════════════════ #}
+    <main class="synapse-admin-main">
+
+        {# Topbar sticky #}
+        <div class="synapse-admin-topbar">
+            <nav class="synapse-admin-topbar__breadcrumb" aria-label="Fil d'ariane">
+                <a href="{{ path('synapse_admin_dashboard') }}">
+                    <i data-lucide="home" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Administration Synapse
+                </a>
+                {% block admin_breadcrumb %}{% endblock %}
+            </nav>
+
+            <div class="synapse-admin-topbar__actions">
+                {% block admin_topbar_actions %}
+                    {# Espace pour actions globales #}
+                {% endblock %}
+            </div>
+        </div>
+
+        {# Flash messages #}
+        {% block admin_flash %}
+            {% include '@Synapse/admin/layout/_flash.html.twig' %}
+        {% endblock %}
+
+        {# Contenu de la page #}
+        <div class="synapse-admin-content">
+            {% block admin_content %}{% endblock %}
+        </div>
+
+    </main>
+</div>
+
+{% block admin_body_scripts %}
+    <script>
+        // Init Lucide icons after DOM ready
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            // ── Tooltip JS global pour les éléments dans .synapse-admin-card ────────────
+            // Les tooltips CSS sont bloqués par overflow:hidden des cartes.
+            // Ce système crée un élément fixe sur le body, jamais clippé.
+            const tip = document.createElement('div');
+            tip.id = 'synapse-admin-tooltip-global';
+            document.body.appendChild(tip);
+
+            document.querySelectorAll('.synapse-admin-card [data-synapse-admin-tooltip]').forEach(el => {
+                el.addEventListener('mouseenter', function (e) {
+                    const text = this.getAttribute('data-synapse-admin-tooltip');
+                    if (!text) return;
+                    tip.textContent = text;
+                    tip.style.opacity = '1';
+                    positionTip(e, this);
+                });
+                el.addEventListener('mouseleave', function () {
+                    tip.style.opacity = '0';
+                });
+                el.addEventListener('mousemove', function (e) {
+                    positionTip(e, this);
+                });
+            });
+
+            function positionTip(e, el) {
+                const rect = el.getBoundingClientRect();
+                tip.style.left = (rect.left + rect.width / 2) + 'px';
+                tip.style.top  = (rect.top - 36) + 'px';
+            }
+        });
+    </script>
+{% endblock %}
+</body>
+</html>

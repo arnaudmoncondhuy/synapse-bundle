@@ -1,0 +1,449 @@
+/**
+ * Synapse Administration Synapse - Layout
+ * Structure principale : sidebar fixe + zone scrollable main
+ */
+
+/* =========================================================================
+   APP SHELL — wrapper racine
+   ========================================================================= */
+
+.synapse-admin-shell {
+    display: grid;
+    grid-template-columns: var(--synapse-admin-sidebar-width) 1fr;
+    min-height: 100dvh;
+}
+
+/* =========================================================================
+   SIDEBAR
+   ========================================================================= */
+
+.synapse-admin-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    z-index: var(--synapse-admin-z-sidebar);
+
+    /* Glassmorphism dark */
+    background: var(--synapse-admin-sidebar-glass);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border-right: 1px solid var(--synapse-admin-sidebar-border);
+
+    /* Subtle gradient overlay */
+    background-image:
+        linear-gradient(160deg, rgba(139, 92, 246, 0.07) 0%, transparent 60%),
+        linear-gradient(to bottom, var(--synapse-admin-sidebar-glass), var(--synapse-admin-sidebar-glass));
+}
+
+/* ── Marque ──────────────────────────────────────────────────────────────── */
+
+.synapse-admin-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-sm);
+    padding: var(--synapse-admin-space-xl) var(--synapse-admin-space-lg);
+    border-bottom: 1px solid var(--synapse-admin-sidebar-border);
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.synapse-admin-brand__logo {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--synapse-admin-radius-md);
+    background: linear-gradient(135deg, var(--synapse-admin-primary) 0%, var(--synapse-admin-primary-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px var(--synapse-admin-primary-glow);
+    flex-shrink: 0;
+    color: white;
+}
+
+.synapse-admin-brand__logo i {
+    width: 20px;
+    height: 20px;
+}
+
+.synapse-admin-brand__name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--synapse-admin-text-inverse);
+    letter-spacing: -0.02em;
+}
+
+.synapse-admin-brand__version {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--synapse-admin-sidebar-label);
+    margin-left: auto;
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: var(--synapse-admin-radius-full);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    white-space: nowrap;
+}
+
+/* ── Navigation ──────────────────────────────────────────────────────────── */
+
+.synapse-admin-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--synapse-admin-space-md) var(--synapse-admin-space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--synapse-admin-space-xs);
+}
+
+.synapse-admin-nav::-webkit-scrollbar {
+    width: 3px;
+}
+
+/* Section labels */
+.synapse-admin-root .synapse-admin-nav__section {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--synapse-admin-sidebar-label);
+    padding: var(--synapse-admin-space-md) var(--synapse-admin-space-sm) var(--synapse-admin-space-xs);
+    margin-top: var(--synapse-admin-space-sm);
+}
+
+.synapse-admin-nav__section:first-child {
+    margin-top: 0;
+}
+
+/* Groupe de liens */
+.synapse-admin-nav__group {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-bottom: var(--synapse-admin-space-xs);
+}
+
+/* Lien de navigation */
+.synapse-admin-root .synapse-admin-nav__link {
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-sm);
+    padding: 0.6rem var(--synapse-admin-space-sm);
+    border-radius: var(--synapse-admin-radius-md);
+    color: var(--synapse-admin-sidebar-text);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all var(--synapse-admin-transition-base);
+    position: relative;
+    text-decoration: none !important;
+}
+
+.synapse-admin-nav__link:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--synapse-admin-sidebar-text-active);
+}
+
+.synapse-admin-nav__link.is-active {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.22) 0%, rgba(139, 92, 246, 0.10) 100%);
+    color: var(--synapse-admin-text-inverse);
+    border: 1px solid rgba(139, 92, 246, 0.25);
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Icône du lien */
+.synapse-admin-nav__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--synapse-admin-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all var(--synapse-admin-transition-base);
+}
+
+.synapse-admin-nav__icon i {
+    width: 16px;
+    height: 16px;
+    color: inherit;
+    display: block;
+}
+
+/* Couleurs d'icônes par domaine */
+.synapse-admin-nav__link[data-domain="intelligence"] .synapse-admin-nav__icon {
+    background: rgba(139, 92, 246, 0.15);
+    color: hsl(258, 85%, 74%);
+}
+
+.synapse-admin-nav__link[data-domain="conversation"] .synapse-admin-nav__icon {
+    background: rgba(6, 182, 212, 0.15);
+    color: hsl(196, 90%, 68%);
+}
+
+.synapse-admin-nav__link[data-domain="memory"] .synapse-admin-nav__icon {
+    background: rgba(16, 185, 129, 0.15);
+    color: hsl(155, 70%, 60%);
+}
+
+.synapse-admin-nav__link[data-domain="usage"] .synapse-admin-nav__icon {
+    background: rgba(245, 158, 11, 0.15);
+    color: hsl(38, 90%, 65%);
+}
+
+.synapse-admin-nav__link[data-domain="security"] .synapse-admin-nav__icon {
+    background: rgba(239, 68, 68, 0.15);
+    color: hsl(350, 78%, 70%);
+}
+
+.synapse-admin-nav__link[data-domain="system"] .synapse-admin-nav__icon {
+    background: rgba(148, 163, 184, 0.12);
+    color: rgba(203, 213, 225, 0.8);
+}
+
+.synapse-admin-nav__link.is-active .synapse-admin-nav__icon {
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+}
+
+/* Badge "Coming Soon" */
+.synapse-admin-nav__badge {
+    margin-left: auto;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 7px;
+    border-radius: var(--synapse-admin-radius-full);
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--synapse-admin-sidebar-label);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+}
+
+.synapse-admin-nav__badge--new {
+    background: rgba(139, 92, 246, 0.2);
+    color: hsl(258, 85%, 80%);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+/* ── Footer sidebar ──────────────────────────────────────────────────────── */
+
+.synapse-admin-sidebar-footer {
+    padding: var(--synapse-admin-space-md) var(--synapse-admin-space-lg);
+    border-top: 1px solid var(--synapse-admin-sidebar-border);
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-sm);
+}
+
+.synapse-admin-sidebar-footer__text {
+    font-size: 0.75rem;
+    color: var(--synapse-admin-sidebar-label);
+    line-height: 1.4;
+}
+
+.synapse-admin-sidebar-footer__version {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Lien V1 en footer ─────────────────────────────────────────────────── */
+.synapse-admin-sidebar__v1-link {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    color: var(--synapse-admin-sidebar-label);
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--synapse-admin-radius-sm);
+    border: 1px solid var(--synapse-admin-sidebar-border);
+    transition: all var(--synapse-admin-transition-base);
+    white-space: nowrap;
+}
+
+.synapse-admin-sidebar__v1-link:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+/* =========================================================================
+   MAIN CONTENT
+   ========================================================================= */
+
+.synapse-admin-main {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    overflow-x: hidden;
+}
+
+/* ── Topbar ──────────────────────────────────────────────────────────────── */
+
+.synapse-admin-topbar {
+    position: sticky;
+    top: 0;
+    z-index: var(--synapse-admin-z-header);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--synapse-admin-space-md) var(--synapse-admin-space-xl);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border-bottom: 1px solid var(--synapse-admin-border-light);
+    box-shadow: var(--synapse-admin-shadow-xs);
+    gap: var(--synapse-admin-space-md);
+}
+
+.synapse-admin-topbar__breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-sm);
+    font-size: 0.875rem;
+    color: var(--synapse-admin-text-tertiary);
+}
+
+.synapse-admin-topbar__breadcrumb a {
+    color: var(--synapse-admin-text-tertiary);
+    transition: color var(--synapse-admin-transition-fast);
+}
+
+.synapse-admin-topbar__breadcrumb a:hover {
+    color: var(--synapse-admin-text-primary);
+}
+
+.synapse-admin-topbar__breadcrumb-sep {
+    color: var(--synapse-admin-border-medium);
+    font-size: 0.75rem;
+}
+
+.synapse-admin-topbar__current {
+    color: var(--synapse-admin-text-primary);
+    font-weight: 600;
+}
+
+.synapse-admin-topbar__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-sm);
+    margin-left: auto;
+}
+
+/* ── Zone de contenu ─────────────────────────────────────────────────────── */
+
+.synapse-admin-content {
+    flex: 1;
+    padding: var(--synapse-admin-space-xl);
+    max-width: 1920px;
+    width: 100%;
+}
+
+/* ── Page header ─────────────────────────────────────────────────────────── */
+
+.synapse-admin-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--synapse-admin-space-xl);
+    margin-bottom: var(--synapse-admin-space-2xl);
+}
+
+.synapse-admin-page-header__info {}
+
+.synapse-admin-page-title {
+    font-size: 1.875rem;
+    font-weight: 800;
+    color: var(--synapse-admin-text-primary);
+    letter-spacing: -0.03em;
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-sm);
+    margin-bottom: var(--synapse-admin-space-xs);
+}
+
+.synapse-admin-page-title__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--synapse-admin-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.synapse-admin-page-title__icon i {
+    width: 22px;
+    height: 22px;
+}
+
+.synapse-admin-page-subtitle {
+    font-size: 0.95rem;
+    color: var(--synapse-admin-text-secondary);
+    line-height: 1.5;
+    max-width: 560px;
+}
+
+.synapse-admin-page-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-sm);
+    flex-shrink: 0;
+}
+
+/* =========================================================================
+   GRILLES
+   ========================================================================= */
+
+.synapse-admin-grid {
+    display: grid;
+    gap: var(--synapse-admin-space-lg);
+}
+
+.synapse-admin-grid--2 {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+}
+
+.synapse-admin-grid--3 {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.synapse-admin-grid--4 {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+@media (max-width: 1024px) {
+    .synapse-admin-grid--4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .synapse-admin-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .synapse-admin-sidebar {
+        display: none;
+    }
+
+    /* TODO: hamburger mobile */
+    .synapse-admin-grid--2,
+    .synapse-admin-grid--3,
+    .synapse-admin-grid--4 {
+        grid-template-columns: 1fr;
+    }
+
+    .synapse-admin-content {
+        padding: var(--synapse-admin-space-md);
+    }
+
+    .synapse-admin-topbar {
+        padding: var(--synapse-admin-space-sm) var(--synapse-admin-space-md);
+    }
+}

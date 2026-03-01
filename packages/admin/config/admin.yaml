@@ -3,12 +3,10 @@ services:
         autowire: true
         autoconfigure: true
 
-    # ── Controllers Admin V2 (autoloading récursif) ───────────────────────────
-    # Couvre PlaceholderController + tous les sous-dossiers :
-    # Intelligence/, Conversation/, Memoire/, Usage/, etc.
-    # Tout nouveau contrôleur dans AdminV2/ sera automatiquement enregistré.
-    ArnaudMoncondhuy\SynapseAdmin\AdminV2\Controller\:
-        resource: '../src/AdminV2/Controller/'
+    # ── Contrôleurs Administration (autoloading récursif) ─────────────────────
+    # Couvre tous les sous-dossiers : Intelligence/, Conversation/, Memoire/, Usage/, etc.
+    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\:
+        resource: '../src/Admin/Controller/'
         tags: ['controller.service_arguments']
 
     # ── Twig Integration ──────────────────────────────────────────────────────
@@ -17,8 +15,6 @@ services:
 
     ArnaudMoncondhuy\SynapseAdmin\Infrastructure\Twig\SynapseTwigExtension:
         tags: ['twig.extension']
-
-    # Les contrôleurs V1 seront supprimés après validation du déplacement des services Twig.
 
     # ── Accounting (Admin feature) ────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseCore\Core\Accounting\TokenAccountingService: ~

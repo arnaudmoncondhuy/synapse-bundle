@@ -1,0 +1,153 @@
+/**
+ * Synapse Administration Synapse - Alerts & Flash Messages
+ */
+
+/* ── Alert base ──────────────────────────────────────────────────────────────── */
+
+.synapse-admin-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--synapse-admin-space-md);
+    padding: var(--synapse-admin-space-md) var(--synapse-admin-space-lg);
+    border-radius: var(--synapse-admin-radius-lg);
+    margin-bottom: var(--synapse-admin-space-md);
+    border: 1px solid transparent;
+    line-height: 1.5;
+}
+
+.synapse-admin-alert__icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.synapse-admin-alert__icon i {
+    width: 18px;
+    height: 18px;
+}
+
+.synapse-admin-alert__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.synapse-admin-alert__title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.synapse-admin-alert__message {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── Variantes ───────────────────────────────────────────────────────────────── */
+
+.synapse-admin-alert--success {
+    background: var(--synapse-admin-success-bg);
+    border-color: var(--synapse-admin-success-border);
+    color: var(--synapse-admin-success);
+}
+
+.synapse-admin-alert--warning {
+    background: var(--synapse-admin-warning-bg);
+    border-color: var(--synapse-admin-warning-border);
+    color: hsl(38, 92%, 28%);
+}
+
+.synapse-admin-alert--danger {
+    background: var(--synapse-admin-danger-bg);
+    border-color: var(--synapse-admin-danger-border);
+    color: var(--synapse-admin-danger);
+}
+
+.synapse-admin-alert--info {
+    background: var(--synapse-admin-info-bg);
+    border-color: var(--synapse-admin-info-border);
+    color: var(--synapse-admin-info);
+}
+
+.synapse-admin-alert--primary {
+    background: var(--synapse-admin-primary-light);
+    border-color: var(--synapse-admin-primary-border);
+    color: var(--synapse-admin-primary-dark);
+}
+
+/* ── Flash messages (auto-dismiss avec animation) ─────────────────────────── */
+
+.synapse-admin-flash-container {
+    position: fixed;
+    top: var(--synapse-admin-space-lg);
+    right: var(--synapse-admin-space-lg);
+    z-index: var(--synapse-admin-z-toast);
+    display: flex;
+    flex-direction: column;
+    gap: var(--synapse-admin-space-sm);
+    max-width: 400px;
+    pointer-events: none;
+}
+
+.synapse-admin-flash {
+    pointer-events: all;
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-md);
+    padding: var(--synapse-admin-space-sm) var(--synapse-admin-space-md);
+    border-radius: var(--synapse-admin-radius-lg);
+    box-shadow: var(--synapse-admin-shadow-lg);
+    backdrop-filter: blur(8px);
+    border: 1px solid transparent;
+    animation: synapse-admin-slide-in 0.3s var(--synapse-admin-transition-spring) both;
+}
+
+.synapse-admin-flash i {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.synapse-admin-flash__text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    flex: 1;
+}
+
+.synapse-admin-flash--success {
+    background: rgba(240, 253, 244, 0.95);
+    border-color: var(--synapse-admin-success-border);
+    color: var(--synapse-admin-success);
+}
+
+.synapse-admin-flash--error {
+    background: rgba(254, 242, 242, 0.95);
+    border-color: var(--synapse-admin-danger-border);
+    color: var(--synapse-admin-danger);
+}
+
+.synapse-admin-flash--warning {
+    background: rgba(255, 251, 235, 0.95);
+    border-color: var(--synapse-admin-warning-border);
+    color: hsl(38, 92%, 30%);
+}
+
+@keyframes synapse-admin-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(24px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* ── Inline dans les pages (non-toast) ───────────────────────────────────── */
+
+.synapse-admin-inline-alerts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--synapse-admin-space-sm);
+    margin-bottom: var(--synapse-admin-space-lg);
+}

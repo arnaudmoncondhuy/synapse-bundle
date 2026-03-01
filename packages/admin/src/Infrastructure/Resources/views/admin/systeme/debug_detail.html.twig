@@ -1,0 +1,348 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Détail Debug LLM | Système | Synapse Administration
+{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Système</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_debug') }}" class="synapse-admin-topbar__breadcrumb">Debug LLM</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">{{ id|slice(0, 8) }}…</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	{% set data = debug.data ?? {} %}
+	{% set config = data.config ?? {} %}
+	{% set preset_config = data.preset_config ?? {} %}
+	{% set history = data.history ?? [] %}
+	{% set turns = data.turns ?? [] %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--info">
+					<i data-lucide="microscope"></i>
+				</span>
+				Détail du log de debug
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				ID:
+				<code class="synapse-admin-text-xs">{{ id }}</code>
+				• Date:
+				{{ debug.created_at is defined ? debug.created_at|date('d/m/Y H:i:s') : 'Inconnue' }}
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			<a href="{{ path('synapse_admin_debug') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
+				<i data-lucide="arrow-left"></i>
+				Retour aux logs
+			</a>
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--4 synapse-admin-mb-xl">
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--neutral">
+					<i data-lucide="cpu"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Modèle</div>
+					<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ data.model ?? preset_config.model ?? '—' }}</div>
+					<div class="synapse-admin-kpi__sub">{{ data.provider ?? preset_config.provider ?? '—' }}</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--neutral">
+					<i data-lucide="coins"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Tokens utiles</div>
+					{% set usage = data.usage ?? {} %}
+					<div class="synapse-admin-kpi__value">{{ (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0) }}</div>
+					<div class="synapse-admin-kpi__sub">Prompt:
+						{{ usage.prompt_tokens ?? 0 }}
+						| Complétion:
+						{{ usage.completion_tokens ?? 0 }}</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (usage.thinking_tokens ?? 0) > 0 ? 'info' : 'neutral' }}">
+					<i data-lucide="brain"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Tokens de réflexion</div>
+					<div class="synapse-admin-kpi__value">{{ usage.thinking_tokens ?? 0 }}</div>
+					<div class="synapse-admin-kpi__sub">
+						{% if preset_config.thinking_enabled ?? false %}
+							Activé (Budget:
+							{{ preset_config.thinking_budget ?? 'auto' }})
+						{% else %}
+							Désactivé
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--neutral">
+					<i data-lucide="message-square"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Tours (Turns)</div>
+					<div class="synapse-admin-kpi__value">{{ turns|length }}</div>
+					<div class="synapse-admin-kpi__sub">Historique contextuel:
+						{{ data.history_size ?? history|length }}
+						msgs</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="synapse-admin-layout">
+		<div
+			class="synapse-admin-layout__main">
+
+			{# ── Prompt Système ────────────────────────────────────────────────────────── #}
+			{% if data.system_prompt ?? false %}
+				<div class="synapse-admin-card synapse-admin-mb-xl">
+					<div class="synapse-admin-card__header">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
+							<i data-lucide="terminal"></i>
+						</div>
+						<div>
+							<div class="synapse-admin-card__title">Prompt Système</div>
+							<div class="synapse-admin-card__subtitle">Instructions de base fournies au LLM</div>
+						</div>
+					</div>
+					<div class="synapse-admin-card__body">
+						<pre class="synapse-admin-code-block">{{ data.system_prompt }}</pre>
+					</div>
+				</div>
+			{% endif %}
+
+			{# ── Outils (Tools) ────────────────────────────────────────────────────────── #}
+			{% if data.tool_definitions ?? false %}
+				<div class="synapse-admin-card synapse-admin-mb-xl">
+					<div class="synapse-admin-card__header">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
+							<i data-lucide="wrench"></i>
+						</div>
+						<div>
+							<div class="synapse-admin-card__title">Outils disponibles ({{ data.tool_definitions|length }})</div>
+							<div class="synapse-admin-card__subtitle">Définitions JSON Schema envoyées au modèle</div>
+						</div>
+					</div>
+					<div class="synapse-admin-card__body">
+						<div style="max-height: 300px; overflow-y: auto;">
+							<pre class="synapse-admin-code-block">{{ data.tool_definitions|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+						</div>
+					</div>
+				</div>
+			{% endif %}
+
+
+			{# ── Tours (Turns) ─────────────────────────────────────────────────────────── #}
+			<h2 class="synapse-admin-page-title" style="font-size: 1.25rem; margin-bottom: 1rem;">
+				Échanges (Turns)
+			</h2>
+
+			{% if turns|length == 0 %}
+				<div class="synapse-admin-card">
+					<div class="synapse-admin-empty">
+						<div class="synapse-admin-empty__icon">
+							<i data-lucide="message-square-dashed"></i>
+						</div>
+						<div class="synapse-admin-empty__title">Aucun tour enregistré</div>
+					</div>
+				</div>
+			{% else %}
+				{% for i, turn in turns %}
+					<div class="synapse-admin-card synapse-admin-mb-xl">
+						<div class="synapse-admin-card__header">
+							<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--{{ turn.thinking ? 'info' : 'success' }}">
+								<i data-lucide="corner-down-right"></i>
+							</div>
+							<div>
+								<div class="synapse-admin-card__title">Tour #{{ turn.turn ?? i }}</div>
+								<div class="synapse-admin-card__subtitle">
+									{% if turn.usage.total_tokens ?? false %}
+										{{ turn.usage.total_tokens }}
+										tokens générés ({{ turn.usage.prompt_tokens ?? 0 }}
+										prompt,
+										{{ turn.usage.completion_tokens ?? 0 }}
+										complétion,
+										{{ turn.usage.thinking_tokens ?? 0 }}
+										réflexion)
+									{% else %}
+										Détails de génération
+									{% endif %}
+								</div>
+							</div>
+						</div>
+						<div class="synapse-admin-card__body" style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+							{% if turn.thinking ?? false %}
+								<div>
+									<h4 style="font-size: 0.875rem; font-weight: 600; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+										<i data-lucide="brain" style="width: 1rem; height: 1rem;"></i>
+										Thinking (Réflexion interne)
+									</h4>
+									<div style="background-color: var(--synapse-admin-bg-hover); padding: 1rem; border-radius: var(--synapse-admin-radius); border-left: 3px solid var(--synapse-admin-info); color: var(--synapse-admin-text-secondary); font-size: 0.875rem; white-space: pre-wrap; font-family: monospace;">{{ turn.thinking }}</div>
+								</div>
+							{% endif %}
+
+							{% if turn.text ?? false %}
+								<div>
+									<h4 style="font-size: 0.875rem; font-weight: 600; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+										<i data-lucide="message-square" style="width: 1rem; height: 1rem;"></i>
+										Réponse (Texte)
+									</h4>
+									<div style="padding: 1rem; border: 1px solid var(--synapse-admin-border); border-radius: var(--synapse-admin-radius); white-space: pre-wrap;">{{ turn.text }}</div>
+								</div>
+							{% endif %}
+
+							{% if turn.function_calls ?? false %}
+								<div>
+									<h4 style="font-size: 0.875rem; font-weight: 600; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+										<i data-lucide="tool" style="width: 1rem; height: 1rem;"></i>
+										Appels d'outils (Function Calls)
+									</h4>
+									{% for fc in turn.function_calls %}
+										<div style="background-color: var(--synapse-admin-bg); border: 1px solid var(--synapse-admin-border); border-radius: var(--synapse-admin-radius); margin-bottom: 0.5rem;">
+											<div style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); font-weight: 600; font-family: monospace; background-color: var(--synapse-admin-bg-hover);">
+												{{ fc.name }}()
+											</div>
+											<div style="padding: 1rem;">
+												<pre class="synapse-admin-code-block" style="margin: 0;">{{ fc.arguments|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+											</div>
+										</div>
+									{% endfor %}
+								</div>
+							{% endif %}
+
+						</div>
+					</div>
+				{% endfor %}
+			{% endif %}
+
+
+			{# ── Utilisation des Outils (Résultats) ────────────────────────────────────── #}
+			{% if data.tool_usage ?? false %}
+				<h2 class="synapse-admin-page-title" style="font-size: 1.25rem; margin-bottom: 1rem;">
+					Résultats des Outils
+				</h2>
+				{% for usage in data.tool_usage %}
+					<div class="synapse-admin-card synapse-admin-mb-xl">
+						<div class="synapse-admin-card__header">
+							<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
+								<i data-lucide="check-circle-2"></i>
+							</div>
+							<div>
+								<div class="synapse-admin-card__title">
+									<code style="font-size: 1rem;">{{ usage.tool_name }}()</code>
+								</div>
+								<div class="synapse-admin-card__subtitle">Outil exécuté par le frontend (Call ID:
+									{{ usage.tool_call_id }})</div>
+							</div>
+						</div>
+						<div class="synapse-admin-card__body" style="display: flex; flex-direction: column; gap: 1rem;">
+							<div>
+								<h5 style="font-size: 0.75rem; text-transform: uppercase; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; letter-spacing: 0.05em;">Arguments</h5>
+								<pre class="synapse-admin-code-block">{{ usage.tool_args|default('{}') }}</pre>
+							</div>
+							<div>
+								<h5 style="font-size: 0.75rem; text-transform: uppercase; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; letter-spacing: 0.05em;">Résultat retourné au LLM</h5>
+								<pre class="synapse-admin-code-block">{{ usage.tool_result|default('{}') }}</pre>
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+			{% endif %}
+
+
+		</div>
+		<div
+			class="synapse-admin-layout__sidebar">
+
+			{# ── Configuration ─────────────────────────────────────────────────────────── #}
+			<div class="synapse-admin-card synapse-admin-mb-xl">
+				<div class="synapse-admin-card__header" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border);">
+					<div class="synapse-admin-card__title" style="font-size: 1rem;">Configuration</div>
+				</div>
+				<div class="synapse-admin-card__body" style="padding: 0;">
+					<ul style="list-style: none; padding: 0; margin: 0;">
+						<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+							<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Température</span>
+							<span style="font-weight: 500; font-family: monospace;">{{ preset_config.temperature ?? 'Par défaut' }}</span>
+						</li>
+						<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+							<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Top P</span>
+							<span style="font-weight: 500; font-family: monospace;">{{ preset_config.top_p ?? 'Par défaut' }}</span>
+						</li>
+						<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+							<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Top K</span>
+							<span style="font-weight: 500; font-family: monospace;">{{ preset_config.top_k ?? 'Par défaut' }}</span>
+						</li>
+						<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+							<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Max Tokens</span>
+							<span style="font-weight: 500; font-family: monospace;">{{ preset_config.max_output_tokens ?? 'Par défaut' }}</span>
+						</li>
+						<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+							<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Streaming</span>
+							<span>
+								{% if preset_config.streaming_enabled ?? false %}
+									<span class="synapse-admin-badge synapse-admin-badge--success">Oui</span>
+								{% else %}
+									<span class="synapse-admin-badge synapse-admin-badge--neutral">Non</span>
+								{% endif %}
+							</span>
+						</li>
+						<li style="padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center;">
+							<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Outils (Tools)</span>
+							<span>
+								{% if preset_config.tools_sent ?? false %}
+									<span class="synapse-admin-badge synapse-admin-badge--info">Envoyés</span>
+								{% else %}
+									<span class="synapse-admin-badge synapse-admin-badge--neutral">Aucun</span>
+								{% endif %}
+							</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+
+			{# ── Payload Brut ──────────────────────────────────────────────────────────── #}
+			<div class="synapse-admin-card">
+				<div class="synapse-admin-card__header" style="align-items: center;">
+					<div>
+						<div class="synapse-admin-card__title" style="font-size: 1rem;">Données brutes JSON</div>
+						<div class="synapse-admin-card__subtitle">Payload complet complet</div>
+					</div>
+				</div>
+				<div class="synapse-admin-card__body">
+					<div style="max-height: 400px; overflow-y: auto;">
+						<pre class="synapse-admin-code-block" style="font-size: 0.75rem;">{{ data|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+{% endblock %}
