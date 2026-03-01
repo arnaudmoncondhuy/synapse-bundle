@@ -35,59 +35,6 @@ class ModelController extends AbstractController
     ) {}
 
     /**
-     * Catalogue des modèles
-     */
-    #[Route('', name: 'models', methods: ['GET'])]
-    public function index(): Response
-    {
-        $this->denyAccessUnlessAdmin($this->permissionChecker);
-
-        // 1. Récupérer les providers actifs et configurés
-        $activeProviders = [];
-        foreach ($this->providerRepo->findAll() as $provider) {
-            if ($provider->isEnabled() && $provider->isConfigured()) {
-                $activeProviders[] = $provider->getName();
-            }
-        }
-
-        // 2. Modèles en DB (overrides utilisateur)
-        $dbModels = [];
-        foreach ($this->modelRepo->findAll() as $m) {
-            $dbModels[$m->getModelId()] = $m;
-        }
-
-        // 3. Construire la liste plate filtrée
-        $models = [];
-        foreach ($this->capabilityRegistry->getKnownModels() as $modelId) {
-            $caps = $this->capabilityRegistry->getCapabilities($modelId);
-
-            // Filtrer par provider actif
-            if (!in_array($caps->provider, $activeProviders, true)) {
-                continue;
-            }
-
-            $dbModel = $dbModels[$modelId] ?? null;
-
-            $models[] = [
-                'id'             => $modelId,
-                'provider'       => $caps->provider,
-                'type'           => $caps->type,
-                'currency'       => $caps->provider === 'ovh' ? '€' : '$',
-                'capabilities'   => $caps,
-                'db_entity'      => $dbModel,
-                'is_enabled'     => $dbModel ? $dbModel->isEnabled() : true,
-                'pricing_input'  => $dbModel?->getPricingInput() ?? $caps->pricingInput,
-                'pricing_output' => $dbModel?->getPricingOutput() ?? $caps->pricingOutput,
-                'label'          => $dbModel?->getLabel() ?? $modelId,
-            ];
-        }
-
-        return $this->render('@Synapse/admin_v2/intelligence/models.html.twig', [
-            'models' => $models,
-        ]);
-    }
-
-    /**
      * Toggle d'activation d'un modèle
      */
     #[Route('/{modelId}/toggle', name: 'models_toggle', methods: ['POST'])]

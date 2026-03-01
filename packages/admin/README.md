@@ -93,10 +93,9 @@ access_control:
 
 ### Admin V2 Dashboard
 - `GET /synapse/admin-v2` - Dashboard principal
-- `GET /synapse/admin-v2/intelligence/providers` - Gestion des providers
-- `GET /synapse/admin-v2/intelligence/presets` - Gestion des presets
-- `POST /synapse/admin-v2/intelligence/presets` - Créer preset
-- `GET /synapse/admin-v2/intelligence/models` - Modèles disponibles
+- `GET /synapse/admin-v2/intelligence/configuration-llm` - Configuration LLM (onglets : fournisseurs, modeles, presets)
+- Presets (CRUD) : `GET/POST .../presets/new`, `GET/POST .../presets/{id}/edit`, etc.
+- Modèles (actions) : `POST .../modeles/{modelId}/toggle`, `POST .../modeles/{modelId}/pricing`
 - `GET /synapse/admin-v2/conversation/history` - Historique conversations
 - `GET /synapse/admin-v2/memoire/embeddings` - Gestion embeddings
 - `GET /synapse/admin-v2/securite/api_keys` - API Keys

@@ -46,33 +46,6 @@ class PresetController extends AbstractController
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {}
 
-    // ─── Index ─────────────────────────────────────────────────────────────────
-
-    #[Route('', name: '', methods: ['GET'])]
-    public function index(): Response
-    {
-        $this->denyAccessUnlessAdmin($this->permissionChecker);
-
-        $presets = $this->presetRepo->findAllPresets();
-
-        $presetsWithCaps = array_map(
-            fn(SynapsePreset $p) => [
-                'entity' => $p,
-                'caps'   => $this->capabilityRegistry->getCapabilities($p->getModel()),
-                'isValid' => $this->isPresetValid($p),
-                'invalidReason' => $this->getPresetInvalidReason($p),
-            ],
-            $presets
-        );
-
-        // Tri : preset actif toujours en tête de liste
-        usort($presetsWithCaps, fn($a, $b) => $b['entity']->isActive() <=> $a['entity']->isActive());
-
-        return $this->render('@Synapse/admin_v2/intelligence/presets.html.twig', [
-            'presets' => $presetsWithCaps,
-        ]);
-    }
-
     /**
      * Vérifie si un preset est valide (provider configuré + modèle existe)
      */
@@ -294,116 +267,67 @@ class PresetController extends AbstractController
     }
 
     /**
-     * Polling endpoint — renvoie le statut courant ou le rapport final.
+     * Polling endpoint — premier appel exécute tous les steps, les suivants lisent le cache.
+     *
+     * Architecture : Exécution unique sur le premier poll (status='pending').
+     * Les appels LLM peuvent durer 60–120s ; on évite les requêtes concurrentes et les locks
+     * en concentrant toute l'exécution dans une seule requête HTTP longue.
      */
     #[Route('/{id}/tester/statut', name: '_test_status', methods: ['GET'])]
     public function testStatus(SynapsePreset $preset): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
-        set_time_limit(0);
-
         $cacheKey = sprintf('synapse_preset_test_%d', $preset->getId());
-        $lockKey  = sprintf('synapse_test_lock_%d', $preset->getId());
-
-        $data = $this->cache->get($cacheKey, fn() => null);
+        $data     = $this->cache->get($cacheKey, fn () => null);
 
         if (!$data) {
             return new JsonResponse(['status' => 'not_found'], 404);
         }
 
-        // Polling actif si en attente ou en cours
-        if (in_array($data['status'], ['pending', 'processing'], true)) {
-            $isLocked = $this->cache->get($lockKey, fn() => false);
+        // Premier poll : le test n'a pas encore démarré → exécuter les 3 étapes maintenant
+        if ($data['status'] === 'pending') {
+            // Permettre jusqu'à 5 minutes pour les appels LLM potentiellement lents
+            set_time_limit(300);
 
-            if (!$isLocked) {
-                $this->cache->get($lockKey, function (ItemInterface $item): bool {
-                    $item->expiresAfter(60);
-                    return true;
-                });
+            try {
+                $report = $this->presetValidatorAgent->runAll($preset);
 
-                try {
-                    $data = $this->cache->get($cacheKey, fn() => null);
-                    if (!$data) {
-                        return new JsonResponse(['status' => 'not_found'], 404);
-                    }
-
-                    $currentStep = 0;
-                    if ($data['status'] === 'pending') {
-                        $currentStep = 1;
-                    } elseif ($data['status'] === 'processing') {
-                        if (($data['progress'] ?? 0) < 33)       $currentStep = 1;
-                        elseif (($data['progress'] ?? 0) < 66)   $currentStep = 2;
-                        elseif (($data['progress'] ?? 0) < 100)  $currentStep = 3;
-                    }
-
-                    if ($currentStep > 0) {
-                        $data['message'] = $this->presetValidatorAgent->getStepLabel($currentStep);
-                        $this->cache->delete($cacheKey);
-
-                        /** @var \Closure(ItemInterface): array $callback */
-                        $callback = function (ItemInterface $item) use ($data): array {
-                            $item->expiresAfter(3600);
-                            return (array) $data;
-                        };
-                        $this->cache->get($cacheKey, $callback);
-
-                        if (function_exists('fastcgi_finish_request')) {
-                            $data['is_processing_async'] = true;
-                            $response = new JsonResponse($data);
-                            $response->prepare(\Symfony\Component\HttpFoundation\Request::createFromGlobals());
-                            $response->send();
-                            if (PHP_SAPI !== 'cli') {
-                                ignore_user_abort(true);
-                                fastcgi_finish_request();
-                            }
-                        }
-
-                        $report = $data['report'] ?? [];
-                        $this->presetValidatorAgent->runStep($currentStep, $preset, $report);
-
-                        $data['status']   = ($currentStep === 3) ? 'completed' : 'processing';
-                        $data['progress'] = match ($currentStep) {
-                            1 => 33,
-                            2 => 66,
-                            3 => 100,
-                        };
-                        $data['message']  = null;
-                        $data['report']   = $report;
-                        unset($data['is_processing_async']);
-
-                        $this->cache->delete($cacheKey);
-
-                        /** @var \Closure(ItemInterface): array $callbackAfter */
-                        $callbackAfter = function (ItemInterface $item) use ($data): array {
-                            $item->expiresAfter(3600);
-                            return (array) $data;
-                        };
-                        $this->cache->get($cacheKey, $callbackAfter);
-
-                        if (isset($data['is_processing_async'])) {
-                            exit;
-                        }
-                    }
-                } finally {
-                    $this->cache->delete($lockKey);
-                }
+                $data['status'] = 'completed';
+                $data['report'] = $report;
+            } catch (\Throwable $e) {
+                // L'agent a levé une exception non gérée en interne
+                $data['status'] = 'completed';
+                $data['report'] = [
+                    'sync_error'      => $e->getMessage(),
+                    'all_critical_ok' => false,
+                    'analysis'        => 'Test interrompu par une exception critique : ' . $e->getMessage(),
+                    'critical_checks' => ['response_not_empty' => false, 'debug_saved_in_db' => false],
+                    'config_checks'   => [],
+                    'config_errors'   => [],
+                    'config_ok'       => false,
+                    'preset_info'     => ['name' => $preset->getName()],
+                ];
             }
+
+            // Persister le résultat dans le cache pour les polls suivants
+            $this->cache->delete($cacheKey);
+            $this->cache->get($cacheKey, function (ItemInterface $item) use ($data): array {
+                $item->expiresAfter(3600);
+                return $data;
+            });
         }
 
+        // Rapport disponible → renvoyer le template HTML complet
         if ($data['status'] === 'completed') {
             return $this->render('@Synapse/admin_v2/intelligence/preset_test_result.html.twig', [
+                'preset' => $preset,
                 'report' => $data['report'],
             ]);
         }
 
-        if ($data['status'] === 'error') {
-            return new Response(
-                '<div class="sv2-alert sv2-alert--danger">Erreur : ' . htmlspecialchars($data['error'] ?? 'Inconnue') . '</div>'
-            );
-        }
-
-        return new JsonResponse($data);
+        // Test toujours en attente (ne devrait arriver qu'en cas de race condition)
+        return new JsonResponse(['status' => $data['status'], 'progress' => $data['progress'] ?? 0]);
     }
 
     // ─── Helpers privés ────────────────────────────────────────────────────────

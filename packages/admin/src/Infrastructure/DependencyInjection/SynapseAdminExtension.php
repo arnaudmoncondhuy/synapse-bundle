@@ -60,7 +60,8 @@ class SynapseAdminExtension extends Extension implements PrependExtensionInterfa
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $loader = new YamlFileLoader($container, new FileLocator(\dirname(__DIR__, 3) . '/config'));
+        $configDir = \dirname(__DIR__, 3) . '/config';
+        $loader = new YamlFileLoader($container, new FileLocator($configDir));
         $loader->load('admin.yaml');
         $loader->load('admin_v2.yaml');
 

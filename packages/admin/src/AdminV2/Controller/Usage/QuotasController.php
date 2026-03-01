@@ -165,7 +165,7 @@ class QuotasController extends AbstractController
             'period' => $period,
             'period_label' => $periodLabel,
             'periods' => [
-                SpendingLimitPeriod::SLIDING_DAY->value => 'Glissante 24h',
+                SpendingLimitPeriod::SLIDING_DAY->value => 'Glissante (4h)',
                 SpendingLimitPeriod::SLIDING_MONTH->value => 'Glissante 30j',
                 SpendingLimitPeriod::CALENDAR_DAY->value => 'Jour calendaire',
                 SpendingLimitPeriod::CALENDAR_MONTH->value => 'Mois calendaire',
