@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ArnaudMoncondhuy\SynapseAdmin\Admin\Twig;
+namespace ArnaudMoncondhuy\SynapseAdmin\Infrastructure\Twig;
 
 use ArnaudMoncondhuy\SynapseCore\Core\Chat\ChatService;
 use Twig\Environment;

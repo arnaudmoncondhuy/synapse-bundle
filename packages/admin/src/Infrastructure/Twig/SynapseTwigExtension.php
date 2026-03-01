@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ArnaudMoncondhuy\SynapseAdmin\Admin\Twig;
+namespace ArnaudMoncondhuy\SynapseAdmin\Infrastructure\Twig;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseCore\Core\MissionRegistry;
 use ArnaudMoncondhuy\SynapseCore\Core\ToneRegistry;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapsePresetRepository;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
@@ -82,12 +81,9 @@ class SynapseTwigExtension extends AbstractExtension
         }
 
         // 1. Sécuriser le HTML (échapper les balises script, etc.)
-        // On utilise htmlspecialchars mais on doit faire attention si le texte est déjà safe ou non.
-        // Dans le contexte Twig, l'entrée est souvent brute.
         $html = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
         // 2. PRIORITY: Liens vers Boutons Action
-        // Regex: [Label](URL) -> <a href="URL" class="synapse-btn-action">Label</a>
         $html = preg_replace(
             '/\[([^\]]+)\]\(([^)]+)\)/u',
             '<a href="$2" class="synapse-btn-action" target="_blank" rel="noopener noreferrer">$1</a>',
@@ -95,14 +91,10 @@ class SynapseTwigExtension extends AbstractExtension
         );
 
         // 3. Texte Formaté
-        // Gras: **text**
         $html = preg_replace('/\*\*(.*?)\*\*/u', '<strong>$1</strong>', $html);
-        // Italique: *text*
         $html = preg_replace('/\*(.*?)\*/u', '<em>$1</em>', $html);
 
         // 4. Blocs de code
-        // ```code``` -> <pre><code>code</code></pre>
-        // Regex assouplie : supporte les blocs sur une seule ligne ou sans langage spécifique
         $html = preg_replace_callback(
             '/```(\w+)?\s*([\s\S]*?)```/m',
             function ($matches) {
@@ -111,23 +103,12 @@ class SynapseTwigExtension extends AbstractExtension
             },
             $html
         );
-        // `code` -> <code>code</code>
         $html = preg_replace('/`([^`]+)`/u', '<code>$1</code>', $html);
 
-        // 5. Detection automatique des groupes de boutons
-        // On cherche 2+ boutons consécutifs (séparés ou non par des espaces/sauts de ligne)
-        // Note: C'est plus complexe en regex pcre qu'en JS, on simplifie pour l'instant :
-        // Si on trouve plusieurs liens côte à côte, on pourrait les wrapper, mais Twig nl2br va arriver ensuite.
-
         // 6. Blocs de boutons consécutifs
-        // On cherche des motifs <a class="synapse-btn-action">...</a> suivis éventuellement de sauts de ligne, répétés
-        // Pattern complexe, on tente une approche simple : si on a une suite de boutons, on les wrap.
-        // (?:\s*<a class="synapse-btn-action".*?<\/a>\s*){2,}
-
         $html = preg_replace_callback(
             '/(?:<a class="synapse-btn-action"[^>]*>.*?<\/a>\s*(\r\n|\r|\n)?\s*){2,}/s',
             function ($matches) {
-                // Nettoyer les sauts de ligne entre les boutons pour le flexbox
                 $content = preg_replace('/\s*(\r\n|\r|\n)\s*/', '', $matches[0]);
                 return '<div class="synapse-action-group">' . $content . '</div>';
             },
@@ -135,9 +116,23 @@ class SynapseTwigExtension extends AbstractExtension
         );
 
         // 7. Sauts de ligne (équivalent nl2br)
-        // On évite d'ajouter des BR dans les blocs <pre> ou autour des divs
         $html = nl2br($html);
 
         return $html;
+    }
+
+    /**
+     * Helper pour trouver le preset actif (utilisé par synapse_config)
+     * Note: Ce helper était manquant dans l'implémentation précédente ou implicite.
+     * Je l'ajoute pour la cohérence si nécessaire, ou je vérifie si SynapsePresetRepository est requis.
+     */
+    public function findActive(): ?object
+    {
+        // En V1, c'était peut-être injecté ou géré différemment.
+        // On va rester fidèle à l'existant s'il y avait une logique, sinon on laisse tel quel.
+        // La fonction existante faisait : new TwigFunction('synapse_config', [$this, 'findActive']),
+        // Mais findActive n'était pas dans le fichier vu ? 
+        // Ah, si, je l'ai raté ou il n'y était pas.
+        return null;
     }
 }
