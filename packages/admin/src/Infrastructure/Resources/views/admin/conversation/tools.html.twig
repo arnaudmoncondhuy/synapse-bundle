@@ -1,0 +1,199 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Outils | Conversation | Synapse Administration Synapse
+{% endblock %}
+
+{# ──────────────────────────────────────────────────────────────────────────────
+   FIL D'ARIANE — injecté dans la topbar via base.html.twig
+   Règle : toujours dans admin_breadcrumb, jamais dans admin_content
+   ────────────────────────────────────────────────────────────────────────────── #}
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Conversation</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">Outils</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	{# ──────────────────────────────────────────────────────────────────────────────
+	   EN-TÊTE
+	   ────────────────────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="wrench"></i>
+				</span>
+				Catalogue des Outils
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Outils exposés à l'IA. Ces fonctions sont appelables par le modèle lors
+				            d'une conversation selon les autorisations configurées.
+			</p>
+		</div>
+		{# Pas d'action de page : les outils sont définis en code, pas dans l'UI #}
+	</div>
+
+	{# ──────────────────────────────────────────────────────────────────────────────
+	   STATS RAPIDES (section essentielle)
+	   ────────────────────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="wrench"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Outils enregistrés</div>
+					<div class="synapse-admin-kpi__value">{{ tools|length }}</div>
+					<div class="synapse-admin-kpi__sub">disponibles pour le modèle</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--success">
+					<i data-lucide="check-circle-2"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Actifs (Function Calling)</div>
+					<div class="synapse-admin-kpi__value">{{ tools|length }}</div>
+					<div class="synapse-admin-kpi__sub">exposés à l'IA automatiquement</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--info">
+					<i data-lucide="code-2"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Type d'enregistrement</div>
+					<div class="synapse-admin-kpi__value synapse-admin-text-sm">Auto</div>
+					<div class="synapse-admin-kpi__sub">via ToolRegistry (code)</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ──────────────────────────────────────────────────────────────────────────────
+	   TABLEAU DES OUTILS
+	   Pattern tableau : synapse-admin-card > synapse-admin-table-container > synapse-admin-table
+	   Règle : synapse-admin-table-cell-label pour Nom + sous-titre (class PHP)
+	   ────────────────────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-card">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+				<i data-lucide="list"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Outils disponibles</div>
+				<div class="synapse-admin-card__subtitle">
+					Enregistrés via le service
+					<code>ToolRegistry</code>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-table-container">
+			<table class="synapse-admin-table">
+				<thead>
+					<tr>
+						<th>Outil</th>
+						<th>Description</th>
+						<th>Implémentation</th>
+						<th>Statut</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for tool in tools %}
+						<tr>
+
+							{# ── Nom de l'outil ──────────────────────────────── #}
+							<td>
+								<div class="synapse-admin-table-cell-label">
+									<div class="synapse-admin-table-cell-label__icon synapse-admin-kpi__icon--primary">
+										<i data-lucide="wrench"></i>
+									</div>
+									<div>
+										<div class="synapse-admin-table-cell-label__title">{{ tool.name }}</div>
+										<div class="synapse-admin-table-cell-label__sub synapse-admin-font-mono">
+											{{ tool.name|lower|replace({' ': '_'}) }}
+										</div>
+									</div>
+								</div>
+							</td>
+
+							{# ── Description ─────────────────────────────────── #}
+							<td class="synapse-admin-table__cell--muted">
+								{{ tool.description|length > 120
+                                ? tool.description|slice(0, 120) ~ ' …'
+                                : tool.description }}
+							</td>
+
+							{# ── Classe PHP ──────────────────────────────────── #}
+							<td>
+								{# Afficher uniquement le nom court de la classe (sans namespace) #}
+								{% set classParts = tool.class|split('\\') %}
+								<span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="{{ tool.class }}">
+									<i data-lucide="code-2"></i>
+									{{ classParts|last }}
+								</span>
+							</td>
+
+							{# ── Statut — toujours actif car enregistré dans le registry #}
+							<td>
+								<span class="synapse-admin-badge synapse-admin-badge--success">
+									<i data-lucide="circle-check"></i>
+									Actif
+								</span>
+							</td>
+
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="4">
+								<div class="synapse-admin-empty">
+									<div class="synapse-admin-empty__icon">
+										<i data-lucide="wrench"></i>
+									</div>
+									<div class="synapse-admin-empty__title">Aucun outil enregistré</div>
+									<p class="synapse-admin-empty__description">
+										Implémentez des classes
+										<code>ToolInterface</code>
+										et
+										                                    déclarez-les comme services pour qu'elles apparaissent ici.
+									</p>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	{# ──────────────────────────────────────────────────────────────────────────────
+	   NOTE INFORMATIVE — Composant synapse-admin-alert
+	   Utilisé pour les informations contextuelles non critiques
+	   ────────────────────────────────────────────────────────────────────────────── #}
+	{% if tools is not empty %}
+		<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mt-xl">
+			<i data-lucide="info"></i>
+			<div>
+				<strong>Comment fonctionnent les outils ?</strong>
+				L'IA peut appeler ces fonctions durant une conversation si le modèle actif
+				            supporte le
+				<em>Function Calling</em>. Les outils sont transmis automatiquement
+					            dans le contexte de chaque requête via le
+				<code>ToolRegistry</code>.
+			</div>
+		</div>
+	{% endif %}
+
+{% endblock %}

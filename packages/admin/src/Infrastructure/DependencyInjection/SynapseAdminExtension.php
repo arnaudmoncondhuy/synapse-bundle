@@ -13,12 +13,6 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 /**
  * Extension du bundle SynapseAdmin.
- *
- * Responsabilités :
- * 1. Enregistrer les chemins Twig pour les templates admin (V1 + V2)
- * 2. Configurer AssetMapper pour les assets admin
- * 3. Charger les services admin
- * 4. Configurer les globals Twig (SynapseRuntime)
  */
 class SynapseAdminExtension extends Extension implements PrependExtensionInterface
 {
@@ -37,8 +31,6 @@ class SynapseAdminExtension extends Extension implements PrependExtensionInterfa
         ]);
 
         // Enregistrement du chemin réel des assets admin dans AssetMapper.
-        // Cela permet à AssetMapper de valider les fichiers CSS référencés via les symlinks
-        // assets/synapse-admin → vendor/arnaudmoncondhuy/synapse-admin/assets (créés par synapse:doctor --fix).
         if ($container->hasExtension('framework')) {
             $assetsDir = realpath(\dirname(__DIR__, 3) . '/assets') ?: \dirname(__DIR__, 3) . '/assets';
             $container->prependExtensionConfig('framework', [
@@ -59,7 +51,6 @@ class SynapseAdminExtension extends Extension implements PrependExtensionInterfa
         $configDir = \dirname(__DIR__, 3) . '/config';
         $loader = new YamlFileLoader($container, new FileLocator($configDir));
         $loader->load('admin.yaml');
-        $loader->load('admin_v2.yaml');
 
         // Configure SynapseRuntime with version parameter from core
         if ($container->hasParameter('synapse.version')) {

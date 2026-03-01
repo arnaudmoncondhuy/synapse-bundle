@@ -1,0 +1,154 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Fournisseurs | Intelligence | Synapse Administration Synapse
+{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Intelligence</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">Fournisseurs</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="plug"></i>
+				</span>
+				Fournisseurs LLM
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Configurez vos accès aux Large Language Models. Chaque fournisseur alimente
+																            vos presets de génération. Les credentials sont stockés de manière sécurisée.
+			</p>
+		</div>
+	</div>
+
+	{# ── Grille ───────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--2">
+		{% for provider in providers %}
+
+			{# État du provider #}
+			{% if provider.isEnabled and provider.isConfigured %}
+				{% set variant = 'synapse-admin-card--success' %}
+				{% set badge   = 'synapse-admin-badge--success' %}
+				{% set icon    = 'check-circle-2' %}
+				{% set label   = 'Actif' %}
+			{% elseif provider.isEnabled and not provider.isConfigured %}
+				{% set variant = 'synapse-admin-card--warning' %}
+				{% set badge   = 'synapse-admin-badge--warning' %}
+				{% set icon    = 'alert-triangle' %}
+				{% set label   = 'Incomplet' %}
+			{% else %}
+				{% set variant = '' %}
+				{% set badge   = 'synapse-admin-badge--neutral' %}
+				{% set icon    = 'circle-slash' %}
+				{% set label   = 'Désactivé' %}
+			{% endif %}
+
+			{% set providerIcon = provider.name == 'gemini' ? 'zap' : (provider.name == 'ovh' ? 'cloud' : 'server') %}
+
+			<div
+				class="synapse-admin-card synapse-admin-card--hover {{ variant }}">
+
+				{# Header #}
+				<div class="synapse-admin-card__header">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+						<i data-lucide="{{ providerIcon }}"></i>
+					</div>
+					<div>
+						<div class="synapse-admin-card__title">{{ provider.label }}</div>
+						<div class="synapse-admin-card__subtitle synapse-admin-font-mono">{{ provider.name }}</div>
+					</div>
+					<div class="synapse-admin-card__header-actions">
+						<span class="synapse-admin-badge {{ badge }}">
+							<i data-lucide="{{ icon }}"></i>
+							{{ label }}
+						</span>
+						{% if preset_count_by_provider[provider.id] is defined and preset_count_by_provider[provider.id] > 0 %}
+							<span class="synapse-admin-badge synapse-admin-badge--neutral">
+								<i data-lucide="sliders-horizontal"></i>
+								{{ preset_count_by_provider[provider.id] }}p
+							</span>
+						{% endif %}
+					</div>
+				</div>
+
+				{# Body #}
+				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+					{% if provider.isConfigured %}
+						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+							{% for key, value in provider.credentials %}
+								<div class="synapse-admin-table-cell-label">
+									<div class="synapse-admin-table-cell-label__icon synapse-admin-kpi__icon--neutral">
+										<i data-lucide="key-round"></i>
+									</div>
+									<div>
+										<div class="synapse-admin-table-cell-label__title">{{ key }}</div>
+										<div class="synapse-admin-table-cell-label__sub synapse-admin-font-mono synapse-admin-truncate">
+											{% if value is not empty %}
+												●●●●●●●●
+												<span class="synapse-admin-text-tertiary">(configuré)</span>
+											{% else %}
+												<em class="synapse-admin-text-tertiary">Non renseigné</em>
+											{% endif %}
+										</div>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					{% else %}
+						<div class="synapse-admin-empty">
+							<div class="synapse-admin-empty__icon">
+								<i data-lucide="key-round"></i>
+							</div>
+							<p class="synapse-admin-empty__description">
+								Aucun credential configuré. Cliquez sur "Configurer" pour renseigner
+																																                            les paramètres de connexion à ce fournisseur.
+							</p>
+						</div>
+					{% endif %}
+				</div>
+
+				{# Footer — Actions #}
+				<div class="synapse-admin-card__footer">
+					<div class="synapse-admin-flex synapse-admin-gap-sm">
+						{% if provider.isConfigured %}
+							<a href="{{ path('synapse_admin_providers_test', {id: provider.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+								<i data-lucide="flask-conical"></i>
+								Tester
+							</a>
+						{% endif %}
+						<a href="{{ path('synapse_admin_providers_edit', {id: provider.id}) }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+							<i data-lucide="settings"></i>
+							{{ provider.isConfigured ? 'Reconfigurer' : 'Configurer' }}
+						</a>
+					</div>
+					<span class="synapse-admin-text-xs synapse-admin-text-tertiary">
+						Màj
+						{{ provider.updatedAt|date('d/m/Y') }}
+					</span>
+				</div>
+
+			</div>
+		{% else %}
+			<div class="synapse-admin-card">
+				<div class="synapse-admin-empty">
+					<div class="synapse-admin-empty__icon">
+						<i data-lucide="plug"></i>
+					</div>
+					<div class="synapse-admin-empty__title">Aucun fournisseur trouvé</div>
+					<p class="synapse-admin-empty__description">
+						Vérifiez la configuration de votre bundle Synapse.
+																								                    Les fournisseurs disponibles sont détectés automatiquement.
+					</p>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+
+{% endblock %}

@@ -1,0 +1,219 @@
+/**
+ * Synapse Administration Synapse - Point d'entrée CSS principal
+ *
+ * Import order matters : variables → reset → layout → components
+ */
+
+/* ── Fondations ────────────────────────────────────────────────────────── */
+@import '_variables.css';
+@import '_reset.css';
+@import '_layout.css';
+
+/* ── Composants ────────────────────────────────────────────────────────── */
+@import 'components/_card.css';
+@import 'components/_button.css';
+@import 'components/_badge.css';
+@import 'components/_form.css';
+@import 'components/_alert.css';
+@import 'components/_kpi.css';
+@import 'components/_collapsible.css';
+@import 'components/_table.css';
+@import 'components/_onboarding.css';
+@import 'components/_tabs.css';
+@import 'components/_modal.css';
+
+/* ── Utilities ─────────────────────────────────────────────────────────── */
+
+/* Form inline (remplace style="display:inline" sur les forms dans les cartes) */
+.synapse-admin-form-inline {
+    display: inline;
+}
+
+/* Divider */
+.synapse-admin-divider {
+    border: none;
+    border-top: 1px solid var(--synapse-admin-border-light);
+    margin: var(--synapse-admin-space-lg) 0;
+}
+
+/* Spacers */
+.synapse-admin-mt-0 {
+    margin-top: 0 !important;
+}
+
+.synapse-admin-mt-sm {
+    margin-top: var(--synapse-admin-space-sm) !important;
+}
+
+.synapse-admin-mt-md {
+    margin-top: var(--synapse-admin-space-md) !important;
+}
+
+.synapse-admin-mt-lg {
+    margin-top: var(--synapse-admin-space-lg) !important;
+}
+
+.synapse-admin-mt-xl {
+    margin-top: var(--synapse-admin-space-xl) !important;
+}
+
+.synapse-admin-mb-0 {
+    margin-bottom: 0 !important;
+}
+
+.synapse-admin-mb-sm {
+    margin-bottom: var(--synapse-admin-space-sm) !important;
+}
+
+.synapse-admin-mb-md {
+    margin-bottom: var(--synapse-admin-space-md) !important;
+}
+
+.synapse-admin-mb-lg {
+    margin-bottom: var(--synapse-admin-space-lg) !important;
+}
+
+.synapse-admin-mb-xl {
+    margin-bottom: var(--synapse-admin-space-xl) !important;
+}
+
+/* Flex helpers */
+.synapse-admin-flex {
+    display: flex;
+}
+
+.synapse-admin-flex-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.synapse-admin-items-center {
+    align-items: center;
+}
+
+.synapse-admin-justify-between {
+    justify-content: space-between;
+}
+
+.synapse-admin-gap-sm {
+    gap: var(--synapse-admin-space-sm);
+}
+
+.synapse-admin-gap-md {
+    gap: var(--synapse-admin-space-md);
+}
+
+.synapse-admin-gap-lg {
+    gap: var(--synapse-admin-space-lg);
+}
+
+/* Text */
+.synapse-admin-text-sm {
+    font-size: 0.85rem;
+}
+
+.synapse-admin-text-xs {
+    font-size: 0.75rem;
+}
+
+.synapse-admin-text-muted {
+    color: var(--synapse-admin-text-secondary);
+}
+
+.synapse-admin-text-tertiary {
+    color: var(--synapse-admin-text-tertiary);
+}
+
+.synapse-admin-text-primary {
+    color: var(--synapse-admin-primary);
+}
+
+.synapse-admin-font-mono {
+    font-family: var(--synapse-admin-font-mono);
+}
+
+.synapse-admin-font-bold {
+    font-weight: 700;
+}
+
+/* Truncate */
+.synapse-admin-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Responsive helpers */
+.synapse-admin-hide-mobile {
+    @media (max-width: 768px) {
+        display: none;
+    }
+}
+
+/* Skeleton loader */
+.synapse-admin-skeleton {
+    background: linear-gradient(90deg, var(--synapse-admin-border-light) 25%, var(--synapse-admin-border) 50%, var(--synapse-admin-border-light) 75%);
+    background-size: 200% 100%;
+    animation: synapse-admin-skeleton 1.5s ease infinite;
+    border-radius: var(--synapse-admin-radius-sm);
+}
+
+@keyframes synapse-admin-skeleton {
+    from {
+        background-position: 200% 0;
+    }
+
+    to {
+        background-position: -200% 0;
+    }
+}
+
+/* Tooltip (CSS-only) — désactivé dans les .synapse-admin-card (overflow:hidden les bloque) */
+[data-synapse-admin-tooltip] {
+    position: relative;
+}
+
+[data-synapse-admin-tooltip]::after {
+    content: attr(data-synapse-admin-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 4px 10px;
+    background: var(--synapse-admin-text-primary);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: var(--synapse-admin-radius-sm);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--synapse-admin-transition-fast);
+    z-index: var(--synapse-admin-z-dropdown);
+}
+
+[data-synapse-admin-tooltip]:hover::after {
+    opacity: 1;
+}
+
+/* Dans les cartes, les tooltips CSS sont bloqués par overflow:hidden — le JS prend le relais */
+.synapse-admin-card [data-synapse-admin-tooltip]::after {
+    display: none;
+}
+
+/* Tooltip JS global (positionné sur le body avec position:fixed) */
+#synapse-admin-tooltip-global {
+    position: fixed;
+    padding: 4px 10px;
+    background: var(--synapse-admin-text-primary);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: var(--synapse-admin-radius-sm);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+    transform: translateX(-50%);
+}

@@ -1,0 +1,157 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Paramètres | Conversation | Synapse Administration Synapse
+{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Conversation</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">Paramètres</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="message-square-more"></i>
+				</span>
+				Paramètres globaux
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Configurez les comportements globaux de Synapse : langue de contexte, prompt système,
+								            rétention RGPD et mode debug.
+			</p>
+		</div>
+	</div>
+
+	{# ── Formulaire de paramètres ─────────────────────────────────────────────── #}
+	<form action="{{ path('synapse_admin_settings') }}" method="POST">
+		<input type="hidden" name="_token" value="{{ csrf_token('synapse_admin_settings') }}">
+
+		<div
+			class="synapse-admin-grid synapse-admin-grid--2">
+
+			{# ── Carte 1 : Langue & Comportement ──────────────────────────────── #}
+			<div class="synapse-admin-card">
+				<div class="synapse-admin-card__header">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+						<i data-lucide="languages"></i>
+					</div>
+					<div>
+						<div class="synapse-admin-card__title">Langue & Comportement</div>
+						<div class="synapse-admin-card__subtitle">Contexte de génération et debug</div>
+					</div>
+				</div>
+				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label" for="context_language">
+							Langue de contexte
+						</label>
+						<select id="context_language" name="context_language" class="synapse-admin-select">
+							{% for code, name in languages %}
+								<option value="{{ code }}" {{ config.contextLanguage == code ? 'selected' : '' }}>
+									{{ name }}
+								</option>
+							{% endfor %}
+						</select>
+						<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">
+							Langue utilisée pour les instructions internes de l'IA.
+						</p>
+					</div>
+
+					<div class="synapse-admin-form-group synapse-admin-mt-md">
+						<label class="synapse-admin-label synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center">
+							<input type="checkbox" name="debug_mode" value="1" {{ config.debugMode ? 'checked' : '' }}>
+							Mode debug global
+						</label>
+						<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">
+							Enregistre tous les échanges LLM en base de données.
+							<span class="synapse-admin-badge synapse-admin-badge--warning synapse-admin-text-xs synapse-admin-ml-sm">
+								<i data-lucide="alert-triangle"></i>
+								Impact performance
+							</span>
+						</p>
+					</div>
+
+				</div>
+			</div>
+
+			{# ── Carte 2 : Rétention RGPD ─────────────────────────────────────── #}
+			<div class="synapse-admin-card">
+				<div class="synapse-admin-card__header">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
+						<i data-lucide="shield"></i>
+					</div>
+					<div>
+						<div class="synapse-admin-card__title">Rétention des données</div>
+						<div class="synapse-admin-card__subtitle">Conformité RGPD</div>
+					</div>
+				</div>
+				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label" for="retention_days">
+							Durée de rétention
+							<span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-ml-sm">
+								{{ config.retentionDays }}
+								jours actuellement
+							</span>
+						</label>
+						<input type="number" id="retention_days" name="retention_days" class="synapse-admin-input" value="{{ config.retentionDays }}" min="1" max="3650">
+						<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">
+							Les conversations plus anciennes seront automatiquement purgées.
+														                        (1 jour → 10 ans)
+						</p>
+					</div>
+
+					<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mt-md">
+						<i data-lucide="info"></i>
+						<div>
+							La purge automatique s'exécute quotidiennement via le scheduler Symfony.
+						</div>
+					</div>
+
+				</div>
+			</div>
+
+		</div>
+
+		{# ── Carte 3 : Prompt système ─────────────────────────────────────────── #}
+		<div class="synapse-admin-card synapse-admin-mt-xl">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="file-text"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Prompt système global</div>
+					<div class="synapse-admin-card__subtitle">
+						S'ajoute au prompt système de base — appliqué à tous les presets
+					</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				<div class="synapse-admin-form-group">
+					<label class="synapse-admin-label" for="system_prompt">
+						Instructions personnalisées
+					</label>
+					<textarea id="system_prompt" name="system_prompt" class="synapse-admin-input" rows="6" placeholder="Ex : Tu es un assistant IA spécialisé dans... Réponds toujours en français...">{{ config.systemPrompt }}</textarea>
+					<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">
+						Laissez vide pour utiliser uniquement le prompt système du bundle.
+					</p>
+				</div>
+			</div>
+			<div class="synapse-admin-card__footer">
+				<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
+					<i data-lucide="save"></i>
+					Enregistrer les paramètres
+				</button>
+			</div>
+		</div>
+
+	</form>
+
+{% endblock %}

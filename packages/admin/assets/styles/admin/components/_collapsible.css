@@ -1,0 +1,220 @@
+/**
+ * Synapse Administration Synapse - Collapsible / Dual-Mode Sections
+ *
+ * Principe dual-mode :
+ * - Section "essentielle" toujours visible (novices)
+ * - Section <details> pliable pour les paramètres avancés (experts)
+ */
+
+/* ── Section essentielle ─────────────────────────────────────────────────────── */
+
+.synapse-admin-section-essential {
+    background: var(--synapse-admin-glass-bg);
+    backdrop-filter: var(--synapse-admin-glass-backdrop);
+    border: 1px solid var(--synapse-admin-glass-border);
+    border-radius: var(--synapse-admin-radius-xl);
+    padding: var(--synapse-admin-space-xl);
+    margin-bottom: var(--synapse-admin-space-md);
+    box-shadow: var(--synapse-admin-shadow-sm);
+}
+
+.synapse-admin-section-essential__label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-xs);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--synapse-admin-success);
+    background: var(--synapse-admin-success-bg);
+    border: 1px solid var(--synapse-admin-success-border);
+    padding: 2px 8px;
+    border-radius: var(--synapse-admin-radius-full);
+    margin-bottom: var(--synapse-admin-space-md);
+}
+
+/* ── Collapsible (section avancée) ──────────────────────────────────────────── */
+
+.synapse-admin-collapsible {
+    margin-bottom: var(--synapse-admin-space-md);
+}
+
+.synapse-admin-collapsible__summary {
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-md);
+    padding: var(--synapse-admin-space-md) var(--synapse-admin-space-lg);
+    background: var(--synapse-admin-glass-bg);
+    backdrop-filter: var(--synapse-admin-glass-backdrop);
+    border: 1px solid var(--synapse-admin-border);
+    border-radius: var(--synapse-admin-radius-lg);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--synapse-admin-text-primary);
+    user-select: none;
+    transition: all var(--synapse-admin-transition-base);
+}
+
+.synapse-admin-collapsible__summary:hover {
+    border-color: var(--synapse-admin-border-medium);
+    background: #fff;
+    box-shadow: var(--synapse-admin-shadow-sm);
+}
+
+/* Quand ouvert */
+details[open]>.synapse-admin-collapsible__summary {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-color: var(--synapse-admin-border-light);
+    background: var(--synapse-admin-primary-light);
+    border-color: var(--synapse-admin-primary-border);
+    color: var(--synapse-admin-primary-dark);
+}
+
+.synapse-admin-collapsible__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--synapse-admin-radius-sm);
+    background: var(--synapse-admin-primary-light);
+    color: var(--synapse-admin-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.synapse-admin-collapsible__icon i {
+    width: 16px;
+    height: 16px;
+}
+
+details[open]>.synapse-admin-collapsible__summary .synapse-admin-collapsible__icon {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--synapse-admin-primary);
+}
+
+.synapse-admin-collapsible__title {
+    flex: 1;
+}
+
+.synapse-admin-collapsible__subtitle {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--synapse-admin-text-tertiary);
+    margin-top: 2px;
+}
+
+details[open]>.synapse-admin-collapsible__summary .synapse-admin-collapsible__subtitle {
+    color: var(--synapse-admin-primary);
+    opacity: 0.75;
+}
+
+.synapse-admin-collapsible__badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: var(--synapse-admin-radius-full);
+    background: rgba(148, 163, 184, 0.12);
+    color: var(--synapse-admin-text-tertiary);
+    border: 1px solid var(--synapse-admin-border);
+}
+
+.synapse-admin-collapsible__chevron {
+    width: 20px;
+    height: 20px;
+    color: var(--synapse-admin-text-tertiary);
+    transition: transform var(--synapse-admin-transition-base);
+    flex-shrink: 0;
+}
+
+details[open]>.synapse-admin-collapsible__summary .synapse-admin-collapsible__chevron {
+    transform: rotate(180deg);
+    color: var(--synapse-admin-primary);
+}
+
+/* Content */
+.synapse-admin-collapsible__content {
+    background: var(--synapse-admin-glass-bg);
+    border: 1px solid var(--synapse-admin-primary-border);
+    border-top: none;
+    border-bottom-left-radius: var(--synapse-admin-radius-lg);
+    border-bottom-right-radius: var(--synapse-admin-radius-lg);
+    padding: var(--synapse-admin-space-xl);
+    animation: synapse-admin-expand 0.25s ease both;
+}
+
+@keyframes synapse-admin-expand {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Smart presets cards (novice mode) ───────────────────────────────────────── */
+
+.synapse-admin-smart-presets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--synapse-admin-space-md);
+}
+
+.synapse-admin-smart-preset {
+    position: relative;
+    cursor: pointer;
+}
+
+.synapse-admin-smart-preset__input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.synapse-admin-smart-preset__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--synapse-admin-space-sm);
+    padding: var(--synapse-admin-space-lg);
+    background: var(--synapse-admin-bg-surface);
+    border: 2px solid var(--synapse-admin-border);
+    border-radius: var(--synapse-admin-radius-lg);
+    transition: all var(--synapse-admin-transition-base);
+}
+
+.synapse-admin-smart-preset:hover .synapse-admin-smart-preset__card {
+    border-color: var(--synapse-admin-border-medium);
+    box-shadow: var(--synapse-admin-shadow-md);
+    transform: translateY(-1px);
+}
+
+.synapse-admin-smart-preset__input:checked+.synapse-admin-smart-preset__card {
+    border-color: var(--synapse-admin-primary);
+    background: var(--synapse-admin-primary-light);
+    box-shadow: 0 0 0 3px var(--synapse-admin-primary-fade);
+}
+
+.synapse-admin-smart-preset__emoji {
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.synapse-admin-smart-preset__name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--synapse-admin-text-primary);
+}
+
+.synapse-admin-smart-preset__desc {
+    font-size: 0.78rem;
+    color: var(--synapse-admin-text-secondary);
+    line-height: 1.4;
+}

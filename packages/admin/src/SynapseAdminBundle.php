@@ -12,7 +12,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  * Classe principale du Bundle SynapseAdmin.
  *
  * Point d'entrée pour l'intégration dans le kernel Symfony.
- * Charge l'interface d'administration : V1 + V2, contrôleurs, templates, assets.
+ * Charge l'interface d'administration : contrôleurs, templates, assets.
  *
  * Dépend de : SynapseCoreBundle
  */

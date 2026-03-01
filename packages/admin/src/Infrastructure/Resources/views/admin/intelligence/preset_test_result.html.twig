@@ -1,0 +1,271 @@
+{# Fragment HTML injecté dans #result-container par le polling JS — pas d'extend #}
+
+<div class="synapse-admin-page-header synapse-admin-mt-xl">
+	<div class="synapse-admin-page-header__info">
+		<h2 class="synapse-admin-page-title">
+			<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--{{ report.all_critical_ok ? 'success' : 'warning' }}">
+				<i data-lucide="{{ report.all_critical_ok ? 'check-circle-2' : 'alert-triangle' }}"></i>
+			</span>
+			Résultat du test
+			{% if preset is defined %}
+				<span class="synapse-admin-text-muted synapse-admin-text-sm synapse-admin-font-normal">— {{ preset.name }}</span>
+			{% endif %}
+		</h2>
+	</div>
+	<div class="synapse-admin-page-header__actions">
+		<span class="synapse-admin-badge synapse-admin-badge--{{ report.all_critical_ok ? 'success' : 'warning' }}">
+			<i data-lucide="{{ report.all_critical_ok ? 'check-circle-2' : 'alert-triangle' }}"></i>
+			{{ report.all_critical_ok ? 'SUCCÈS' : 'VÉRIFICATION REQUISE' }}
+		</span>
+	</div>
+</div>
+
+{# ── Erreur LLM ────────────────────────────────────────────────────────────── #}
+{% if report.sync_error is defined and report.sync_error %}
+	<div class="synapse-admin-card synapse-admin-mb-lg" style="border-left: 4px solid var(--synapse-admin-color-danger, #ef4444);">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--danger">
+				<i data-lucide="alert-circle"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Erreur lors de l'appel LLM</div>
+				<div class="synapse-admin-card__subtitle">L'appel au provider a échoué — vérifiez les credentials et l'URL de l'API</div>
+			</div>
+		</div>
+		<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+			<pre class="synapse-admin-code-block synapse-admin-font-mono synapse-admin-text-sm" style="color: var(--synapse-admin-color-danger, #ef4444); white-space: pre-wrap; word-break: break-word;">{{ report.sync_error }}</pre>
+		</div>
+	</div>
+{% endif %}
+
+{# ── Vérification configuration ────────────────────────────────────────────── #}
+{% if report.config_checks is defined %}
+	<div class="synapse-admin-card synapse-admin-mb-lg">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--{{ report.config_ok ? 'success' : 'danger' }}">
+				<i data-lucide="settings-2"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Vérification de la configuration</div>
+				<div class="synapse-admin-card__subtitle">
+					{% if report.preset_info is defined %}
+						Provider :
+						<strong>{{ report.preset_info.provider }}</strong>
+						— Modèle :
+						<strong>{{ report.preset_info.model }}</strong>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+		<div class="synapse-admin-card__body synapse-admin-card__body--compact synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+			{% if report.config_checks.provider_exists is defined %}
+				<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm synapse-admin-p-sm synapse-admin-bg-subtle synapse-admin-rounded">
+					<i data-lucide="{{ report.config_checks.provider_exists ? 'check-circle-2' : 'x-circle' }}" class="synapse-admin-text-{{ report.config_checks.provider_exists ? 'success' : 'danger' }}"></i>
+					<span class="synapse-admin-text-sm">Provider trouvé en base de données</span>
+				</div>
+			{% endif %}
+			{% if report.config_checks.provider_enabled is defined %}
+				<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm synapse-admin-p-sm synapse-admin-bg-subtle synapse-admin-rounded">
+					<i data-lucide="{{ report.config_checks.provider_enabled ? 'check-circle-2' : 'x-circle' }}" class="synapse-admin-text-{{ report.config_checks.provider_enabled ? 'success' : 'danger' }}"></i>
+					<span class="synapse-admin-text-sm">Provider activé</span>
+				</div>
+			{% endif %}
+			{% if report.config_checks.provider_configured is defined %}
+				<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm synapse-admin-p-sm synapse-admin-bg-subtle synapse-admin-rounded">
+					<i data-lucide="{{ report.config_checks.provider_configured ? 'check-circle-2' : 'x-circle' }}" class="synapse-admin-text-{{ report.config_checks.provider_configured ? 'success' : 'danger' }}"></i>
+					<span class="synapse-admin-text-sm">Credentials configurés (clé API)</span>
+				</div>
+			{% endif %}
+			{% if report.config_checks.model_known is defined %}
+				<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm synapse-admin-p-sm synapse-admin-bg-subtle synapse-admin-rounded">
+					<i data-lucide="{{ report.config_checks.model_known ? 'check-circle-2' : 'alert-triangle' }}" class="synapse-admin-text-{{ report.config_checks.model_known ? 'success' : 'warning' }}"></i>
+					<span class="synapse-admin-text-sm">Modèle connu dans la registry</span>
+				</div>
+			{% endif %}
+			{% if report.config_errors is defined and report.config_errors|length > 0 %}
+				<div class="synapse-admin-mt-sm">
+					{% for error in report.config_errors %}
+						<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm synapse-admin-p-sm synapse-admin-rounded" style="background: rgba(239,68,68,0.08); color: var(--synapse-admin-color-danger, #ef4444);">
+							<i data-lucide="alert-circle"></i>
+							<span class="synapse-admin-text-sm">{{ error }}</span>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+		</div>
+	</div>
+{% endif %}
+
+{# ── Vérifications critiques (appel LLM) ───────────────────────────────────── #}
+{% if report.critical_checks is defined %}
+	<div class="synapse-admin-card synapse-admin-mb-lg">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--{{ report.all_critical_ok ? 'success' : 'warning' }}">
+				<i data-lucide="shield-check"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Vérifications critiques — appel LLM</div>
+			</div>
+		</div>
+		<div class="synapse-admin-card__body synapse-admin-card__body--compact synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+			<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm synapse-admin-p-sm synapse-admin-bg-subtle synapse-admin-rounded">
+				<i data-lucide="{{ report.critical_checks.response_not_empty ? 'check-circle-2' : 'x-circle' }}" class="synapse-admin-text-{{ report.critical_checks.response_not_empty ? 'success' : 'danger' }}"></i>
+				<span class="synapse-admin-text-sm">La réponse de l'IA n'est pas vide</span>
+			</div>
+			<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm synapse-admin-p-sm synapse-admin-bg-subtle synapse-admin-rounded">
+				<i data-lucide="{{ report.critical_checks.debug_saved_in_db ? 'check-circle-2' : 'x-circle' }}" class="synapse-admin-text-{{ report.critical_checks.debug_saved_in_db ? 'success' : 'danger' }}"></i>
+				<span class="synapse-admin-text-sm">Debug enregistré
+					{% if report.debug_id is defined and report.debug_id %}(ID :
+						{{ report.debug_id }}){% else %}(ID : –){% endif %}
+				</span>
+			</div>
+		</div>
+	</div>
+{% endif %}
+
+{# ── Comparaison des paramètres ─────────────────────────────────────────────── #}
+{% if report.params_comparison is defined and report.params_comparison|length > 0 %}
+	<div class="synapse-admin-card synapse-admin-mb-lg">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
+				<i data-lucide="sliders-horizontal"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Comparaison des paramètres</div>
+				<div class="synapse-admin-card__subtitle">Preset configuré vs paramètres réellement envoyés à l'API</div>
+			</div>
+		</div>
+		<div class="synapse-admin-table-container">
+			<table class="synapse-admin-table">
+				<thead>
+					<tr>
+						<th>Paramètre</th>
+						<th>Configuré dans le preset</th>
+						<th>Envoyé à l'API</th>
+						<th>Conforme</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for param, data in report.params_comparison %}
+						<tr>
+							<td class="synapse-admin-font-mono synapse-admin-text-sm">{{ param }}</td>
+							<td class="synapse-admin-text-sm">{{ data.expected }}</td>
+							<td class="synapse-admin-text-sm">{{ data.actual ?? '—' }}</td>
+							<td>
+								{% if data.ok %}
+									<span class="synapse-admin-badge synapse-admin-badge--success">
+										<i data-lucide="check"></i>
+										OK
+									</span>
+								{% else %}
+									<span class="synapse-admin-badge synapse-admin-badge--warning">
+										<i data-lucide="alert-triangle"></i>
+										Écart
+									</span>
+								{% endif %}
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+{% endif %}
+
+{# ── Réponse IA ─────────────────────────────────────────────────────────────── #}
+<div class="synapse-admin-card synapse-admin-mb-lg">
+	<div class="synapse-admin-card__header">
+		<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+			<i data-lucide="message-square-text"></i>
+		</div>
+		<div>
+			<div class="synapse-admin-card__title">Réponse du LLM (test)</div>
+		</div>
+	</div>
+	<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+		<div class="synapse-admin-code-block synapse-admin-font-mono synapse-admin-text-sm">{{ report.ai_response ?? 'Pas de réponse' }}</div>
+	</div>
+</div>
+
+{# ── Rapport d'analyse ─────────────────────────────────────────────────────── #}
+<div class="synapse-admin-card synapse-admin-mb-lg">
+	<div class="synapse-admin-card__header">
+		<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
+			<i data-lucide="file-search"></i>
+		</div>
+		<div>
+			<div class="synapse-admin-card__title">Rapport d'analyse expert</div>
+		</div>
+	</div>
+	<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+		<div id="analysis-rendered" class="synapse-admin-prose synapse-admin-mb-md"></div>
+		<details>
+			<summary class="synapse-admin-text-sm synapse-admin-text-muted" style="cursor:pointer">Texte brut</summary>
+			<pre id="analysis-raw" class="synapse-admin-code-block synapse-admin-font-mono synapse-admin-text-xs synapse-admin-mt-sm" style="overflow:auto;max-height:300px">{{ report.analysis }}</pre>
+		</details>
+	</div>
+</div>
+
+{# ── Consommation tokens ────────────────────────────────────────────────────── #}
+<div class="synapse-admin-card synapse-admin-mb-lg">
+	<div class="synapse-admin-card__header">
+		<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
+			<i data-lucide="activity"></i>
+		</div>
+		<div>
+			<div class="synapse-admin-card__title">Consommation tokens</div>
+		</div>
+	</div>
+	<div class="synapse-admin-table-container">
+		<table class="synapse-admin-table">
+			<thead>
+				<tr>
+					<th>Prompt</th>
+					<th>Completion</th>
+					<th>Thinking</th>
+					<th>Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>{{ report.usage_test.prompt_tokens ?? 0 }}</td>
+					<td>{{ report.usage_test.completion_tokens ?? 0 }}</td>
+					<td>{{ report.usage_test.thinking_tokens ?? 0 }}</td>
+					<td class="synapse-admin-font-bold">{{ report.usage_test.total_tokens ?? 0 }}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{# ── Actions ───────────────────────────────────────────────────────────────── #}
+<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-justify-center synapse-admin-mt-lg">
+	{% if report.debug_id is defined and report.debug_id %}
+		<a href="{{ path('synapse_debug_show', {id: report.debug_id}) }}" target="_blank" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
+			<i data-lucide="bug"></i>
+			Voir le debug
+		</a>
+	{% endif %}
+	<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+		<i data-lucide="arrow-left"></i>
+		Retour aux presets
+	</a>
+</div>
+
+<script>
+	(function () {
+		const targetEl = document.getElementById('analysis-rendered');
+		const rawEl = document.getElementById('analysis-raw');
+		if (targetEl && rawEl) {
+			const text = rawEl.textContent || '';
+			if (typeof marked !== 'undefined') {
+				targetEl.innerHTML = marked.parse(text);
+			} else {
+				targetEl.innerHTML = text.replace(/\n/g, '<br>');
+			}
+		}
+		if (typeof lucide !== 'undefined') {
+			lucide.createIcons();
+		}
+	})();
+</script>

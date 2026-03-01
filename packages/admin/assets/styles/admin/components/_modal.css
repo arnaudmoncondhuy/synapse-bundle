@@ -1,0 +1,45 @@
+/**
+ * Fenêtres flottantes (modales / dialogs)
+ * Taille paramétrable via _variables.css :
+ *   --synapse-admin-modal-max-width, --synapse-admin-modal-max-height, --synapse-admin-modal-min-width
+ */
+.synapse-admin-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 20, 40, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: calc(var(--synapse-admin-z-modal) - 1);
+}
+
+.synapse-admin-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: var(--synapse-admin-modal-min-width);
+    max-width: var(--synapse-admin-modal-max-width);
+    max-height: var(--synapse-admin-modal-max-height);
+    overflow: auto;
+    background: var(--synapse-admin-bg-surface);
+    border-radius: var(--synapse-admin-radius-lg);
+    box-shadow: var(--synapse-admin-shadow-xl);
+    border: 1px solid var(--synapse-admin-border-light);
+    z-index: var(--synapse-admin-z-modal);
+}
+
+.synapse-admin-modal--sm {
+    max-width: 24rem;
+}
+
+.synapse-admin-modal--lg {
+    max-width: 48rem;
+}
+
+.synapse-admin-modal--xl {
+    max-width: 64rem;
+}
+
+.synapse-admin-modal--full-height {
+    max-height: var(--synapse-admin-modal-max-height);
+    height: var(--synapse-admin-modal-max-height);
+}

@@ -1,0 +1,165 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}{{ provider.label }} | Fournisseurs | Synapse Administration Synapse{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_configuration_llm', {tab: 'fournisseurs'}) }}" class="synapse-admin-topbar__breadcrumb">Fournisseurs</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">{{ provider.label }}</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="plug"></i>
+				</span>
+				{{ provider.label }}
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Configurez les identifiants d'accès pour ce fournisseur LLM.
+			</p>
+		</div>
+	</div>
+
+	<form method="post" action="{{ path('synapse_admin_providers_edit', {id: provider.id}) }}">
+		<input type="hidden" name="_token" value="{{ csrf_token('synapse_provider_edit_' ~ provider.id) }}">
+
+		{# ── Informations générales ────────────────────────────────────────────── #}
+		<div class="synapse-admin-card synapse-admin-mb-lg">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="info"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Informations générales</div>
+					<div class="synapse-admin-card__subtitle">Identité et statut du fournisseur</div>
+				</div>
+			</div>
+
+			<div class="synapse-admin-card__body">
+				<div class="synapse-admin-form-group">
+					<label for="label" class="synapse-admin-label">Nom affiché</label>
+					<input type="text" id="label" name="label" value="{{ provider.label }}" class="synapse-admin-input" required>
+					<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">
+						Nom visible dans l'interface admin et les presets.
+					</p>
+				</div>
+
+				<div class="synapse-admin-form-group synapse-admin-mt-md">
+					<label class="synapse-admin-checkbox">
+						<input type="checkbox" name="is_enabled" value="1" {% if provider.isEnabled %}checked{% endif %}>
+						<span class="synapse-admin-checkbox__label">Fournisseur activé</span>
+					</label>
+					<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">
+						Un fournisseur désactivé ne peut pas être utilisé dans les presets ni pour générer du contenu.
+					</p>
+				</div>
+			</div>
+		</div>
+
+		{# ── Configuration des accès ───────────────────────────────────────────── #}
+		{% if fields is defined and fields is not empty %}
+			<div class="synapse-admin-card synapse-admin-mb-lg">
+				<div class="synapse-admin-card__header">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+						<i data-lucide="key-round"></i>
+					</div>
+					<div>
+						<div class="synapse-admin-card__title">Configuration des accès</div>
+						<div class="synapse-admin-card__subtitle">Identifiants et clés API</div>
+					</div>
+				</div>
+
+				<div class="synapse-admin-card__body">
+					{% set creds = provider.credentials %}
+					{% for name, config in fields %}
+						<div class="synapse-admin-form-group">
+							<label for="{{ name }}" class="synapse-admin-label">
+								{{ config.label }}
+								{% if config.required|default(false) %}
+									<span class="synapse-admin-text-danger">*</span>
+								{% endif %}
+							</label>
+
+							{% if config.type == 'select' %}
+								<select id="{{ name }}" name="{{ name }}" class="synapse-admin-input" {% if config.required|default(false) %}required{% endif %}>
+									<option value="">— Sélectionner —</option>
+									{% for value, label in config.options %}
+										<option value="{{ value }}" {% if (creds[name]|default(config.value|default(''))) == value %}selected{% endif %}>
+											{{ label }}
+										</option>
+									{% endfor %}
+								</select>
+
+							{% elseif config.type == 'textarea' %}
+								<textarea id="{{ name }}" name="{{ name }}" class="synapse-admin-input synapse-admin-input--mono" rows="8" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) and (creds[name]|default('')) is empty %}required{% endif %}></textarea>
+								{% if (creds[name]|default('')) is not empty %}
+									<p class="synapse-admin-text-xs synapse-admin-text-success synapse-admin-mt-sm">
+										<i data-lucide="check-circle-2"></i>
+										Valeur déjà configurée. Laissez vide pour conserver, remplissez pour modifier.
+									</p>
+								{% endif %}
+
+							{% elseif config.type == 'password' %}
+								<input type="password" id="{{ name }}" name="{{ name }}" class="synapse-admin-input" placeholder="{% if (creds[name]|default('')) is not empty %}Valeur configurée — laisser vide pour conserver{% else %}{{ config.placeholder|default('') }}{% endif %}" {% if config.required|default(false) and (creds[name]|default('')) is empty %}required{% endif %}>
+								{% if (creds[name]|default('')) is not empty %}
+									<p class="synapse-admin-text-xs synapse-admin-text-success synapse-admin-mt-sm">
+										<i data-lucide="check-circle-2"></i>
+										Valeur déjà configurée. Laissez vide pour conserver, remplissez pour modifier.
+									</p>
+								{% endif %}
+
+							{% else %}
+								<input type="text" id="{{ name }}" name="{{ name }}" value="{{ (creds[name]|default(config.value|default(''))) }}" class="synapse-admin-input" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) %}required{% endif %}>
+							{% endif %}
+
+							{% if config.help is defined %}
+								<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">{{ config.help|raw }}</p>
+							{% endif %}
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+
+		{# ── Fallback JSON brut ────────────────────────────────────────────────── #}
+		{% else %}
+			<div class="synapse-admin-card synapse-admin-mb-lg">
+				<div class="synapse-admin-card__header">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+						<i data-lucide="braces"></i>
+					</div>
+					<div>
+						<div class="synapse-admin-card__title">Credentials (JSON)</div>
+						<div class="synapse-admin-card__subtitle">Format JSON brut</div>
+					</div>
+				</div>
+
+				<div class="synapse-admin-card__body">
+					<div class="synapse-admin-form-group">
+						<label for="credentials_raw" class="synapse-admin-label">Données JSON</label>
+						<textarea id="credentials_raw" name="credentials_raw" class="synapse-admin-input synapse-admin-input--mono" rows="10">{{ provider.credentials|json_encode(constant('JSON_PRETTY_PRINT')) }}</textarea>
+					</div>
+				</div>
+			</div>
+		{% endif %}
+
+		{# ── Actions ───────────────────────────────────────────────────────────── #}
+		<div class="synapse-admin-sticky-save">
+			<a href="#" class="synapse-admin-btn synapse-admin-btn--primary" onclick="document.querySelector('form').submit(); return false;">
+				<i data-lucide="save"></i>
+				Enregistrer
+			</a>
+			<a href="{{ path('synapse_admin_configuration_llm', {tab: 'fournisseurs'}) }}" class="synapse-admin-btn synapse-admin-btn--ghost">
+				<i data-lucide="x"></i>
+				Annuler
+			</a>
+		</div>
+
+	</form>
+
+{% endblock %}

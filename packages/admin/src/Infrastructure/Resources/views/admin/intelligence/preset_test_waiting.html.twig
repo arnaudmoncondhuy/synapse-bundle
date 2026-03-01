@@ -1,0 +1,138 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Test preset :
+	{{ preset.name }}
+	| Intelligence | Synapse Administration Synapse
+{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Intelligence</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-topbar__breadcrumb">Presets</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">Test :
+		{{ preset.name }}</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--warning">
+					<i data-lucide="flask-conical"></i>
+				</span>
+				Test du preset :
+				{{ preset.name }}
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Appel LLM réel en cours — vérification des paramètres envoyés et analyse automatique.
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+				<i data-lucide="arrow-left"></i>
+				Retour aux presets
+			</a>
+		</div>
+	</div>
+
+	{# ── Attente ───────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-card" id="waiting-card">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
+				<i data-lucide="loader-2" style="animation: synapse-admin-spin 1.5s linear infinite; display: inline-block;"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Test en cours…</div>
+				<div class="synapse-admin-card__subtitle" id="status-message">
+					Vérification config → appel LLM → analyse des résultats
+				</div>
+			</div>
+		</div>
+		<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+			<div class="synapse-admin-progress synapse-admin-mb-lg" style="position: relative; overflow: hidden;">
+				<div id="progress-bar" style="
+					position: absolute;
+					height: 100%;
+					width: 35%;
+					background: var(--synapse-admin-color-warning, #f59e0b);
+					animation: synapse-admin-indeterminate 2.1s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+				"></div>
+			</div>
+
+			<div class="synapse-admin-alert synapse-admin-alert--info">
+				<i data-lucide="info"></i>
+				<span>
+					Le test effectue un appel LLM réel avec debug activé, puis une analyse automatique.
+					Cela peut prendre jusqu'à
+					<strong>2 minutes</strong>
+					selon le provider. Veuillez ne pas quitter cette page.
+				</span>
+			</div>
+		</div>
+	</div>
+
+	<div id="result-container"></div>
+
+	<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+	<style>
+		@keyframes synapse-admin-indeterminate {
+			0% { left: -35%; right: 100%; }
+			60% { left: 100%; right: -90%; }
+			100% { left: 100%; right: -90%; }
+		}
+		@keyframes synapse-admin-spin {
+			from { transform: rotate(0deg); }
+			to { transform: rotate(360deg); }
+		}
+	</style>
+
+	<script>
+		const statusUrl = '{{ path('synapse_admin_presets_test_status', {id: preset.id}) }}';
+		let pollCount = 0;
+		const MAX_POLLS = 60; // 60 × 3s = 3 min max
+
+		function poll() {
+			fetch(statusUrl)
+				.then(r => {
+					// Le serveur renvoie du HTML quand le rapport est prêt
+					if (r.headers.get('content-type')?.includes('text/html')) {
+						return r.text().then(html => {
+							document.getElementById('waiting-card').style.display = 'none';
+							document.getElementById('result-container').innerHTML = html;
+							if (typeof lucide !== 'undefined') lucide.createIcons();
+						});
+					}
+
+					return r.json().then(data => {
+						if (data.status === 'not_found') {
+							document.getElementById('status-message').textContent =
+								'Session expirée. Veuillez relancer le test.';
+							return;
+						}
+
+						pollCount++;
+						if (pollCount < MAX_POLLS) {
+							setTimeout(poll, 3000);
+						} else {
+							document.getElementById('status-message').textContent =
+								'Délai dépassé (3 min). Vérifiez les logs serveur ou relancez le test.';
+						}
+					});
+				})
+				.catch(() => {
+					// Erreur réseau : réessayer dans 5s
+					if (pollCount < MAX_POLLS) {
+						pollCount++;
+						setTimeout(poll, 5000);
+					}
+				});
+		}
+
+		document.addEventListener('DOMContentLoaded', () => setTimeout(poll, 1000));
+	</script>
+
+{% endblock %}

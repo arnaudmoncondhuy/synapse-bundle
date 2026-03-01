@@ -1,0 +1,241 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Historique | Conversation | Synapse Administration Synapse
+{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Conversation</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">Historique</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--warning">
+					<i data-lucide="messages-square"></i>
+				</span>
+				Historique global
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Accès Break-Glass : toutes les conversations de tous les utilisateurs.
+				            Chaque consultation est enregistrée dans les logs d'audit.
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			<span class="synapse-admin-badge synapse-admin-badge--warning">
+				<i data-lucide="shield-alert"></i>
+				Break-Glass — Accès audité
+			</span>
+		</div>
+	</div>
+
+	{# ── Alerte RGPD ──────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-alert synapse-admin-alert--warning synapse-admin-mb-xl">
+		<i data-lucide="shield-alert"></i>
+		<div>
+			<strong>Avertissement RGPD.</strong>
+			Cet accès vous permet de lire des conversations
+			        privées. Votre identité, l'heure et l'adresse IP sont enregistrées dans le journal d'audit.
+			        N'utilisez cet outil que dans le cadre de votre mission.
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="messages-square"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Conversations totales</div>
+					<div class="synapse-admin-kpi__value">{{ total }}</div>
+					<div class="synapse-admin-kpi__sub">toutes périodes confondues</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--info">
+					<i data-lucide="file-text"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Cette page</div>
+					<div class="synapse-admin-kpi__value">{{ conversations|length }}</div>
+					<div class="synapse-admin-kpi__sub">sur
+						{{ limit }}
+						max par page</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--neutral">
+					<i data-lucide="layers"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Pages</div>
+					<div class="synapse-admin-kpi__value">{{ page }}
+						/
+						{{ pages }}</div>
+					<div class="synapse-admin-kpi__sub">pagination
+						{{ limit }}/page</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Tableau des conversations ─────────────────────────────────────────────── #}
+	<div class="synapse-admin-card">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+				<i data-lucide="list"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Conversations</div>
+				<div class="synapse-admin-card__subtitle">
+					Triées par date de création décroissante · Accès complet Break-Glass
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-table-container">
+			<table class="synapse-admin-table">
+				<thead>
+					<tr>
+						<th>Conversation</th>
+						<th>Propriétaire</th>
+						<th>Messages</th>
+						<th>Créée le</th>
+						<th>Statut</th>
+						<th class="synapse-admin-table__cell--actions">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for conversation in conversations %}
+						<tr>
+
+							{# ── Titre / ID ──────────────────────────────────── #}
+							<td>
+								<div class="synapse-admin-table-cell-label">
+									<div class="synapse-admin-table-cell-label__icon synapse-admin-kpi__icon--primary">
+										<i data-lucide="message-circle"></i>
+									</div>
+									<div>
+										<div class="synapse-admin-table-cell-label__title">
+											{{ conversation.title ?: 'Sans titre' }}
+										</div>
+										<div class="synapse-admin-table-cell-label__sub synapse-admin-font-mono">
+											{{ conversation.id|slice(0, 8) }}…
+										</div>
+									</div>
+								</div>
+							</td>
+
+							{# ── Propriétaire ────────────────────────────────── #}
+							<td>
+								<div class="synapse-admin-table-cell-label">
+									<div class="synapse-admin-table-cell-label__icon synapse-admin-kpi__icon--neutral">
+										<i data-lucide="user"></i>
+									</div>
+									<div>
+										<div class="synapse-admin-table-cell-label__title">
+											{{ conversation.owner.identifier ?? '—' }}
+										</div>
+									</div>
+								</div>
+							</td>
+
+							{# ── Nombre de messages ──────────────────────────── #}
+							<td class="synapse-admin-table__cell--mono">
+								{{ conversation.messages|length }}
+							</td>
+
+							{# ── Date ────────────────────────────────────────── #}
+							<td class="synapse-admin-table__cell--muted">
+								{{ conversation.createdAt|date('d/m/Y H:i') }}
+							</td>
+
+							{# ── Statut ──────────────────────────────────────── #}
+							<td>
+								{% if conversation.status is defined %}
+									{% set statusVal = conversation.status.value ?? conversation.status %}
+									<span class="synapse-admin-badge synapse-admin-badge--{{ statusVal == 'active' ? 'success' : 'neutral' }}">
+										{{ statusVal|capitalize }}
+									</span>
+								{% else %}
+									<span class="synapse-admin-badge synapse-admin-badge--neutral">—</span>
+								{% endif %}
+							</td>
+
+							{# ── Actions ─────────────────────────────────────── #}
+							<td
+								class="synapse-admin-table__cell--actions">
+								{# Lien vers la vue détaillée V1 (Break-Glass) #}
+								<a href="{{ path('synapse_admin_conversation_view', {id: conversation.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon" data-synapse-admin-tooltip="Voir la conversation">
+									<i data-lucide="eye"></i>
+								</a>
+							</td>
+
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="6">
+								<div class="synapse-admin-empty">
+									<div class="synapse-admin-empty__icon">
+										<i data-lucide="messages-square"></i>
+									</div>
+									<div class="synapse-admin-empty__title">Aucune conversation</div>
+									<p class="synapse-admin-empty__description">
+										Les conversations seront listées ici une fois que des utilisateurs
+										                                    auront commencé à interagir avec l'IA.
+									</p>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+		{# ── Pagination ──────────────────────────────────────────────────────── #}
+		{% if pages > 1 %}
+			<div class="synapse-admin-card__footer synapse-admin-justify-between">
+				<span class="synapse-admin-text-sm synapse-admin-text-muted">
+					Page
+					{{ page }}
+					sur
+					{{ pages }}
+					—
+					{{ total }}
+					conversation{{ total > 1 ? 's' : '' }}
+				</span>
+				<div class="synapse-admin-flex synapse-admin-gap-sm">
+					{% if page > 1 %}
+						<a href="{{ path('synapse_admin_history', {page: page - 1}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+							<i data-lucide="chevron-left"></i>
+							Précédent
+						</a>
+					{% endif %}
+					{% if page < pages %}
+						<a href="{{ path('synapse_admin_history', {page: page + 1}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+							Suivant
+							<i data-lucide="chevron-right"></i>
+						</a>
+					{% endif %}
+				</div>
+			</div>
+		{% endif %}
+
+	</div>
+
+{% endblock %}

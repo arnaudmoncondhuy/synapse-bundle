@@ -1,7 +1,3 @@
 synapse_admin:
-    resource: '@SynapseAdminBundle/src/Admin/Controller/'
-    type: attribute
-
-synapse_admin_v2:
-    resource: '@SynapseAdminBundle/src/AdminV2/Controller/'
+    resource: '../src/Admin/Controller/'
     type: attribute

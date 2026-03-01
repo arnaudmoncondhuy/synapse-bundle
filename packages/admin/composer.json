@@ -1,9 +1,16 @@
 {
     "name": "arnaudmoncondhuy/synapse-admin",
     "type": "symfony-bundle",
-    "description": "Interface d'administration pour Synapse — Interfaces d'administration V1 et V2 pour gérer les présets IA, fournisseurs, conversations et mémoires.",
+    "description": "Interface d'administration pour Synapse — Gestion des présets IA, fournisseurs, missions, conversations et mémoires.",
     "license": "PolyForm-Noncommercial-1.0.0",
-    "keywords": ["symfony", "ai", "admin", "bundle", "llm", "backoffice"],
+    "keywords": [
+        "symfony",
+        "ai",
+        "admin",
+        "bundle",
+        "llm",
+        "backoffice"
+    ],
     "authors": [
         {
             "name": "Arnaud Moncondhuy",
@@ -36,7 +43,9 @@
         "symfony": {
             "allow-contrib": "true",
             "asset-mapper": {
-                "paths": ["assets/"]
+                "paths": [
+                    "assets/"
+                ]
             }
         }
     },

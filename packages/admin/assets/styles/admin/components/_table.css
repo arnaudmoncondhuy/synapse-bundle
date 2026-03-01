@@ -1,0 +1,120 @@
+/**
+ * Synapse Administration Synapse - Tables
+ */
+
+/* ── Container ───────────────────────────────────────────────────────────────── */
+
+.synapse-admin-table-container {
+    overflow-x: auto;
+    border-radius: var(--synapse-admin-radius-lg);
+    border: 1px solid var(--synapse-admin-border);
+}
+
+/* ── Table ───────────────────────────────────────────────────────────────────── */
+
+.synapse-admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────────── */
+
+.synapse-admin-table th {
+    text-align: left;
+    padding: 0.875rem var(--synapse-admin-space-lg);
+    background: var(--synapse-admin-bg-app);
+    color: var(--synapse-admin-text-tertiary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    border-bottom: 1px solid var(--synapse-admin-border);
+    white-space: nowrap;
+}
+
+.synapse-admin-table th:first-child {
+    border-top-left-radius: var(--synapse-admin-radius-lg);
+}
+
+.synapse-admin-table th:last-child {
+    border-top-right-radius: var(--synapse-admin-radius-lg);
+}
+
+/* ── Cells ───────────────────────────────────────────────────────────────────── */
+
+.synapse-admin-table td {
+    padding: var(--synapse-admin-space-md) var(--synapse-admin-space-lg);
+    border-bottom: 1px solid var(--synapse-admin-border-light);
+    color: var(--synapse-admin-text-primary);
+    vertical-align: middle;
+}
+
+.synapse-admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.synapse-admin-table tbody tr {
+    background: var(--synapse-admin-bg-surface);
+    transition: background var(--synapse-admin-transition-fast);
+}
+
+.synapse-admin-table tbody tr:hover {
+    background: rgba(139, 92, 246, 0.02);
+}
+
+/* ── Cell variants ────────────────────────────────────────────────────────────── */
+
+.synapse-admin-table__cell--muted {
+    color: var(--synapse-admin-text-tertiary);
+    font-size: 0.8rem;
+}
+
+.synapse-admin-table__cell--mono {
+    font-family: var(--synapse-admin-font-mono);
+    font-size: 0.82rem;
+}
+
+.synapse-admin-table__cell--actions {
+    text-align: right;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--synapse-admin-space-xs);
+}
+
+/* ── Info avec icône dans cellule ────────────────────────────────────────────── */
+
+.synapse-admin-table-cell-label {
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-sm);
+}
+
+.synapse-admin-table-cell-label__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--synapse-admin-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.synapse-admin-table-cell-label__icon i {
+    width: 16px;
+    height: 16px;
+}
+
+.synapse-admin-table-cell-label__title {
+    font-weight: 600;
+    color: var(--synapse-admin-text-primary);
+    font-size: 0.875rem;
+}
+
+.synapse-admin-table-cell-label__sub {
+    font-size: 0.75rem;
+    color: var(--synapse-admin-text-tertiary);
+    margin-top: 1px;
+}

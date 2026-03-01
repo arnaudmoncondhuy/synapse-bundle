@@ -1,0 +1,252 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Tableau de bord | Synapse Administration Synapse{% endblock %}
+
+{% block admin_breadcrumb %}
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <span class="synapse-admin-topbar__current">Tableau de bord</span>
+{% endblock %}
+
+{% block admin_content %}
+
+{# ── Banner onboarding (uniquement si aucun provider configuré) ────────────── #}
+{% if kpis.active_providers == 0 %}
+<div class="synapse-admin-onboarding-banner synapse-admin-mb-lg" id="onboarding-banner">
+    <div class="synapse-admin-onboarding-banner__content">
+        <div class="synapse-admin-onboarding-banner__header">
+            <i data-lucide="rocket"></i>
+            <span>Commencez ici</span>
+        </div>
+        <ol class="synapse-admin-onboarding-banner__steps">
+            <li class="synapse-admin-onboarding-banner__step">
+                <span class="synapse-admin-onboarding-banner__number">1</span>
+                <span>Ajouter un fournisseur LLM</span>
+            </li>
+            <li class="synapse-admin-onboarding-banner__step">
+                <span class="synapse-admin-onboarding-banner__number">2</span>
+                <span>Configurer un modèle</span>
+            </li>
+            <li class="synapse-admin-onboarding-banner__step">
+                <span class="synapse-admin-onboarding-banner__number">3</span>
+                <span>Créer un preset et l'activer</span>
+            </li>
+        </ol>
+    </div>
+    <div class="synapse-admin-onboarding-banner__actions">
+        <a href="{{ path('synapse_admin_configuration_llm') }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+            <i data-lucide="plus"></i>
+            Ajouter mon premier provider
+        </a>
+        <button type="button" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" onclick="document.getElementById('onboarding-banner').remove();">
+            <i data-lucide="x"></i>
+        </button>
+    </div>
+</div>
+{% endif %}
+
+{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+<div class="synapse-admin-page-header">
+    <div class="synapse-admin-page-header__info">
+        <h1 class="synapse-admin-page-title">
+            <span class="synapse-admin-page-title__icon" style="background:var(--synapse-admin-primary-light);color:var(--synapse-admin-primary);">
+                <i data-lucide="layout-dashboard"></i>
+            </span>
+            Tableau de bord
+        </h1>
+        <p class="synapse-admin-page-subtitle">
+            Vue d'ensemble de votre instance Synapse — utilisation, coûts et état du système.
+        </p>
+    </div>
+    <div class="synapse-admin-page-header__actions">
+    </div>
+</div>
+
+{# ── KPIs — 3 colonnes ────────────────────────────────────────────────────── #}
+<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
+
+    {# Tokens consommés (7j) #}
+    <div class="synapse-admin-card synapse-admin-card--hover">
+        <div class="synapse-admin-kpi">
+            <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary">
+                <i data-lucide="zap"></i>
+            </div>
+            <div class="synapse-admin-kpi__body">
+                <div class="synapse-admin-kpi__label">Tokens (7 jours)</div>
+                <div class="synapse-admin-kpi__value">{{ (kpis.tokens_7d ?? 0)|number_format(0, ',', ' ') }}</div>
+                <div class="synapse-admin-kpi__sub">
+                    {% if (kpis.costs_eur ?? 0) > 0 or (kpis.costs_usd ?? 0) > 0 %}
+                        <span>
+                            {% if (kpis.costs_eur ?? 0) > 0 %}
+                                ~€{{ kpis.costs_eur|number_format(4) }}
+                            {% endif %}
+                            {% if (kpis.costs_eur ?? 0) > 0 and (kpis.costs_usd ?? 0) > 0 %}
+                                /
+                            {% endif %}
+                            {% if (kpis.costs_usd ?? 0) > 0 %}
+                                ~${{ kpis.costs_usd|number_format(4) }}
+                            {% endif %}
+                        </span>
+                    {% else %}
+                        <span style="color:var(--synapse-admin-text-secondary);">Aucune donnée</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Souvenirs mémorisés #}
+    <div class="synapse-admin-card synapse-admin-card--hover">
+        <div class="synapse-admin-kpi">
+            <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--success">
+                <i data-lucide="sparkles"></i>
+            </div>
+            <div class="synapse-admin-kpi__body">
+                <div class="synapse-admin-kpi__label">Souvenirs</div>
+                <div class="synapse-admin-kpi__value">{{ kpis.total_memories ?? 0 }}</div>
+                <div class="synapse-admin-kpi__sub">mémorisés par les utilisateurs</div>
+            </div>
+        </div>
+    </div>
+
+    {# Configuration active #}
+    {% set is_fully_configured = active_preset and kpis.active_providers > 0 %}
+    <div class="synapse-admin-card synapse-admin-card--hover {% if not is_fully_configured %}synapse-admin-card--warning{% endif %}">
+        <div class="synapse-admin-kpi">
+            <div class="synapse-admin-kpi__icon {% if is_fully_configured %}synapse-admin-kpi__icon--primary{% else %}synapse-admin-kpi__icon--warning{% endif %}">
+                <i data-lucide="sliders-horizontal"></i>
+            </div>
+            <div class="synapse-admin-kpi__body">
+                <div class="synapse-admin-kpi__label">Configuration LLM active</div>
+                {% if is_fully_configured %}
+                    <div class="synapse-admin-kpi__value" style="font-size:1.1rem;">{{ active_preset.name }}</div>
+                    <div class="synapse-admin-kpi__sub">{{ active_preset.providerName }} · {{ active_preset.model }}</div>
+                {% else %}
+                    <div class="synapse-admin-kpi__value" style="font-size:1rem;color:var(--synapse-admin-warning);">Incomplète</div>
+                    <div class="synapse-admin-kpi__sub">
+                        {% if not active_preset %}
+                            <a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" style="color:var(--synapse-admin-warning);font-weight:500;">Créer un preset</a>
+                        {% elseif kpis.active_providers == 0 %}
+                            <a href="{{ path('synapse_admin_configuration_llm', {tab: 'fournisseurs'}) }}" style="color:var(--synapse-admin-warning);font-weight:500;">Configurer provider</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{# ── Activité tokens (30j) — pleine largeur ───────────────────────────────── #}
+<div class="synapse-admin-card synapse-admin-mb-xl">
+    <div class="synapse-admin-card__header">
+        <div class="synapse-admin-card__header-icon" style="background:var(--synapse-admin-primary-light);color:var(--synapse-admin-primary);">
+            <i data-lucide="bar-chart-3"></i>
+        </div>
+        <div>
+            <div class="synapse-admin-card__title">Activité tokens (30 jours)</div>
+            <div class="synapse-admin-card__subtitle">Consommation quotidienne</div>
+        </div>
+        <div class="synapse-admin-card__header-actions">
+            <a href="{{ path('synapse_admin_analytics') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+                Voir tout <i data-lucide="arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+        {% if daily_usage is empty %}
+            <div class="synapse-admin-empty" style="padding:2rem;">
+                <div class="synapse-admin-empty__icon"><i data-lucide="bar-chart-2"></i></div>
+                <p class="synapse-admin-empty__description">Aucune donnée d'activité pour cette période.</p>
+            </div>
+        {% else %}
+            {% set max_tokens = 1 %}
+            {% for day in daily_usage %}
+                {% if (day.total_tokens ?? 0) > max_tokens %}
+                    {% set max_tokens = day.total_tokens %}
+                {% endif %}
+            {% endfor %}
+            <div class="synapse-admin-chart">
+                {% for day in daily_usage|slice(-15) %}
+                    <div class="synapse-admin-chart__row">
+                        <span class="synapse-admin-chart__label">{{ day.date|date('d/m') }}</span>
+                        <div class="synapse-admin-chart__track">
+                            <div class="synapse-admin-chart__bar"
+                                 style="width: {{ max_tokens > 0 ? ((day.total_tokens ?? 0) / max_tokens * 100)|round ~ '%' : '0%' }}">
+                            </div>
+                        </div>
+                        <span class="synapse-admin-chart__value">{{ ((day.total_tokens ?? 0) / 1000)|number_format(1) }}k</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Top modèles (7j) ─────────────────────────────────────────────────────── #}
+{% if usage_by_model is not empty %}
+<div class="synapse-admin-card synapse-admin-mb-xl">
+    <div class="synapse-admin-card__header">
+        <div class="synapse-admin-card__header-icon" style="background:hsl(38,90%,95%);color:var(--synapse-admin-warning);">
+            <i data-lucide="cpu"></i>
+        </div>
+        <div>
+            <div class="synapse-admin-card__title">Top modèles (7 jours)</div>
+            <div class="synapse-admin-card__subtitle">Consommation par modèle LLM</div>
+        </div>
+    </div>
+    <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+        <div style="display:flex;flex-direction:column;gap:0.5rem;">
+            {% for model in usage_by_model|slice(0, 6) %}
+                <div class="synapse-admin-stat-row">
+                    <div class="synapse-admin-stat-row__label">
+                        <i data-lucide="cpu"></i>
+                        <span>{{ model.model_id ?? 'Inconnu' }}</span>
+                    </div>
+                    <div class="synapse-admin-stat-row__value">
+                        {{ ((model.total_tokens ?? 0) / 1000)|number_format(1) }}k tokens
+                        {% if model.cost is defined and model.cost > 0 %}
+                            {% set symbol = (model.currency ?? 'USD') == 'EUR' ? '€' : '$' %}
+                            · <span class="synapse-admin-text-muted">{{ symbol }}{{ model.cost|number_format(4) }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── Raccourcis ───────────────────────────────────────────────────────────── #}
+<div class="synapse-admin-grid synapse-admin-grid--2">
+
+    <a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-card synapse-admin-card--hover" style="text-decoration:none;display:block;">
+        <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.625rem;">
+                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary" style="width:36px;height:36px;border-radius:0.625rem;">
+                    <i data-lucide="sliders-horizontal" style="width:16px;height:16px;"></i>
+                </div>
+                <strong style="font-size:0.9rem;color:var(--synapse-admin-text-primary);">Presets LLM</strong>
+            </div>
+            <p style="font-size:0.8rem;color:var(--synapse-admin-text-secondary);margin:0;">
+                Configurez les paramètres de génération IA (température, top-p, modèle…)
+            </p>
+        </div>
+    </a>
+
+    <a href="{{ path('synapse_admin_embeddings') }}" class="synapse-admin-card synapse-admin-card--hover" style="text-decoration:none;display:block;">
+        <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.625rem;">
+                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--success" style="width:36px;height:36px;border-radius:0.625rem;">
+                    <i data-lucide="database-zap" style="width:16px;height:16px;"></i>
+                </div>
+                <strong style="font-size:0.9rem;color:var(--synapse-admin-text-primary);">Embeddings & RAG</strong>
+            </div>
+            <p style="font-size:0.8rem;color:var(--synapse-admin-text-secondary);margin:0;">
+                Paramétrez votre base vectorielle, modèles d'embedding et stratégie de chunking.
+            </p>
+        </div>
+    </a>
+
+</div>
+
+{% endblock %}

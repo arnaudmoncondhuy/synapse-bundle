@@ -12,7 +12,7 @@ Par défaut, l'interface est accessible via l'URL : `/synapse/admin`.
 
 ## 📊 Tableau de Bord (Dashboard)
 
-Le Dashboard de l'**Admin V2** est le point central pour monitorer votre système :
+Le Dashboard de l'**Administration Synapse** est le point central pour monitorer votre système :
 *   **Analytics de Consommation** : Vue d'ensemble des tokens utilisés et des coûts associés par jour/mois.
 *   **Monitoring par Module** : Suivi détaillé de l'usage (Chat, Missions, Tâches système).
 *   **État des Services** : Liste des providers (Gemini, OpenAI, etc.) actuellement activés.

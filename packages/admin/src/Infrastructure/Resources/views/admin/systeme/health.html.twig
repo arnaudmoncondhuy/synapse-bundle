@@ -1,0 +1,113 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Santé système | Système | Synapse Administration Synapse
+{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Système</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">Santé</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--{{ overall_status == 'ok' ? 'success' : (overall_status == 'warning' ? 'warning' : 'danger') }}">
+					<i data-lucide="activity"></i>
+				</span>
+				Santé du système
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				État des composants critiques de l'infrastructure Synapse.
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			<span class="synapse-admin-badge synapse-admin-badge--{{ overall_status == 'ok' ? 'success' : (overall_status == 'warning' ? 'warning' : 'danger') }}">
+				<i data-lucide="{{ overall_status == 'ok' ? 'check-circle-2' : (overall_status == 'warning' ? 'alert-triangle' : 'x-circle') }}"></i>
+				Statut global :
+				{{ overall_status == 'ok' ? 'Opérationnel' : (overall_status == 'warning' ? 'Avertissement' : 'Erreur') }}
+			</span>
+		</div>
+	</div>
+
+	{# ── Alerte si erreur ou warning ──────────────────────────────────────────── #}
+	{% if overall_status != 'ok' %}
+		<div class="synapse-admin-alert synapse-admin-alert--{{ overall_status == 'error' ? 'danger' : 'warning' }} synapse-admin-mb-xl">
+			<i data-lucide="{{ overall_status == 'error' ? 'x-circle' : 'alert-triangle' }}"></i>
+			<div>
+				{% if overall_status == 'error' %}
+					<strong>Composant(s) en erreur.</strong>
+					Un ou plusieurs composants critiques ne répondent pas correctement.
+										                Consultez les détails ci-dessous et vérifiez les logs applicatifs.
+				{% else %}
+					<strong>Avertissement.</strong>
+					Certains composants fonctionnent mais nécessitent une attention.
+				{% endif %}
+			</div>
+		</div>
+	{% endif %}
+
+	{# ── Checks en grille ─────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--2">
+
+		{% for key, check in checks %}
+			{% set cardVariant = check.status == 'ok' ? 'synapse-admin-card--success' : (check.status == 'warning' ? 'synapse-admin-card--warning' : 'synapse-admin-card--danger') %}
+			{% set iconVariant = check.status == 'ok' ? 'success' : (check.status == 'warning' ? 'warning' : 'danger') %}
+			{% set statusIcon  = check.status == 'ok' ? 'check-circle-2' : (check.status == 'warning' ? 'alert-triangle' : 'x-circle') %}
+
+			<div class="synapse-admin-card synapse-admin-card--hover {{ cardVariant }}">
+				<div class="synapse-admin-card__header">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--{{ iconVariant }}">
+						<i data-lucide="{{ check.icon }}"></i>
+					</div>
+					<div>
+						<div class="synapse-admin-card__title">{{ check.label }}</div>
+						<div class="synapse-admin-card__subtitle synapse-admin-font-mono synapse-admin-text-xs">{{ check.detail }}</div>
+					</div>
+					<div class="synapse-admin-card__header-actions">
+						<span class="synapse-admin-badge synapse-admin-badge--{{ check.status == 'ok' ? 'success' : (check.status == 'warning' ? 'warning' : 'danger') }}">
+							<i data-lucide="{{ statusIcon }}"></i>
+							{{ check.status == 'ok' ? 'OK' : (check.status == 'warning' ? 'Warning' : 'Erreur') }}
+						</span>
+					</div>
+				</div>
+			</div>
+
+		{% endfor %}
+
+	</div>
+
+	{# ── Infos techniques ─────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-card synapse-admin-mt-xl">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
+				<i data-lucide="info"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Environnement</div>
+				<div class="synapse-admin-card__subtitle">Informations techniques sur le runtime</div>
+			</div>
+		</div>
+		<div class="synapse-admin-card__body">
+			<div class="synapse-admin-grid synapse-admin-grid--3">
+				<div>
+					<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">PHP</div>
+					<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ php_version }}</div>
+				</div>
+				<div>
+					<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">Symfony</div>
+					<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ symfony_version }}</div>
+				</div>
+				<div>
+					<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">Environnement</div>
+					<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ app.environment }}</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}

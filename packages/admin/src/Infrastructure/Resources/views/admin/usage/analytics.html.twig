@@ -1,0 +1,259 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Analytics | Usage | Synapse Administration Synapse
+{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Usage</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">Analytics</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="bar-chart-3"></i>
+				</span>
+				Analytics
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Consommation de tokens, coûts et activité sur
+				{{ period_label }}.
+			</p>
+		</div>
+		<div
+			class="synapse-admin-page-header__actions">
+			{# Sélecteur de période #}
+			<div class="synapse-admin-flex synapse-admin-gap-sm">
+				{% for days, label in {7: '7j', 30: '30j', 90: '90j'} %}
+					<a href="{{ path('synapse_admin_analytics', {period: days}) }}" class="synapse-admin-btn synapse-admin-btn--sm {{ period == days ? 'synapse-admin-btn--primary' : 'synapse-admin-btn--ghost' }}">
+						{{ label }}
+					</a>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--4 synapse-admin-mb-xl">
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="zap"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Tokens totaux</div>
+					<div class="synapse-admin-kpi__value">
+						{{ ((stats.total_tokens ?? 0) / 1000)|number_format(1) }}k
+					</div>
+					<div class="synapse-admin-kpi__sub">{{ period_label }}</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--warning">
+					<i data-lucide="dollar-sign"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Coût estimé</div>
+					<div class="synapse-admin-kpi__value">
+						{% if (costs_eur ?? 0) > 0 or (costs_usd ?? 0) > 0 %}
+							{% if (costs_eur ?? 0) > 0 %}
+								€{{ costs_eur|number_format(4) }}
+							{% endif %}
+							{% if (costs_eur ?? 0) > 0 and (costs_usd ?? 0) > 0 %}
+								/
+							{% endif %}
+							{% if (costs_usd ?? 0) > 0 %}
+								${{ costs_usd|number_format(4) }}
+							{% endif %}
+						{% else %}
+							<span style="color:var(--synapse-admin-text-secondary);">—</span>
+						{% endif %}
+					</div>
+					<div class="synapse-admin-kpi__sub">{{ period_label }}</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--success">
+					<i data-lucide="message-circle"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Conversations</div>
+					<div class="synapse-admin-kpi__value">{{ conversation_stats.count ?? 0 }}</div>
+					<div class="synapse-admin-kpi__sub">
+						{{ ((conversation_stats.total_tokens ?? 0) / 1000)|number_format(1) }}k tokens
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--info">
+					<i data-lucide="activity"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Requêtes totales</div>
+					<div class="synapse-admin-kpi__value">{{ stats.total_requests ?? 0 }}</div>
+					<div class="synapse-admin-kpi__sub">toutes sources</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Graphique d'activité + Usage par module ──────────────────────────────── #}
+	<div
+		class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-xl">
+
+		{# Activité quotidienne #}
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="bar-chart-2"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Activité quotidienne</div>
+					<div class="synapse-admin-card__subtitle">Tokens consommés par jour</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				{% if daily_usage is empty %}
+					<div class="synapse-admin-empty">
+						<div class="synapse-admin-empty__icon">
+							<i data-lucide="bar-chart-2"></i>
+						</div>
+						<p class="synapse-admin-empty__description">Aucune donnée sur cette période.</p>
+					</div>
+				{% else %}
+					{% set max_tokens = 1 %}
+					{% for day in daily_usage %}
+						{% if (day.total_tokens ?? 0) > max_tokens %}
+							{% set max_tokens = day.total_tokens %}
+						{% endif %}
+					{% endfor %}
+					<div class="synapse-admin-chart">
+						{% for day in daily_usage|slice(-15) %}
+							<div class="synapse-admin-chart__row">
+								<span class="synapse-admin-chart__label">{{ day.date|date('d/m') }}</span>
+								<div class="synapse-admin-chart__track">
+									<div class="synapse-admin-chart__bar" style="width: {{ max_tokens > 0 ? ((day.total_tokens ?? 0) / max_tokens * 100)|round ~ '%' : '0%' }}"></div>
+								</div>
+								<span class="synapse-admin-chart__value">
+									{{ ((day.total_tokens ?? 0) / 1000)|number_format(1) }}k
+								</span>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+			</div>
+		</div>
+
+		{# Usage par module #}
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--success">
+					<i data-lucide="layers"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Usage par module</div>
+					<div class="synapse-admin-card__subtitle">Répartition des tokens</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--flush">
+				{% if usage_by_module is empty %}
+					<div class="synapse-admin-empty">
+						<div class="synapse-admin-empty__icon">
+							<i data-lucide="layers"></i>
+						</div>
+						<p class="synapse-admin-empty__description">Aucune donnée sur cette période.</p>
+					</div>
+				{% else %}
+					{% for module, data in usage_by_module %}
+						<div class="synapse-admin-stat-row">
+							<div class="synapse-admin-stat-row__label">
+								<i data-lucide="{{ module == 'chat' ? 'message-circle' : (module == 'embedding' ? 'database-zap' : 'cpu') }}"></i>
+								<span>{{ module|capitalize }}</span>
+							</div>
+							<div class="synapse-admin-stat-row__value">
+								{{ ((data.total_tokens ?? 0) / 1000)|number_format(1) }}k tokens
+							</div>
+						</div>
+					{% endfor %}
+				{% endif %}
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Top modèles ──────────────────────────────────────────────────────────── #}
+	{% if usage_by_model is not empty %}
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
+					<i data-lucide="cpu"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Top modèles</div>
+					<div class="synapse-admin-card__subtitle">Consommation par modèle —
+						{{ period_label }}</div>
+				</div>
+			</div>
+			<div class="synapse-admin-table-container">
+				<table class="synapse-admin-table">
+					<thead>
+						<tr>
+							<th>Modèle</th>
+							<th>Requêtes</th>
+							<th>Tokens</th>
+							<th>Coût estimé</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for model in usage_by_model|slice(0, 10) %}
+							<tr>
+								<td>
+									<div class="synapse-admin-table-cell-label">
+										<div class="synapse-admin-table-cell-label__icon synapse-admin-kpi__icon--neutral">
+											<i data-lucide="cpu"></i>
+										</div>
+										<div>
+											<div class="synapse-admin-table-cell-label__title">
+												{{ model.model_id ?? 'Inconnu' }}
+											</div>
+										</div>
+									</div>
+								</td>
+								<td class="synapse-admin-table__cell--mono">{{ model.count ?? 0 }}</td>
+								<td class="synapse-admin-table__cell--mono">
+									{{ ((model.total_tokens ?? 0) / 1000)|number_format(1) }}k
+								</td>
+								<td class="synapse-admin-table__cell--mono">
+									{% if model.cost is defined and model.cost > 0 %}
+										{% set symbol = (model.currency ?? 'USD') == 'EUR' ? '€' : '$' %}
+										{{ symbol }}{{ model.cost|number_format(4) }}
+									{% else %}
+										<span class="synapse-admin-text-tertiary">—</span>
+									{% endif %}
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	{% endif %}
+
+{% endblock %}

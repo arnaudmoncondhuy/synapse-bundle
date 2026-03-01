@@ -1,0 +1,659 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Configuration LLM | Intelligence | Synapse Administration Synapse{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Intelligence</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">Configuration LLM</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="settings-2"></i>
+				</span>
+				Configuration LLM
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Gérez vos fournisseurs, modèles et presets de génération depuis un seul endroit.
+			</p>
+		</div>
+		{% if tab == 'presets' %}
+			<div class="synapse-admin-page-header__actions">
+				<a href="{{ path('synapse_admin_presets_new') }}" class="synapse-admin-btn synapse-admin-btn--primary">
+					<i data-lucide="plus"></i>
+					Nouveau Preset
+				</a>
+			</div>
+		{% endif %}
+	</div>
+
+	{# ── Onglets ──────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-tabs synapse-admin-mb-lg">
+		<a href="{{ path('synapse_admin_configuration_llm', {tab: 'fournisseurs'}) }}"
+		   class="synapse-admin-tab {% if tab == 'fournisseurs' %}synapse-admin-tab--active{% endif %}">
+			<i data-lucide="plug"></i>
+			Fournisseurs LLM
+		</a>
+		<a href="{{ path('synapse_admin_configuration_llm', {tab: 'modeles'}) }}"
+		   class="synapse-admin-tab {% if tab == 'modeles' %}synapse-admin-tab--active{% endif %}">
+			<i data-lucide="cpu"></i>
+			Modèles
+		</a>
+		<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}"
+		   class="synapse-admin-tab {% if tab == 'presets' %}synapse-admin-tab--active{% endif %}">
+			<i data-lucide="sliders-horizontal"></i>
+			Presets
+		</a>
+	</div>
+
+	{# ═══════════════════════════════════════════════════════════════════════════ #}
+	{# ONGLET : FOURNISSEURS                                                      #}
+	{# ═══════════════════════════════════════════════════════════════════════════ #}
+	{% if tab == 'fournisseurs' %}
+
+		{% set sorted_providers = providers|sort((a, b) =>
+			(a.isConfigured and a.isEnabled ? 0 : (a.isConfigured ? 1 : 2)) -
+			(b.isConfigured and b.isEnabled ? 0 : (b.isConfigured ? 1 : 2))
+		) %}
+
+		<div class="synapse-admin-grid synapse-admin-grid--2">
+			{% for provider in sorted_providers %}
+
+				{% if provider.isConfigured and provider.isEnabled %}
+					{% set variant = 'synapse-admin-card--success' %}
+					{% set badge   = 'synapse-admin-badge--success' %}
+					{% set icon    = 'check-circle-2' %}
+					{% set label   = 'Actif' %}
+				{% elseif provider.isConfigured and not provider.isEnabled %}
+					{% set variant = '' %}
+					{% set badge   = 'synapse-admin-badge--neutral' %}
+					{% set icon    = 'circle-slash' %}
+					{% set label   = 'Désactivé' %}
+				{% else %}
+					{% set variant = 'synapse-admin-card--warning' %}
+					{% set badge   = 'synapse-admin-badge--warning' %}
+					{% set icon    = 'alert-triangle' %}
+					{% set label   = 'Non configuré' %}
+				{% endif %}
+
+				{% set providerIcon = provider.name == 'gemini' ? 'zap' : (provider.name == 'ovh' ? 'cloud' : 'server') %}
+
+				<div class="synapse-admin-card synapse-admin-card--hover {{ variant }}">
+
+					<div class="synapse-admin-card__header">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+							<i data-lucide="{{ providerIcon }}"></i>
+						</div>
+						<div>
+							<div class="synapse-admin-card__title">{{ provider.label }}</div>
+							<div class="synapse-admin-card__subtitle synapse-admin-font-mono">{{ provider.name }}</div>
+						</div>
+						<div class="synapse-admin-card__header-actions">
+							<span class="synapse-admin-badge {{ badge }}">
+								<i data-lucide="{{ icon }}"></i>
+								{{ label }}
+							</span>
+							{% if preset_count_by_provider[provider.id] is defined and preset_count_by_provider[provider.id] > 0 %}
+								<span class="synapse-admin-badge synapse-admin-badge--neutral">
+									<i data-lucide="sliders-horizontal"></i>
+									{{ preset_count_by_provider[provider.id] }}p
+								</span>
+							{% endif %}
+						</div>
+					</div>
+
+					<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+						{% if provider.isConfigured %}
+							<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+								{% for key, value in provider.credentials %}
+									<div class="synapse-admin-table-cell-label">
+										<div class="synapse-admin-table-cell-label__icon synapse-admin-kpi__icon--neutral">
+											<i data-lucide="key-round"></i>
+										</div>
+										<div>
+											<div class="synapse-admin-table-cell-label__title">{{ key }}</div>
+											<div class="synapse-admin-table-cell-label__sub synapse-admin-font-mono synapse-admin-truncate">
+												{% if value is not empty %}
+													●●●●●●●●
+													<span class="synapse-admin-text-tertiary">(configuré)</span>
+												{% else %}
+													<em class="synapse-admin-text-tertiary">Non renseigné</em>
+												{% endif %}
+											</div>
+										</div>
+									</div>
+								{% endfor %}
+							</div>
+						{% else %}
+							<div class="synapse-admin-empty">
+								<div class="synapse-admin-empty__icon">
+									<i data-lucide="key-round"></i>
+								</div>
+								<p class="synapse-admin-empty__description">
+									Aucun credential configuré. Cliquez sur "Configurer" pour renseigner
+									les paramètres de connexion à ce fournisseur.
+								</p>
+							</div>
+						{% endif %}
+					</div>
+
+					<div class="synapse-admin-card__footer">
+						<div class="synapse-admin-flex synapse-admin-gap-sm">
+
+						{% if provider.isConfigured %}
+							<button type="button" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" onclick="testProvider({{ provider.id }}, this)" data-csrf-token="{{ csrf_token('synapse_provider_test_' ~ provider.id) }}">
+								<i data-lucide="flask-conical"></i>
+								Tester
+							</button>
+						{% endif %}
+					<a href="{{ path('synapse_admin_providers_edit', {id: provider.id}) }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+								<i data-lucide="settings"></i>
+								{{ provider.isConfigured ? 'Reconfigurer' : 'Configurer' }}
+							</a>
+						</div>
+					</div>
+
+				</div>
+			{% else %}
+				<div class="synapse-admin-card">
+					<div class="synapse-admin-empty">
+						<div class="synapse-admin-empty__icon"><i data-lucide="plug"></i></div>
+						<div class="synapse-admin-empty__title">Aucun fournisseur trouvé</div>
+						<p class="synapse-admin-empty__description">Vérifiez la configuration de votre bundle Synapse.</p>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+
+	{# ═══════════════════════════════════════════════════════════════════════════ #}
+	{# ONGLET : MODÈLES                                                           #}
+	{# ═══════════════════════════════════════════════════════════════════════════ #}
+	{% elseif tab == 'modeles' %}
+
+		<div class="synapse-admin-page-header__actions synapse-admin-mb-md" id="filters-toolbar" style="justify-content: flex-start;">
+			<button type="button" id="filter-thinking" onclick="toggleFilter('thinking', this)" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" data-synapse-admin-tooltip="Filtrer les modèles avec réflexion (thinking)">
+				<i data-lucide="brain"></i>
+				Thinking
+			</button>
+			<button type="button" id="filter-tools" onclick="toggleFilter('tools', this)" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" data-synapse-admin-tooltip="Filtrer les modèles avec appels d'outils">
+				<i data-lucide="wrench"></i>
+				Tools
+			</button>
+			<button type="button" onclick="resetFilters()" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+				<i data-lucide="x"></i>
+				Réinitialiser
+			</button>
+		</div>
+
+		{% if models is empty %}
+			<div class="synapse-admin-card">
+				<div class="synapse-admin-empty">
+					<div class="synapse-admin-empty__icon"><i data-lucide="cpu"></i></div>
+					<div class="synapse-admin-empty__title">Aucun modèle disponible</div>
+					<p class="synapse-admin-empty__description">
+						Configurez d'abord un fournisseur LLM dans l'onglet Fournisseurs.
+					</p>
+					<a href="{{ path('synapse_admin_configuration_llm', {tab: 'fournisseurs'}) }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-mt-md">
+						<i data-lucide="plug"></i>
+						Configurer un fournisseur
+					</a>
+				</div>
+			</div>
+		{% else %}
+			<div class="synapse-admin-card">
+				<div class="synapse-admin-table-container">
+					<table class="synapse-admin-table" id="table-models">
+						<thead>
+							<tr>
+								<th>Modèle / Label</th>
+								<th>Fournisseur</th>
+								<th>Capacités</th>
+								<th>Pricing (1M tokens)</th>
+								<th>Statut</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for model in models %}
+								{% set safeId = model.id|replace({'.': '-', ':': '-'}) %}
+								<tr class="model-row"
+								    data-thinking="{{ model.capabilities.thinking ? '1' : '0' }}"
+								    data-tools="{{ model.capabilities.functionCalling ? '1' : '0' }}">
+
+									<td>
+										<div class="synapse-admin-table-cell-label">
+											<div class="synapse-admin-table-cell-label__icon synapse-admin-kpi__icon--neutral">
+												<i data-lucide="cpu"></i>
+											</div>
+											<div>
+												<div class="synapse-admin-table-cell-label__title">{{ model.label }}</div>
+												<div class="synapse-admin-table-cell-label__sub synapse-admin-font-mono">{{ model.id }}</div>
+											</div>
+										</div>
+									</td>
+
+									<td>
+										<span class="synapse-admin-badge synapse-admin-badge--neutral">
+											<i data-lucide="{{ model.provider == 'gemini' ? 'zap' : (model.provider == 'ovh' ? 'cloud' : 'server') }}"></i>
+											{{ model.provider|upper }}
+										</span>
+									</td>
+
+									<td>
+										<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center">
+											{% if model.capabilities.thinking %}
+												<i data-lucide="brain" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Réflexion (thinking / raisonnement avancé)"></i>
+											{% endif %}
+											{% if model.capabilities.functionCalling %}
+												<i data-lucide="wrench" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Outils (appels de fonctions)"></i>
+											{% endif %}
+											{% if model.capabilities.streaming %}
+												<i data-lucide="activity" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Réponse en streaming"></i>
+											{% endif %}
+											{% if model.capabilities.safetySettings %}
+												<i data-lucide="shield" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Paramètres de sécurité"></i>
+											{% endif %}
+										</div>
+									</td>
+
+									<td class="synapse-admin-table__cell--mono synapse-admin-text-sm">
+										<div>
+											<span class="synapse-admin-text-tertiary synapse-admin-text-xs">In.</span>
+											{% if model.pricing_input %}
+												{{ model.pricing_input|number_format(4) }}{{ model.currency }}
+											{% else %}
+												<span class="synapse-admin-text-tertiary">—</span>
+											{% endif %}
+										</div>
+										<div>
+											<span class="synapse-admin-text-tertiary synapse-admin-text-xs">Out.</span>
+											{% if model.pricing_output %}
+												{{ model.pricing_output|number_format(4) }}{{ model.currency }}
+											{% else %}
+												<span class="synapse-admin-text-tertiary">—</span>
+											{% endif %}
+										</div>
+									</td>
+
+									<td>
+										{% if model.is_enabled %}
+											<span class="synapse-admin-badge synapse-admin-badge--success">
+												<i data-lucide="circle-check"></i>
+												Activé
+											</span>
+										{% else %}
+											<span class="synapse-admin-badge synapse-admin-badge--neutral">
+												<i data-lucide="circle-slash"></i>
+												Désactivé
+											</span>
+										{% endif %}
+									</td>
+
+									<td>
+										<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center">
+											<form action="{{ path('synapse_admin_models_toggle', {modelId: model.id}) }}" method="POST">
+												<input type="hidden" name="_token" value="{{ csrf_token('synapse_model_toggle_' ~ model.id) }}">
+												<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon"
+												        data-synapse-admin-tooltip="{{ model.is_enabled ? 'Désactiver' : 'Activer' }}">
+													<i data-lucide="{{ model.is_enabled ? 'eye-off' : 'eye' }}"></i>
+												</button>
+											</form>
+											<button type="button" onclick="toggleSettings('{{ safeId }}')"
+											        class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon"
+											        data-synapse-admin-tooltip="Configurer">
+												<i data-lucide="settings"></i>
+											</button>
+										</div>
+									</td>
+								</tr>
+
+								<tr id="settings-{{ safeId }}" hidden class="settings-row">
+									<td colspan="6">
+										<form action="{{ path('synapse_admin_models_pricing', {modelId: model.id}) }}" method="POST" class="synapse-admin-collapsible__content">
+											<input type="hidden" name="_token" value="{{ csrf_token('synapse_model_pricing_' ~ model.id) }}">
+											<div class="synapse-admin-grid synapse-admin-grid--3">
+												<div>
+													<label class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">Libellé personnalisé</label>
+													<input type="text" name="label" value="{{ model.label }}" class="synapse-admin-input synapse-admin-mt-sm">
+												</div>
+												<div>
+													<label class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">
+														Tarif Input ({{ model.currency }}/1M tokens)
+													</label>
+													<input type="number" name="pricing_input" step="0.0001" min="0"
+													       value="{{ model.pricing_input }}" class="synapse-admin-input synapse-admin-mt-sm" placeholder="Ex : 0.075">
+												</div>
+												<div>
+													<label class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">
+														Tarif Output ({{ model.currency }}/1M tokens)
+													</label>
+													<input type="number" name="pricing_output" step="0.0001" min="0"
+													       value="{{ model.pricing_output }}" class="synapse-admin-input synapse-admin-mt-sm" placeholder="Ex : 0.30">
+												</div>
+											</div>
+											<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-mt-md">
+												<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+													<i data-lucide="save"></i>
+													Enregistrer
+												</button>
+												<button type="button" onclick="toggleSettings('{{ safeId }}')" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+													Annuler
+												</button>
+											</div>
+										</form>
+									</td>
+								</tr>
+
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		{% endif %}
+
+	{# ═══════════════════════════════════════════════════════════════════════════ #}
+	{# ONGLET : PRESETS                                                           #}
+	{# ═══════════════════════════════════════════════════════════════════════════ #}
+	{% else %}
+
+		<div class="synapse-admin-grid synapse-admin-grid--2">
+			{% for item in presets %}
+				{% set preset = item.entity %}
+				{% set caps   = item.caps %}
+			{% set isValid = item['isValid'] %}
+			{% set invalidReason = item['invalidReason'] %}
+
+				<div class="synapse-admin-card synapse-admin-card--hover {{ preset.isActive ? 'synapse-admin-card--active synapse-admin-card--success' : '' }}">
+
+					<div class="synapse-admin-card__header">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+							<i data-lucide="sliders-horizontal"></i>
+						</div>
+						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
+								<span class="synapse-admin-card__title">{{ preset.name }}</span>
+								{% if preset.isActive %}
+									<span class="synapse-admin-badge synapse-admin-badge--success">
+										<i data-lucide="check-circle-2"></i>
+										Actif
+									</span>
+								{% endif %}
+						{% if not isValid %}
+							<span class="synapse-admin-badge synapse-admin-badge--warning" data-synapse-admin-tooltip="{{ invalidReason }}">
+								<i data-lucide="alert-triangle"></i>
+								Non valide
+							</span>
+						{% endif %}
+							</div>
+							<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center">
+								<span class="synapse-admin-badge synapse-admin-badge--neutral">
+									<i data-lucide="{{ preset.providerName == 'gemini' ? 'zap' : 'cloud' }}"></i>
+									{{ preset.providerName|upper }}
+								</span>
+								<span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-truncate">
+									<i data-lucide="cpu"></i>
+									{{ preset.model }}
+								</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+						<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center synapse-admin-mb-md">
+							<span class="synapse-admin-text-xs synapse-admin-text-tertiary">Capacités</span>
+							{% if caps.thinking %}
+								<i data-lucide="brain" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Réflexion (thinking / raisonnement avancé)"></i>
+							{% endif %}
+							{% if caps.functionCalling %}
+								<i data-lucide="wrench" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Outils (appels de fonctions)"></i>
+							{% endif %}
+							{% if caps.streaming %}
+								<i data-lucide="activity" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Réponse en streaming"></i>
+							{% endif %}
+							{% if caps.safetySettings %}
+								<i data-lucide="shield" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Paramètres de sécurité"></i>
+							{% endif %}
+						</div>
+
+						<details class="synapse-admin-collapsible">
+							<summary class="synapse-admin-collapsible__summary">
+								<div class="synapse-admin-collapsible__icon"><i data-lucide="settings-2"></i></div>
+								<div class="synapse-admin-collapsible__title">
+									Paramètres techniques
+									<div class="synapse-admin-collapsible__subtitle">
+										Temp. {{ preset.generationTemperature }} · Top-P {{ preset.generationTopP }}
+										{% if preset.generationMaxOutputTokens %} · Max {{ preset.generationMaxOutputTokens }} tokens{% endif %}
+									</div>
+								</div>
+								<i data-lucide="chevron-down" class="synapse-admin-collapsible__chevron"></i>
+							</summary>
+							<div class="synapse-admin-collapsible__content">
+								<div class="synapse-admin-grid synapse-admin-grid--3">
+									<div>
+										<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">Température</div>
+										<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ preset.generationTemperature }}</div>
+									</div>
+									<div>
+										<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">Top-P</div>
+										<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ preset.generationTopP }}</div>
+									</div>
+									<div>
+										<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">Max Tokens</div>
+										<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ preset.generationMaxOutputTokens ?: '∞' }}</div>
+									</div>
+								</div>
+								{% set systemPrompt = preset.providerOptions.system_instruction
+                                    |default(preset.providerOptions.system_prompt|default(null)) %}
+								{% if systemPrompt %}
+									<hr class="synapse-admin-divider">
+									<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold synapse-admin-mb-sm">Prompt Système</p>
+									<p class="synapse-admin-text-sm synapse-admin-text-muted">
+										{{ systemPrompt|length > 200 ? systemPrompt|slice(0, 200) ~ ' …' : systemPrompt }}
+									</p>
+								{% endif %}
+							</div>
+						</details>
+					</div>
+
+					<div class="synapse-admin-card__footer" style="overflow: visible;">
+						<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center synapse-admin-flex-wrap" style="position: relative; z-index: 10;">
+							{# Modifier #}
+							<form action="{{ path('synapse_admin_presets_edit', {id: preset.id}) }}" method="GET" class="synapse-admin-form-inline">
+								<button type="submit"
+										class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
+										data-synapse-admin-tooltip="Modifier">
+									<i data-lucide="edit-3"></i>
+								</button>
+							</form>
+
+							{# Tester #}
+							<form action="{{ path('synapse_admin_presets_test', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline">
+								<button type="submit"
+										class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
+										data-synapse-admin-tooltip="{% if isValid %}Tester{% else %}Non valide{% endif %}"
+										data-synapse-admin-tooltip-placement="top"
+										{% if not isValid %}disabled{% endif %}>
+									<i data-lucide="flask-conical"></i>
+								</button>
+							</form>
+
+							{# Dupliquer #}
+							<form action="{{ path('synapse_admin_presets_clone', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline">
+								<input type="hidden" name="_token" value="{{ csrf_token('synapse_preset_clone_' ~ preset.id) }}">
+								<button type="submit"
+										class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
+										data-synapse-admin-tooltip="Dupliquer"
+										data-synapse-admin-tooltip-placement="top">
+									<i data-lucide="copy"></i>
+								</button>
+							</form>
+
+							{# Supprimer #}
+							<form action="{{ path('synapse_admin_presets_delete', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline"
+							      onsubmit="return confirm('Supprimer le preset &quot;{{ preset.name|e('js') }}&quot; ?')">
+								<input type="hidden" name="_token" value="{{ csrf_token('synapse_preset_delete_' ~ preset.id) }}">
+								<button type="submit"
+										class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm synapse-admin-text-danger"
+										data-synapse-admin-tooltip="{% if preset.isActive %}Actif (non supprimable){% else %}Supprimer{% endif %}"
+										data-synapse-admin-tooltip-placement="top"
+										{% if preset.isActive %}disabled{% endif %}>
+									<i data-lucide="trash-2"></i>
+								</button>
+							</form>
+
+							{# Activer #}
+							<form action="{{ path('synapse_admin_presets_activate', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline">
+								<input type="hidden" name="_token" value="{{ csrf_token('synapse_preset_activate_' ~ preset.id) }}">
+								<button type="submit"
+										class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
+										data-synapse-admin-tooltip="{% if preset.isActive %}Déjà actif{% elseif isValid %}Activer{% else %}{{ invalidReason }}{% endif %}"
+										data-synapse-admin-tooltip-placement="top"
+										{% if preset.isActive or not isValid %}disabled{% endif %}>
+									<i data-lucide="check-circle-2"></i>
+								</button>
+							</form>
+						</div>
+					</div>
+
+				</div>
+			{% else %}
+				<div class="synapse-admin-card">
+					<div class="synapse-admin-empty">
+						<div class="synapse-admin-empty__icon"><i data-lucide="sliders-horizontal"></i></div>
+						<div class="synapse-admin-empty__title">Aucun preset configuré</div>
+						<p class="synapse-admin-empty__description">
+							Créez votre premier profil de génération LLM pour commencer à utiliser Synapse.
+						</p>
+						<a href="{{ path('synapse_admin_presets_new') }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-mt-md">
+							<i data-lucide="plus"></i>
+							Créer mon premier preset
+						</a>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+
+	{% endif %}
+
+	{# ── Scripts (onglet Modèles uniquement) ──────────────────────────────────── #}
+	{% if tab == 'modeles' %}
+		<script>
+			const activeFilters = new Set();
+
+			function toggleFilter(cap, btn) {
+				if (activeFilters.has(cap)) {
+					activeFilters.delete(cap);
+					btn.classList.remove('synapse-admin-btn--outline');
+					btn.classList.add('synapse-admin-btn--ghost');
+				} else {
+					activeFilters.add(cap);
+					btn.classList.remove('synapse-admin-btn--ghost');
+					btn.classList.add('synapse-admin-btn--outline');
+				}
+				applyFilters();
+			}
+
+			function applyFilters() {
+				document.querySelectorAll('.model-row').forEach(row => {
+					const show = [...activeFilters].every(cap => row.dataset[cap] === '1');
+					row.hidden = !show;
+					const settingsRow = row.nextElementSibling;
+					if (settingsRow && settingsRow.classList.contains('settings-row') && !show) {
+						settingsRow.hidden = true;
+					}
+				});
+			}
+
+			function resetFilters() {
+				activeFilters.clear();
+				['filter-thinking', 'filter-tools'].forEach(id => {
+					const btn = document.getElementById(id);
+					btn.classList.remove('synapse-admin-btn--outline');
+					btn.classList.add('synapse-admin-btn--ghost');
+				});
+				document.querySelectorAll('.model-row').forEach(row => row.hidden = false);
+			}
+
+			function toggleSettings(safeId) {
+				const row = document.getElementById('settings-' + safeId);
+				if (row) row.hidden = !row.hidden;
+			}
+		</script>
+	{% endif %}
+
+	{# ── Script: Test Provider ──────────────────────────────────────────────── #}
+	<script>
+		async function testProvider(providerId, btn) {
+			const originalHtml = btn.innerHTML;
+			const originalDisabled = btn.disabled;
+			btn.disabled = true;
+
+			// Get CSRF token from button's data attribute
+			const csrfToken = btn.getAttribute('data-csrf-token') || '';
+
+			try {
+				const formData = new FormData();
+				if (csrfToken) {
+					formData.append('_token', csrfToken);
+				}
+
+				const response = await fetch('{{ path('synapse_admin_providers_test', {'id': 'PLACEHOLDER'}) }}'.replace('PLACEHOLDER', providerId), {
+					method: 'POST',
+					headers: {
+						'X-Requested-With': 'XMLHttpRequest'
+					},
+					body: formData
+				});
+
+				const data = await response.json();
+
+				if (data.success) {
+					btn.innerHTML = '<i data-lucide="check-circle-2" style="color: #16a34a"></i> ✓ OK';
+					btn.style.backgroundColor = '#dcfce7';
+					btn.style.color = '#166534';
+					setTimeout(() => {
+						btn.innerHTML = originalHtml;
+						btn.disabled = originalDisabled;
+						btn.style.backgroundColor = '';
+						btn.style.color = '';
+						lucide.createIcons();
+					}, 3000);
+				} else {
+					btn.innerHTML = '<i data-lucide="alert-circle" style="color: #dc2626"></i> ✗ Erreur';
+					btn.style.backgroundColor = '#fee2e2';
+					btn.style.color = '#7f1d1d';
+					setTimeout(() => {
+						btn.innerHTML = originalHtml;
+						btn.disabled = originalDisabled;
+						btn.style.backgroundColor = '';
+						btn.style.color = '';
+						lucide.createIcons();
+					}, 3000);
+					if (data.error) {
+						alert('Erreur: ' + data.error);
+					}
+				}
+			} catch (error) {
+				btn.innerHTML = '<i data-lucide="alert-circle" style="color: #dc2626"></i> ✗ Erreur';
+				btn.style.backgroundColor = '#fee2e2';
+				btn.style.color = '#7f1d1d';
+				setTimeout(() => {
+					btn.innerHTML = originalHtml;
+					btn.disabled = originalDisabled;
+					btn.style.backgroundColor = '';
+					btn.style.color = '';
+					lucide.createIcons();
+				}, 3000);
+				console.error('Test failed:', error);
+			}
+		}
+	</script>
+
+{% endblock %}

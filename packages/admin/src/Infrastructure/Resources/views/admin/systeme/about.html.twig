@@ -1,0 +1,152 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}À propos | Système | Synapse Administration Synapse
+{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Système</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">À propos</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="info"></i>
+				</span>
+				À propos de Synapse
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Informations sur le bundle, la version et les dépendances de l'environnement.
+			</p>
+		</div>
+	</div>
+
+	{# ── Carte principale ─────────────────────────────────────────────────────── #}
+	<div
+		class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-xl">
+
+		{# Version du bundle #}
+		<div class="synapse-admin-card synapse-admin-card--active">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="package"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Synapse Bundle</div>
+					<div class="synapse-admin-card__subtitle">arnaud-moncondhuy/synapse-bundle</div>
+				</div>
+				<div class="synapse-admin-card__header-actions">
+					<span class="synapse-admin-badge synapse-admin-badge--primary">{{ version }}</span>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				<div class="synapse-admin-grid synapse-admin-grid--2">
+					<div>
+						<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">PHP</div>
+						<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ php_version }}</div>
+					</div>
+					<div>
+						<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">Symfony</div>
+						<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ symfony_version }}</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		{# Liens utiles #}
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
+					<i data-lucide="link"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Ressources</div>
+					<div class="synapse-admin-card__subtitle">Documentation et support</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+					<a href="https://github.com/arnaud-moncondhuy/synapse-bundle" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" target="_blank" rel="noopener">
+						<i data-lucide="github"></i>
+						GitHub
+					</a>
+					<a href="{{ path('synapse_admin_health') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+						<i data-lucide="activity"></i>
+						Santé système
+					</a>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Dépendances ──────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-card">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
+				<i data-lucide="layers"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Dépendances principales</div>
+				<div class="synapse-admin-card__subtitle">Packages Composer requis par le bundle</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-table-container">
+			<table class="synapse-admin-table">
+				<thead>
+					<tr>
+						<th>Package</th>
+						<th>Contrainte</th>
+						<th>Statut</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for package, constraint in dependencies %}
+						<tr>
+							<td>
+								<div class="synapse-admin-table-cell-label">
+									<div class="synapse-admin-table-cell-label__icon synapse-admin-kpi__icon--neutral">
+										<i data-lucide="box"></i>
+									</div>
+									<div>
+										<div class="synapse-admin-table-cell-label__title">{{ package }}</div>
+									</div>
+								</div>
+							</td>
+							<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">{{ constraint }}</td>
+							<td>
+								<span class="synapse-admin-badge synapse-admin-badge--success">
+									<i data-lucide="check-circle-2"></i>
+									OK
+								</span>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+	</div>
+
+	{# ── Crédit design ────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mt-xl">
+		<i data-lucide="sparkles"></i>
+		<div>
+			Interface
+			<strong>Administration Synapse</strong>
+			conçue avec le
+			<strong>Synapse Design System</strong>
+			(synapse-admin-*) —
+			        Glassmorphism, Lucide Icons, zéro style inline.
+			<a href="{{ path('synapse_admin_health') }}">Vérifier la santé système</a>.
+		</div>
+	</div>
+
+{% endblock %}

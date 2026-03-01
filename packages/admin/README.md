@@ -1,6 +1,6 @@
 # Synapse Admin
 
-> Admin UI for Synapse — V1 and V2 administration interfaces for managing AI presets, providers, conversations and memories.
+> Administration Synapse — Interface d'administration pour la gestion des présets IA, fournisseurs, missions, conversations et mémoires.
 
 Interface d'administration complète pour gérer **Synapse Core** : configuration des providers LLM, création de presets, historique conversationnel, gestion de mémoires, et analytics.
 
@@ -14,7 +14,7 @@ composer require arnaudmoncondhuy/synapse-admin:^0.1
 
 ## Caractéristiques
 
-### 🎛️ Admin V2 (Interface moderne)
+### 🎛️ Administration Synapse (Interface moderne)
 - **Dashboard** - Vue d'ensemble de l'utilisation
 - **Providers** - Configuration des APIs LLM (Gemini, OVH, OpenAI)
   - Gestion des credentials chiffrés
@@ -63,7 +63,7 @@ composer require arnaudmoncondhuy/synapse-admin:^0.1
 - **Gestion des Quotas** - Interface pour définir les limites de dépense (Spending Limits)
 - **Modèles & Tarifs** - Configuration des prix par million de tokens
 
-### 🎛️ Architecture Admin V2
+### 🎛️ Architecture Administration Synapse
 - **Hybrid HTML/JSON form pattern** - Formulaires dynamiques s'adaptant au provider LLM
 - **Live preset testing** - Test des presets avec streaming en temps réel dans l'admin
 - **Gestion des Missions** - Interface de configuration des agents (Missions & Tons)
@@ -79,7 +79,7 @@ ArnaudMoncondhuy\SynapseAdmin\SynapseAdminBundle::class => ['all' => true],
 ```yaml
 synapse_admin:
     resource: '@SynapseAdminBundle/config/routes.yaml'
-    prefix: /synapse/admin-v2
+    prefix: /synapse/admin
 ```
 
 **config/packages/security.yaml** - Protéger les routes admin :
@@ -91,17 +91,17 @@ access_control:
 
 ## Routes disponibles
 
-### Admin V2 Dashboard
-- `GET /synapse/admin-v2` - Dashboard principal
-- `GET /synapse/admin-v2/intelligence/configuration-llm` - Configuration LLM (onglets : fournisseurs, modeles, presets)
+### Administration Synapse Dashboard
+- `GET /synapse/admin` - Dashboard principal
+- `GET /synapse/admin/intelligence/configuration-llm` - Configuration LLM (onglets : fournisseurs, modeles, presets)
 - Presets (CRUD) : `GET/POST .../presets/new`, `GET/POST .../presets/{id}/edit`, etc.
 - Modèles (actions) : `POST .../modeles/{modelId}/toggle`, `POST .../modeles/{modelId}/pricing`
-- `GET /synapse/admin-v2/conversation/history` - Historique conversations
-- `GET /synapse/admin-v2/memoire/embeddings` - Gestion embeddings
-- `GET /synapse/admin-v2/securite/api_keys` - API Keys
-- `GET /synapse/admin-v2/securite/audit` - Logs d'audit
-- `GET /synapse/admin-v2/systeme/health` - Health check
-- `GET /synapse/admin-v2/systeme/debug` - Debug info
+- `GET /synapse/admin/conversation/history` - Historique conversations
+- `GET /synapse/admin/memoire/embeddings` - Gestion embeddings
+- `GET /synapse/admin/securite/api_keys` - API Keys
+- `GET /synapse/admin/securite/audit` - Logs d'audit
+- `GET /synapse/admin/systeme/health` - Health check
+- `GET /synapse/admin/systeme/debug` - Debug info
 
 ### Admin V1 (Rétro-compatible)
 - `GET /synapse/admin/dashboard`
@@ -114,7 +114,7 @@ access_control:
 Les templates sont accessibles via `@Synapse` :
 
 ```twig
-{% include '@Synapse/admin_v2/layout/base.html.twig' %}
+{% include '@Synapse/admin/layout/base.html.twig' %}
 {% include '@Synapse/admin/layout.html.twig' %}
 ```
 

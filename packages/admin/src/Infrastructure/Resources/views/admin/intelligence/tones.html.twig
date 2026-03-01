@@ -1,0 +1,139 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Tons de réponse | Intelligence | Synapse Administration Synapse{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_providers') }}" class="synapse-admin-topbar__breadcrumb">Intelligence</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">Tons de réponse</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="mic-2"></i>
+				</span>
+				Tons de réponse
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Définissez le style de communication de votre IA. Les tons agissent uniquement sur le registre et le format
+				des réponses, jamais sur la capacité de raisonnement.
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			<a href="{{ path('synapse_admin_tones_new') }}" class="synapse-admin-btn synapse-admin-btn--primary">
+				<i data-lucide="plus"></i>
+				Nouveau ton
+			</a>
+		</div>
+	</div>
+
+	<div class="synapse-admin-grid synapse-admin-grid--2">
+		{% for tone in tones %}
+			<div class="synapse-admin-card synapse-admin-card--hover {{ not tone.isActive ? 'synapse-admin-card--inactive' : '' }}">
+
+				<div class="synapse-admin-card__header">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary" style="font-size: 1.5rem; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center;">
+						{{ tone.emoji }}
+					</div>
+
+					<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+						<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
+							<span class="synapse-admin-card__title">{{ tone.name }}</span>
+							{% if tone.isBuiltin %}
+								<span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="Ton intégré au bundle — ne peut pas être supprimé">
+									<i data-lucide="lock"></i>
+									Builtin
+								</span>
+							{% endif %}
+							{% if not tone.isActive %}
+								<span class="synapse-admin-badge synapse-admin-badge--warning">
+									<i data-lucide="eye-off"></i>
+									Inactif
+								</span>
+							{% endif %}
+						</div>
+						<div class="synapse-admin-text-sm synapse-admin-text-muted">
+							<code class="synapse-admin-font-mono" style="font-size: 0.75rem;">{{ tone.key }}</code>
+						</div>
+					</div>
+				</div>
+
+				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+					<p class="synapse-admin-text-sm synapse-admin-text-muted synapse-admin-mb-md">{{ tone.description }}</p>
+
+					<details class="synapse-admin-collapsible">
+						<summary class="synapse-admin-collapsible__summary">
+							<div class="synapse-admin-collapsible__icon">
+								<i data-lucide="file-text"></i>
+							</div>
+							<div class="synapse-admin-collapsible__title">
+								Prompt système
+								<div class="synapse-admin-collapsible__subtitle">
+									{{ tone.systemPrompt|slice(0, 60) ~ '…' }}
+								</div>
+							</div>
+							<i data-lucide="chevron-down" class="synapse-admin-collapsible__chevron"></i>
+						</summary>
+						<div class="synapse-admin-collapsible__content">
+							<p class="synapse-admin-text-sm synapse-admin-font-mono" style="white-space: pre-wrap; word-break: break-word;">{{ tone.systemPrompt }}</p>
+						</div>
+					</details>
+				</div>
+
+				<div class="synapse-admin-card__footer" style="overflow: visible;">
+					<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center" style="position: relative; z-index: 10;">
+
+						{# Modifier #}
+						<form action="{{ path('synapse_admin_tones_edit', {id: tone.id}) }}" method="GET" class="synapse-admin-form-inline">
+							<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="Modifier">
+								<i data-lucide="edit-3"></i>
+							</button>
+						</form>
+
+						{# Activer / Désactiver #}
+						<form action="{{ path('synapse_admin_tones_toggle', {id: tone.id}) }}" method="POST" class="synapse-admin-form-inline">
+							<input type="hidden" name="_token" value="{{ csrf_token('synapse_tone_toggle_' ~ tone.id) }}">
+							<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
+									data-synapse-admin-tooltip="{{ tone.isActive ? 'Désactiver' : 'Activer' }}">
+								{% if tone.isActive %}
+									<i data-lucide="eye-off"></i>
+								{% else %}
+									<i data-lucide="eye"></i>
+								{% endif %}
+							</button>
+						</form>
+
+						{# Supprimer (désactivé si builtin) #}
+						<form action="{{ path('synapse_admin_tones_delete', {id: tone.id}) }}" method="POST" class="synapse-admin-form-inline"
+							{% if not tone.isBuiltin %}onsubmit="return confirm('Supprimer le ton « {{ tone.name }} » ?')"{% endif %}>
+							<input type="hidden" name="_token" value="{{ csrf_token('synapse_tone_delete_' ~ tone.id) }}">
+							<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm synapse-admin-text-danger"
+									data-synapse-admin-tooltip="{{ tone.isBuiltin ? 'Builtin — non supprimable' : 'Supprimer' }}"
+									{% if tone.isBuiltin %}disabled{% endif %}>
+								<i data-lucide="trash-2"></i>
+							</button>
+						</form>
+
+					</div>
+				</div>
+
+			</div>
+		{% else %}
+			<div class="synapse-admin-empty-state" style="grid-column: 1 / -1;">
+				<i data-lucide="mic-off" class="synapse-admin-empty-state__icon"></i>
+				<p class="synapse-admin-empty-state__title">Aucun ton configuré</p>
+				<p class="synapse-admin-empty-state__subtitle">Lancez la fixture ou créez votre premier ton personnalisé.</p>
+				<a href="{{ path('synapse_admin_tones_new') }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-mt-md">
+					<i data-lucide="plus"></i>
+					Créer un ton
+				</a>
+			</div>
+		{% endfor %}
+	</div>
+
+{% endblock %}

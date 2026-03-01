@@ -1,0 +1,46 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}{{ page_title ?? 'Coming Soon' }} | Synapse Administration Synapse{% endblock %}
+
+{% block admin_breadcrumb %}
+    {% if breadcrumb_section is defined %}
+        <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+        <span>{{ breadcrumb_section }}</span>
+    {% endif %}
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <span class="synapse-admin-topbar__current">{{ page_title ?? 'Bientôt disponible' }}</span>
+{% endblock %}
+
+{% block admin_content %}
+<div class="synapse-admin-page-header">
+    <div class="synapse-admin-page-header__info">
+        <h1 class="synapse-admin-page-title">
+            <span class="synapse-admin-page-title__icon"
+                  style="background:{{ icon_bg ?? 'var(--synapse-admin-primary-light)' }}; color:{{ icon_color ?? 'var(--synapse-admin-primary)' }};">
+                <i data-lucide="{{ icon ?? 'sparkles' }}"></i>
+            </span>
+            {{ page_title ?? 'Bientôt disponible' }}
+        </h1>
+        {% if page_subtitle is defined %}
+            <p class="synapse-admin-page-subtitle">{{ page_subtitle }}</p>
+        {% endif %}
+    </div>
+</div>
+
+{# Zone Coming Soon #}
+<div class="synapse-admin-card">
+    <div class="synapse-admin-empty" style="padding: 6rem 2rem;">
+        <div class="synapse-admin-empty__icon" style="width:80px;height:80px;background:var(--synapse-admin-primary-light);color:var(--synapse-admin-primary);">
+            <i data-lucide="{{ icon ?? 'construction' }}" style="width:36px;height:36px;"></i>
+        </div>
+        <h2 class="synapse-admin-empty__title">{{ page_title ?? 'Fonctionnalité en cours de développement' }}</h2>
+        <p class="synapse-admin-empty__description">
+            {{ coming_soon_message ?? 'Cette section sera disponible dans une prochaine version de l\'Administration Synapse. Elle est déjà planifiée dans la feuille de route Synapse.' }}
+        </p>
+        <a href="{{ path('synapse_admin_dashboard') }}" class="synapse-admin-btn synapse-admin-btn--primary" style="margin-top:1.5rem;">
+            <i data-lucide="arrow-left"></i>
+            Retour au tableau de bord
+        </a>
+    </div>
+</div>
+{% endblock %}

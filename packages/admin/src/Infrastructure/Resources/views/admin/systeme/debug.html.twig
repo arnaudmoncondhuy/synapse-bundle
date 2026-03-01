@@ -1,0 +1,169 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Debug Logs | Système | Synapse Administration Synapse
+{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Système</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">Debug LLM</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--warning">
+					<i data-lucide="bug"></i>
+				</span>
+				Journaux de debug
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Traces des échanges LLM enregistrées quand le mode debug est actif sur la configuration.
+				            Activez le mode debug dans
+				<a href="{{ path('synapse_admin_settings') }}">Paramètres</a>.
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			{% if logs|length > 0 %}
+				<form action="{{ path('synapse_admin_debug_clear') }}" method="POST">
+					<input type="hidden" name="token" value="{{ csrf_token('debug_clear') }}">
+					<button type="submit" class="synapse-admin-btn synapse-admin-btn--danger synapse-admin-btn--sm" onclick="return confirm('Supprimer les {{ total }} logs de debug ?')">
+						<i data-lucide="trash-2"></i>
+						Vider les logs
+					</button>
+				</form>
+			{% endif %}
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--warning">
+					<i data-lucide="bug"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Logs en base</div>
+					<div class="synapse-admin-kpi__value">{{ total }}</div>
+					<div class="synapse-admin-kpi__sub">traces LLM stockées</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--info">
+					<i data-lucide="eye"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Affichés</div>
+					<div class="synapse-admin-kpi__value">{{ logs|length }}</div>
+					<div class="synapse-admin-kpi__sub">100 derniers max</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ logs|length > 0 ? 'warning' : 'success' }}">
+					<i data-lucide="{{ logs|length > 0 ? 'activity' : 'check-circle-2' }}"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Mode debug</div>
+					<div class="synapse-admin-kpi__value">{{ logs|length > 0 ? 'Actif' : 'Inactif' }}</div>
+					<div class="synapse-admin-kpi__sub">selon Paramètres</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Journal ───────────────────────────────────────────────────────────────── #}
+	{% if logs|length == 0 %}
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-empty">
+				<div class="synapse-admin-empty__icon">
+					<i data-lucide="bug-off"></i>
+				</div>
+				<div class="synapse-admin-empty__title">Aucun log de debug</div>
+				<p class="synapse-admin-empty__description">
+					Activez le
+					<strong>mode debug</strong>
+					dans les
+					<a href="{{ path('synapse_admin_settings') }}">Paramètres globaux</a>
+					puis relancez quelques échanges pour voir les traces apparaître ici.
+				</p>
+			</div>
+		</div>
+	{% else %}
+
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
+					<i data-lucide="list-ordered"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Traces récentes</div>
+					<div class="synapse-admin-card__subtitle">Chaque ligne correspond à un échange LLM tracé</div>
+				</div>
+			</div>
+
+			<div class="synapse-admin-table-container">
+				<table class="synapse-admin-table">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Module</th>
+							<th>Modèle</th>
+							<th>Tokens</th>
+							<th>Date</th>
+							<th class="synapse-admin-table__cell--actions">Détail</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for log in logs %}
+							{% set data = log.data ?? {} %}
+							<tr>
+								<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">
+									{{ log.debugId|slice(0, 8) }}…
+								</td>
+								<td>
+									<span class="synapse-admin-badge synapse-admin-badge--neutral">
+										{{ data.module ?? '—' }}
+									</span>
+								</td>
+								<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">
+									{{ data.model ?? '—' }}
+								</td>
+								<td class="synapse-admin-table__cell--mono">
+									{% set tokens = data.usage ?? data.token_usage ?? null %}
+									{% if tokens %}
+										{{ (tokens.total_tokens ?? (tokens.prompt_tokens ?? 0) + (tokens.completion_tokens ?? 0)) }}
+									{% else %}
+										—
+									{% endif %}
+								</td>
+								<td class="synapse-admin-table__cell--muted">
+									{{ log.createdAt is defined ? log.createdAt|date('d/m H:i:s') : '—' }}
+								</td>
+								<td class="synapse-admin-table__cell--actions">
+									<a href="{{ path('synapse_debug_show', {id: log.debugId}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon" target="_blank" data-synapse-admin-tooltip="Ouvrir le rapport détaillé">
+										<i data-lucide="external-link"></i>
+									</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+	{% endif %}
+
+{% endblock %}

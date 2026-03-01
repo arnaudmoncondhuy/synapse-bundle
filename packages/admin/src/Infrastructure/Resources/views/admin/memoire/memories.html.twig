@@ -1,0 +1,188 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Souvenirs | Mémoire | Synapse Administration Synapse{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Mémoire</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">Souvenirs</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="sparkles"></i>
+				</span>
+				Souvenirs
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Mémoires long terme confirmées par les utilisateurs. Vérifiez ici que le flux
+				« proposition → confirmation » fonctionne correctement.
+			</p>
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="sparkles"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Souvenirs total</div>
+					<div class="synapse-admin-kpi__value">{{ total }}</div>
+					<div class="synapse-admin-kpi__sub">tous utilisateurs confondus</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--info">
+					<i data-lucide="file-text"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Cette page</div>
+					<div class="synapse-admin-kpi__value">{{ memories|length }}</div>
+					<div class="synapse-admin-kpi__sub">sur {{ limit }} max par page</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--neutral">
+					<i data-lucide="layers"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Pages</div>
+					<div class="synapse-admin-kpi__value">{{ page }} / {{ pages }}</div>
+					<div class="synapse-admin-kpi__sub">pagination {{ limit }}/page</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	{# ── Tableau des souvenirs ────────────────────────────────────────────────── #}
+	<div class="synapse-admin-card">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+				<i data-lucide="list"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Liste des souvenirs</div>
+				<div class="synapse-admin-card__subtitle">
+					Triés par date de création décroissante
+				</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-table-container">
+			<table class="synapse-admin-table">
+				<thead>
+					<tr>
+						<th>Contenu</th>
+						<th>Utilisateur</th>
+						<th>Scope</th>
+						<th>Type</th>
+						<th>Créé le</th>
+						<th class="synapse-admin-table__cell--actions">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for memory in memories %}
+						<tr>
+							<td>
+								<div class="synapse-admin-table-cell-label">
+									<div class="synapse-admin-table-cell-label__icon synapse-admin-kpi__icon--primary">
+										<i data-lucide="sparkles"></i>
+									</div>
+									<div>
+										<div class="synapse-admin-table-cell-label__title synapse-admin-truncate" data-synapse-admin-tooltip="{{ memory.content|e('html_attr') }}">
+											{{ memory.content|length > 80 ? memory.content|slice(0, 80) ~ '…' : memory.content }}
+										</div>
+										<div class="synapse-admin-table-cell-label__sub synapse-admin-font-mono">#{{ memory.id }}</div>
+									</div>
+								</div>
+							</td>
+							<td>
+								<div class="synapse-admin-table-cell-label">
+									<div class="synapse-admin-table-cell-label__icon synapse-admin-kpi__icon--neutral">
+										<i data-lucide="user"></i>
+									</div>
+									<div>
+										<div class="synapse-admin-table-cell-label__title">{{ memory.userId ?? '—' }}</div>
+									</div>
+								</div>
+							</td>
+							<td>
+								<span class="synapse-admin-badge synapse-admin-badge--neutral">{{ memory.scope }}</span>
+							</td>
+							<td class="synapse-admin-table__cell--muted">{{ memory.sourceType }}</td>
+							<td class="synapse-admin-table__cell--muted">{{ memory.createdAt|date('d/m/Y H:i') }}</td>
+							<td class="synapse-admin-table__cell--actions">
+								<form action="{{ path('synapse_admin_memories_delete', { id: memory.id }) }}" method="POST" class="synapse-admin-form-inline">
+									<input type="hidden" name="token" value="{{ csrf_token('synapse_admin_memories_delete') }}">
+									<input type="hidden" name="page" value="{{ page }}">
+									<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--danger synapse-admin-btn--icon"
+									        data-synapse-admin-tooltip="Supprimer ce souvenir"
+									        onclick="return confirm('Supprimer ce souvenir ?');">
+										<i data-lucide="trash-2"></i>
+									</button>
+								</form>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="6">
+								<div class="synapse-admin-empty">
+									<div class="synapse-admin-empty__icon">
+										<i data-lucide="sparkles"></i>
+									</div>
+									<div class="synapse-admin-empty__title">Aucun souvenir</div>
+									<p class="synapse-admin-empty__description">
+										Les souvenirs apparaîtront ici une fois que les utilisateurs auront
+										confirmé des mémoires proposées par l'IA lors des conversations.
+									</p>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+		{# ── Pagination ────────────────────────────────────────────────────────── #}
+		{% if pages > 1 %}
+			<div class="synapse-admin-card__footer synapse-admin-justify-between">
+				<span class="synapse-admin-text-sm synapse-admin-text-muted">
+					Page {{ page }} sur {{ pages }} — {{ total }} souvenir{{ total != 1 ? 's' : '' }}
+				</span>
+				<div class="synapse-admin-flex synapse-admin-gap-sm">
+					{% if page > 1 %}
+						<a href="{{ path('synapse_admin_memories', { page: page - 1 }) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+							<i data-lucide="chevron-left"></i>
+							Précédent
+						</a>
+					{% endif %}
+					{% if page < pages %}
+						<a href="{{ path('synapse_admin_memories', { page: page + 1 }) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+							Suivant
+							<i data-lucide="chevron-right"></i>
+						</a>
+					{% endif %}
+				</div>
+			</div>
+		{% endif %}
+
+	</div>
+
+{% endblock %}
