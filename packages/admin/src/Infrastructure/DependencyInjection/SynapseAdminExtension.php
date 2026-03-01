@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseAdmin\Infrastructure\DependencyInjection;
 
-use ArnaudMoncondhuy\SynapseAdmin\Admin\Twig\SynapseRuntime;
+use ArnaudMoncondhuy\SynapseAdmin\Infrastructure\Twig\SynapseRuntime;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -28,11 +28,7 @@ class SynapseAdminExtension extends Extension implements PrependExtensionInterfa
     public function prepend(ContainerBuilder $container): void
     {
         // Enregistrement du namespace Twig @Synapse
-        $viewsPath = \dirname(__DIR__, 2) . '/Resources/views';
-        if (!is_dir($viewsPath)) {
-            // Fallback for vendor install
-            $viewsPath = \dirname(__DIR__) . '/Resources/views';
-        }
+        $viewsPath = \dirname(__DIR__) . '/Resources/views';
 
         $container->prependExtensionConfig('twig', [
             'paths' => [

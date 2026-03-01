@@ -12,60 +12,13 @@ services:
         tags: ['controller.service_arguments']
 
     # ── Twig Integration ──────────────────────────────────────────────────────
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Twig\SynapseRuntime:
+    ArnaudMoncondhuy\SynapseAdmin\Infrastructure\Twig\SynapseRuntime:
         tags: ['twig.runtime']
 
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Twig\SynapseTwigExtension:
+    ArnaudMoncondhuy\SynapseAdmin\Infrastructure\Twig\SynapseTwigExtension:
         tags: ['twig.extension']
 
-    # ── Controllers V1 (Admin — individuels) ──────────────────────────────────
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\ChatUiController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\DashboardController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseChat\Core\Controller\Api\ChatApiController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseChat\Core\Controller\Api\ConversationApiController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseChat\Core\Controller\Api\ResetController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\ProvidersController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\ModelsController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\PresetsController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\PresetTestController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\ToolsController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\SettingsController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\EmbeddingSettingsController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\DebugLogsController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\DebugController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\AnalyticsController:
-        tags: ['controller.service_arguments']
-
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\ConversationController:
-        tags: ['controller.service_arguments']
+    # Les contrôleurs V1 seront supprimés après validation du déplacement des services Twig.
 
     # ── Accounting (Admin feature) ────────────────────────────────────────────
     ArnaudMoncondhuy\SynapseCore\Core\Accounting\TokenAccountingService: ~

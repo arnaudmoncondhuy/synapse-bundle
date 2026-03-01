@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ArnaudMoncondhuy\SynapseAdmin\Admin\Controller;
+namespace ArnaudMoncondhuy\SynapseChat\Infrastructure\Controller;
 
 use ArnaudMoncondhuy\SynapseCore\Core\Manager\ConversationManager;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
@@ -13,11 +13,10 @@ use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * Contrôleur UI de chat fourni par le bundle.
+ * Contrôleur UI de chat fourni par le bundle Chat.
  *
- * Expose la route `/synapse/chat` prête à l'emploi pour tout projet
- * intégrant le bundle. Le template peut être surchargé via
- * `templates/bundles/SynapseBundle/chat/page.html.twig`.
+ * Expose la route `/synapse/chat` prête à l'emploi.
+ * Le template peut être surchargé via `templates/bundles/SynapseChatBundle/chat/page.html.twig`.
  */
 #[Route('/synapse/chat', name: 'synapse_chat', methods: ['GET'])]
 class ChatUiController extends AbstractController
