@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -42,5 +44,14 @@ jobs:
           git add .
           git commit -m "Sync from monorepo" --allow-empty || true
           git push origin main
+
+          # Handle tags: if triggered by a tag, create the same tag in target repo
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG_NAME="${{ github.ref#refs/tags/ }}"
+            git tag -a "$TAG_NAME" -m "Release $TAG_NAME - synced from monorepo"
+            git push origin "$TAG_NAME"
+            echo "✓ Tagged ${{ matrix.package.repo }} with $TAG_NAME"
+          fi
+
           cd ..
           rm -rf target-repo
