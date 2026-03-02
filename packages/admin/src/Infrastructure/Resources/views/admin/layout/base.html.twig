@@ -42,8 +42,8 @@
     {% block admin_head_scripts %}
         {# ImportMap Symfony AssetMapper — nécessaire en mode dev #}
         {{ importmap('app') }}
-        {# Lucide Icons #}
-        <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+        {# Lucide Icons — via jsDelivr (autorisé par CSP) #}
+        <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
     {% endblock %}
 </head>
 <body>
