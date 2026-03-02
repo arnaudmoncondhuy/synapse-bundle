@@ -36,8 +36,8 @@ jobs:
           # Clone target repo
           git clone "https://x-access-token:${{ secrets.SYNAPSE_SPLIT_TOKEN }}@github.com/arnaudmoncondhuy/${{ matrix.package.repo }}.git" target-repo
 
-          # Sync package files to target repo (deleting obsolete files)
-          rsync -av --delete --exclude='.git' ${{ matrix.package.local }}/ target-repo/
+          # Sync package files to target repo (deleting obsolete files, preserving .git)
+          rsync -av --delete --exclude '.git/' ${{ matrix.package.local }}/ target-repo/
 
           # Commit and push
           cd target-repo
