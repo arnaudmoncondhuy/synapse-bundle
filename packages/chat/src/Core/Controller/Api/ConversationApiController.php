@@ -7,6 +7,7 @@ namespace ArnaudMoncondhuy\SynapseChat\Core\Controller\Api;
 use ArnaudMoncondhuy\SynapseCore\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseCore\Core\Manager\ConversationManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,7 +20,9 @@ use Symfony\Component\Routing\Attribute\Route;
 class ConversationApiController extends AbstractController
 {
     public function __construct(
-        private ConversationManager $conversationManager
+        private ConversationManager $conversationManager,
+        #[Autowire('%synapse.persistence.enabled%')]
+        private bool $persistenceEnabled
     ) {
     }
 
@@ -29,6 +32,13 @@ class ConversationApiController extends AbstractController
     #[Route('', name: 'synapse_api_conversations_list', methods: ['GET'])]
     public function list(Request $request): JsonResponse
     {
+        if (!$this->persistenceEnabled) {
+            return new JsonResponse(
+                ['error' => 'Conversation persistence is disabled', 'conversations' => []],
+                Response::HTTP_OK
+            );
+        }
+
         $user = $this->getUser();
         if (!$user instanceof ConversationOwnerInterface) {
             return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
@@ -55,6 +65,13 @@ class ConversationApiController extends AbstractController
     #[Route('/{id}', name: 'synapse_api_conversations_delete', methods: ['DELETE'])]
     public function delete(string $id): JsonResponse
     {
+        if (!$this->persistenceEnabled) {
+            return new JsonResponse(
+                ['error' => 'Conversation persistence is disabled'],
+                Response::HTTP_SERVICE_UNAVAILABLE
+            );
+        }
+
         $user = $this->getUser();
         if (!$user instanceof ConversationOwnerInterface) {
             return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
@@ -80,6 +97,13 @@ class ConversationApiController extends AbstractController
     #[Route('/{id}/rename', name: 'synapse_api_conversations_rename', methods: ['PATCH'])]
     public function rename(string $id, Request $request): JsonResponse
     {
+        if (!$this->persistenceEnabled) {
+            return new JsonResponse(
+                ['error' => 'Conversation persistence is disabled'],
+                Response::HTTP_SERVICE_UNAVAILABLE
+            );
+        }
+
         $user = $this->getUser();
         if (!$user instanceof ConversationOwnerInterface) {
             return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
@@ -115,6 +139,13 @@ class ConversationApiController extends AbstractController
     #[Route('/{id}/messages', name: 'synapse_api_conversations_messages', methods: ['GET'])]
     public function messages(string $id): JsonResponse
     {
+        if (!$this->persistenceEnabled) {
+            return new JsonResponse(
+                ['error' => 'Conversation persistence is disabled', 'messages' => []],
+                Response::HTTP_OK
+            );
+        }
+
         $user = $this->getUser();
         if (!$user instanceof ConversationOwnerInterface) {
             return new JsonResponse(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
