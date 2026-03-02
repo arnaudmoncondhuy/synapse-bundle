@@ -1,6 +1,9 @@
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
-{% block admin_page_title %}{{ provider.label }} | Fournisseurs | Synapse Administration Synapse{% endblock %}
+{% block admin_page_title %}
+	{{ provider.label }}
+	| Fournisseurs | Synapse Administration Synapse
+{% endblock %}
 
 {% block admin_breadcrumb %}
 	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
@@ -27,7 +30,8 @@
 	</div>
 
 	<form method="post" action="{{ path('synapse_admin_providers_edit', {id: provider.id}) }}">
-		<input type="hidden" name="_token" value="{{ csrf_token('synapse_provider_edit_' ~ provider.id) }}">
+		<input
+		type="hidden" name="_token" value="{{ csrf_token('synapse_provider_edit_' ~ provider.id) }}">
 
 		{# ── Informations générales ────────────────────────────────────────────── #}
 		<div class="synapse-admin-card synapse-admin-mb-lg">
@@ -52,7 +56,7 @@
 
 				<div class="synapse-admin-form-group synapse-admin-mt-md">
 					<label class="synapse-admin-checkbox">
-						<input type="checkbox" name="is_enabled" value="1" {% if provider.isEnabled %}checked{% endif %}>
+						<input type="checkbox" name="is_enabled" value="1" {% if provider.isEnabled %} checked {% endif %}>
 						<span class="synapse-admin-checkbox__label">Fournisseur activé</span>
 					</label>
 					<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">
@@ -87,17 +91,17 @@
 							</label>
 
 							{% if config.type == 'select' %}
-								<select id="{{ name }}" name="{{ name }}" class="synapse-admin-input" {% if config.required|default(false) %}required{% endif %}>
+								<select id="{{ name }}" name="{{ name }}" class="synapse-admin-input" {% if config.required|default(false) %} required {% endif %}>
 									<option value="">— Sélectionner —</option>
 									{% for value, label in config.options %}
-										<option value="{{ value }}" {% if (creds[name]|default(config.value|default(''))) == value %}selected{% endif %}>
+										<option value="{{ value }}" {% if (creds[name]|default(config.value|default(''))) == value %} selected {% endif %}>
 											{{ label }}
 										</option>
 									{% endfor %}
 								</select>
 
 							{% elseif config.type == 'textarea' %}
-								<textarea id="{{ name }}" name="{{ name }}" class="synapse-admin-input synapse-admin-input--mono" rows="8" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) and (creds[name]|default('')) is empty %}required{% endif %}></textarea>
+								<textarea id="{{ name }}" name="{{ name }}" class="synapse-admin-input synapse-admin-input--mono" rows="8" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) and (creds[name]|default('')) is empty %} required {% endif %}></textarea>
 								{% if (creds[name]|default('')) is not empty %}
 									<p class="synapse-admin-text-xs synapse-admin-text-success synapse-admin-mt-sm">
 										<i data-lucide="check-circle-2"></i>
@@ -106,7 +110,7 @@
 								{% endif %}
 
 							{% elseif config.type == 'password' %}
-								<input type="password" id="{{ name }}" name="{{ name }}" class="synapse-admin-input" placeholder="{% if (creds[name]|default('')) is not empty %}Valeur configurée — laisser vide pour conserver{% else %}{{ config.placeholder|default('') }}{% endif %}" {% if config.required|default(false) and (creds[name]|default('')) is empty %}required{% endif %}>
+								<input type="password" id="{{ name }}" name="{{ name }}" class="synapse-admin-input" placeholder="{% if (creds[name]|default('')) is not empty %}Valeur configurée — laisser vide pour conserver{% else %}{{ config.placeholder|default('') }}{% endif %}" {% if config.required|default(false) and (creds[name]|default('')) is empty %} required {% endif %}>
 								{% if (creds[name]|default('')) is not empty %}
 									<p class="synapse-admin-text-xs synapse-admin-text-success synapse-admin-mt-sm">
 										<i data-lucide="check-circle-2"></i>
@@ -115,7 +119,7 @@
 								{% endif %}
 
 							{% else %}
-								<input type="text" id="{{ name }}" name="{{ name }}" value="{{ (creds[name]|default(config.value|default(''))) }}" class="synapse-admin-input" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) %}required{% endif %}>
+								<input type="text" id="{{ name }}" name="{{ name }}" value="{{ (creds[name]|default(config.value|default(''))) }}" class="synapse-admin-input" placeholder="{{ config.placeholder|default('') }}" {% if config.required|default(false) %} required {% endif %}>
 							{% endif %}
 
 							{% if config.help is defined %}
@@ -126,7 +130,7 @@
 				</div>
 			</div>
 
-		{# ── Fallback JSON brut ────────────────────────────────────────────────── #}
+			{# ── Fallback JSON brut ────────────────────────────────────────────────── #}
 		{% else %}
 			<div class="synapse-admin-card synapse-admin-mb-lg">
 				<div class="synapse-admin-card__header">
@@ -149,11 +153,11 @@
 		{% endif %}
 
 		{# ── Actions ───────────────────────────────────────────────────────────── #}
-		<div class="synapse-admin-sticky-save">
-			<a href="#" class="synapse-admin-btn synapse-admin-btn--primary" onclick="document.querySelector('form').submit(); return false;">
+		<div class="synapse-admin-sticky-actions">
+			<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
 				<i data-lucide="save"></i>
 				Enregistrer
-			</a>
+			</button>
 			<a href="{{ path('synapse_admin_configuration_llm', {tab: 'fournisseurs'}) }}" class="synapse-admin-btn synapse-admin-btn--ghost">
 				<i data-lucide="x"></i>
 				Annuler
