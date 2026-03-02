@@ -1,3 +1,7 @@
 synapse_admin:
     resource: '../src/Admin/Controller/'
     type: attribute
+
+synapse_admin_api:
+    resource: '../src/Core/Controller/Api/'
+    type: attribute
