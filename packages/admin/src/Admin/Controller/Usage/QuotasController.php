@@ -27,7 +27,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
  *
  * Toggle global des limites, CRUD des plafonds (user / preset), stats par user et par preset.
  */
-#[Route('/synapse/admin/usage/quotas', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/usage/quotas', name: 'synapse_admin_')]
 class QuotasController extends AbstractController
 {
     use AdminSecurityTrait;

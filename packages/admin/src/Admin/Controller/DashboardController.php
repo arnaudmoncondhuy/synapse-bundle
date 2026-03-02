@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Attribute\Route;
  * Ce contrôleur est intentionnellement "mince" : il orchestre uniquement
  * des appels aux services/repositories du Core, sans logique métier propre.
  */
-#[Route('/synapse/admin', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%', name: 'synapse_admin_')]
 class DashboardController extends AbstractController
 {
     use AdminSecurityTrait;

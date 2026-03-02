@@ -21,7 +21,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
  * Gère la table synapse_config (singleton).
  * Actions complexes (migrations, purge…) restent en V1.
  */
-#[Route('/synapse/admin/conversation/parametres', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/conversation/parametres', name: 'synapse_admin_')]
 class SettingsController extends AbstractController
 {
     use AdminSecurityTrait;

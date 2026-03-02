@@ -22,7 +22,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 /**
  * Embeddings & RAG — Configuration du moteur sémantique — Administration Synapse
  */
-#[Route('/synapse/admin/memoire/embeddings', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/memoire/embeddings', name: 'synapse_admin_')]
 class EmbeddingController extends AbstractController
 {
     use AdminSecurityTrait;

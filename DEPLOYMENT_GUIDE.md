@@ -127,7 +127,7 @@ php bin/console debug:router | grep synapse
 
 ### Test Application
 ```bash
-curl https://basile.lab.bray-numerique.fr/synapse/admin-v2
+curl https://basile.lab.bray-numerique.fr/synapse/admin
 # Should return 403 (permission denied, not 500)
 ```
 

@@ -270,7 +270,7 @@ docker exec <container> php bin/console debug:container | grep -i synapse | wc -
 - [ ] Warm cache: `php bin/console cache:warmup --env=prod`
 - [ ] Check routes: `php bin/console debug:router | grep synapse | wc -l`
 - [ ] Check logs: `tail -100 var/log/prod.log`
-- [ ] Test URL: `curl https://basile.lab.bray-numerique.fr/synapse/admin-v2`
+- [ ] Test URL: `curl https://basile.lab.bray-numerique.fr/synapse/admin`
   (Should return 403, not 500)
 
 ---
@@ -310,11 +310,11 @@ Once deployed in Docker:
 $ docker exec <container> php bin/console debug:router | grep synapse | wc -l
 66
 
-$ curl -I https://basile.lab.bray-numerique.fr/synapse/admin-v2
+$ curl -I https://basile.lab.bray-numerique.fr/synapse/admin
 HTTP/2 403
 
 $ docker logs <container> --tail 20
-[info] Handling request: GET /synapse/admin-v2
+[info] Handling request: GET /synapse/admin
 [info] Route matched: synapse_v2_admin_dashboard
 # (No error 500 messages)
 ```

@@ -29,7 +29,7 @@ use Symfony\Contracts\Cache\ItemInterface;
  * Un preset associe un provider + modèle + paramètres de génération.
  * Un seul preset peut être actif à la fois (le reste est inactif).
  */
-#[Route('/synapse/admin/intelligence/presets', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/intelligence/presets', name: 'synapse_admin_')]
 class PresetController extends AbstractController
 {
     use AdminSecurityTrait;

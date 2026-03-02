@@ -20,7 +20,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
  * - Logs debug LLM (SynapseDebugLogRepository)
  * - Accès Break-Glass (tracés via PSR Logger dans HistoryController)
  */
-#[Route('/synapse/admin/securite/audit', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/securite/audit', name: 'synapse_admin_')]
 class AuditController extends AbstractController
 {
     use AdminSecurityTrait;

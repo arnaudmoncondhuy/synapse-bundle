@@ -109,7 +109,7 @@ php bin/console debug:router | grep synapse | wc -l
   php bin/console debug:router | grep synapse | wc -l
   ```
   (Should return 20+)
-- [ ] Test URL: `https://basile.lab.bray-numerique.fr/synapse/admin-v2`
+- [ ] Test URL: `https://basile.lab.bray-numerique.fr/synapse/admin`
   (Should return 403, not 500)
 
 ## Troubleshooting
@@ -167,7 +167,7 @@ After completing deployment:
 $ php bin/console debug:router | grep synapse | wc -l
 66
 
-$ curl -I https://basile.lab.bray-numerique.fr/synapse/admin-v2
+$ curl -I https://basile.lab.bray-numerique.fr/synapse/admin
 HTTP/2 403
 # 403 = Permission denied (good, not 500!)
 
@@ -188,7 +188,7 @@ php bin/console doctrine:migrations:migrate -n
 2. **Configure LLM Providers**:
 ```bash
 # Set credentials via admin panel
-# https://basile.lab.bray-numerique.fr/synapse/admin-v2/intelligence/modeles
+# https://basile.lab.bray-numerique.fr/synapse/admin/intelligence/modeles
 ```
 
 3. **Test Chat API**:

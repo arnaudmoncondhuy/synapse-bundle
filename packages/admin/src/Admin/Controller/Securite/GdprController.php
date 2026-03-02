@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Attribute\Route;
  * - Statistiques de données stockées
  * - Liens vers les actions de purge (conversation, logs debug)
  */
-#[Route('/synapse/admin/securite/rgpd', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/securite/rgpd', name: 'synapse_admin_')]
 class GdprController extends AbstractController
 {
     use AdminSecurityTrait;
