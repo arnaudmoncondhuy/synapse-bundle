@@ -20,7 +20,7 @@ Synapse est un écosystème de bundles Symfony pour déployer des agents IA auto
 - 📉 **Quotas & Limites** : Plafonds de dépense configurables par utilisateur, mission ou preset avec fenêtres glissantes et calendaires.
 - 🩺 **Synapse Doctor** : Assistant de diagnostic intégré pour automatiser l'installation et la réparation (`php bin/console synapse:doctor`).
 - 📡 **Streaming & Auto-titling** : UX fluide avec réponses en temps réel et génération automatique des titres de conversation.
-- 🎨 **Administration Premium** : Dashboard analytique moderne, gestion de la mémoire sémantique et monitoring temps réel.
+- 🎨 **Administration** : Dashboard analytique moderne, gestion de la mémoire sémantique et monitoring temps réel.
 
 ## 🚀 Installation Rapide
 
