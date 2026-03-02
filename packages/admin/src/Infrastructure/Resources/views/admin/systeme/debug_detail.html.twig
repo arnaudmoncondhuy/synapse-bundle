@@ -229,7 +229,7 @@
 												{{ fc.name }}()
 											</div>
 											<div style="padding: 1rem;">
-												<pre class="synapse-admin-code-block" style="margin: 0;">{{ fc.arguments|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+												<pre class="synapse-admin-code-block" style="margin: 0;">{{ fc.args|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
 											</div>
 										</div>
 									{% endfor %}
