@@ -209,16 +209,6 @@ services:
             $registry: '@doctrine'
         tags: ['doctrine.repository_service']
 
-    ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseConversationRepository:
-        arguments:
-            $registry: '@doctrine'
-        tags: ['doctrine.repository_service']
-
-    ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseMessageRepository:
-        arguments:
-            $registry: '@doctrine'
-        tags: ['doctrine.repository_service']
-
     ArnaudMoncondhuy\SynapseCore\Core\Accounting\SpendingLimitChecker:
         arguments:
             $configRepo: '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseConfigRepository'
