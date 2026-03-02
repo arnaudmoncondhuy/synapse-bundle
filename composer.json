@@ -34,6 +34,12 @@
             "ArnaudMoncondhuy\\SynapseChat\\": "packages/chat/src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "ArnaudMoncondhuy\\SynapseCore\\Tests\\": "packages/core/tests/",
+            "ArnaudMoncondhuy\\SynapseAdmin\\Tests\\": "packages/admin/tests/"
+        }
+    },
     "repositories": [
         {
             "type": "path",
