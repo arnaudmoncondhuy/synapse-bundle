@@ -729,6 +729,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#routage-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routage (routing)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#plafonds-couts-spending_limits-accounting" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2582,6 +2593,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#routage-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routage (routing)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#plafonds-couts-spending_limits-accounting" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2748,13 +2770,45 @@
 <td><code>admin_role</code></td>
 <td>string</td>
 <td><code>ROLE_ADMIN</code></td>
-<td>Le rôle requis pour accéder à <code>/synapse/admin</code>.</td>
+<td>Le rôle requis pour accéder à l'administration (défaut: <code>/synapse/admin</code>).</td>
 </tr>
 <tr>
 <td><code>chat_role</code></td>
 <td>string</td>
 <td><code>ROLE_USER</code></td>
-<td>Le rôle requis pour le chat (si restreint).</td>
+<td>Le rôle requis pour le chat (défaut: <code>/synapse/chat</code>).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="routage-routing">Routage (<code>routing</code>)</h3>
+<p>Permet de personnaliser les préfixes d'URL du bundle.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Défaut</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>admin_prefix</code></td>
+<td>string</td>
+<td><code>/synapse/admin</code></td>
+<td>Préfixe pour toutes les routes d'administration.</td>
+</tr>
+<tr>
+<td><code>chat_ui_prefix</code></td>
+<td>string</td>
+<td><code>/synapse/chat</code></td>
+<td>Préfixe pour l'interface de chat principale.</td>
+</tr>
+<tr>
+<td><code>chat_api_prefix</code></td>
+<td>string</td>
+<td><code>/synapse/api</code></td>
+<td>Préfixe pour les endpoints API (chat complet, CSRF, etc.).</td>
 </tr>
 </tbody>
 </table>
@@ -2787,11 +2841,11 @@
 <h3 id="protection-csrf">Protection CSRF</h3>
 <p>Le bundle implémente une protection CSRF automatique sur tous ses formulaires et endpoints d'API (POST/PUT/DELETE) si le composant <code>symfony/security-csrf</code> est installé et activé dans votre application.</p>
 <ul>
-<li><strong>Chat API</strong> (<code>/synapse/api/chat</code>, reset, memory) : jeton <code>synapse_api</code>. Le template du chat fournit déjà une meta et le composant un <code>data-csrf-token</code> ; le front envoie le header <code>X-CSRF-Token</code>.</li>
+<li><strong>Chat API</strong> (chat, reset, memory) : jeton <code>synapse_api</code>. Le template du chat fournit déjà une meta et le composant un <code>data-csrf-token</code> ; le front envoie le header <code>X-CSRF-Token</code>.</li>
 <li><strong>Admin</strong> : jeton <code>synapse_admin</code>. Dans le layout : <code>&lt;meta name="csrf-token" content="{{ csrf_token('synapse_admin') }}"&gt;</code>.</li>
 </ul>
 <p>En AJAX, envoyez le header <code>X-CSRF-Token</code> (ou le champ <code>_csrf_token</code> dans le body).</p>
-<p><strong>Le bundle gère le CSRF sans configuration :</strong> le front récupère le jeton via GET <code>/synapse/api/csrf-token</code> si la meta ou le <code>data-csrf-token</code> est absent (page surchargée, cache). Aucune action requise normalement.</p>
+<p><strong>Le bundle gère le CSRF sans configuration :</strong> le front récupère le jeton via l'API si le <code>data-csrf-token</code> est absent (page surchargée, cache). Aucune action requise normalement.</p>
 <p><strong>En dernier recours</strong> (403 persistant) : désactiver la vérification CSRF sur l’API dans <code>config/packages/synapse.yaml</code> :</p>
 <div class="highlight"><pre><span></span><code><span class="nt">synapse</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">security</span><span class="p">:</span>
