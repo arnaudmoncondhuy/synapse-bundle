@@ -19,7 +19,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
  * Liste paginée de toutes les mémoires vectorielles (souvenirs confirmés par les utilisateurs).
  * Permet de vérifier que le flux « proposition → confirmation » fonctionne.
  */
-#[Route('/synapse/admin/memoire', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/memoire', name: 'synapse_admin_')]
 class MemoryController extends AbstractController
 {
     use AdminSecurityTrait;

@@ -21,7 +21,7 @@ use Symfony\Component\Routing\Attribute\Route;
  * - Providers LLM configurés
  * - Configuration Synapse (embedding, debug)
  */
-#[Route('/synapse/admin/systeme/sante', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/systeme/sante', name: 'synapse_admin_')]
 class HealthController extends AbstractController
 {
     use AdminSecurityTrait;

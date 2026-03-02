@@ -27,7 +27,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
  * Une mission combine un prompt système dédié avec un preset LLM et un ton optionnels.
  * Les missions builtin fournies par le bundle ne peuvent pas être supprimées.
  */
-#[Route('/synapse/admin/intelligence/missions', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/intelligence/missions', name: 'synapse_admin_')]
 class MissionController extends AbstractController
 {
     use AdminSecurityTrait;

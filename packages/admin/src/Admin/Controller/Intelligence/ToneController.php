@@ -21,7 +21,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
  * Un ton définit le style de communication du LLM (registre, format, posture).
  * Les tons builtin fournis par le bundle ne peuvent pas être supprimés.
  */
-#[Route('/synapse/admin/intelligence/tones', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/intelligence/tones', name: 'synapse_admin_')]
 class ToneController extends AbstractController
 {
     use AdminSecurityTrait;

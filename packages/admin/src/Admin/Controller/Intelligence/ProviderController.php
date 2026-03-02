@@ -22,7 +22,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 /**
  * Gestion des fournisseurs LLM (Intelligence > Fournisseurs) - Administration Synapse
  */
-#[Route('/synapse/admin/intelligence', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/intelligence', name: 'synapse_admin_')]
 class ProviderController extends AbstractController
 {
     use AdminSecurityTrait;

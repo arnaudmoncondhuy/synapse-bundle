@@ -20,7 +20,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
  * Affiche les traces d'appels LLM enregistrées en base (mode debug activé).
  * Permet aussi de vider les logs.
  */
-#[Route('/synapse/admin/systeme/debug', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/systeme/debug', name: 'synapse_admin_')]
 class DebugController extends AbstractController
 {
     use AdminSecurityTrait;

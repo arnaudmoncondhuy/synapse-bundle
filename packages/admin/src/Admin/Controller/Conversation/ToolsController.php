@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
  * Les outils sont uniquement en lecture : ils sont définis en code via ToolInterface.
  * Cette page sert de référence pour les développeurs et les admins.
  */
-#[Route('/synapse/admin/conversation/outils', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/conversation/outils', name: 'synapse_admin_')]
 class ToolsController extends AbstractController
 {
     use AdminSecurityTrait;

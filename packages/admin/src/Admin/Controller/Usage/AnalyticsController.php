@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
  * Expose les données de SynapseLlmCallRepository pour visualiser
  * la consommation par période, module et modèle.
  */
-#[Route('/synapse/admin/usage', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/usage', name: 'synapse_admin_')]
 class AnalyticsController extends AbstractController
 {
     use AdminSecurityTrait;

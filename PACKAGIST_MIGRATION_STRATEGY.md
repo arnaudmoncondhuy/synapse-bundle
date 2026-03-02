@@ -24,7 +24,7 @@ Pourquoi `0.1.0` et pas `1.0.0` ?
 - Dépendances : `symfony/*:^7.0|^8.0`, `doctrine/orm:^2.19|^3.0`
 
 **synapse-admin** (interface admin)
-- v0.1.0 : Release initiale avec Admin V2
+- v0.1.0 : Release initiale avec Administration
 - Dépend de : `synapse-core:^0.1`
 
 **synapse-chat** (widget chat)

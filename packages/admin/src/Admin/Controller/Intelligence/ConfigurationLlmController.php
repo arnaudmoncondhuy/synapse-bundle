@@ -22,11 +22,11 @@ use Symfony\Component\Routing\Attribute\Route;
 /**
  * Hub "Configuration LLM" — regroupe Fournisseurs, Modèles et Presets en onglets.
  *
- * Route unique : /synapse/admin/intelligence/configuration-llm?tab=fournisseurs|modeles|presets
+ * Route unique : %synapse.admin_prefix%/intelligence/configuration-llm?tab=fournisseurs|modeles|presets
  * Les actions POST (toggle, activate, etc.) restent dans leurs controllers respectifs
  * et redirigent ici après traitement.
  */
-#[Route('/synapse/admin/intelligence', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/intelligence', name: 'synapse_admin_')]
 class ConfigurationLlmController extends AbstractController
 {
     use AdminSecurityTrait;

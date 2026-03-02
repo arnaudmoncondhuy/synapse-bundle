@@ -22,7 +22,7 @@ use Symfony\Component\Routing\Attribute\Route;
  * Utilise ConversationManager::getAllConversations() qui résout dynamiquement
  * la classe concrète (potentiellement étendue dans le projet hôte).
  */
-#[Route('/synapse/admin/conversation/historique', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/conversation/historique', name: 'synapse_admin_')]
 class HistoryController extends AbstractController
 {
     use AdminSecurityTrait;

@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
  *
  * Affiche la version, les dépendances principales et les informations du projet.
  */
-#[Route('/synapse/admin/systeme/a-propos', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/systeme/a-propos', name: 'synapse_admin_')]
 class AboutController extends AbstractController
 {
     use AdminSecurityTrait;

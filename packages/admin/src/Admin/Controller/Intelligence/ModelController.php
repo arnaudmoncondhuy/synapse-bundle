@@ -20,7 +20,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 /**
  * Catalogue et gestion des modèles LLM - Administration Synapse
  */
-#[Route('/synapse/admin/intelligence/modeles', name: 'synapse_admin_')]
+#[Route('%synapse.admin_prefix%/intelligence/modeles', name: 'synapse_admin_')]
 class ModelController extends AbstractController
 {
     use AdminSecurityTrait;
