@@ -30,17 +30,12 @@ class SynapseAdminExtension extends Extension implements PrependExtensionInterfa
             ],
         ]);
 
-        // Enregistrement du chemin réel des assets admin dans AssetMapper.
-        if ($container->hasExtension('framework')) {
-            $assetsDir = realpath(\dirname(__DIR__, 3) . '/assets') ?: \dirname(__DIR__, 3) . '/assets';
-            $container->prependExtensionConfig('framework', [
-                'asset_mapper' => [
-                    'paths' => [
-                        $assetsDir => 'synapse-admin',
-                    ],
-                ],
-            ]);
-        }
+        // NOTE: AssetMapper paths are registered ONLY via Composer paths or symlinks
+        // in the local assets/ directory. Each application is responsible for creating symlinks
+        // or using Composer vendor paths (automatic via composer path repositories).
+        // This avoids absolute paths outside /app that may not exist in containers.
+        // For Packagist users: symlinks in assets/ are created by synapse:doctor --fix
+        // For path repositories (dev): assets are accessible via /app/vendor/arnaudmoncondhuy/synapse-admin/assets
     }
 
     /**
