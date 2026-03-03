@@ -154,6 +154,13 @@
 						</div>
 					</div>
 					<div class="synapse-admin-card__body">
+                        {% if memoryMatching.error ?? false %}
+                            <div style="background-color: var(--synapse-admin-error); color: white; padding: 1rem; border-radius: var(--synapse-admin-radius); margin-bottom: 1rem;">
+                                <strong>Erreur lors du rappel partiel (VectorStore / Embedding) :</strong><br>
+                                {{ memoryMatching.error }}
+                            </div>
+                        {% endif %}
+
                         {% if memoryMatching.found > 0 %}
                             <div style="margin-bottom: 1rem;">
                                 <strong>{{ memoryMatching.found }}</strong> souvenir(s) trouvé(s) en base vectorielle, 
