@@ -22,6 +22,7 @@ class SynapseTwigExtension extends AbstractExtension
         private ToneRegistry $toneRegistry,
         private MissionRegistry $missionRegistry,
         private ?EncryptionServiceInterface $encryptionService = null,
+        private ?\ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface $permissionChecker = null,
     ) {}
 
     /**
@@ -58,7 +59,18 @@ class SynapseTwigExtension extends AbstractExtension
 
             // Retourne la version actuelle du bundle
             new TwigFunction('synapse_version', [SynapseRuntime::class, 'getVersion']),
+
+            // Vérifie si l'utilisateur a les droits d'administration (pour le debug)
+            new TwigFunction('synapse_can_debug', [$this, 'canDebug']),
         ];
+    }
+
+    /**
+     * Vérifie si l'utilisateur a les droits d'administration (via PermissionCheckerInterface).
+     */
+    public function canDebug(): bool
+    {
+        return $this->permissionChecker ? $this->permissionChecker->canAccessAdmin() : false;
     }
 
     /**
