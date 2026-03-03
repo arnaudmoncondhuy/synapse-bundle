@@ -217,3 +217,72 @@
     transition: opacity 0.12s ease;
     transform: translateX(-50%);
 }
+/* ── Custom Tabs for Debug ── */
+.synapse-admin-tabs-nav {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 2px solid var(--synapse-admin-border);
+    margin-bottom: 2rem;
+    overflow-x: auto;
+    padding-bottom: 1px;
+}
+
+.synapse-admin-tab-btn {
+    background: transparent;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--synapse-admin-text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.synapse-admin-tab-btn:hover {
+    color: var(--synapse-admin-text);
+    background-color: var(--synapse-admin-bg-hover);
+    border-radius: var(--synapse-admin-radius) var(--synapse-admin-radius) 0 0;
+}
+
+.synapse-admin-tab-btn.active {
+    color: var(--synapse-admin-primary);
+    border-bottom-color: var(--synapse-admin-primary);
+}
+
+/* ── Custom Timeline for Debug ── */
+.synapse-admin-timeline {
+    position: relative;
+    padding-left: 2rem;
+    border-left: 2px solid var(--synapse-admin-border);
+    margin: 2rem 0;
+}
+
+.synapse-admin-timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.synapse-admin-timeline-dot {
+    position: absolute;
+    left: -2.45rem;
+    top: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 3px solid var(--synapse-admin-bg);
+    z-index: 10;
+}
+
+.synapse-admin-timeline-content {
+    background: var(--synapse-admin-bg-hover);
+    padding: 1rem;
+    border-radius: var(--synapse-admin-radius);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
