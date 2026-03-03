@@ -131,7 +131,45 @@
 						</div>
 					</div>
 					<div class="synapse-admin-card__body">
-						<pre class="synapse-admin-code-block">{{ data.system_prompt }}</pre>
+						<pre class="synapse-admin-code-block" style="white-space: pre-wrap;">{{ data.system_prompt }}</pre>
+					</div>
+				</div>
+			{% endif %}
+
+			{# ── Mémoire & Contexte Utilisateur ───────────────────────────────────────── #}
+			{% set memoryMatching = null %}
+			{% if data.history ?? false and data.history[0].metadata.memory_matching is defined %}
+				{% set memoryMatching = data.history[0].metadata.memory_matching %}
+			{% endif %}
+			
+			{% if memoryMatching is not null %}
+				<div class="synapse-admin-card synapse-admin-mb-xl">
+					<div class="synapse-admin-card__header">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
+							<i data-lucide="brain"></i>
+						</div>
+						<div>
+							<div class="synapse-admin-card__title">Analyses de Mémoire</div>
+							<div class="synapse-admin-card__subtitle">Souvenirs rappelés avant le prompt</div>
+						</div>
+					</div>
+					<div class="synapse-admin-card__body">
+                        {% if memoryMatching.found > 0 %}
+                            <div style="margin-bottom: 1rem;">
+                                <strong>{{ memoryMatching.found }}</strong> souvenir(s) trouvé(s) en base vectorielle, 
+                                dont <strong>{{ memoryMatching.relevant }}</strong> dépassent le seuil de pertinence ({{ memoryMatching.threshold }}).
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                {% for mem in memoryMatching.details %}
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background-color: var(--synapse-admin-bg-hover); border-left: 3px solid {{ mem.score >= memoryMatching.threshold ? 'var(--synapse-admin-info)' : 'var(--synapse-admin-border)' }};">
+                                        <span style="font-size: 0.875rem; color: {{ mem.score >= memoryMatching.threshold ? 'var(--synapse-admin-text)' : 'var(--synapse-admin-text-muted)' }};">{{ mem.content }}</span>
+                                        <span class="synapse-admin-badge synapse-admin-badge--{{ mem.score >= memoryMatching.threshold ? 'success' : 'neutral' }}">Score: {{ mem.score|number_format(2) }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="synapse-admin-text-muted m-0">Aucun souvenir pertinent trouvé dans l'historique utilisateur pour ce message.</p>
+                        {% endif %}
 					</div>
 				</div>
 			{% endif %}
