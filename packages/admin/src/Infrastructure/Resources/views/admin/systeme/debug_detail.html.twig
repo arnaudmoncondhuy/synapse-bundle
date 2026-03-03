@@ -138,8 +138,8 @@
 
 			{# ── Mémoire & Contexte Utilisateur ───────────────────────────────────────── #}
 			{% set memoryMatching = null %}
-			{% if data.history ?? false and data.history[0].metadata.memory_matching is defined %}
-				{% set memoryMatching = data.history[0].metadata.memory_matching %}
+			{% if data.prompt_metadata ?? false and data.prompt_metadata.memory_matching is defined %}
+				{% set memoryMatching = data.prompt_metadata.memory_matching %}
 			{% endif %}
 			
 			{% if memoryMatching is not null %}
