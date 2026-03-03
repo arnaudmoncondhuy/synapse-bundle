@@ -48,9 +48,14 @@ jobs:
           # Handle tags: if triggered by a tag, create the same tag in target repo
           if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             TAG_NAME="${GITHUB_REF#refs/tags/}"
-            git tag -a "$TAG_NAME" -m "Release $TAG_NAME - synced from monorepo"
-            git push origin "$TAG_NAME"
-            echo "✓ Tagged ${{ matrix.package.repo }} with $TAG_NAME"
+            # Check if tag exists on the remote
+            if git ls-remote --tags origin | grep -q "refs/tags/$TAG_NAME$"; then
+              echo "ℹ Tag $TAG_NAME already exists in ${{ matrix.package.repo }}, skipping."
+            else
+              git tag -a "$TAG_NAME" -m "Release $TAG_NAME - synced from monorepo"
+              git push origin "$TAG_NAME"
+              echo "✓ Tagged ${{ matrix.package.repo }} with $TAG_NAME"
+            fi
           fi
 
           cd ..
