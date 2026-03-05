@@ -15,6 +15,10 @@
         "arnaudmoncondhuy/synapse-chat": "dev-main"
     },
     "require-dev": {
+        "arnaudmoncondhuy/synapse-admin": "@dev",
+        "arnaudmoncondhuy/synapse-chat": "@dev",
+        "arnaudmoncondhuy/synapse-core": "@dev",
+        "doctrine/doctrine-fixtures-bundle": "^4.3",
         "friendsofphp/php-cs-fixer": "^3.93",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-deprecation-rules": "^2.0",
@@ -22,10 +26,7 @@
         "phpstan/phpstan-symfony": "^2.0",
         "symfony/process": "^8.0",
         "symfony/test-pack": "^1.2",
-        "symplify/monorepo-builder": "^12.0",
-        "arnaudmoncondhuy/synapse-core": "@dev",
-        "arnaudmoncondhuy/synapse-admin": "@dev",
-        "arnaudmoncondhuy/synapse-chat": "@dev"
+        "symplify/monorepo-builder": "^12.0"
     },
     "autoload": {
         "psr-4": {
