@@ -218,6 +218,9 @@ class MissionController extends AbstractController
 
     // ─── Helpers ───────────────────────────────────────────────────────────────
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function applyFormData(SynapseMission $mission, array $data): void
     {
         if (isset($data['key']) && !$mission->isBuiltin()) {

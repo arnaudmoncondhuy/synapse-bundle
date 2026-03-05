@@ -170,6 +170,10 @@ class ProviderController extends AbstractController
     /**
      * Chiffre les champs sensibles des credentials avant la sauvegarde en base.
      */
+    /**
+     * @param array<string, mixed> $credentials
+     * @return array<string, mixed>
+     */
     private function encryptCredentials(array $credentials): array
     {
         if ($this->encryptionService === null) {
@@ -187,6 +191,10 @@ class ProviderController extends AbstractController
 
     /**
      * Déchiffre les champs sensibles des credentials avant usage.
+     */
+    /**
+     * @param array<string, mixed> $credentials
+     * @return array<string, mixed>
      */
     private function decryptCredentials(array $credentials): array
     {

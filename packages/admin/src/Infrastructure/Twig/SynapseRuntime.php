@@ -32,6 +32,9 @@ class SynapseRuntime implements RuntimeExtensionInterface
      *
      * @return string le HTML généré
      */
+    /**
+     * @param array<string, mixed> $options
+     */
     public function renderWidget(array $options = []): string
     {
         // 1. Fetch History automatically

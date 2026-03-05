@@ -279,6 +279,7 @@ class PresetController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
         $cacheKey = sprintf('synapse_preset_test_%d', $preset->getId());
+        /** @var array{status: string, report: array<string, mixed>|null, progress?: int}|null $data */
         $data     = $this->cache->get($cacheKey, fn() => null);
 
         if (!$data) {
@@ -310,9 +311,7 @@ class PresetController extends AbstractController
                 ];
             }
 
-            // Persister le résultat dans le cache pour les polls suivants
             $this->cache->delete($cacheKey);
-            // @phpstan-ignore argument.unresolvableType (PHPStan cannot resolve $data array type through CacheInterface closure capture)
             $this->cache->get($cacheKey, function (ItemInterface $item) use ($data): array {
                 $item->expiresAfter(3600);
                 return $data;
@@ -333,6 +332,9 @@ class PresetController extends AbstractController
 
     // ─── Helpers privés ────────────────────────────────────────────────────────
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function applyFormData(SynapsePreset $preset, array $data): void
     {
         $activeConfig    = $this->configProvider->getConfig();
@@ -355,7 +357,7 @@ class PresetController extends AbstractController
         }
 
         $caps            = $this->capabilityRegistry->getCapabilities($modelName);
-        $providerOptions = $this->validateProviderOptions($providerOptions, $preset->getProviderName(), $caps);
+        $providerOptions = $this->validateProviderOptions($preset->getProviderName(), $providerOptions, $caps);
 
         $preset->setProviderOptions($providerOptions);
         $preset->setGenerationTemperature((float) ($data['generation_temperature'] ?? 1.0));
@@ -379,6 +381,9 @@ class PresetController extends AbstractController
         $preset->setStreamingEnabled(!empty($data['streaming_enabled']));
     }
 
+    /**
+     * @return array<string, array<int, string>>
+     */
     private function getModelsByProvider(): array
     {
         $result = [];
@@ -391,6 +396,9 @@ class PresetController extends AbstractController
         return $result;
     }
 
+    /**
+     * @return array<string, array{provider: string, type: string, dimensions: int[], thinking: bool, safetySettings: bool, topK: bool, functionCalling: bool, streaming: bool}>
+     */
     private function getFullModelsCapabilities(): array
     {
         $result = [];
@@ -410,7 +418,11 @@ class PresetController extends AbstractController
         return $result;
     }
 
-    private function validateProviderOptions(array $options, string $providerName, ModelCapabilities $caps): array
+    /**
+     * @param array<string, mixed> $options
+     * @return array<string, mixed>
+     */
+    private function validateProviderOptions(string $providerName, array $options, ModelCapabilities $caps): array
     {
         $validBlockLevels      = ['BLOCK_NONE', 'BLOCK_ONLY_HIGH', 'BLOCK_MEDIUM_AND_ABOVE', 'BLOCK_LOW_AND_ABOVE'];
         $validReasoningEfforts = ['low', 'medium', 'high'];
