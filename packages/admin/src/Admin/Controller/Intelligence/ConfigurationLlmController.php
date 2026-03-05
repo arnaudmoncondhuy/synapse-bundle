@@ -160,7 +160,7 @@ class ConfigurationLlmController extends AbstractController
     /**
      * Vérifie si un preset est valide (provider configuré + modèle existe)
      */
-    private function isPresetValid($preset): bool
+    private function isPresetValid(\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapsePreset $preset): bool
     {
         // Vérifier que le provider et le modèle sont définis
         $providerName = $preset->getProviderName();
@@ -183,7 +183,7 @@ class ConfigurationLlmController extends AbstractController
     /**
      * Retourne la raison pour laquelle un preset est invalide
      */
-    private function getPresetInvalidReason($preset): ?string
+    private function getPresetInvalidReason(\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapsePreset $preset): ?string
     {
         $providerName = $preset->getProviderName();
         $model = $preset->getModel();

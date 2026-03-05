@@ -135,6 +135,9 @@ class ToneController extends AbstractController
 
     // ─── Helpers ───────────────────────────────────────────────────────────────
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function applyFormData(SynapseTone $tone, array $data): void
     {
         if (isset($data['key']) && !$tone->isBuiltin()) {
