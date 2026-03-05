@@ -58,7 +58,8 @@ class AboutController extends AbstractController
         foreach ($candidates as $path) {
             if (file_exists($path)) {
                 try {
-                    $data = json_decode(file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
+                    $raw = file_get_contents($path);
+                    $data = json_decode($raw !== false ? $raw : '{}', true, 512, JSON_THROW_ON_ERROR);
                     return $data['version'] ?? $data['extra']['branch-alias']['dev-main'] ?? 'dev-main';
                 } catch (\Exception) {
                 }

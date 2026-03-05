@@ -103,7 +103,8 @@ class ProviderController extends AbstractController
             $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_provider_edit_' . $provider->getId());
             $data = $request->request->all();
 
-            $provider->setLabel($data['label'] ?? $provider->getLabel());
+            $labelVal = $data['label'] ?? $provider->getLabel();
+            $provider->setLabel(is_string($labelVal) ? $labelVal : $provider->getLabel());
             $provider->setIsEnabled((bool) ($data['is_enabled'] ?? false));
 
             // Credentials dynamiques selon le client LLM
@@ -113,10 +114,12 @@ class ProviderController extends AbstractController
             $credentials = [];
 
             if ($provider->getName() === 'custom' || empty($fields)) {
-                $credentials = json_decode($data['credentials_raw'] ?? '{}', true) ?? [];
+                $rawCreds = $data['credentials_raw'] ?? '{}';
+                $credentials = json_decode(is_string($rawCreds) ? $rawCreds : '{}', true) ?? [];
             } else {
                 foreach ($fields as $fieldName => $fieldConfig) {
-                    $value = trim($data[$fieldName] ?? '');
+                    $rawVal = $data[$fieldName] ?? '';
+                    $value = trim(is_string($rawVal) ? $rawVal : '');
                     if (empty($value) && !empty($currentCredentials[$fieldName])) {
                         // Conserver la valeur existante (utile pour les passwords/fichiers volumineux)
                         $value = $currentCredentials[$fieldName];

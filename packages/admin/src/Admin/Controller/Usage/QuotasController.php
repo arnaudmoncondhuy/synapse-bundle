@@ -80,7 +80,7 @@ class QuotasController extends AbstractController
                     $limit->setScopeId($scopeId);
                     $limit->setAmount($amount !== '' ? $amount : '0');
                     $limit->setCurrency($currency !== '' ? $currency : 'EUR');
-                    $limit->setPeriod($this->parsePeriod($period));
+                    $limit->setPeriod($this->parsePeriod(is_string($period) ? $period : null));
                     $limit->setName($name !== '' ? $name : null);
                     $this->em->persist($limit);
                     $this->em->flush();
@@ -91,7 +91,7 @@ class QuotasController extends AbstractController
                     $limit->setScopeId($scopeId);
                     $limit->setAmount($amount !== '' ? $amount : '0');
                     $limit->setCurrency($currency !== '' ? $currency : 'EUR');
-                    $limit->setPeriod($this->parsePeriod($period));
+                    $limit->setPeriod($this->parsePeriod(is_string($period) ? $period : null));
                     $limit->setName($name !== '' ? $name : null);
                     $this->em->persist($limit);
                     $this->em->flush();
@@ -102,7 +102,7 @@ class QuotasController extends AbstractController
                     $limit->setScopeId($scopeId);
                     $limit->setAmount($amount !== '' ? $amount : '0');
                     $limit->setCurrency($currency !== '' ? $currency : 'EUR');
-                    $limit->setPeriod($this->parsePeriod($period));
+                    $limit->setPeriod($this->parsePeriod(is_string($period) ? $period : null));
                     $limit->setName($name !== '' ? $name : null);
                     $this->em->persist($limit);
                     $this->em->flush();

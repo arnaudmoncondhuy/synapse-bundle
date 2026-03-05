@@ -82,9 +82,9 @@ class ModelController extends AbstractController
             $this->em->persist($model);
         }
 
-        $label = $request->request->get('label', '');
-        $inputRaw = $request->request->get('pricing_input', '');
-        $outputRaw = $request->request->get('pricing_output', '');
+        $label = (string) $request->request->get('label', '');
+        $inputRaw = (string) $request->request->get('pricing_input', '');
+        $outputRaw = (string) $request->request->get('pricing_output', '');
 
         if ($label !== '') {
             $model->setLabel($label);

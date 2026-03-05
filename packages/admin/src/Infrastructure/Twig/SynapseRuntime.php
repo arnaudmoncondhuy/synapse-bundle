@@ -57,7 +57,8 @@ class SynapseRuntime implements RuntimeExtensionInterface
         // Try dynamic read first to bypass cache if needed
         $versionFile = dirname(__DIR__, 3) . '/VERSION';
         if (is_file($versionFile)) {
-            return trim(file_get_contents($versionFile));
+            $content = file_get_contents($versionFile);
+            return trim($content !== false ? $content : '');
         }
 
         return $this->version;

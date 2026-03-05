@@ -69,14 +69,14 @@ class SettingsController extends AbstractController
             }
 
             // Langue
-            $lang = $request->request->get('context_language', 'fr');
+            $lang = (string) $request->request->get('context_language', 'fr');
             if (array_key_exists($lang, self::LANGUAGES)) {
                 $config->setContextLanguage($lang);
             }
 
             // Prompt système personnalisé
             $systemPrompt = $request->request->get('system_prompt');
-            $config->setSystemPrompt(!empty($systemPrompt) ? $systemPrompt : null);
+            $config->setSystemPrompt(!empty($systemPrompt) ? (string) $systemPrompt : null);
 
             // Mode debug
             $config->setDebugMode($request->request->getBoolean('debug_mode'));
