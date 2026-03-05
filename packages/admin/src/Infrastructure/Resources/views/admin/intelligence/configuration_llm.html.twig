@@ -1,6 +1,7 @@
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
-{% block admin_page_title %}Configuration LLM | Intelligence | Synapse Administration Synapse{% endblock %}
+{% block admin_page_title %}Configuration LLM | Intelligence | Synapse Administration Synapse
+{% endblock %}
 
 {% block admin_breadcrumb %}
 	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
@@ -36,18 +37,15 @@
 
 	{# ── Onglets ──────────────────────────────────────────────────────────────── #}
 	<div class="synapse-admin-tabs synapse-admin-mb-lg">
-		<a href="{{ path('synapse_admin_configuration_llm', {tab: 'fournisseurs'}) }}"
-		   class="synapse-admin-tab {% if tab == 'fournisseurs' %}synapse-admin-tab--active{% endif %}">
+		<a href="{{ path('synapse_admin_configuration_llm', {tab: 'fournisseurs'}) }}" class="synapse-admin-tab {% if tab == 'fournisseurs' %}synapse-admin-tab--active{% endif %}">
 			<i data-lucide="plug"></i>
 			Fournisseurs LLM
 		</a>
-		<a href="{{ path('synapse_admin_configuration_llm', {tab: 'modeles'}) }}"
-		   class="synapse-admin-tab {% if tab == 'modeles' %}synapse-admin-tab--active{% endif %}">
+		<a href="{{ path('synapse_admin_configuration_llm', {tab: 'modeles'}) }}" class="synapse-admin-tab {% if tab == 'modeles' %}synapse-admin-tab--active{% endif %}">
 			<i data-lucide="cpu"></i>
 			Modèles
 		</a>
-		<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}"
-		   class="synapse-admin-tab {% if tab == 'presets' %}synapse-admin-tab--active{% endif %}">
+		<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-tab {% if tab == 'presets' %}synapse-admin-tab--active{% endif %}">
 			<i data-lucide="sliders-horizontal"></i>
 			Presets
 		</a>
@@ -56,15 +54,14 @@
 	{# ═══════════════════════════════════════════════════════════════════════════ #}
 	{# ONGLET : FOURNISSEURS                                                      #}
 	{# ═══════════════════════════════════════════════════════════════════════════ #}
-	{% if tab == 'fournisseurs' %}
+		{% if tab == 'fournisseurs' %}
 
 		{% set sorted_providers = providers|sort((a, b) =>
 			(a.isConfigured and a.isEnabled ? 0 : (a.isConfigured ? 1 : 2)) -
 			(b.isConfigured and b.isEnabled ? 0 : (b.isConfigured ? 1 : 2))
 		) %}
 
-		<div class="synapse-admin-grid synapse-admin-grid--2">
-			{% for provider in sorted_providers %}
+			<div class="synapse-admin-grid synapse-admin-grid--2"> {% for provider in sorted_providers %}
 
 				{% if provider.isConfigured and provider.isEnabled %}
 					{% set variant = 'synapse-admin-card--success' %}
@@ -138,7 +135,7 @@
 								</div>
 								<p class="synapse-admin-empty__description">
 									Aucun credential configuré. Cliquez sur "Configurer" pour renseigner
-									les paramètres de connexion à ce fournisseur.
+																		les paramètres de connexion à ce fournisseur.
 								</p>
 							</div>
 						{% endif %}
@@ -147,13 +144,13 @@
 					<div class="synapse-admin-card__footer">
 						<div class="synapse-admin-flex synapse-admin-gap-sm">
 
-						{% if provider.isConfigured %}
-							<button type="button" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" onclick="testProvider({{ provider.id }}, this)" data-csrf-token="{{ csrf_token('synapse_provider_test_' ~ provider.id) }}">
-								<i data-lucide="flask-conical"></i>
-								Tester
-							</button>
-						{% endif %}
-					<a href="{{ path('synapse_admin_providers_edit', {id: provider.id}) }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+							{% if provider.isConfigured %}
+								<button type="button" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" onclick="testProvider({{ provider.id }}, this)" data-csrf-token="{{ csrf_token('synapse_provider_test_' ~ provider.id) }}">
+									<i data-lucide="flask-conical"></i>
+									Tester
+								</button>
+							{% endif %}
+							<a href="{{ path('synapse_admin_providers_edit', {id: provider.id}) }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
 								<i data-lucide="settings"></i>
 								{{ provider.isConfigured ? 'Reconfigurer' : 'Configurer' }}
 							</a>
@@ -164,7 +161,9 @@
 			{% else %}
 				<div class="synapse-admin-card">
 					<div class="synapse-admin-empty">
-						<div class="synapse-admin-empty__icon"><i data-lucide="plug"></i></div>
+						<div class="synapse-admin-empty__icon">
+							<i data-lucide="plug"></i>
+						</div>
 						<div class="synapse-admin-empty__title">Aucun fournisseur trouvé</div>
 						<p class="synapse-admin-empty__description">Vérifiez la configuration de votre bundle Synapse.</p>
 					</div>
@@ -172,12 +171,13 @@
 			{% endfor %}
 		</div>
 
-	{# ═══════════════════════════════════════════════════════════════════════════ #}
-	{# ONGLET : MODÈLES                                                           #}
-	{# ═══════════════════════════════════════════════════════════════════════════ #}
+		{# ═══════════════════════════════════════════════════════════════════════════ #}
+		{# ONGLET : MODÈLES                                                           #}
+		{# ═══════════════════════════════════════════════════════════════════════════ #}
 	{% elseif tab == 'modeles' %}
 
-		<div class="synapse-admin-page-header__actions synapse-admin-mb-md" id="filters-toolbar" style="justify-content: flex-start;">
+		<div class="synapse-admin-page-header__actions synapse-admin-mb-md" id="filters-toolbar" style="justify-content: flex-start; flex-wrap: wrap; gap: 0.5rem;">
+			<span class="synapse-admin-text-xs synapse-admin-text-tertiary" style="align-self:center; margin-right: 4px;">Filtrer :</span>
 			<button type="button" id="filter-thinking" onclick="toggleFilter('thinking', this)" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" data-synapse-admin-tooltip="Filtrer les modèles avec réflexion (thinking)">
 				<i data-lucide="brain"></i>
 				Thinking
@@ -186,6 +186,15 @@
 				<i data-lucide="wrench"></i>
 				Tools
 			</button>
+			<button type="button" id="filter-streaming" onclick="toggleFilter('streaming', this)" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" data-synapse-admin-tooltip="Filtrer les modèles avec streaming">
+				<i data-lucide="activity"></i>
+				Streaming
+			</button>
+			<button type="button" id="filter-safety" onclick="toggleFilter('safety', this)" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" data-synapse-admin-tooltip="Filtrer les modèles avec paramètres de sécurité">
+				<i data-lucide="shield"></i>
+				Safety
+			</button>
+			<span style="flex:1"></span>
 			<button type="button" onclick="resetFilters()" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
 				<i data-lucide="x"></i>
 				Réinitialiser
@@ -195,7 +204,9 @@
 		{% if models is empty %}
 			<div class="synapse-admin-card">
 				<div class="synapse-admin-empty">
-					<div class="synapse-admin-empty__icon"><i data-lucide="cpu"></i></div>
+					<div class="synapse-admin-empty__icon">
+						<i data-lucide="cpu"></i>
+					</div>
 					<div class="synapse-admin-empty__title">Aucun modèle disponible</div>
 					<p class="synapse-admin-empty__description">
 						Configurez d'abord un fournisseur LLM dans l'onglet Fournisseurs.
@@ -210,12 +221,40 @@
 			<div class="synapse-admin-card">
 				<div class="synapse-admin-table-container">
 					<table class="synapse-admin-table" id="table-models">
+						<style>
+							th.sortable {
+								cursor: pointer;
+								user-select: none;
+								white-space: nowrap;
+							}
+							th.sortable:hover {
+								opacity: .75;
+							}
+							th.sortable .sort-icon {
+								width: 14px;
+								height: 14px;
+								margin-left: 4px;
+								vertical-align: middle;
+								opacity: .4;
+								transition: opacity 0.15s;
+							}
+							th.sortable.sort-asc .sort-icon,
+							th.sortable.sort-desc .sort-icon {
+								opacity: 1;
+							}
+						</style>
 						<thead>
 							<tr>
-								<th>Modèle / Label</th>
-								<th>Fournisseur</th>
+								<th class="sortable" data-col="label" onclick="sortTable('label')">Modèle / Label
+									<i data-lucide="chevrons-up-down" class="sort-icon"></i>
+								</th>
+								<th class="sortable" data-col="provider" onclick="sortTable('provider')">Fournisseur
+									<i data-lucide="chevrons-up-down" class="sort-icon"></i>
+								</th>
 								<th>Capacités</th>
-								<th>Pricing (1M tokens)</th>
+								<th class="sortable" data-col="pricing" onclick="sortTable('pricing')">Pricing (1M tokens)
+									<i data-lucide="chevrons-up-down" class="sort-icon"></i>
+								</th>
 								<th>Statut</th>
 								<th>Actions</th>
 							</tr>
@@ -223,9 +262,7 @@
 						<tbody>
 							{% for model in models %}
 								{% set safeId = model.id|replace({'.': '-', ':': '-'}) %}
-								<tr class="model-row"
-								    data-thinking="{{ model.capabilities.thinking ? '1' : '0' }}"
-								    data-tools="{{ model.capabilities.functionCalling ? '1' : '0' }}">
+								<tr class="model-row" data-thinking="{{ model.capabilities.thinking ? '1' : '0' }}" data-tools="{{ model.capabilities.functionCalling ? '1' : '0' }}" data-streaming="{{ model.capabilities.streaming ? '1' : '0' }}" data-safety="{{ model.capabilities.safetySettings ? '1' : '0' }}" data-label="{{ model.label|lower }}" data-provider="{{ model.provider|lower }}" data-pricing="{{ model.pricing_input ?: '99999' }}">
 
 									<td>
 										<div class="synapse-admin-table-cell-label">
@@ -300,14 +337,11 @@
 										<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center">
 											<form action="{{ path('synapse_admin_models_toggle', {modelId: model.id}) }}" method="POST">
 												<input type="hidden" name="_token" value="{{ csrf_token('synapse_model_toggle_' ~ model.id) }}">
-												<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon"
-												        data-synapse-admin-tooltip="{{ model.is_enabled ? 'Désactiver' : 'Activer' }}">
+												<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon" data-synapse-admin-tooltip="{{ model.is_enabled ? 'Désactiver' : 'Activer' }}">
 													<i data-lucide="{{ model.is_enabled ? 'eye-off' : 'eye' }}"></i>
 												</button>
 											</form>
-											<button type="button" onclick="toggleSettings('{{ safeId }}')"
-											        class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon"
-											        data-synapse-admin-tooltip="Configurer">
+											<button type="button" onclick="toggleSettings('{{ safeId }}')" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon" data-synapse-admin-tooltip="Configurer">
 												<i data-lucide="settings"></i>
 											</button>
 										</div>
@@ -327,15 +361,13 @@
 													<label class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">
 														Tarif Input ({{ model.currency }}/1M tokens)
 													</label>
-													<input type="number" name="pricing_input" step="0.0001" min="0"
-													       value="{{ model.pricing_input }}" class="synapse-admin-input synapse-admin-mt-sm" placeholder="Ex : 0.075">
+													<input type="number" name="pricing_input" step="0.0001" min="0" value="{{ model.pricing_input }}" class="synapse-admin-input synapse-admin-mt-sm" placeholder="Ex : 0.075">
 												</div>
 												<div>
 													<label class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">
 														Tarif Output ({{ model.currency }}/1M tokens)
 													</label>
-													<input type="number" name="pricing_output" step="0.0001" min="0"
-													       value="{{ model.pricing_output }}" class="synapse-admin-input synapse-admin-mt-sm" placeholder="Ex : 0.30">
+													<input type="number" name="pricing_output" step="0.0001" min="0" value="{{ model.pricing_output }}" class="synapse-admin-input synapse-admin-mt-sm" placeholder="Ex : 0.30">
 												</div>
 											</div>
 											<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-mt-md">
@@ -358,17 +390,17 @@
 			</div>
 		{% endif %}
 
-	{# ═══════════════════════════════════════════════════════════════════════════ #}
-	{# ONGLET : PRESETS                                                           #}
-	{# ═══════════════════════════════════════════════════════════════════════════ #}
+		{# ═══════════════════════════════════════════════════════════════════════════ #}
+		{# ONGLET : PRESETS                                                           #}
+		{# ═══════════════════════════════════════════════════════════════════════════ #}
 	{% else %}
 
 		<div class="synapse-admin-grid synapse-admin-grid--2">
 			{% for item in presets %}
 				{% set preset = item.entity %}
 				{% set caps   = item.caps %}
-			{% set isValid = item['isValid'] %}
-			{% set invalidReason = item['invalidReason'] %}
+				{% set isValid = item['isValid'] %}
+				{% set invalidReason = item['invalidReason'] %}
 
 				<div class="synapse-admin-card synapse-admin-card--hover {{ preset.isActive ? 'synapse-admin-card--active synapse-admin-card--success' : '' }}">
 
@@ -385,12 +417,12 @@
 										Actif
 									</span>
 								{% endif %}
-						{% if not isValid %}
-							<span class="synapse-admin-badge synapse-admin-badge--warning" data-synapse-admin-tooltip="{{ invalidReason }}">
-								<i data-lucide="alert-triangle"></i>
-								Non valide
-							</span>
-						{% endif %}
+								{% if not isValid %}
+									<span class="synapse-admin-badge synapse-admin-badge--warning" data-synapse-admin-tooltip="{{ invalidReason }}">
+										<i data-lucide="alert-triangle"></i>
+										Non valide
+									</span>
+								{% endif %}
 							</div>
 							<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center">
 								<span class="synapse-admin-badge synapse-admin-badge--neutral">
@@ -424,12 +456,21 @@
 
 						<details class="synapse-admin-collapsible">
 							<summary class="synapse-admin-collapsible__summary">
-								<div class="synapse-admin-collapsible__icon"><i data-lucide="settings-2"></i></div>
+								<div class="synapse-admin-collapsible__icon">
+									<i data-lucide="settings-2"></i>
+								</div>
 								<div class="synapse-admin-collapsible__title">
 									Paramètres techniques
 									<div class="synapse-admin-collapsible__subtitle">
-										Temp. {{ preset.generationTemperature }} · Top-P {{ preset.generationTopP }}
-										{% if preset.generationMaxOutputTokens %} · Max {{ preset.generationMaxOutputTokens }} tokens{% endif %}
+										Temp.
+										{{ preset.generationTemperature }}
+										· Top-P
+										{{ preset.generationTopP }}
+										{% if preset.generationMaxOutputTokens %}
+											· Max
+											{{ preset.generationMaxOutputTokens }}
+											tokens
+										{% endif %}
 									</div>
 								</div>
 								<i data-lucide="chevron-down" class="synapse-admin-collapsible__chevron"></i>
@@ -463,23 +504,18 @@
 					</div>
 
 					<div class="synapse-admin-card__footer" style="overflow: visible;">
-						<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center synapse-admin-flex-wrap" style="position: relative; z-index: 10;">
+						<div
+							class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center synapse-admin-flex-wrap" style="position: relative; z-index: 10;">
 							{# Modifier #}
 							<form action="{{ path('synapse_admin_presets_edit', {id: preset.id}) }}" method="GET" class="synapse-admin-form-inline">
-								<button type="submit"
-										class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
-										data-synapse-admin-tooltip="Modifier">
+								<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="Modifier">
 									<i data-lucide="edit-3"></i>
 								</button>
 							</form>
 
 							{# Tester #}
 							<form action="{{ path('synapse_admin_presets_test', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline">
-								<button type="submit"
-										class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
-										data-synapse-admin-tooltip="{% if isValid %}Tester{% else %}Non valide{% endif %}"
-										data-synapse-admin-tooltip-placement="top"
-										{% if not isValid %}disabled{% endif %}>
+								<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="{% if isValid %}Tester{% else %}Non valide{% endif %}" data-synapse-admin-tooltip-placement="top" {% if not isValid %} disabled {% endif %}>
 									<i data-lucide="flask-conical"></i>
 								</button>
 							</form>
@@ -487,23 +523,15 @@
 							{# Dupliquer #}
 							<form action="{{ path('synapse_admin_presets_clone', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline">
 								<input type="hidden" name="_token" value="{{ csrf_token('synapse_preset_clone_' ~ preset.id) }}">
-								<button type="submit"
-										class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
-										data-synapse-admin-tooltip="Dupliquer"
-										data-synapse-admin-tooltip-placement="top">
+								<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="Dupliquer" data-synapse-admin-tooltip-placement="top">
 									<i data-lucide="copy"></i>
 								</button>
 							</form>
 
 							{# Supprimer #}
-							<form action="{{ path('synapse_admin_presets_delete', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline"
-							      onsubmit="return confirm('Supprimer le preset &quot;{{ preset.name|e('js') }}&quot; ?')">
+							<form action="{{ path('synapse_admin_presets_delete', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline" onsubmit="return confirm('Supprimer le preset &quot;{{ preset.name|e('js') }}&quot; ?')">
 								<input type="hidden" name="_token" value="{{ csrf_token('synapse_preset_delete_' ~ preset.id) }}">
-								<button type="submit"
-										class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm synapse-admin-text-danger"
-										data-synapse-admin-tooltip="{% if preset.isActive %}Actif (non supprimable){% else %}Supprimer{% endif %}"
-										data-synapse-admin-tooltip-placement="top"
-										{% if preset.isActive %}disabled{% endif %}>
+								<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm synapse-admin-text-danger" data-synapse-admin-tooltip="{% if preset.isActive %}Actif (non supprimable){% else %}Supprimer{% endif %}" data-synapse-admin-tooltip-placement="top" {% if preset.isActive %} disabled {% endif %}>
 									<i data-lucide="trash-2"></i>
 								</button>
 							</form>
@@ -511,11 +539,7 @@
 							{# Activer #}
 							<form action="{{ path('synapse_admin_presets_activate', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline">
 								<input type="hidden" name="_token" value="{{ csrf_token('synapse_preset_activate_' ~ preset.id) }}">
-								<button type="submit"
-										class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
-										data-synapse-admin-tooltip="{% if preset.isActive %}Déjà actif{% elseif isValid %}Activer{% else %}{{ invalidReason }}{% endif %}"
-										data-synapse-admin-tooltip-placement="top"
-										{% if preset.isActive or not isValid %}disabled{% endif %}>
+								<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="{% if preset.isActive %}Déjà actif{% elseif isValid %}Activer{% else %}{{ invalidReason }}{% endif %}" data-synapse-admin-tooltip-placement="top" {% if preset.isActive or not isValid %} disabled {% endif %}>
 									<i data-lucide="check-circle-2"></i>
 								</button>
 							</form>
@@ -526,7 +550,9 @@
 			{% else %}
 				<div class="synapse-admin-card">
 					<div class="synapse-admin-empty">
-						<div class="synapse-admin-empty__icon"><i data-lucide="sliders-horizontal"></i></div>
+						<div class="synapse-admin-empty__icon">
+							<i data-lucide="sliders-horizontal"></i>
+						</div>
 						<div class="synapse-admin-empty__title">Aucun preset configuré</div>
 						<p class="synapse-admin-empty__description">
 							Créez votre premier profil de génération LLM pour commencer à utiliser Synapse.
@@ -546,114 +572,187 @@
 	{% if tab == 'modeles' %}
 		<script>
 			const activeFilters = new Set();
+const FILTER_BTN_IDS = ['filter-thinking', 'filter-tools', 'filter-streaming', 'filter-safety'];
+let currentSort = {
+col: null,
+dir: 'asc'
+};
 
-			function toggleFilter(cap, btn) {
-				if (activeFilters.has(cap)) {
-					activeFilters.delete(cap);
-					btn.classList.remove('synapse-admin-btn--outline');
-					btn.classList.add('synapse-admin-btn--ghost');
-				} else {
-					activeFilters.add(cap);
-					btn.classList.remove('synapse-admin-btn--ghost');
-					btn.classList.add('synapse-admin-btn--outline');
-				}
-				applyFilters();
-			}
+function toggleFilter(cap, btn) {
+if (activeFilters.has(cap)) {
+activeFilters.delete(cap);
+btn.classList.remove('synapse-admin-btn--outline');
+btn.classList.add('synapse-admin-btn--ghost');
+} else {
+activeFilters.add(cap);
+btn.classList.remove('synapse-admin-btn--ghost');
+btn.classList.add('synapse-admin-btn--outline');
+} applyFilters();
+}
 
-			function applyFilters() {
-				document.querySelectorAll('.model-row').forEach(row => {
-					const show = [...activeFilters].every(cap => row.dataset[cap] === '1');
-					row.hidden = !show;
-					const settingsRow = row.nextElementSibling;
-					if (settingsRow && settingsRow.classList.contains('settings-row') && !show) {
-						settingsRow.hidden = true;
-					}
-				});
-			}
+function applyFilters() {
+document.querySelectorAll('.model-row').forEach(row => {
+const show = [... activeFilters].every(cap => row.dataset[cap] === '1');
+row.hidden = ! show;
+const settingsRow = row.nextElementSibling;
+if (settingsRow && settingsRow.classList.contains('settings-row') && ! show) {
+settingsRow.hidden = true;
+}
+});
+}
 
-			function resetFilters() {
-				activeFilters.clear();
-				['filter-thinking', 'filter-tools'].forEach(id => {
-					const btn = document.getElementById(id);
-					btn.classList.remove('synapse-admin-btn--outline');
-					btn.classList.add('synapse-admin-btn--ghost');
-				});
-				document.querySelectorAll('.model-row').forEach(row => row.hidden = false);
-			}
+function resetFilters() {
+activeFilters.clear();
+FILTER_BTN_IDS.forEach(id => {
+const btn = document.getElementById(id);
+if (btn) {
+btn.classList.remove('synapse-admin-btn--outline');
+btn.classList.add('synapse-admin-btn--ghost');
+}
+});
+document.querySelectorAll('.model-row').forEach(row => row.hidden = false);
+}
 
-			function toggleSettings(safeId) {
-				const row = document.getElementById('settings-' + safeId);
-				if (row) row.hidden = !row.hidden;
-			}
+// ── Tri de tableau ───────────────────────────────────────────────────────
+function sortTable(col) {
+const table = document.getElementById('table-models');
+const tbody = table.querySelector('tbody');
+
+// Toggle direction
+if (currentSort.col === col) {
+currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+} else {
+currentSort.col = col;
+currentSort.dir = 'asc';
+}
+
+// Update header icons
+table.querySelectorAll('th.sortable').forEach(th => {
+th.classList.remove('sort-asc', 'sort-desc');
+const icon = th.querySelector('.sort-icon');
+if (icon) 
+icon.setAttribute('data-lucide', 'chevrons-up-down');
+
+});
+const activeTh = table.querySelector(`th[data-col="${col}"]`);
+if (activeTh) {
+activeTh.classList.add(currentSort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+const icon = activeTh.querySelector('.sort-icon');
+if (icon) 
+icon.setAttribute('data-lucide', currentSort.dir === 'asc' ? 'chevron-up' : 'chevron-down');
+
+}
+if (typeof lucide !== 'undefined') 
+lucide.createIcons();
+
+
+// Collect pairs [model-row, settings-row]
+const rows = [];
+const allRows = [... tbody.children];
+for (let i = 0; i < allRows.length; i++) {
+if (allRows[i].classList.contains('model-row')) {
+const next = allRows[i + 1];
+const settings = (next && next.classList.contains('settings-row')) ? next : null;
+rows.push({model: allRows[i], settings});
+}
+}
+
+// Sort
+rows.sort((a, b) => {
+let va = a.model.dataset[col] || '';
+let vb = b.model.dataset[col] || '';
+if (col === 'pricing') {
+va = parseFloat(va) || 0;
+vb = parseFloat(vb) || 0;
+return currentSort.dir === 'asc' ? va - vb : vb - va;
+}
+return currentSort.dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+});
+
+// Re-append
+rows.forEach(({model, settings}) => {
+tbody.appendChild(model);
+if (settings) 
+tbody.appendChild(settings);
+
+});
+}
+
+function toggleSettings(safeId) {
+const row = document.getElementById('settings-' + safeId);
+if (row) 
+row.hidden = ! row.hidden;
+
+}
 		</script>
 	{% endif %}
 
 	{# ── Script: Test Provider ──────────────────────────────────────────────── #}
 	<script>
 		async function testProvider(providerId, btn) {
-			const originalHtml = btn.innerHTML;
-			const originalDisabled = btn.disabled;
-			btn.disabled = true;
+const originalHtml = btn.innerHTML;
+const originalDisabled = btn.disabled;
+btn.disabled = true;
 
-			// Get CSRF token from button's data attribute
-			const csrfToken = btn.getAttribute('data-csrf-token') || '';
+// Get CSRF token from button's data attribute
+const csrfToken = btn.getAttribute('data-csrf-token') || '';
 
-			try {
-				const formData = new FormData();
-				if (csrfToken) {
-					formData.append('_token', csrfToken);
-				}
+try {
+const formData = new FormData();
+if (csrfToken) {
+formData.append('_token', csrfToken);
+}
 
-				const response = await fetch('{{ path('synapse_admin_providers_test', {'id': 'PLACEHOLDER'}) }}'.replace('PLACEHOLDER', providerId), {
-					method: 'POST',
-					headers: {
-						'X-Requested-With': 'XMLHttpRequest'
-					},
-					body: formData
-				});
+const response = await fetch('{{ path('synapse_admin_providers_test', {'id': 'PLACEHOLDER'}) }}'.replace('PLACEHOLDER', providerId), {
+method: 'POST',
+headers: {
+'X-Requested-With': 'XMLHttpRequest'
+},
+body: formData
+});
 
-				const data = await response.json();
+const data = await response.json();
 
-				if (data.success) {
-					btn.innerHTML = '<i data-lucide="check-circle-2" style="color: #16a34a"></i> ✓ OK';
-					btn.style.backgroundColor = '#dcfce7';
-					btn.style.color = '#166534';
-					setTimeout(() => {
-						btn.innerHTML = originalHtml;
-						btn.disabled = originalDisabled;
-						btn.style.backgroundColor = '';
-						btn.style.color = '';
-						lucide.createIcons();
-					}, 3000);
-				} else {
-					btn.innerHTML = '<i data-lucide="alert-circle" style="color: #dc2626"></i> ✗ Erreur';
-					btn.style.backgroundColor = '#fee2e2';
-					btn.style.color = '#7f1d1d';
-					setTimeout(() => {
-						btn.innerHTML = originalHtml;
-						btn.disabled = originalDisabled;
-						btn.style.backgroundColor = '';
-						btn.style.color = '';
-						lucide.createIcons();
-					}, 3000);
-					if (data.error) {
-						alert('Erreur: ' + data.error);
-					}
-				}
-			} catch (error) {
-				btn.innerHTML = '<i data-lucide="alert-circle" style="color: #dc2626"></i> ✗ Erreur';
-				btn.style.backgroundColor = '#fee2e2';
-				btn.style.color = '#7f1d1d';
-				setTimeout(() => {
-					btn.innerHTML = originalHtml;
-					btn.disabled = originalDisabled;
-					btn.style.backgroundColor = '';
-					btn.style.color = '';
-					lucide.createIcons();
-				}, 3000);
-				console.error('Test failed:', error);
-			}
-		}
+if (data.success) {
+btn.innerHTML = '<i data-lucide="check-circle-2" style="color: #16a34a"></i> ✓ OK';
+btn.style.backgroundColor = '#dcfce7';
+btn.style.color = '#166534';
+setTimeout(() => {
+btn.innerHTML = originalHtml;
+btn.disabled = originalDisabled;
+btn.style.backgroundColor = '';
+btn.style.color = '';
+lucide.createIcons();
+}, 3000);
+} else {
+btn.innerHTML = '<i data-lucide="alert-circle" style="color: #dc2626"></i> ✗ Erreur';
+btn.style.backgroundColor = '#fee2e2';
+btn.style.color = '#7f1d1d';
+setTimeout(() => {
+btn.innerHTML = originalHtml;
+btn.disabled = originalDisabled;
+btn.style.backgroundColor = '';
+btn.style.color = '';
+lucide.createIcons();
+}, 3000);
+if (data.error) {
+alert('Erreur: ' + data.error);
+}
+}
+} catch (error) {
+btn.innerHTML = '<i data-lucide="alert-circle" style="color: #dc2626"></i> ✗ Erreur';
+btn.style.backgroundColor = '#fee2e2';
+btn.style.color = '#7f1d1d';
+setTimeout(() => {
+btn.innerHTML = originalHtml;
+btn.disabled = originalDisabled;
+btn.style.backgroundColor = '';
+btn.style.color = '';
+lucide.createIcons();
+}, 3000);
+console.error('Test failed:', error);
+}
+}
 	</script>
 
 {% endblock %}
