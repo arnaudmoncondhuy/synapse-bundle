@@ -312,6 +312,7 @@ class PresetController extends AbstractController
 
             // Persister le résultat dans le cache pour les polls suivants
             $this->cache->delete($cacheKey);
+            // @phpstan-ignore argument.unresolvableType (PHPStan cannot resolve $data array type through CacheInterface closure capture)
             $this->cache->get($cacheKey, function (ItemInterface $item) use ($data): array {
                 $item->expiresAfter(3600);
                 return $data;

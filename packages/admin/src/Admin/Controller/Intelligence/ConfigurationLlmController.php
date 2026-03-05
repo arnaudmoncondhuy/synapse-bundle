@@ -79,15 +79,13 @@ class ConfigurationLlmController extends AbstractController
         // 🛡️ DÉFENSE CRITIQUE : S'assurer que le preset actif est valide
         // Si un preset valide existe et est actif, vérifier son intégrité
         $activePreset = $this->presetRepo->findActive();
-        if ($activePreset !== null) {
-            try {
-                $this->presetValidator->ensureActivePresetIsValid($activePreset);
-                // Rafraîchir les données depuis la BDD après la correction potentielle
-                $this->em->refresh($activePreset);
-            } catch (\Exception $e) {
-                // Ignorer l'exception ici - elle sera loggée mais l'admin page s'affichera quand même
-                // Le cache de configuration sera invalidé pour que la prochaine utilisation le recharge
-            }
+        try {
+            $this->presetValidator->ensureActivePresetIsValid($activePreset);
+            // Rafraîchir les données depuis la BDD après la correction potentielle
+            $this->em->refresh($activePreset);
+        } catch (\Exception $e) {
+            // Ignorer l'exception ici - elle sera loggée mais l'admin page s'affichera quand même
+            // Le cache de configuration sera invalidé pour que la prochaine utilisation le recharge
         }
 
         $allPresets = $this->presetRepo->findAllPresets();

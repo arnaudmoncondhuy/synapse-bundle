@@ -13,10 +13,8 @@ parameters:
         - packages/*/vendor/*
         - packages/*/tests/*
     treatPhpDocTypesAsCertain: false
-    # bootstrapFiles:
-    #    - vendor/autoload.php
-
-# symfony:
-#    # Chemin vers le conteneur XML si disponible après compilation
-#    # container_xml_path: var/cache/dev/App_KernelDevDebugContainer.xml
-#
+    ignoreErrors:
+        # Doctrine hydrates IDs via reflection — PHPStan never sees the int assignment
+        -
+            identifier: property.unusedType
+            path: packages/core/src/Storage/Entity/*

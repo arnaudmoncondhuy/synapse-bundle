@@ -9,7 +9,6 @@ use ArnaudMoncondhuy\SynapseCore\Core\Chat\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModel;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelRepository;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,7 +26,6 @@ class ModelController extends AbstractController
 
     public function __construct(
         private SynapseModelRepository $modelRepo,
-        private SynapseProviderRepository $providerRepo,
         private ModelCapabilityRegistry $capabilityRegistry,
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
