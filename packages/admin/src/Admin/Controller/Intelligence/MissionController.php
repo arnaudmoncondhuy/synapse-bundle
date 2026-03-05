@@ -105,7 +105,7 @@ class MissionController extends AbstractController
 
         $presets = $this->presetRepo->findAll();
         $tones = $this->toneRepo->findAllOrdered();
-        $missionLimits = $this->spendingLimitRepo->findForMission($mission->getId());
+        $missionLimits = $this->spendingLimitRepo->findForMission((int) $mission->getId());
         $spendingLimit = $missionLimits[0] ?? null;
 
         return $this->render('@Synapse/admin/intelligence/mission_edit.html.twig', [
@@ -132,7 +132,7 @@ class MissionController extends AbstractController
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_mission_limit_' . $mission->getId());
 
         $action = $request->request->get('action', 'save');
-        $missionLimits = $this->spendingLimitRepo->findForMission($mission->getId());
+        $missionLimits = $this->spendingLimitRepo->findForMission((int) $mission->getId());
         $limit = $missionLimits[0] ?? null;
 
         if ($action === 'delete' && $limit !== null) {

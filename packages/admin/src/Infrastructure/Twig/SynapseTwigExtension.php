@@ -96,18 +96,18 @@ class SynapseTwigExtension extends AbstractExtension
         $html = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
         // 2. PRIORITY: Liens vers Boutons Action
-        $html = preg_replace(
+        $html = (string) preg_replace(
             '/\[([^\]]+)\]\(([^)]+)\)/u',
             '<a href="$2" class="synapse-btn-action" target="_blank" rel="noopener noreferrer">$1</a>',
             $html
         );
 
         // 3. Texte Formaté
-        $html = preg_replace('/\*\*(.*?)\*\*/u', '<strong>$1</strong>', $html);
-        $html = preg_replace('/\*(.*?)\*/u', '<em>$1</em>', $html);
+        $html = (string) preg_replace('/\*\*(.*?)\*\*/u', '<strong>$1</strong>', $html);
+        $html = (string) preg_replace('/\*(.*?)\*/u', '<em>$1</em>', $html);
 
         // 4. Blocs de code
-        $html = preg_replace_callback(
+        $html = (string) preg_replace_callback(
             '/```(\w+)?\s*([\s\S]*?)```/m',
             function ($matches) {
                 $content = trim($matches[2]);
@@ -115,14 +115,14 @@ class SynapseTwigExtension extends AbstractExtension
             },
             $html
         );
-        $html = preg_replace('/`([^`]+)`/u', '<code>$1</code>', $html);
+        $html = (string) preg_replace('/`([^`]+)`/u', '<code>$1</code>', $html);
 
         // 6. Blocs de boutons consécutifs
-        $html = preg_replace_callback(
+        $html = (string) preg_replace_callback(
             '/(?:<a class="synapse-btn-action"[^>]*>.*?<\/a>\s*(\r\n|\r|\n)?\s*){2,}/s',
             function ($matches) {
                 $content = preg_replace('/\s*(\r\n|\r|\n)\s*/', '', $matches[0]);
-                return '<div class="synapse-action-group">' . $content . '</div>';
+                return '<div class="synapse-action-group">' . (string) $content . '</div>';
             },
             $html
         );
