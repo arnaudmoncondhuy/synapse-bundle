@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ArnaudMoncondhuy\SynapseChat\Core\Controller\Api;
+namespace ArnaudMoncondhuy\SynapseCore\Core\Controller\Api;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseCore\Core\Accounting\TokenCostEstimator;
