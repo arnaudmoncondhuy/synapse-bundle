@@ -6,15 +6,19 @@ includes:
     - vendor/phpstan/phpstan-deprecation-rules/rules.neon
 
 parameters:
-    level: 5
+    level: 7
     paths:
         - packages
     excludePaths:
         - packages/*/vendor/*
         - packages/*/tests/*
+    reportUnmatchedIgnoredErrors: false
     treatPhpDocTypesAsCertain: false
     ignoreErrors:
-        # Doctrine hydrates IDs via reflection — PHPStan never sees the int assignment
+        - identifier: property.unusedType
+          path: packages/core/src/Storage/Entity/*
+        - identifier: trait.unused
+          path: packages/core/src/Security/AdminSecurityTrait.php
         -
-            identifier: property.unusedType
-            path: packages/core/src/Storage/Entity/*
+            message: '#Call to deprecated method listTableNames\(\) of class Doctrine\\DBAL\\Schema\\AbstractSchemaManager#'
+            path: packages/core/src/Infrastructure/Command/SynapseDoctorCommand.php
