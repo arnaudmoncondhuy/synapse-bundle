@@ -67,8 +67,10 @@ class EmbeddingController extends AbstractController
             $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_admin_embeddings');
             $data = $request->request->all();
 
-            $embProvider  = !empty($data['embedding_provider'])  ? $data['embedding_provider']  : null;
-            $embModel     = !empty($data['embedding_model'])     ? $data['embedding_model']     : null;
+            $embProviderVal = !empty($data['embedding_provider']) ? $data['embedding_provider'] : null;
+            $embModelVal    = !empty($data['embedding_model'])     ? $data['embedding_model']     : null;
+            $embProvider    = is_string($embProviderVal) ? $embProviderVal : null;
+            $embModel       = is_string($embModelVal)    ? $embModelVal    : null;
             $embDimension = !empty($data['embedding_dimension']) ? (int) $data['embedding_dimension'] : null;
 
             // Validation : le modèle doit appartenir au provider
@@ -79,8 +81,10 @@ class EmbeddingController extends AbstractController
 
             $chunkSize     = max(100, min(20000, (int) ($data['chunk_size'] ?? 1000)));
             $chunkOverlap  = max(0, min($chunkSize - 50, (int) ($data['chunk_overlap'] ?? 200)));
-            $vectorStore   = !empty($data['vector_store']) ? $data['vector_store'] : 'doctrine';
-            $chunkStrategy = !empty($data['chunking_strategy']) ? $data['chunking_strategy'] : 'recursive';
+            $vectorStoreVal   = !empty($data['vector_store'])      ? $data['vector_store']      : 'doctrine';
+            $chunkStrategyVal = !empty($data['chunking_strategy'])  ? $data['chunking_strategy'] : 'recursive';
+            $vectorStore      = is_string($vectorStoreVal)   ? $vectorStoreVal   : 'doctrine';
+            $chunkStrategy    = is_string($chunkStrategyVal) ? $chunkStrategyVal : 'recursive';
 
             $config->setEmbeddingProvider($embProvider)
                 ->setEmbeddingModel($embModel)
@@ -127,7 +131,7 @@ class EmbeddingController extends AbstractController
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_admin_embeddings_test');
 
         try {
-            $text      = $request->request->get('text', 'Test d\'embedding Synapse.');
+            $text      = (string) $request->request->get('text', 'Test d\'embedding Synapse.');
             $start     = microtime(true);
             $result    = $this->embeddingService->generateEmbeddings($text);
             $elapsed   = round((microtime(true) - $start) * 1000);

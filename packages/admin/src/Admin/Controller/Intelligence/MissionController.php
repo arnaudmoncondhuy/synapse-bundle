@@ -162,7 +162,7 @@ class MissionController extends AbstractController
 
         $limit->setAmount($amount);
         $limit->setCurrency($currency !== '' ? $currency : 'EUR');
-        $limit->setPeriod($this->parsePeriod($period));
+        $limit->setPeriod($this->parsePeriod(is_string($period) ? $period : null));
         $limit->setName($name !== '' ? $name : null);
         $this->em->flush();
 
