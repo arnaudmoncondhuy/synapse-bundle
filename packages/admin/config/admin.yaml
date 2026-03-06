@@ -6,7 +6,7 @@ services:
     # ── Contrôleurs Administration (autoloading récursif) ─────────────────────
     # Couvre tous les sous-dossiers : Intelligence/, Conversation/, Memoire/, Usage/, etc.
     ArnaudMoncondhuy\SynapseAdmin\Controller\:
-        resource: '../src/Admin/Controller/'
+        resource: '../src/Controller/'
         tags: ['controller.service_arguments']
 
     # ── Twig Integration ──────────────────────────────────────────────────────
