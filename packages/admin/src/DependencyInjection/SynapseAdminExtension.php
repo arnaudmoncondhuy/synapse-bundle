@@ -22,7 +22,7 @@ class SynapseAdminExtension extends Extension implements PrependExtensionInterfa
     public function prepend(ContainerBuilder $container): void
     {
         // Enregistrement du namespace Twig @Synapse
-        $viewsPath = \dirname(__DIR__, 1) . '/../templates';
+        $viewsPath = \dirname(__DIR__) . '/Resources/views';
 
         $container->prependExtensionConfig('twig', [
             'paths' => [
