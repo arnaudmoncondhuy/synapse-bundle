@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseAdmin;
 
-use ArnaudMoncondhuy\SynapseAdmin\Infrastructure\DependencyInjection\SynapseAdminExtension;
+use ArnaudMoncondhuy\SynapseAdmin\DependencyInjection\SynapseAdminExtension;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 

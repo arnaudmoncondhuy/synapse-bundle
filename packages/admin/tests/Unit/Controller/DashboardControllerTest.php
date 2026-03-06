@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseAdmin\Tests\Unit\Controller;
 
-use ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\DashboardController;
+use ArnaudMoncondhuy\SynapseAdmin\Controller\DashboardController;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseLlmCallRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapsePresetRepository;
