@@ -6,15 +6,14 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Tests\Unit\Controller;
 
 use ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\DashboardController;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapsePresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseLlmCallRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapsePresetRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseVectorMemoryRepository;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Tests for DashboardController cost extraction logic
+ * Tests for DashboardController cost extraction logic.
  *
  * This test validates that EUR and USD costs are correctly extracted
  * from getGlobalStats() and passed to the template.
@@ -22,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 class DashboardControllerTest extends TestCase
 {
     /**
-     * Helper: Create a mock controller with all dependencies
+     * Helper: Create a mock controller with all dependencies.
      */
     private function createControllerWithMocks(
         array $globalStats = [],
@@ -61,7 +60,7 @@ class DashboardControllerTest extends TestCase
     }
 
     /**
-     * Test that costs_eur is correctly extracted from getGlobalStats()
+     * Test that costs_eur is correctly extracted from getGlobalStats().
      */
     public function testCostsEurExtractedCorrectly(): void
     {
@@ -85,7 +84,7 @@ class DashboardControllerTest extends TestCase
     }
 
     /**
-     * Test that costs_usd is correctly extracted from getGlobalStats()
+     * Test that costs_usd is correctly extracted from getGlobalStats().
      */
     public function testCostsUsdExtractedCorrectly(): void
     {
@@ -103,9 +102,9 @@ class DashboardControllerTest extends TestCase
     }
 
     /**
-     * Test that costs default to zero when not present in getGlobalStats()
+     * Test that costs default to zero when not present in getGlobalStats().
      */
-    public function testCostsDefaultToZero_whenNoCostKey(): void
+    public function testCostsDefaultToZeroWhenNoCostKey(): void
     {
         $globalStats = [
             'total_tokens' => 1000,
@@ -122,9 +121,9 @@ class DashboardControllerTest extends TestCase
     }
 
     /**
-     * Test that costs default to zero when costs array is empty
+     * Test that costs default to zero when costs array is empty.
      */
-    public function testCostsDefaultToZero_whenCostsArrayEmpty(): void
+    public function testCostsDefaultToZeroWhenCostsArrayEmpty(): void
     {
         $globalStats = [
             'total_tokens' => 1000,
@@ -141,7 +140,7 @@ class DashboardControllerTest extends TestCase
     }
 
     /**
-     * Test handling when only EUR is present
+     * Test handling when only EUR is present.
      */
     public function testCostsHandlesEurOnly(): void
     {
@@ -162,7 +161,7 @@ class DashboardControllerTest extends TestCase
     }
 
     /**
-     * Test handling when only USD is present
+     * Test handling when only USD is present.
      */
     public function testCostsHandlesUsdOnly(): void
     {
@@ -183,9 +182,9 @@ class DashboardControllerTest extends TestCase
     }
 
     /**
-     * Test extraction logic with both currencies present
+     * Test extraction logic with both currencies present.
      */
-    public function testCostsExtractionLogic_bothCurrencies(): void
+    public function testCostsExtractionLogicBothCurrencies(): void
     {
         $globalStats = [
             'total_tokens' => 2500,
@@ -206,9 +205,9 @@ class DashboardControllerTest extends TestCase
     }
 
     /**
-     * Test that usage_by_model is passed through correctly with currency info
+     * Test that usage_by_model is passed through correctly with currency info.
      */
-    public function testUsageByModel_includesCurrencyInfo(): void
+    public function testUsageByModelIncludesCurrencyInfo(): void
     {
         $usageByModel = [
             [

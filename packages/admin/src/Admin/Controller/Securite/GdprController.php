@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * Dashboard RGPD — Administration Synapse
+ * Dashboard RGPD — Administration Synapse.
  *
  * Centralise les informations liées à la conformité RGPD :
  * - Politique de rétention active
@@ -29,18 +29,19 @@ class GdprController extends AbstractController
         private SynapseConfigRepository $configRepo,
         private ConversationManager $conversationManager,
         private PermissionCheckerInterface $permissionChecker,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'gdpr', methods: ['GET'])]
     public function index(): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
-        $config           = $this->configRepo->getGlobalConfig();
+        $config = $this->configRepo->getGlobalConfig();
         $totalConversations = $this->conversationManager->countAllConversations();
 
         return $this->render('@Synapse/admin/securite/gdpr.html.twig', [
-            'config'             => $config,
+            'config' => $config,
             'total_conversations' => $totalConversations,
         ]);
     }

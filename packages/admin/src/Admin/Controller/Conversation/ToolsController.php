@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * Catalogue des outils (Function Calling) exposés à l'IA — Administration Synapse
+ * Catalogue des outils (Function Calling) exposés à l'IA — Administration Synapse.
  *
  * Les outils sont uniquement en lecture : ils sont définis en code via ToolInterface.
  * Cette page sert de référence pour les développeurs et les admins.
@@ -25,7 +25,8 @@ class ToolsController extends AbstractController
     public function __construct(
         private ToolRegistry $toolRegistry,
         private PermissionCheckerInterface $permissionChecker,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'tools', methods: ['GET'])]
     public function index(): Response
@@ -34,10 +35,10 @@ class ToolsController extends AbstractController
 
         $tools = $this->toolRegistry->getTools();
 
-        $toolsData = array_map(fn($tool) => [
-            'name'        => $tool->getName(),
+        $toolsData = array_map(fn ($tool) => [
+            'name' => $tool->getName(),
             'description' => $tool->getDescription(),
-            'class'       => get_class($tool),
+            'class' => get_class($tool),
         ], $tools);
 
         return $this->render('@Synapse/admin/conversation/tools.html.twig', [

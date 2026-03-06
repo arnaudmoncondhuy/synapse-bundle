@@ -23,7 +23,8 @@ class SynapseTwigExtension extends AbstractExtension
         private MissionRegistry $missionRegistry,
         private ?EncryptionServiceInterface $encryptionService = null,
         private ?\ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface $permissionChecker = null,
-    ) {}
+    ) {
+    }
 
     /**
      * Enregistre les filtres Twig personnalisés du bundle.
@@ -84,7 +85,7 @@ class SynapseTwigExtension extends AbstractExtension
         }
 
         // 0. Déchiffrer automatiquement si le service est présent et le texte semble chiffré
-        if ($this->encryptionService !== null && $this->encryptionService->isEncrypted($text)) {
+        if (null !== $this->encryptionService && $this->encryptionService->isEncrypted($text)) {
             try {
                 $text = $this->encryptionService->decrypt($text);
             } catch (\Throwable $e) {
@@ -111,7 +112,8 @@ class SynapseTwigExtension extends AbstractExtension
             '/```(\w+)?\s*([\s\S]*?)```/m',
             function ($matches) {
                 $content = trim($matches[2]);
-                return '<pre><code>' . $content . '</code></pre>';
+
+                return '<pre><code>'.$content.'</code></pre>';
             },
             $html
         );
@@ -122,7 +124,8 @@ class SynapseTwigExtension extends AbstractExtension
             '/(?:<a class="synapse-btn-action"[^>]*>.*?<\/a>\s*(\r\n|\r|\n)?\s*){2,}/s',
             function ($matches) {
                 $content = preg_replace('/\s*(\r\n|\r|\n)\s*/', '', $matches[0]);
-                return '<div class="synapse-action-group">' . (string) $content . '</div>';
+
+                return '<div class="synapse-action-group">'.(string) $content.'</div>';
             },
             $html
         );
@@ -143,7 +146,7 @@ class SynapseTwigExtension extends AbstractExtension
         // En V1, c'était peut-être injecté ou géré différemment.
         // On va rester fidèle à l'existant s'il y avait une logique, sinon on laisse tel quel.
         // La fonction existante faisait : new TwigFunction('synapse_config', [$this, 'findActive']),
-        // Mais findActive n'était pas dans le fichier vu ? 
+        // Mais findActive n'était pas dans le fichier vu ?
         // Ah, si, je l'ai raté ou il n'y était pas.
         return null;
     }

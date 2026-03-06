@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * À propos de Synapse Bundle — Administration Synapse
+ * À propos de Synapse Bundle — Administration Synapse.
  *
  * Affiche la version, les dépendances principales et les informations du projet.
  */
@@ -22,15 +22,16 @@ class AboutController extends AbstractController
 
     /** @var array<string, string> Principales dépendances du bundle */
     private const DEPENDENCIES = [
-        'symfony/framework-bundle'  => '^7.0',
-        'doctrine/orm'              => '^3.0',
-        'symfony/asset-mapper'      => '^7.0',
-        'psr/log'                   => '^3.0',
+        'symfony/framework-bundle' => '^7.0',
+        'doctrine/orm' => '^3.0',
+        'symfony/asset-mapper' => '^7.0',
+        'psr/log' => '^3.0',
     ];
 
     public function __construct(
         private PermissionCheckerInterface $permissionChecker,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'about', methods: ['GET'])]
     public function index(): Response
@@ -41,9 +42,9 @@ class AboutController extends AbstractController
         $version = $this->getBundleVersion();
 
         return $this->render('@Synapse/admin/systeme/about.html.twig', [
-            'version'      => $version,
+            'version' => $version,
             'dependencies' => self::DEPENDENCIES,
-            'php_version'  => PHP_VERSION,
+            'php_version' => PHP_VERSION,
             'symfony_version' => \Symfony\Component\HttpKernel\Kernel::VERSION,
         ]);
     }
@@ -52,14 +53,14 @@ class AboutController extends AbstractController
     {
         // Cherche le composer.json du bundle
         $candidates = [
-            __DIR__ . '/../../../../../../composer.json',
-            __DIR__ . '/../../../../composer.json',
+            __DIR__.'/../../../../../../composer.json',
+            __DIR__.'/../../../../composer.json',
         ];
         foreach ($candidates as $path) {
             if (file_exists($path)) {
                 try {
                     $raw = file_get_contents($path);
-                    $data = json_decode($raw !== false ? $raw : '{}', true, 512, JSON_THROW_ON_ERROR);
+                    $data = json_decode(false !== $raw ? $raw : '{}', true, 512, JSON_THROW_ON_ERROR);
 
                     if (!is_array($data)) {
                         continue;
@@ -86,6 +87,7 @@ class AboutController extends AbstractController
                 }
             }
         }
+
         return 'dev-main';
     }
 }

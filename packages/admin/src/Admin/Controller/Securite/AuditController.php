@@ -11,10 +11,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
- * Journal d'audit des accès administrateurs — Administration Synapse
+ * Journal d'audit des accès administrateurs — Administration Synapse.
  *
  * Centralise :
  * - Logs debug LLM (SynapseDebugLogRepository)
@@ -28,20 +27,21 @@ class AuditController extends AbstractController
     public function __construct(
         private SynapseDebugLogRepository $debugLogRepo,
         private PermissionCheckerInterface $permissionChecker,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'audit', methods: ['GET'])]
     public function index(Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
-        $tab  = $request->query->get('tab', 'debug');
+        $tab = $request->query->get('tab', 'debug');
         $logs = $this->debugLogRepo->findRecent(200);
 
         return $this->render('@Synapse/admin/securite/audit.html.twig', [
-            'logs'  => $logs,
+            'logs' => $logs,
             'total' => $this->debugLogRepo->count([]),
-            'tab'   => $tab,
+            'tab' => $tab,
         ]);
     }
 }

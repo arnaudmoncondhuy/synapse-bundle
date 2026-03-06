@@ -42,7 +42,8 @@ class ConfigurationLlmController extends AbstractController
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private PresetValidator $presetValidator,
-    ) {}
+    ) {
+    }
 
     #[Route('/configuration-llm', name: 'configuration_llm', methods: ['GET'])]
     public function index(Request $request): Response
@@ -58,7 +59,7 @@ class ConfigurationLlmController extends AbstractController
         $providers = $this->providerRepo->findAllOrdered();
 
         // Synchronisation auto des providers disponibles
-        $existingNames = array_map(fn($p) => $p->getName(), $providers);
+        $existingNames = array_map(fn ($p) => $p->getName(), $providers);
         $changed = false;
         foreach ($this->clientRegistry->getAvailableProviders() as $name) {
             if (!in_array($name, $existingNames, true)) {
@@ -98,7 +99,7 @@ class ConfigurationLlmController extends AbstractController
         foreach ($allPresets as $preset) {
             $providerName = $preset->getProviderName();
             if ($providerName && isset($providersByName[$providerName])) {
-                $presetCountByProvider[$providersByName[$providerName]]++;
+                ++$presetCountByProvider[$providersByName[$providerName]];
             }
         }
 
@@ -123,42 +124,42 @@ class ConfigurationLlmController extends AbstractController
             }
             $dbModel = $dbModels[$modelId] ?? null;
             $models[] = [
-                'id'             => $modelId,
-                'provider'       => $caps->provider,
-                'type'           => $caps->type,
-                'currency'       => $caps->provider === 'ovh' ? '€' : '$',
-                'capabilities'   => $caps,
-                'db_entity'      => $dbModel,
-                'is_enabled'     => $dbModel ? $dbModel->isEnabled() : true,
-                'pricing_input'  => $dbModel?->getPricingInput() ?? $caps->pricingInput,
+                'id' => $modelId,
+                'provider' => $caps->provider,
+                'type' => $caps->type,
+                'currency' => 'ovh' === $caps->provider ? '€' : '$',
+                'capabilities' => $caps,
+                'db_entity' => $dbModel,
+                'is_enabled' => $dbModel ? $dbModel->isEnabled() : true,
+                'pricing_input' => $dbModel?->getPricingInput() ?? $caps->pricingInput,
                 'pricing_output' => $dbModel?->getPricingOutput() ?? $caps->pricingOutput,
-                'label'          => $dbModel?->getLabel() ?? $modelId,
+                'label' => $dbModel?->getLabel() ?? $modelId,
             ];
         }
 
         // ── Données Presets ──────────────────────────────────────────────────
         $presetsWithCaps = array_map(
-            fn($p) => [
+            fn ($p) => [
                 'entity' => $p,
-                'caps'   => $this->capabilityRegistry->getCapabilities($p->getModel()),
+                'caps' => $this->capabilityRegistry->getCapabilities($p->getModel()),
                 'isValid' => $this->isPresetValid($p),
                 'invalidReason' => $this->getPresetInvalidReason($p),
             ],
             $allPresets
         );
-        usort($presetsWithCaps, fn($a, $b) => $b['entity']->isActive() <=> $a['entity']->isActive());
+        usort($presetsWithCaps, fn ($a, $b) => $b['entity']->isActive() <=> $a['entity']->isActive());
 
         return $this->render('@Synapse/admin/intelligence/configuration_llm.html.twig', [
-            'tab'                    => $tab,
-            'providers'              => $providers,
+            'tab' => $tab,
+            'providers' => $providers,
             'preset_count_by_provider' => $presetCountByProvider,
-            'models'                 => $models,
-            'presets'                => $presetsWithCaps,
+            'models' => $models,
+            'presets' => $presetsWithCaps,
         ]);
     }
 
     /**
-     * Vérifie si un preset est valide (provider configuré + modèle existe)
+     * Vérifie si un preset est valide (provider configuré + modèle existe).
      */
     private function isPresetValid(\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapsePreset $preset): bool
     {
@@ -181,7 +182,7 @@ class ConfigurationLlmController extends AbstractController
     }
 
     /**
-     * Retourne la raison pour laquelle un preset est invalide
+     * Retourne la raison pour laquelle un preset est invalide.
      */
     private function getPresetInvalidReason(\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapsePreset $preset): ?string
     {
@@ -192,19 +193,20 @@ class ConfigurationLlmController extends AbstractController
             if (empty($providerName) && empty($model)) {
                 return 'Pas de provider ou de modèle configuré';
             }
+
             return empty($providerName) ? 'Aucun fournisseur défini' : 'Aucun modèle défini';
         }
 
         $provider = $this->providerRepo->findOneBy(['name' => $providerName]);
         if (!$provider) {
-            return 'Fournisseur "' . $providerName . '" introuvable';
+            return 'Fournisseur "'.$providerName.'" introuvable';
         }
         if (!$provider->isConfigured()) {
-            return 'Fournisseur "' . $provider->getLabel() . '" non configuré';
+            return 'Fournisseur "'.$provider->getLabel().'" non configuré';
         }
 
         if (!$this->capabilityRegistry->isKnownModel($model)) {
-            return 'Modèle "' . $model . '" inexistant ou désactivé';
+            return 'Modèle "'.$model.'" inexistant ou désactivé';
         }
 
         return null;

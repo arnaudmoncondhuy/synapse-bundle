@@ -11,10 +11,10 @@ use ArnaudMoncondhuy\SynapseCore\Shared\Enum\SpendingLimitPeriod;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\SpendingLimitScope;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseSpendingLimit;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseConfigRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseLlmCallRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseMissionRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapsePresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseSpendingLimitRepository;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseLlmCallRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,7 +23,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
- * Quotas / Limites de dépense — Administration Synapse
+ * Quotas / Limites de dépense — Administration Synapse.
  *
  * Toggle global des limites, CRUD des plafonds (user / preset), stats par user et par preset.
  */
@@ -42,7 +42,8 @@ class QuotasController extends AbstractController
         private DatabaseConfigProvider $configProvider,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'quotas', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
@@ -56,17 +57,18 @@ class QuotasController extends AbstractController
 
             $action = $request->request->get('action', '');
 
-            if ($action === 'toggle_limits') {
+            if ('toggle_limits' === $action) {
                 $config->setSpendingLimitsEnabled($request->request->getBoolean('limits_enabled'));
                 $this->em->flush();
                 $this->configProvider->clearCache();
                 $this->addFlash('success', $config->isSpendingLimitsEnabled()
                     ? 'Les limites de coût sont maintenant actives.'
                     : 'Les limites de coût sont désactivées. Le comptage des tokens reste actif pour les stats.');
+
                 return $this->redirectToRoute('synapse_admin_quotas');
             }
 
-            if ($action === 'add_limit') {
+            if ('add_limit' === $action) {
                 $scope = $request->request->get('scope');
                 $scopeId = trim((string) $request->request->get('scope_id', ''));
                 $amount = trim((string) $request->request->get('amount', ''));
@@ -74,53 +76,55 @@ class QuotasController extends AbstractController
                 $period = $request->request->get('period');
                 $name = trim((string) $request->request->get('name', ''));
 
-                if ($scope === SpendingLimitScope::USER->value && $scopeId !== '') {
+                if ($scope === SpendingLimitScope::USER->value && '' !== $scopeId) {
                     $limit = new SynapseSpendingLimit();
                     $limit->setScope(SpendingLimitScope::USER);
                     $limit->setScopeId($scopeId);
-                    $limit->setAmount($amount !== '' ? $amount : '0');
-                    $limit->setCurrency($currency !== '' ? $currency : 'EUR');
+                    $limit->setAmount('' !== $amount ? $amount : '0');
+                    $limit->setCurrency('' !== $currency ? $currency : 'EUR');
                     $limit->setPeriod($this->parsePeriod(is_string($period) ? $period : null));
-                    $limit->setName($name !== '' ? $name : null);
+                    $limit->setName('' !== $name ? $name : null);
                     $this->em->persist($limit);
                     $this->em->flush();
                     $this->addFlash('success', 'Plafond utilisateur ajouté.');
-                } elseif ($scope === SpendingLimitScope::PRESET->value && $scopeId !== '') {
+                } elseif ($scope === SpendingLimitScope::PRESET->value && '' !== $scopeId) {
                     $limit = new SynapseSpendingLimit();
                     $limit->setScope(SpendingLimitScope::PRESET);
                     $limit->setScopeId($scopeId);
-                    $limit->setAmount($amount !== '' ? $amount : '0');
-                    $limit->setCurrency($currency !== '' ? $currency : 'EUR');
+                    $limit->setAmount('' !== $amount ? $amount : '0');
+                    $limit->setCurrency('' !== $currency ? $currency : 'EUR');
                     $limit->setPeriod($this->parsePeriod(is_string($period) ? $period : null));
-                    $limit->setName($name !== '' ? $name : null);
+                    $limit->setName('' !== $name ? $name : null);
                     $this->em->persist($limit);
                     $this->em->flush();
                     $this->addFlash('success', 'Plafond preset ajouté.');
-                } elseif ($scope === SpendingLimitScope::MISSION->value && $scopeId !== '') {
+                } elseif ($scope === SpendingLimitScope::MISSION->value && '' !== $scopeId) {
                     $limit = new SynapseSpendingLimit();
                     $limit->setScope(SpendingLimitScope::MISSION);
                     $limit->setScopeId($scopeId);
-                    $limit->setAmount($amount !== '' ? $amount : '0');
-                    $limit->setCurrency($currency !== '' ? $currency : 'EUR');
+                    $limit->setAmount('' !== $amount ? $amount : '0');
+                    $limit->setCurrency('' !== $currency ? $currency : 'EUR');
                     $limit->setPeriod($this->parsePeriod(is_string($period) ? $period : null));
-                    $limit->setName($name !== '' ? $name : null);
+                    $limit->setName('' !== $name ? $name : null);
                     $this->em->persist($limit);
                     $this->em->flush();
                     $this->addFlash('success', 'Plafond mission ajouté.');
                 } else {
                     $this->addFlash('error', 'Veuillez renseigner le périmètre (utilisateur, preset ou mission) et l\'identifiant.');
                 }
+
                 return $this->redirectToRoute('synapse_admin_quotas');
             }
 
-            if ($action === 'delete_limit') {
+            if ('delete_limit' === $action) {
                 $id = (int) $request->request->get('limit_id', 0);
                 $limit = $this->spendingLimitRepo->find($id);
-                if ($limit !== null) {
+                if (null !== $limit) {
                     $this->em->remove($limit);
                     $this->em->flush();
                     $this->addFlash('success', 'Limite supprimée.');
                 }
+
                 return $this->redirectToRoute('synapse_admin_quotas');
             }
         }
@@ -175,9 +179,10 @@ class QuotasController extends AbstractController
 
     private function parsePeriod(?string $period): SpendingLimitPeriod
     {
-        if ($period !== null && in_array($period, ['sliding_day', 'sliding_month', 'calendar_day', 'calendar_month'], true)) {
+        if (null !== $period && in_array($period, ['sliding_day', 'sliding_month', 'calendar_day', 'calendar_month'], true)) {
             return SpendingLimitPeriod::from($period);
         }
+
         return SpendingLimitPeriod::CALENDAR_MONTH;
     }
 }

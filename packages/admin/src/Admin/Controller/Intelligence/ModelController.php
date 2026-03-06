@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
- * Catalogue et gestion des modèles LLM - Administration Synapse
+ * Catalogue et gestion des modèles LLM - Administration Synapse.
  */
 #[Route('%synapse.admin_prefix%/intelligence/modeles', name: 'synapse_admin_')]
 class ModelController extends AbstractController
@@ -30,19 +30,20 @@ class ModelController extends AbstractController
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {}
+    ) {
+    }
 
     /**
-     * Toggle d'activation d'un modèle
+     * Toggle d'activation d'un modèle.
      */
     #[Route('/{modelId}/toggle', name: 'models_toggle', methods: ['POST'])]
     public function toggle(string $modelId, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_model_toggle_' . $modelId);
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_model_toggle_'.$modelId);
 
         $model = $this->modelRepo->findOneBy(['modelId' => $modelId]);
-        if ($model === null) {
+        if (null === $model) {
             $caps = $this->capabilityRegistry->getCapabilities($modelId);
             $model = new SynapseModel();
             $model->setModelId($modelId)
@@ -63,16 +64,16 @@ class ModelController extends AbstractController
     }
 
     /**
-     * Mise à jour du pricing et du libellé
+     * Mise à jour du pricing et du libellé.
      */
     #[Route('/{modelId}/pricing', name: 'models_pricing', methods: ['POST'])]
     public function pricing(string $modelId, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_model_pricing_' . $modelId);
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_model_pricing_'.$modelId);
 
         $model = $this->modelRepo->findOneBy(['modelId' => $modelId]);
-        if ($model === null) {
+        if (null === $model) {
             $caps = $this->capabilityRegistry->getCapabilities($modelId);
             $model = new SynapseModel();
             $model->setModelId($modelId)
@@ -86,12 +87,12 @@ class ModelController extends AbstractController
         $inputRaw = (string) $request->request->get('pricing_input', '');
         $outputRaw = (string) $request->request->get('pricing_output', '');
 
-        if ($label !== '') {
+        if ('' !== $label) {
             $model->setLabel($label);
         }
 
-        $model->setPricingInput($inputRaw !== '' ? (float) $inputRaw : null);
-        $model->setPricingOutput($outputRaw !== '' ? (float) $outputRaw : null);
+        $model->setPricingInput('' !== $inputRaw ? (float) $inputRaw : null);
+        $model->setPricingOutput('' !== $outputRaw ? (float) $outputRaw : null);
 
         $this->em->flush();
 

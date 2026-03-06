@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
- * Gestion des tons de réponse de l'IA — Administration Synapse
+ * Gestion des tons de réponse de l'IA — Administration Synapse.
  *
  * Un ton définit le style de communication du LLM (registre, format, posture).
  * Les tons builtin fournis par le bundle ne peuvent pas être supprimés.
@@ -31,7 +31,8 @@ class ToneController extends AbstractController
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {}
+    ) {
+    }
 
     // ─── Index ─────────────────────────────────────────────────────────────────
 
@@ -64,11 +65,12 @@ class ToneController extends AbstractController
             $this->em->flush();
 
             $this->addFlash('success', sprintf('Ton "%s" créé avec succès.', $tone->getName()));
+
             return $this->redirectToRoute('synapse_admin_tones');
         }
 
         return $this->render('@Synapse/admin/intelligence/tone_edit.html.twig', [
-            'tone'   => $tone,
+            'tone' => $tone,
             'is_new' => true,
         ]);
     }
@@ -86,11 +88,12 @@ class ToneController extends AbstractController
             $this->em->flush();
 
             $this->addFlash('success', sprintf('Ton "%s" mis à jour.', $tone->getName()));
+
             return $this->redirectToRoute('synapse_admin_tones');
         }
 
         return $this->render('@Synapse/admin/intelligence/tone_edit.html.twig', [
-            'tone'   => $tone,
+            'tone' => $tone,
             'is_new' => false,
         ]);
     }
@@ -101,7 +104,7 @@ class ToneController extends AbstractController
     public function toggle(SynapseTone $tone, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_tone_toggle_' . $tone->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_tone_toggle_'.$tone->getId());
 
         $tone->setIsActive(!$tone->isActive());
         $this->em->flush();
@@ -118,10 +121,11 @@ class ToneController extends AbstractController
     public function delete(SynapseTone $tone, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_tone_delete_' . $tone->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_tone_delete_'.$tone->getId());
 
         if ($tone->isBuiltin()) {
             $this->addFlash('error', 'Les tons intégrés au bundle ne peuvent pas être supprimés.');
+
             return $this->redirectToRoute('synapse_admin_tones');
         }
 
@@ -130,6 +134,7 @@ class ToneController extends AbstractController
         $this->em->flush();
 
         $this->addFlash('success', sprintf('Ton "%s" supprimé.', $name));
+
         return $this->redirectToRoute('synapse_admin_tones');
     }
 
