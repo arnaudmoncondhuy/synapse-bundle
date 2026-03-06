@@ -22,7 +22,7 @@ class SynapseAdminExtension extends Extension implements PrependExtensionInterfa
     public function prepend(ContainerBuilder $container): void
     {
         // Enregistrement du namespace Twig @Synapse
-        $viewsPath = \dirname(__DIR__).'/Resources/views';
+        $viewsPath = \dirname(__DIR__, 1) . '/../templates';
 
         $container->prependExtensionConfig('twig', [
             'paths' => [
@@ -32,7 +32,7 @@ class SynapseAdminExtension extends Extension implements PrependExtensionInterfa
 
         // Enregistrement des assets admin dans AssetMapper.
         // Utilisation d'un chemin robuste remontant à la racine du bundle.
-        $assetsDir = \dirname(__DIR__, 3).'/assets';
+        $assetsDir = \dirname(__DIR__, 1) . '/../assets';
         if ($container->hasExtension('framework') && is_dir($assetsDir)) {
             $container->prependExtensionConfig('framework', [
                 'asset_mapper' => [
@@ -49,7 +49,7 @@ class SynapseAdminExtension extends Extension implements PrependExtensionInterfa
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $configDir = \dirname(__DIR__, 3).'/config';
+        $configDir = \dirname(__DIR__, 1) . '/../config';
         $loader = new YamlFileLoader($container, new FileLocator($configDir));
         $loader->load('admin.yaml');
 
