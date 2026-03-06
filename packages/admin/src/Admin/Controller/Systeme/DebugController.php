@@ -7,7 +7,6 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\Systeme;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
- * Journal de debug des échanges LLM — Administration Synapse
+ * Journal de debug des échanges LLM — Administration Synapse.
  *
  * Affiche les traces d'appels LLM enregistrées en base (mode debug activé).
  * Permet aussi de vider les logs.
@@ -29,18 +28,19 @@ class DebugController extends AbstractController
         private SynapseDebugLogRepository $debugLogRepo,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'debug', methods: ['GET'])]
     public function index(): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
-        $logs  = $this->debugLogRepo->findRecent(100);
+        $logs = $this->debugLogRepo->findRecent(100);
         $total = $this->debugLogRepo->count([]);
 
         return $this->render('@Synapse/admin/systeme/debug.html.twig', [
-            'logs'  => $logs,
+            'logs' => $logs,
             'total' => $total,
         ]);
     }

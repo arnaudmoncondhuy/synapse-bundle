@@ -6,15 +6,15 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\Systeme;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseConfigRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * Santé du système — Administration Synapse
+ * Santé du système — Administration Synapse.
  *
  * Vérifie l'état des composants critiques :
  * - Connexion base de données
@@ -31,7 +31,8 @@ class HealthController extends AbstractController
         private SynapseProviderRepository $providerRepo,
         private SynapseConfigRepository $configRepo,
         private PermissionCheckerInterface $permissionChecker,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'health', methods: ['GET'])]
     public function index(): Response
@@ -45,38 +46,38 @@ class HealthController extends AbstractController
             $this->em->getConnection()->executeQuery('SELECT 1');
             $platform = (new \ReflectionClass($this->em->getConnection()->getDatabasePlatform()::class))->getShortName();
             $checks['database'] = [
-                'label'    => 'Base de données',
-                'status'   => 'ok',
-                'detail'   => $platform,
-                'icon'     => 'database',
+                'label' => 'Base de données',
+                'status' => 'ok',
+                'detail' => $platform,
+                'icon' => 'database',
             ];
         } catch (\Exception $e) {
             $checks['database'] = [
-                'label'  => 'Base de données',
+                'label' => 'Base de données',
                 'status' => 'error',
                 'detail' => $e->getMessage(),
-                'icon'   => 'database',
+                'icon' => 'database',
             ];
         }
 
         // ── Providers LLM ─────────────────────────────────────────────────────
         try {
             $providers = $this->providerRepo->findAllOrdered();
-            $enabled   = array_filter($providers, fn($p) => $p->isEnabled());
-            $configured = array_filter($providers, fn($p) => $p->isConfigured());
+            $enabled = array_filter($providers, fn ($p) => $p->isEnabled());
+            $configured = array_filter($providers, fn ($p) => $p->isConfigured());
 
             $checks['providers'] = [
-                'label'  => 'Providers LLM',
+                'label' => 'Providers LLM',
                 'status' => count($configured) > 0 ? 'ok' : 'warning',
                 'detail' => sprintf('%d actif(s), %d configuré(s) / %d total', count($enabled), count($configured), count($providers)),
-                'icon'   => 'plug',
+                'icon' => 'plug',
             ];
         } catch (\Exception $e) {
             $checks['providers'] = [
-                'label'  => 'Providers LLM',
+                'label' => 'Providers LLM',
                 'status' => 'error',
                 'detail' => $e->getMessage(),
-                'icon'   => 'plug',
+                'icon' => 'plug',
             ];
         }
 
@@ -84,7 +85,7 @@ class HealthController extends AbstractController
         try {
             $config = $this->configRepo->getGlobalConfig();
             $checks['config'] = [
-                'label'  => 'Configuration Synapse',
+                'label' => 'Configuration Synapse',
                 'status' => 'ok',
                 'detail' => sprintf(
                     'Langue: %s | Debug: %s | Rétention: %dj',
@@ -92,42 +93,42 @@ class HealthController extends AbstractController
                     $config->isDebugMode() ? 'ON' : 'OFF',
                     $config->getRetentionDays(),
                 ),
-                'icon'   => 'settings',
+                'icon' => 'settings',
             ];
 
             $checks['embedding'] = [
-                'label'  => 'Embedding',
+                'label' => 'Embedding',
                 'status' => $config->getEmbeddingModel() ? 'ok' : 'warning',
                 'detail' => $config->getEmbeddingModel()
                     ? sprintf('%s via %s', $config->getEmbeddingModel(), $config->getEmbeddingProvider())
                     : 'Non configuré',
-                'icon'   => 'database-zap',
+                'icon' => 'database-zap',
             ];
         } catch (\Exception $e) {
             $checks['config'] = [
-                'label'  => 'Configuration Synapse',
+                'label' => 'Configuration Synapse',
                 'status' => 'error',
                 'detail' => $e->getMessage(),
-                'icon'   => 'settings',
+                'icon' => 'settings',
             ];
         }
 
         $overallStatus = 'ok';
         foreach ($checks as $check) {
-            if ($check['status'] === 'error') {
+            if ('error' === $check['status']) {
                 $overallStatus = 'error';
                 break;
             }
-            if ($check['status'] === 'warning') {
+            if ('warning' === $check['status']) {
                 $overallStatus = 'warning';
             }
         }
 
         return $this->render('@Synapse/admin/systeme/health.html.twig', [
-            'checks'           => $checks,
-            'overall_status'   => $overallStatus,
-            'php_version'      => PHP_VERSION,
-            'symfony_version'  => \Symfony\Component\HttpKernel\Kernel::VERSION,
+            'checks' => $checks,
+            'overall_status' => $overallStatus,
+            'php_version' => PHP_VERSION,
+            'symfony_version' => \Symfony\Component\HttpKernel\Kernel::VERSION,
         ]);
     }
 }

@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
- * Gestion des fournisseurs LLM (Intelligence > Fournisseurs) - Administration Synapse
+ * Gestion des fournisseurs LLM (Intelligence > Fournisseurs) - Administration Synapse.
  */
 #[Route('%synapse.admin_prefix%/intelligence', name: 'synapse_admin_')]
 class ProviderController extends AbstractController
@@ -35,10 +35,11 @@ class ProviderController extends AbstractController
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
         private ?EncryptionServiceInterface $encryptionService = null,
-    ) {}
+    ) {
+    }
 
     /**
-     * Liste des fournisseurs
+     * Liste des fournisseurs.
      */
     #[Route('/fournisseurs', name: 'providers', methods: ['GET'])]
     public function providers(): Response
@@ -48,7 +49,7 @@ class ProviderController extends AbstractController
         $providers = $this->providerRepo->findAllOrdered();
 
         // Synchronisation avec le registre LLM (identique à V1 pour assurer la continuité)
-        $existingNames = array_map(fn($p) => $p->getName(), $providers);
+        $existingNames = array_map(fn ($p) => $p->getName(), $providers);
         $availableProviders = $this->clientRegistry->getAvailableProviders();
         $changed = false;
 
@@ -81,7 +82,7 @@ class ProviderController extends AbstractController
             $providerName = $preset->getProviderName();
             if ($providerName && isset($providersByName[$providerName])) {
                 $providerId = $providersByName[$providerName];
-                $presetCountByProvider[$providerId]++;
+                ++$presetCountByProvider[$providerId];
             }
         }
 
@@ -92,7 +93,7 @@ class ProviderController extends AbstractController
     }
 
     /**
-     * Édition des credentials d'un provider (Administration Synapse)
+     * Édition des credentials d'un provider (Administration Synapse).
      */
     #[Route('/providers/{id}/edit', name: 'providers_edit', methods: ['GET', 'POST'])]
     public function edit(SynapseProvider $provider, Request $request): Response
@@ -100,7 +101,7 @@ class ProviderController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
         if ($request->isMethod('POST')) {
-            $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_provider_edit_' . $provider->getId());
+            $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_provider_edit_'.$provider->getId());
             $data = $request->request->all();
 
             $labelVal = $data['label'] ?? $provider->getLabel();
@@ -113,7 +114,7 @@ class ProviderController extends AbstractController
             $currentCredentials = $provider->getCredentials();
             $credentials = [];
 
-            if ($provider->getName() === 'custom' || empty($fields)) {
+            if ('custom' === $provider->getName() || empty($fields)) {
                 $rawCreds = $data['credentials_raw'] ?? '{}';
                 $decoded = json_decode(is_string($rawCreds) ? $rawCreds : '{}', true);
                 $credentials = is_array($decoded) ? $decoded : [];
@@ -134,7 +135,7 @@ class ProviderController extends AbstractController
 
             $this->em->flush();
 
-            $this->addFlash('success', 'Provider "' . $provider->getLabel() . '" mis à jour.');
+            $this->addFlash('success', 'Provider "'.$provider->getLabel().'" mis à jour.');
 
             return $this->redirectToRoute('synapse_admin_configuration_llm', ['tab' => 'fournisseurs']);
         }
@@ -143,18 +144,18 @@ class ProviderController extends AbstractController
 
         return $this->render('@Synapse/admin/intelligence/provider_edit.html.twig', [
             'provider' => $provider,
-            'fields'   => $client->getCredentialFields(),
+            'fields' => $client->getCredentialFields(),
         ]);
     }
 
     /**
-     * Test des credentials d'un provider (Administration Synapse)
+     * Test des credentials d'un provider (Administration Synapse).
      */
     #[Route('/providers/{id}/test', name: 'providers_test', methods: ['POST'])]
     public function test(SynapseProvider $provider, Request $request): JsonResponse
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_provider_test_' . $provider->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_provider_test_'.$provider->getId());
 
         if (!$provider->isConfigured()) {
             return new JsonResponse(['success' => false, 'error' => 'Provider non configuré']);
@@ -176,17 +177,18 @@ class ProviderController extends AbstractController
      */
     /**
      * @param array<string, mixed> $credentials
+     *
      * @return array<string, mixed>
      */
     private function encryptCredentials(array $credentials): array
     {
-        if ($this->encryptionService === null) {
+        if (null === $this->encryptionService) {
             return $credentials;
         }
 
         foreach (['api_key', 'service_account_json', 'private_key', 'token'] as $key) {
             $value = $credentials[$key] ?? null;
-            if (is_string($value) && $value !== '' && !$this->encryptionService->isEncrypted($value)) {
+            if (is_string($value) && '' !== $value && !$this->encryptionService->isEncrypted($value)) {
                 $credentials[$key] = $this->encryptionService->encrypt($value);
             }
         }
@@ -199,17 +201,18 @@ class ProviderController extends AbstractController
      */
     /**
      * @param array<string, mixed> $credentials
+     *
      * @return array<string, mixed>
      */
     private function decryptCredentials(array $credentials): array
     {
-        if ($this->encryptionService === null) {
+        if (null === $this->encryptionService) {
             return $credentials;
         }
 
         foreach (['api_key', 'service_account_json', 'private_key', 'token'] as $key) {
             $value = $credentials[$key] ?? null;
-            if (is_string($value) && $value !== '' && $this->encryptionService->isEncrypted($value)) {
+            if (is_string($value) && '' !== $value && $this->encryptionService->isEncrypted($value)) {
                 $credentials[$key] = $this->encryptionService->decrypt($value);
             }
         }

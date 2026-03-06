@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
- * Embeddings & RAG — Configuration du moteur sémantique — Administration Synapse
+ * Embeddings & RAG — Configuration du moteur sémantique — Administration Synapse.
  */
 #[Route('%synapse.admin_prefix%/memoire/embeddings', name: 'synapse_admin_')]
 class EmbeddingController extends AbstractController
@@ -36,7 +36,8 @@ class EmbeddingController extends AbstractController
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'embeddings', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
@@ -46,7 +47,7 @@ class EmbeddingController extends AbstractController
         $config = $this->configRepo->getGlobalConfig();
         $activeProviders = array_filter(
             $this->providerRepo->findAllOrdered(),
-            fn($p) => $p->isEnabled(),
+            fn ($p) => $p->isEnabled(),
         );
 
         // Modèles d'embedding disponibles par fournisseur
@@ -56,7 +57,7 @@ class EmbeddingController extends AbstractController
             $models = [];
             foreach ($this->modelRegistry->getModelsForProvider($name) as $modelId) {
                 $caps = $this->modelRegistry->getCapabilities($modelId);
-                if ($caps->type === 'embedding') {
+                if ('embedding' === $caps->type) {
                     $models[$modelId] = $caps;
                 }
             }
@@ -68,23 +69,24 @@ class EmbeddingController extends AbstractController
             $data = $request->request->all();
 
             $embProviderVal = !empty($data['embedding_provider']) ? $data['embedding_provider'] : null;
-            $embModelVal    = !empty($data['embedding_model'])     ? $data['embedding_model']     : null;
-            $embProvider    = is_string($embProviderVal) ? $embProviderVal : null;
-            $embModel       = is_string($embModelVal)    ? $embModelVal    : null;
+            $embModelVal = !empty($data['embedding_model']) ? $data['embedding_model'] : null;
+            $embProvider = is_string($embProviderVal) ? $embProviderVal : null;
+            $embModel = is_string($embModelVal) ? $embModelVal : null;
             $embDimension = !empty($data['embedding_dimension']) ? (int) $data['embedding_dimension'] : null;
 
             // Validation : le modèle doit appartenir au provider
             if ($embProvider && $embModel && !isset($embeddingModelsByProvider[$embProvider][$embModel])) {
                 $this->addFlash('error', 'Le modèle sélectionné n\'appartient pas au fournisseur choisi.');
+
                 return $this->redirectToRoute('synapse_admin_embeddings');
             }
 
-            $chunkSize     = max(100, min(20000, (int) ($data['chunk_size'] ?? 1000)));
-            $chunkOverlap  = max(0, min($chunkSize - 50, (int) ($data['chunk_overlap'] ?? 200)));
-            $vectorStoreVal   = !empty($data['vector_store'])      ? $data['vector_store']      : 'doctrine';
-            $chunkStrategyVal = !empty($data['chunking_strategy'])  ? $data['chunking_strategy'] : 'recursive';
-            $vectorStore      = is_string($vectorStoreVal)   ? $vectorStoreVal   : 'doctrine';
-            $chunkStrategy    = is_string($chunkStrategyVal) ? $chunkStrategyVal : 'recursive';
+            $chunkSize = max(100, min(20000, (int) ($data['chunk_size'] ?? 1000)));
+            $chunkOverlap = max(0, min($chunkSize - 50, (int) ($data['chunk_overlap'] ?? 200)));
+            $vectorStoreVal = !empty($data['vector_store']) ? $data['vector_store'] : 'doctrine';
+            $chunkStrategyVal = !empty($data['chunking_strategy']) ? $data['chunking_strategy'] : 'recursive';
+            $vectorStore = is_string($vectorStoreVal) ? $vectorStoreVal : 'doctrine';
+            $chunkStrategy = is_string($chunkStrategyVal) ? $chunkStrategyVal : 'recursive';
 
             $config->setEmbeddingProvider($embProvider)
                 ->setEmbeddingModel($embModel)
@@ -102,7 +104,7 @@ class EmbeddingController extends AbstractController
 
         // Détection pgvector
         $connection = $this->em->getConnection();
-        $platform   = $connection->getDatabasePlatform()::class;
+        $platform = $connection->getDatabasePlatform()::class;
         $isPostgres = str_contains($platform, 'PostgreSQL');
         $vectorExtensionEnabled = false;
         if ($isPostgres) {
@@ -115,12 +117,12 @@ class EmbeddingController extends AbstractController
         }
 
         return $this->render('@Synapse/admin/memoire/embeddings.html.twig', [
-            'config'                      => $config,
-            'active_providers'            => $activeProviders,
+            'config' => $config,
+            'active_providers' => $activeProviders,
             'embedding_models_by_provider' => $embeddingModelsByProvider,
-            'db_is_postgres'              => $isPostgres,
-            'db_vector_ready'             => $vectorExtensionEnabled,
-            'available_vector_stores'     => $this->vectorStoreRegistry->getAvailableAliases(),
+            'db_is_postgres' => $isPostgres,
+            'db_vector_ready' => $vectorExtensionEnabled,
+            'available_vector_stores' => $this->vectorStoreRegistry->getAvailableAliases(),
         ]);
     }
 
@@ -131,17 +133,17 @@ class EmbeddingController extends AbstractController
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_admin_embeddings_test');
 
         try {
-            $text      = (string) $request->request->get('text', 'Test d\'embedding Synapse.');
-            $start     = microtime(true);
-            $result    = $this->embeddingService->generateEmbeddings($text);
-            $elapsed   = round((microtime(true) - $start) * 1000);
+            $text = (string) $request->request->get('text', 'Test d\'embedding Synapse.');
+            $start = microtime(true);
+            $result = $this->embeddingService->generateEmbeddings($text);
+            $elapsed = round((microtime(true) - $start) * 1000);
             $dimension = isset($result['embeddings'][0]) ? count($result['embeddings'][0]) : 0;
 
             return $this->json([
-                'success'   => true,
+                'success' => true,
                 'dimension' => $dimension,
-                'time_ms'   => $elapsed,
-                'usage'     => $result['usage'] ?? null,
+                'time_ms' => $elapsed,
+                'usage' => $result['usage'] ?? null,
             ]);
         } catch (\Exception $e) {
             return $this->json(['success' => false, 'error' => $e->getMessage()], 400);

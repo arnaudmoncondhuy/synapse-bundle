@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
- * Paramètres globaux Synapse (langue, prompt système, rétention RGPD, debug) — Administration Synapse
+ * Paramètres globaux Synapse (langue, prompt système, rétention RGPD, debug) — Administration Synapse.
  *
  * Gère la table synapse_config (singleton).
  * Actions complexes (migrations, purge…) restent en V1.
@@ -47,7 +47,8 @@ class SettingsController extends AbstractController
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {}
+    ) {
+    }
 
     /**
      * Afficher et modifier les paramètres globaux Synapse.
@@ -90,7 +91,7 @@ class SettingsController extends AbstractController
         }
 
         return $this->render('@Synapse/admin/conversation/settings.html.twig', [
-            'config'    => $config,
+            'config' => $config,
             'languages' => self::LANGUAGES,
         ]);
     }

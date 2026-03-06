@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * Historique global des conversations — Administration Synapse (accès Break-Glass)
+ * Historique global des conversations — Administration Synapse (accès Break-Glass).
  *
  * Cet accès est considéré Break-Glass : chaque consultation est auditée en log.
  * L'admin voit toutes les conversations de tous les utilisateurs.
@@ -31,35 +31,36 @@ class HistoryController extends AbstractController
         private ConversationManager $conversationManager,
         private PermissionCheckerInterface $permissionChecker,
         private ?LoggerInterface $logger = null,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'history', methods: ['GET'])]
     public function index(Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
-        $page  = max(1, (int) $request->query->get('page', '1'));
+        $page = max(1, (int) $request->query->get('page', '1'));
         $limit = 50;
 
         $conversations = $this->conversationManager->getAllConversations($limit, ($page - 1) * $limit);
-        $total         = $this->conversationManager->countAllConversations();
-        $pages         = (int) ceil($total / $limit);
+        $total = $this->conversationManager->countAllConversations();
+        $pages = (int) ceil($total / $limit);
 
         // Audit RGPD — chaque accès break-glass est tracé
         if ($this->logger) {
             $this->logger->warning('Break-Glass: Admin accessed full conversation history', [
                 'admin_user' => $this->getUser()?->getUserIdentifier(),
-                'page'       => $page,
-                'ip'         => $request->getClientIp(),
+                'page' => $page,
+                'ip' => $request->getClientIp(),
             ]);
         }
 
         return $this->render('@Synapse/admin/conversation/history.html.twig', [
             'conversations' => $conversations,
-            'total'         => $total,
-            'page'          => $page,
-            'pages'         => $pages,
-            'limit'         => $limit,
+            'total' => $total,
+            'page' => $page,
+            'pages' => $pages,
+            'limit' => $limit,
         ]);
     }
 }

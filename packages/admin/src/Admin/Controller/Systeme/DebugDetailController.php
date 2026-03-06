@@ -18,7 +18,8 @@ class DebugDetailController extends AbstractController
     public function __construct(
         private SynapseDebugLoggerInterface $debugLogger,
         private PermissionCheckerInterface $permissionChecker,
-    ) {}
+    ) {
+    }
 
     #[Route('/synapse/_debug/{id}', name: 'synapse_debug_show', methods: ['GET'])]
     public function show(string $id): Response
@@ -32,7 +33,7 @@ class DebugDetailController extends AbstractController
         }
 
         return $this->render('@Synapse/admin/systeme/debug_detail.html.twig', [
-            'id'    => $id,
+            'id' => $id,
             'debug' => $debug,
         ]);
     }

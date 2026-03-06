@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
- * Souvenirs — Visualisation des mémoires utilisateur — Administration Synapse
+ * Souvenirs — Visualisation des mémoires utilisateur — Administration Synapse.
  *
  * Liste paginée de toutes les mémoires vectorielles (souvenirs confirmés par les utilisateurs).
  * Permet de vérifier que le flux « proposition → confirmation » fonctionne.
@@ -30,14 +30,15 @@ class MemoryController extends AbstractController
         private readonly SynapseVectorMemoryRepository $memoryRepository,
         private readonly PermissionCheckerInterface $permissionChecker,
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {}
+    ) {
+    }
 
     #[Route('/souvenirs', name: 'memories', methods: ['GET'])]
     public function index(Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
-        $page  = max(1, (int) $request->query->get('page', '1'));
+        $page = max(1, (int) $request->query->get('page', '1'));
         $limit = self::PER_PAGE;
         $offset = ($page - 1) * $limit;
 
@@ -52,10 +53,10 @@ class MemoryController extends AbstractController
 
         return $this->render('@Synapse/admin/memoire/memories.html.twig', [
             'memories' => $memories,
-            'total'    => $total,
-            'page'     => $page,
-            'pages'    => $pages,
-            'limit'    => $limit,
+            'total' => $total,
+            'page' => $page,
+            'pages' => $pages,
+            'limit' => $limit,
         ]);
     }
 
@@ -65,10 +66,10 @@ class MemoryController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
         return $this->render('@Synapse/admin/shared/placeholder.html.twig', [
-            'page_title'           => 'Documents',
-            'icon'                 => 'files',
-            'breadcrumb_section'   => 'Mémoire',
-            'coming_soon_message'  => 'Gérez les documents sources indexés dans la base vectorielle pour le RAG.',
+            'page_title' => 'Documents',
+            'icon' => 'files',
+            'breadcrumb_section' => 'Mémoire',
+            'coming_soon_message' => 'Gérez les documents sources indexés dans la base vectorielle pour le RAG.',
         ]);
     }
 
