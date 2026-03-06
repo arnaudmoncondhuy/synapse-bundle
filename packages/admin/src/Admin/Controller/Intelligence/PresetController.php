@@ -121,8 +121,8 @@ class PresetController extends AbstractController
 
         // Pré-remplir avec les valeurs de config active
         $activeConfig = $this->configProvider->getConfig();
-        $preset->setProviderName($activeConfig['provider'] ?? 'gemini');
-        $preset->setModel($activeConfig['model'] ?? 'gemini-2.5-flash');
+        $preset->setProviderName(is_string($activeConfig['provider'] ?? null) ? $activeConfig['provider'] : 'gemini');
+        $preset->setModel(is_string($activeConfig['model'] ?? null) ? $activeConfig['model'] : 'gemini-2.5-flash');
 
         return $this->render('@Synapse/admin/intelligence/preset_edit.html.twig', [
             'preset'              => $preset,
@@ -338,42 +338,56 @@ class PresetController extends AbstractController
     private function applyFormData(SynapsePreset $preset, array $data): void
     {
         $activeConfig    = $this->configProvider->getConfig();
-        $defaultProvider = $activeConfig['provider'] ?? 'gemini';
-        $defaultModel    = $activeConfig['model'] ?? 'gemini-2.5-flash';
+        $defaultProvider = is_string($activeConfig['provider'] ?? null) ? $activeConfig['provider'] : 'gemini';
+        $defaultModel    = is_string($activeConfig['model'] ?? null) ? $activeConfig['model'] : 'gemini-2.5-flash';
 
-        $preset->setName($data['name'] ?? 'Preset');
-        $preset->setProviderName($data['provider_name'] ?? $defaultProvider);
+        $nameVal = $data['name'] ?? 'Preset';
+        $preset->setName(is_string($nameVal) ? $nameVal : 'Preset');
+
+        $providerNameVal = $data['provider_name'] ?? $defaultProvider;
+        $preset->setProviderName(is_string($providerNameVal) ? $providerNameVal : $defaultProvider);
 
         $modelName = $data['model'] ?? $defaultModel;
-        $preset->setModel($modelName);
+        $modelNameStr = is_string($modelName) ? $modelName : $defaultModel;
+        $preset->setModel($modelNameStr);
 
         $providerOptions = [];
-        if (!empty($data['provider_options'])) {
+        $rawOptions = $data['provider_options'] ?? null;
+        if (is_string($rawOptions) && !empty($rawOptions)) {
             try {
-                $providerOptions = json_decode($data['provider_options'], associative: true, flags: JSON_THROW_ON_ERROR) ?? [];
+                $decoded = json_decode($rawOptions, associative: true, flags: JSON_THROW_ON_ERROR);
+                if (is_array($decoded)) {
+                    $providerOptions = $decoded;
+                }
             } catch (\Throwable) {
                 $providerOptions = [];
             }
         }
 
-        $caps            = $this->capabilityRegistry->getCapabilities($modelName);
+        $caps            = $this->capabilityRegistry->getCapabilities($modelNameStr);
         $providerOptions = $this->validateProviderOptions($preset->getProviderName(), $providerOptions, $caps);
 
         $preset->setProviderOptions($providerOptions);
-        $preset->setGenerationTemperature((float) ($data['generation_temperature'] ?? 1.0));
-        $preset->setGenerationTopP((float) ($data['generation_top_p'] ?? 0.95));
+        $temp = $data['generation_temperature'] ?? 1.0;
+        $preset->setGenerationTemperature(is_numeric($temp) ? (float) $temp : 1.0);
+
+        $topP = $data['generation_top_p'] ?? 0.95;
+        $preset->setGenerationTopP(is_numeric($topP) ? (float) $topP : 0.95);
 
         if ($caps->topK) {
-            $preset->setGenerationTopK((int) ($data['generation_top_k'] ?? 40));
+            $topK = $data['generation_top_k'] ?? 40;
+            $preset->setGenerationTopK(is_numeric($topK) ? (int) $topK : 40);
         } else {
             $preset->setGenerationTopK(null);
         }
 
+        $maxTokens = $data['generation_max_output_tokens'] ?? null;
         $preset->setGenerationMaxOutputTokens(
-            !empty($data['generation_max_output_tokens']) ? (int) $data['generation_max_output_tokens'] : null
+            !empty($maxTokens) && is_numeric($maxTokens) ? (int) $maxTokens : null
         );
 
-        $stopSeqStr = $data['generation_stop_sequences'] ?? '';
+        $stopSeqRaw = $data['generation_stop_sequences'] ?? '';
+        $stopSeqStr = is_string($stopSeqRaw) ? $stopSeqRaw : '';
         $preset->setGenerationStopSequences(
             array_values(array_filter(array_map('trim', explode(',', $stopSeqStr))))
         );
@@ -435,32 +449,37 @@ class PresetController extends AbstractController
         }
 
         if ($providerName === 'gemini') {
-            if ($caps->thinking && isset($options['thinking']['budget']) && !empty($options['thinking']['budget'])) {
-                $budget = (int) $options['thinking']['budget'];
+            if ($caps->thinking && isset($options['thinking']) && is_array($options['thinking']) && !empty($options['thinking']['budget'])) {
+                $budget = is_numeric($options['thinking']['budget']) ? (int) $options['thinking']['budget'] : 0;
                 if ($budget < 128 || $budget > 32000) {
                     $options['thinking']['budget'] = 1024;
                 }
             }
-            if ($caps->safetySettings && isset($options['safety_settings']['default_threshold']) && !empty($options['safety_settings']['default_threshold'])) {
-                if (!in_array($options['safety_settings']['default_threshold'], $validBlockLevels, true)) {
+            if ($caps->safetySettings && isset($options['safety_settings']) && is_array($options['safety_settings']) && !empty($options['safety_settings']['default_threshold'])) {
+                $defaultThreshold = $options['safety_settings']['default_threshold'];
+                if (!is_string($defaultThreshold) || !in_array($defaultThreshold, $validBlockLevels, true)) {
                     unset($options['safety_settings']['default_threshold']);
                 }
             }
             foreach (['hate_speech', 'dangerous_content', 'harassment', 'sexually_explicit'] as $filter) {
-                if (isset($options['safety_settings']['thresholds'][$filter])) {
+                if (isset($options['safety_settings']) && is_array($options['safety_settings']) && isset($options['safety_settings']['thresholds']) && is_array($options['safety_settings']['thresholds']) && isset($options['safety_settings']['thresholds'][$filter])) {
                     $value = $options['safety_settings']['thresholds'][$filter];
-                    if ($value !== '' && !in_array($value, $validBlockLevels, true)) {
+                    if (is_string($value) && $value !== '' && !in_array($value, $validBlockLevels, true)) {
                         unset($options['safety_settings']['thresholds'][$filter]);
                     }
                 }
             }
         } elseif ($providerName === 'ovh') {
-            if ($caps->thinking && isset($options['thinking']['reasoning_effort']) && !empty($options['thinking']['reasoning_effort'])) {
-                if (!in_array($options['thinking']['reasoning_effort'], $validReasoningEfforts, true)) {
+            if ($caps->thinking && isset($options['thinking']) && is_array($options['thinking']) && !empty($options['thinking']['reasoning_effort'])) {
+                $effort = $options['thinking']['reasoning_effort'];
+                if (!is_string($effort) || !in_array($effort, $validReasoningEfforts, true)) {
                     unset($options['thinking']['reasoning_effort']);
                 }
             }
-            unset($options['thinking']['budget'], $options['safety_settings']);
+            if (isset($options['thinking']) && is_array($options['thinking'])) {
+                unset($options['thinking']['budget']);
+            }
+            unset($options['safety_settings']);
         }
 
         return $options;

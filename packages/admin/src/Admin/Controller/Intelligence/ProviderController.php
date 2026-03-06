@@ -115,7 +115,8 @@ class ProviderController extends AbstractController
 
             if ($provider->getName() === 'custom' || empty($fields)) {
                 $rawCreds = $data['credentials_raw'] ?? '{}';
-                $credentials = json_decode(is_string($rawCreds) ? $rawCreds : '{}', true) ?? [];
+                $decoded = json_decode(is_string($rawCreds) ? $rawCreds : '{}', true);
+                $credentials = is_array($decoded) ? $decoded : [];
             } else {
                 foreach ($fields as $fieldName => $fieldConfig) {
                     $rawVal = $data[$fieldName] ?? '';
@@ -184,8 +185,9 @@ class ProviderController extends AbstractController
         }
 
         foreach (['api_key', 'service_account_json', 'private_key', 'token'] as $key) {
-            if (!empty($credentials[$key]) && !$this->encryptionService->isEncrypted($credentials[$key])) {
-                $credentials[$key] = $this->encryptionService->encrypt($credentials[$key]);
+            $value = $credentials[$key] ?? null;
+            if (is_string($value) && $value !== '' && !$this->encryptionService->isEncrypted($value)) {
+                $credentials[$key] = $this->encryptionService->encrypt($value);
             }
         }
 
@@ -206,8 +208,9 @@ class ProviderController extends AbstractController
         }
 
         foreach (['api_key', 'service_account_json', 'private_key', 'token'] as $key) {
-            if (!empty($credentials[$key]) && $this->encryptionService->isEncrypted($credentials[$key])) {
-                $credentials[$key] = $this->encryptionService->decrypt($credentials[$key]);
+            $value = $credentials[$key] ?? null;
+            if (is_string($value) && $value !== '' && $this->encryptionService->isEncrypted($value)) {
+                $credentials[$key] = $this->encryptionService->decrypt($value);
             }
         }
 

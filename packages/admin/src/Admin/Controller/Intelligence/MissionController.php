@@ -223,37 +223,44 @@ class MissionController extends AbstractController
      */
     private function applyFormData(SynapseMission $mission, array $data): void
     {
-        if (isset($data['key']) && !$mission->isBuiltin()) {
-            $mission->setKey(trim((string) $data['key']));
+        $keyVal = $data['key'] ?? null;
+        if (is_string($keyVal) && !$mission->isBuiltin()) {
+            $mission->setKey(trim($keyVal));
         }
 
-        if (isset($data['emoji'])) {
-            $mission->setEmoji(trim((string) $data['emoji']));
+        $emojiVal = $data['emoji'] ?? null;
+        if (is_string($emojiVal)) {
+            $mission->setEmoji(trim($emojiVal));
         }
 
-        if (isset($data['name'])) {
-            $mission->setName(trim((string) $data['name']));
+        $nameVal = $data['name'] ?? null;
+        if (is_string($nameVal)) {
+            $mission->setName(trim($nameVal));
         }
 
-        if (isset($data['description'])) {
-            $mission->setDescription(trim((string) $data['description']));
+        $descVal = $data['description'] ?? null;
+        if (is_string($descVal)) {
+            $mission->setDescription(trim($descVal));
         }
 
-        if (isset($data['system_prompt'])) {
-            $mission->setSystemPrompt(trim((string) $data['system_prompt']));
+        $promptVal = $data['system_prompt'] ?? null;
+        if (is_string($promptVal)) {
+            $mission->setSystemPrompt(trim($promptVal));
         }
 
         // Set preset if provided, otherwise null
-        if (isset($data['preset_id']) && !empty($data['preset_id'])) {
-            $preset = $this->presetRepo->find((int) $data['preset_id']);
+        $presetId = $data['preset_id'] ?? null;
+        if (!empty($presetId) && (is_string($presetId) || is_int($presetId))) {
+            $preset = $this->presetRepo->find((int) $presetId);
             $mission->setPreset($preset);
         } else {
             $mission->setPreset(null);
         }
 
         // Set tone if provided, otherwise null
-        if (isset($data['tone_id']) && !empty($data['tone_id'])) {
-            $tone = $this->toneRepo->find((int) $data['tone_id']);
+        $toneId = $data['tone_id'] ?? null;
+        if (!empty($toneId) && (is_string($toneId) || is_int($toneId))) {
+            $tone = $this->toneRepo->find((int) $toneId);
             $mission->setTone($tone);
         } else {
             $mission->setTone(null);
@@ -261,8 +268,9 @@ class MissionController extends AbstractController
 
         $mission->setIsActive(isset($data['is_active']));
 
-        if (isset($data['sort_order'])) {
-            $mission->setSortOrder((int) $data['sort_order']);
+        $sortOrder = $data['sort_order'] ?? null;
+        if (is_numeric($sortOrder)) {
+            $mission->setSortOrder((int) $sortOrder);
         }
     }
 }
