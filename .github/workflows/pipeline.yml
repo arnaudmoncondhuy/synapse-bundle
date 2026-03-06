@@ -1,0 +1,105 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: 🧪 Tests & Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_pgsql, dom, filter, gd, json, redis
+          coverage: xdebug
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Create Reports Directory
+        run: mkdir -p var/ci
+
+      - name: Run PHPUnit tests (Core)
+        run: php vendor/bin/phpunit --testsuite unit --filter Core --coverage-clover=var/ci/coverage-core.xml --log-junit var/ci/junit-core.xml
+        continue-on-error: true
+
+      - name: Run PHPUnit tests (Admin)
+        run: php vendor/bin/phpunit --testsuite unit --filter Admin --coverage-clover=var/ci/coverage-admin.xml --log-junit var/ci/junit-admin.xml
+        continue-on-error: true
+
+      - name: Run PHPUnit tests (Integration)
+        run: php vendor/bin/phpunit --testsuite integration --coverage-clover=var/ci/coverage-integration.xml --log-junit var/ci/junit-integration.xml
+        continue-on-error: true
+
+      - name: Upload Core coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: var/ci/coverage-core.xml
+          flags: core
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload Admin coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: var/ci/coverage-admin.xml
+          flags: admin
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload Integration coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: var/ci/coverage-integration.xml
+          flags: integration
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload Test Results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v5
+        with:
+          report_type: test_results
+          files: var/ci/junit-core.xml,var/ci/junit-admin.xml,var/ci/junit-integration.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  quality:
+    name: 🧹 Static Analysis & Lint
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: php-cs-fixer, phpstan
+
+      - name: PHP-CS-Fixer (dry-run)
+        run: php-cs-fixer fix --dry-run --diff --verbose
+
+      - name: PHPStan
+        run: phpstan analyse
