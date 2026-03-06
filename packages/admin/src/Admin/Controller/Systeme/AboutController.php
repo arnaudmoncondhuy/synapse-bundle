@@ -60,7 +60,28 @@ class AboutController extends AbstractController
                 try {
                     $raw = file_get_contents($path);
                     $data = json_decode($raw !== false ? $raw : '{}', true, 512, JSON_THROW_ON_ERROR);
-                    return $data['version'] ?? $data['extra']['branch-alias']['dev-main'] ?? 'dev-main';
+
+                    if (!is_array($data)) {
+                        continue;
+                    }
+
+                    $version = $data['version'] ?? null;
+                    if (is_string($version)) {
+                        return $version;
+                    }
+
+                    $extra = $data['extra'] ?? null;
+                    if (is_array($extra)) {
+                        $branchAlias = $extra['branch-alias'] ?? null;
+                        if (is_array($branchAlias)) {
+                            $devMain = $branchAlias['dev-main'] ?? null;
+                            if (is_string($devMain)) {
+                                return $devMain;
+                            }
+                        }
+                    }
+
+                    return 'dev-main';
                 } catch (\Exception) {
                 }
             }

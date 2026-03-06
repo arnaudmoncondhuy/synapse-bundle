@@ -140,30 +140,36 @@ class ToneController extends AbstractController
      */
     private function applyFormData(SynapseTone $tone, array $data): void
     {
-        if (isset($data['key']) && !$tone->isBuiltin()) {
-            $tone->setKey(trim((string) $data['key']));
+        $keyVal = $data['key'] ?? null;
+        if (is_string($keyVal) && !$tone->isBuiltin()) {
+            $tone->setKey(trim($keyVal));
         }
 
-        if (isset($data['emoji'])) {
-            $tone->setEmoji(trim((string) $data['emoji']));
+        $emojiVal = $data['emoji'] ?? null;
+        if (is_string($emojiVal)) {
+            $tone->setEmoji(trim($emojiVal));
         }
 
-        if (isset($data['name'])) {
-            $tone->setName(trim((string) $data['name']));
+        $nameVal = $data['name'] ?? null;
+        if (is_string($nameVal)) {
+            $tone->setName(trim($nameVal));
         }
 
-        if (isset($data['description'])) {
-            $tone->setDescription(trim((string) $data['description']));
+        $descVal = $data['description'] ?? null;
+        if (is_string($descVal)) {
+            $tone->setDescription(trim($descVal));
         }
 
-        if (isset($data['system_prompt'])) {
-            $tone->setSystemPrompt(trim((string) $data['system_prompt']));
+        $promptVal = $data['system_prompt'] ?? null;
+        if (is_string($promptVal)) {
+            $tone->setSystemPrompt(trim($promptVal));
         }
 
         $tone->setIsActive(isset($data['is_active']));
 
-        if (isset($data['sort_order'])) {
-            $tone->setSortOrder((int) $data['sort_order']);
+        $sortOrder = $data['sort_order'] ?? null;
+        if (is_numeric($sortOrder)) {
+            $tone->setSortOrder((int) $sortOrder);
         }
     }
 }
