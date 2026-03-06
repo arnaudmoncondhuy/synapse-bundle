@@ -5,19 +5,19 @@ services:
 
     # ── Contrôleurs Administration (autoloading récursif) ─────────────────────
     # Couvre tous les sous-dossiers : Intelligence/, Conversation/, Memoire/, Usage/, etc.
-    ArnaudMoncondhuy\SynapseAdmin\Admin\Controller\:
+    ArnaudMoncondhuy\SynapseAdmin\Controller\:
         resource: '../src/Admin/Controller/'
         tags: ['controller.service_arguments']
 
     # ── Twig Integration ──────────────────────────────────────────────────────
-    ArnaudMoncondhuy\SynapseAdmin\Infrastructure\Twig\SynapseRuntime:
+    ArnaudMoncondhuy\SynapseAdmin\Twig\SynapseRuntime:
         tags: ['twig.runtime']
 
-    ArnaudMoncondhuy\SynapseAdmin\Infrastructure\Twig\SynapseTwigExtension:
+    ArnaudMoncondhuy\SynapseAdmin\Twig\SynapseTwigExtension:
         tags: ['twig.extension']
 
     # ── Accounting (Admin feature) ────────────────────────────────────────────
-    ArnaudMoncondhuy\SynapseCore\Core\Accounting\TokenAccountingService: ~
+    ArnaudMoncondhuy\SynapseCore\Accounting\TokenAccountingService: ~
 
     # ── Debug Logging (Admin override) ───────────────────────────────────────
     # Quand l'admin est activé, utilise DoctrineAdminLogger (stockage DB)
