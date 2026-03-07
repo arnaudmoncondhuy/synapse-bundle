@@ -1,7 +1,7 @@
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
 {% block admin_page_title %}
-	{{ is_new ? 'Nouveau preset' : 'Éditer : ' ~ preset.name }}
+	{{ is_new ? 'Nouveau Model Preset' : 'Éditer : ' ~ preset.name }}
 	| Intelligence | Synapse Administration Synapse
 {% endblock %}
 
@@ -9,7 +9,7 @@
 	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
 	<a href="{{ path('synapse_admin_configuration_llm') }}" class="synapse-admin-topbar__breadcrumb">Intelligence</a>
 	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-topbar__breadcrumb">Presets</a>
+	<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-topbar__breadcrumb">Model Presets</a>
 	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
 	<span class="synapse-admin-topbar__current">{{ is_new ? 'Nouveau' : preset.name }}</span>
 {% endblock %}
@@ -23,7 +23,7 @@
 				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
 					<i data-lucide="sliders-horizontal"></i>
 				</span>
-				{{ is_new ? 'Nouveau preset LLM' : 'Éditer : ' ~ preset.name }}
+				{{ is_new ? 'Nouveau Model Preset LLM' : 'Éditer : ' ~ preset.name }}
 			</h1>
 			<p class="synapse-admin-page-subtitle">
 				{{ is_new
@@ -41,7 +41,7 @@
 				<form method="post" action="{{ path('synapse_admin_presets_test', {id: preset.id}) }}" style="display:inline">
 					<button type="submit" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
 						<i data-lucide="flask-conical"></i>
-						Tester ce preset
+						Tester ce Model Preset
 					</button>
 				</form>
 			{% endif %}
@@ -62,16 +62,28 @@
 				</div>
 				<div>
 					<div class="synapse-admin-card__title">Identification</div>
-					<div class="synapse-admin-card__subtitle">Nom interne du preset</div>
+					<div class="synapse-admin-card__subtitle">Nom et clé technique du Model Preset</div>
 				</div>
 			</div>
 			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-				<div class="synapse-admin-form-group">
-					<label class="synapse-admin-label" for="preset-name">
-						Nom du preset
-						<span class="synapse-admin-required">*</span>
-					</label>
-					<input type="text" id="preset-name" name="name" value="{{ preset.name }}" class="synapse-admin-input" required placeholder="Ex: Gemini Flash Créatif">
+				<div class="synapse-admin-grid synapse-admin-grid--2">
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label" for="preset-name">
+							Nom du Model Preset
+							<span class="synapse-admin-required">*</span>
+						</label>
+						<input type="text" id="preset-name" name="name" value="{{ preset.name }}" class="synapse-admin-input" required placeholder="Ex: Gemini Flash Créatif">
+					</div>
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label" for="preset-key">
+							Clé technique (slug)
+							<span class="synapse-admin-required">*</span>
+						</label>
+						<input type="text" id="preset-key" name="key" value="{{ preset.key }}" class="synapse-admin-input synapse-admin-font-mono"
+							required placeholder="ex: gemini_flash_creative"
+							pattern="[a-z0-9_]+" title="Lettres minuscules, chiffres et tirets bas uniquement">
+						<p class="synapse-admin-help-text">Utilisée dans ChatService::ask(['model_preset' => '{{ preset.key ?: 'mon_preset' }}'])</p>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -254,7 +266,7 @@
 		<div class="synapse-admin-sticky-actions">
 			<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
 				<i data-lucide="save"></i>
-				{{ is_new ? 'Créer le preset' : 'Enregistrer les modifications' }}
+				{{ is_new ? 'Créer le Model Preset' : 'Enregistrer les modifications' }}
 			</button>
 			<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-btn synapse-admin-btn--ghost">
 				Annuler

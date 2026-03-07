@@ -116,7 +116,7 @@ class ModelPresetController extends AbstractController
             $this->em->flush();
             $this->configProvider->clearCache();
 
-            $this->addFlash('success', sprintf('Preset "%s" créé avec succès.', $preset->getName()));
+            $this->addFlash('success', sprintf('Model Preset "%s" créé avec succès.', $preset->getName()));
 
             return $this->redirectToRoute('synapse_admin_configuration_llm', ['tab' => 'presets']);
         }
@@ -148,7 +148,7 @@ class ModelPresetController extends AbstractController
             $this->em->flush();
             $this->configProvider->clearCache();
 
-            $this->addFlash('success', sprintf('Preset "%s" mis à jour.', $preset->getName()));
+            $this->addFlash('success', sprintf('Model Preset "%s" mis à jour.', $preset->getName()));
 
             return $this->redirectToRoute('synapse_admin_configuration_llm', ['tab' => 'presets']);
         }
@@ -173,7 +173,7 @@ class ModelPresetController extends AbstractController
         // 🛡️ DÉFENSE : Vérifier que le preset est valide avant activation
         if (!$this->isPresetValid($preset)) {
             $this->addFlash('error', sprintf(
-                'Impossible d\'activer le preset "%s" : %s',
+                'Impossible d\'activer le Model Preset "%s" : %s',
                 $preset->getName(),
                 $this->getPresetInvalidReason($preset)
             ));
@@ -185,7 +185,7 @@ class ModelPresetController extends AbstractController
         $this->configProvider->clearCache();
 
         $this->addFlash('success', sprintf(
-            'Le preset "%s" est désormais actif sur l\'ensemble du système.',
+            'Le Model Preset "%s" est désormais actif sur l\'ensemble du système.',
             $preset->getName()
         ));
 
@@ -217,7 +217,7 @@ class ModelPresetController extends AbstractController
         $this->em->flush();
         $this->configProvider->clearCache();
 
-        $this->addFlash('success', sprintf('Preset "%s" cloné avec succès.', $source->getName()));
+        $this->addFlash('success', sprintf('Model Preset "%s" cloné avec succès.', $source->getName()));
 
         return $this->redirectToRoute('synapse_admin_presets_edit', ['id' => $clone->getId()]);
     }
@@ -231,7 +231,7 @@ class ModelPresetController extends AbstractController
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_delete_' . $preset->getId());
 
         if ($preset->isActive()) {
-            $this->addFlash('error', 'Impossible de supprimer le preset actif. Activez d\'abord un autre preset.');
+            $this->addFlash('error', 'Impossible de supprimer le Model Preset actif. Activez d\'abord un autre Model Preset.');
 
             return $this->redirectToRoute('synapse_admin_configuration_llm', ['tab' => 'presets']);
         }
@@ -241,7 +241,7 @@ class ModelPresetController extends AbstractController
         $this->em->flush();
         $this->configProvider->clearCache();
 
-        $this->addFlash('success', sprintf('Preset "%s" supprimé.', $name));
+        $this->addFlash('success', sprintf('Model Preset "%s" supprimé.', $name));
 
         return $this->redirectToRoute('synapse_admin_configuration_llm', ['tab' => 'presets']);
     }
@@ -350,8 +350,13 @@ class ModelPresetController extends AbstractController
         $defaultProvider = is_string($activeConfig['provider'] ?? null) ? $activeConfig['provider'] : 'gemini';
         $defaultModel = is_string($activeConfig['model'] ?? null) ? $activeConfig['model'] : 'gemini-2.5-flash';
 
-        $nameVal = $data['name'] ?? 'Preset';
-        $preset->setName(is_string($nameVal) ? $nameVal : 'Preset');
+        $nameVal = $data['name'] ?? 'Model Preset';
+        $preset->setName(is_string($nameVal) ? $nameVal : 'Model Preset');
+
+        $keyVal = $data['key'] ?? null;
+        if (is_string($keyVal)) {
+            $preset->setKey(trim($keyVal));
+        }
 
         $providerNameVal = $data['provider_name'] ?? $defaultProvider;
         $preset->setProviderName(is_string($providerNameVal) ? $providerNameVal : $defaultProvider);

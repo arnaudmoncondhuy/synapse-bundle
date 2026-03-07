@@ -22,14 +22,14 @@
 				Configuration LLM
 			</h1>
 			<p class="synapse-admin-page-subtitle">
-				Gérez vos fournisseurs, modèles et presets de génération depuis un seul endroit.
+				Gérez vos fournisseurs, modèles et Model Presets de génération depuis un seul endroit.
 			</p>
 		</div>
 		{% if tab == 'presets' %}
 			<div class="synapse-admin-page-header__actions">
 				<a href="{{ path('synapse_admin_presets_new') }}" class="synapse-admin-btn synapse-admin-btn--primary">
 					<i data-lucide="plus"></i>
-					Nouveau Preset
+					Nouveau Model Preset
 				</a>
 			</div>
 		{% endif %}
@@ -47,7 +47,7 @@
 		</a>
 		<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-tab {% if tab == 'presets' %}synapse-admin-tab--active{% endif %}">
 			<i data-lucide="sliders-horizontal"></i>
-			Presets
+			Model Presets
 		</a>
 	</div>
 
@@ -433,6 +433,12 @@
 									<i data-lucide="cpu"></i>
 									{{ preset.model }}
 								</span>
+								{% if preset.key %}
+									<span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-font-mono" style="opacity: 0.7;">
+										<i data-lucide="code-2"></i>
+										{{ preset.key }}
+									</span>
+								{% endif %}
 							</div>
 						</div>
 					</div>
@@ -529,7 +535,7 @@
 							</form>
 
 							{# Supprimer #}
-							<form action="{{ path('synapse_admin_presets_delete', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline" onsubmit="return confirm('Supprimer le preset &quot;{{ preset.name|e('js') }}&quot; ?')">
+							<form action="{{ path('synapse_admin_presets_delete', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline" onsubmit="return confirm('Supprimer le Model Preset &quot;{{ preset.name|e('js') }}&quot; ?')">
 								<input type="hidden" name="_token" value="{{ csrf_token('synapse_preset_delete_' ~ preset.id) }}">
 								<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm synapse-admin-text-danger" data-synapse-admin-tooltip="{% if preset.isActive %}Actif (non supprimable){% else %}Supprimer{% endif %}" data-synapse-admin-tooltip-placement="top" {% if preset.isActive %} disabled {% endif %}>
 									<i data-lucide="trash-2"></i>
@@ -553,13 +559,13 @@
 						<div class="synapse-admin-empty__icon">
 							<i data-lucide="sliders-horizontal"></i>
 						</div>
-						<div class="synapse-admin-empty__title">Aucun preset configuré</div>
+						<div class="synapse-admin-empty__title">Aucun Model Preset configuré</div>
 						<p class="synapse-admin-empty__description">
 							Créez votre premier profil de génération LLM pour commencer à utiliser Synapse.
 						</p>
 						<a href="{{ path('synapse_admin_presets_new') }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-mt-md">
 							<i data-lucide="plus"></i>
-							Créer mon premier preset
+							Créer mon premier Model Preset
 						</a>
 					</div>
 				</div>
