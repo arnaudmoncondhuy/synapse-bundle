@@ -10,6 +10,7 @@ use ArnaudMoncondhuy\SynapseCore\Shared\Enum\SpendingLimitPeriod;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\SpendingLimitScope;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseSpendingLimit;
+use ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseSpendingLimitRepository;
@@ -39,6 +40,7 @@ class AgentController extends AbstractController
         private SynapseSpendingLimitRepository $spendingLimitRepo,
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
+        private ToolRegistry $toolRegistry,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {}
 
@@ -79,12 +81,17 @@ class AgentController extends AbstractController
 
         $presets = $this->presetRepo->findAll();
         $tones = $this->toneRepo->findAllOrdered();
+        $availableTools = array_map(fn ($tool) => [
+            'name' => $tool->getName(),
+            'description' => $tool->getDescription(),
+        ], $this->toolRegistry->getTools());
 
         return $this->render('@Synapse/admin/intelligence/agent_edit.html.twig', [
             'agent' => $agent,
             'is_new' => true,
             'presets' => $presets,
             'tones' => $tones,
+            'available_tools' => $availableTools,
         ]);
     }
 
@@ -109,12 +116,17 @@ class AgentController extends AbstractController
         $tones = $this->toneRepo->findAllOrdered();
         $agentLimits = $this->spendingLimitRepo->findForAgent((int) $agent->getId());
         $spendingLimit = $agentLimits[0] ?? null;
+        $availableTools = array_map(fn ($tool) => [
+            'name' => $tool->getName(),
+            'description' => $tool->getDescription(),
+        ], $this->toolRegistry->getTools());
 
         return $this->render('@Synapse/admin/intelligence/agent_edit.html.twig', [
             'agent' => $agent,
             'is_new' => false,
             'presets' => $presets,
             'tones' => $tones,
+            'available_tools' => $availableTools,
             'spending_limit' => $spendingLimit,
             'periods' => [
                 SpendingLimitPeriod::SLIDING_DAY->value => 'Glissante (4h)',
@@ -280,5 +292,9 @@ class AgentController extends AbstractController
         if (is_numeric($sortOrder)) {
             $agent->setSortOrder((int) $sortOrder);
         }
+
+        // Outils autorisés
+        $toolNames = $data['allowed_tools'] ?? [];
+        $agent->setAllowedToolNames(is_array($toolNames) ? $toolNames : []);
     }
 }
