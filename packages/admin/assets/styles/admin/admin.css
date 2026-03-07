@@ -99,6 +99,18 @@
     gap: var(--synapse-admin-space-sm);
 }
 
+.synapse-admin-flex-wrap {
+    flex-wrap: wrap;
+}
+
+.synapse-admin-max-w-full {
+    max-width: 100%;
+}
+
+.synapse-admin-flex-1 {
+    flex: 1;
+}
+
 .synapse-admin-gap-md {
     gap: var(--synapse-admin-space-md);
 }
