@@ -51,11 +51,12 @@ class ModelPresetController extends AbstractController
      */
     private function isPresetValid(SynapseModelPreset $preset): bool
     {
-        // Vérifier que le provider et le modèle sont définis
+        // Vérifier que le provider, le modèle et la clé sont définis
         $providerName = $preset->getProviderName();
         $model = $preset->getModel();
+        $key = $preset->getKey();
 
-        if (empty($providerName) || empty($model)) {
+        if (empty($providerName) || empty($model) || empty($key)) {
             return false;
         }
 
@@ -76,13 +77,22 @@ class ModelPresetController extends AbstractController
     {
         $providerName = $preset->getProviderName();
         $model = $preset->getModel();
+        $key = $preset->getKey();
 
-        if (empty($providerName) || empty($model)) {
-            if (empty($providerName) && empty($model)) {
-                return 'Pas de provider ou de modèle configuré';
+        if (empty($providerName) || empty($model) || empty($key)) {
+            if (empty($providerName) && empty($model) && empty($key)) {
+                return 'Configuration incomplète (fournisseur, modèle et clé technique requis)';
             }
 
-            return empty($providerName) ? 'Aucun fournisseur défini' : 'Aucun modèle défini';
+            if (empty($key)) {
+                return 'Clé technique (slug) manquante';
+            }
+
+            if (empty($providerName)) {
+                return 'Aucun fournisseur défini';
+            }
+
+            return 'Aucun modèle défini';
         }
 
         $provider = $this->providerRepo->findOneBy(['name' => $providerName]);
