@@ -42,8 +42,7 @@ class ConfigurationLlmController extends AbstractController
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private PresetValidator $presetValidator,
-    ) {
-    }
+    ) {}
 
     #[Route('/configuration-llm', name: 'configuration_llm', methods: ['GET'])]
     public function index(Request $request): Response
@@ -59,7 +58,7 @@ class ConfigurationLlmController extends AbstractController
         $providers = $this->providerRepo->findAllOrdered();
 
         // Synchronisation auto des providers disponibles
-        $existingNames = array_map(fn ($p) => $p->getName(), $providers);
+        $existingNames = array_map(fn($p) => $p->getName(), $providers);
         $changed = false;
         foreach ($this->clientRegistry->getAvailableProviders() as $name) {
             if (!in_array($name, $existingNames, true)) {
@@ -139,7 +138,7 @@ class ConfigurationLlmController extends AbstractController
 
         // ── Données Presets ──────────────────────────────────────────────────
         $presetsWithCaps = array_map(
-            fn ($p) => [
+            fn($p) => [
                 'entity' => $p,
                 'caps' => $this->capabilityRegistry->getCapabilities($p->getModel()),
                 'isValid' => $this->isPresetValid($p),
@@ -147,7 +146,7 @@ class ConfigurationLlmController extends AbstractController
             ],
             $allPresets
         );
-        usort($presetsWithCaps, fn ($a, $b) => $b['entity']->isActive() <=> $a['entity']->isActive());
+        usort($presetsWithCaps, fn($a, $b) => $b['entity']->isActive() <=> $a['entity']->isActive());
 
         return $this->render('@Synapse/admin/intelligence/configuration_llm.html.twig', [
             'tab' => $tab,
@@ -163,11 +162,12 @@ class ConfigurationLlmController extends AbstractController
      */
     private function isPresetValid(\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset $preset): bool
     {
-        // Vérifier que le provider et le modèle sont définis
+        // Vérifier que le provider, le modèle et la clé sont définis
         $providerName = $preset->getProviderName();
         $model = $preset->getModel();
+        $key = $preset->getKey();
 
-        if (empty($providerName) || empty($model)) {
+        if (empty($providerName) || empty($model) || empty($key)) {
             return false;
         }
 
@@ -188,25 +188,34 @@ class ConfigurationLlmController extends AbstractController
     {
         $providerName = $preset->getProviderName();
         $model = $preset->getModel();
+        $key = $preset->getKey();
 
-        if (empty($providerName) || empty($model)) {
-            if (empty($providerName) && empty($model)) {
-                return 'Pas de provider ou de modèle configuré';
+        if (empty($providerName) || empty($model) || empty($key)) {
+            if (empty($providerName) && empty($model) && empty($key)) {
+                return 'Configuration incomplète (fournisseur, modèle et clé technique requis)';
             }
 
-            return empty($providerName) ? 'Aucun fournisseur défini' : 'Aucun modèle défini';
+            if (empty($key)) {
+                return 'Clé technique (slug) manquante';
+            }
+
+            if (empty($providerName)) {
+                return 'Aucun fournisseur défini';
+            }
+
+            return 'Aucun modèle défini';
         }
 
         $provider = $this->providerRepo->findOneBy(['name' => $providerName]);
         if (!$provider) {
-            return 'Fournisseur "'.$providerName.'" introuvable';
+            return 'Fournisseur "' . $providerName . '" introuvable';
         }
         if (!$provider->isConfigured()) {
-            return 'Fournisseur "'.$provider->getLabel().'" non configuré';
+            return 'Fournisseur "' . $provider->getLabel() . '" non configuré';
         }
 
         if (!$this->capabilityRegistry->isKnownModel($model)) {
-            return 'Modèle "'.$model.'" inexistant ou désactivé';
+            return 'Modèle "' . $model . '" inexistant ou désactivé';
         }
 
         return null;
