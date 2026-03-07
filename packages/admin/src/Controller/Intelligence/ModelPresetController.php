@@ -380,7 +380,7 @@ class ModelPresetController extends AbstractController
     }
 
     /**
-     * @return array<string, array{provider: string, type: string, dimensions: int[], thinking: bool, safetySettings: bool, topK: bool, functionCalling: bool, streaming: bool}>
+     * @return array<string, array{provider: string, type: string, dimensions: int[], thinking: bool, safetySettings: bool, topK: bool, functionCalling: bool, streaming: bool, supportsVision: bool, supportsParallelToolCalls: bool, supportsResponseSchema: bool, maxInputTokens: int|null, maxOutputTokens: int|null, deprecatedAt: string|null}>
      */
     private function getFullModelsCapabilities(): array
     {
@@ -396,6 +396,13 @@ class ModelPresetController extends AbstractController
                 'topK' => $caps->topK,
                 'functionCalling' => $caps->functionCalling,
                 'streaming' => $caps->streaming,
+                // Phase 1
+                'supportsVision' => $caps->supportsVision,
+                'supportsParallelToolCalls' => $caps->supportsParallelToolCalls,
+                'supportsResponseSchema' => $caps->supportsResponseSchema,
+                'maxInputTokens' => $caps->maxInputTokens,
+                'maxOutputTokens' => $caps->maxOutputTokens,
+                'deprecatedAt' => $caps->deprecatedAt,
             ];
         }
 
