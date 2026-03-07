@@ -141,8 +141,8 @@ class ConfigurationLlmController extends AbstractController
             fn($p) => [
                 'entity' => $p,
                 'caps' => $this->capabilityRegistry->getCapabilities($p->getModel()),
-                'isValid' => \$this->presetValidator->isValid(\$p),
-                'invalidReason' => \$this->presetValidator->getInvalidReason(\$p),
+                'isValid' => $this->presetValidator->isValid($p),
+                'invalidReason' => $this->presetValidator->getInvalidReason($p),
             ],
             $allPresets
         );
