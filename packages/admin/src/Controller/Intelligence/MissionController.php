@@ -40,8 +40,7 @@ class MissionController extends AbstractController
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {
-    }
+    ) {}
 
     // ─── Index ─────────────────────────────────────────────────────────────────
 
@@ -132,7 +131,7 @@ class MissionController extends AbstractController
     public function saveLimit(SynapseMission $mission, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_mission_limit_'.$mission->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_mission_limit_' . $mission->getId());
 
         $action = $request->request->get('action', 'save');
         $missionLimits = $this->spendingLimitRepo->findForMission((int) $mission->getId());
@@ -191,7 +190,7 @@ class MissionController extends AbstractController
     public function toggle(SynapseMission $mission, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_mission_toggle_'.$mission->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_mission_toggle_' . $mission->getId());
 
         $mission->setIsActive(!$mission->isActive());
         $this->em->flush();
@@ -208,7 +207,7 @@ class MissionController extends AbstractController
     public function delete(SynapseMission $mission, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_mission_delete_'.$mission->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_mission_delete_' . $mission->getId());
 
         if ($mission->isBuiltin()) {
             $this->addFlash('error', 'Les missions intégrées au bundle ne peuvent pas être supprimées.');
@@ -257,13 +256,13 @@ class MissionController extends AbstractController
             $mission->setSystemPrompt(trim($promptVal));
         }
 
-        // Set preset if provided, otherwise null
-        $presetId = $data['preset_id'] ?? null;
-        if (!empty($presetId) && (is_string($presetId) || is_int($presetId))) {
-            $preset = $this->presetRepo->find((int) $presetId);
-            $mission->setPreset($preset);
+        // Set model preset if provided, otherwise null
+        $modelPresetId = $data['model_preset_id'] ?? null;
+        if (!empty($modelPresetId) && (is_string($modelPresetId) || is_int($modelPresetId))) {
+            $preset = $this->presetRepo->find((int) $modelPresetId);
+            $mission->setModelPreset($preset);
         } else {
-            $mission->setPreset(null);
+            $mission->setModelPreset(null);
         }
 
         // Set tone if provided, otherwise null
