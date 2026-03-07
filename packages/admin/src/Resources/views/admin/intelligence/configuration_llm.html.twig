@@ -425,17 +425,17 @@
 								{% endif %}
 							</div>
 							<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center synapse-admin-flex-wrap">
-								<span class="synapse-admin-badge synapse-admin-badge--neutral">
+								<span class="synapse-admin-badge synapse-admin-badge--info" title="Fournisseur">
 									<i data-lucide="{{ preset.providerName == 'gemini' ? 'zap' : 'cloud' }}"></i>
 									{{ preset.providerName|upper }}
 								</span>
-								<span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-truncate">
+								<span class="synapse-admin-badge synapse-admin-badge--primary synapse-admin-truncate" title="Modèle" style="max-width: 180px;">
 									<i data-lucide="cpu"></i>
 									{{ preset.model }}
 								</span>
 								{% if preset.key %}
-									<span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-font-mono" style="opacity: 0.7;">
-										<i data-lucide="code-2"></i>
+									<span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-font-mono" title="Clé technique (slug)" style="opacity: 0.8;">
+										<i data-lucide="key"></i>
 										{{ preset.key }}
 									</span>
 								{% endif %}
