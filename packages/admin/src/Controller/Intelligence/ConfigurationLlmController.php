@@ -141,8 +141,8 @@ class ConfigurationLlmController extends AbstractController
             fn($p) => [
                 'entity' => $p,
                 'caps' => $this->capabilityRegistry->getCapabilities($p->getModel()),
-                'isValid' => $this->isPresetValid($p),
-                'invalidReason' => $this->getPresetInvalidReason($p),
+                'isValid' => \$this->presetValidator->isValid(\$p),
+                'invalidReason' => \$this->presetValidator->getInvalidReason(\$p),
             ],
             $allPresets
         );
@@ -155,69 +155,5 @@ class ConfigurationLlmController extends AbstractController
             'models' => $models,
             'presets' => $presetsWithCaps,
         ]);
-    }
-
-    /**
-     * Vérifie si un preset est valide (provider configuré + modèle existe).
-     */
-    private function isPresetValid(\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset $preset): bool
-    {
-        // Vérifier que le provider, le modèle et la clé sont définis
-        $providerName = $preset->getProviderName();
-        $model = $preset->getModel();
-        $key = $preset->getKey();
-
-        if (empty($providerName) || empty($model) || empty($key)) {
-            return false;
-        }
-
-        // Vérifier que le provider est configuré
-        $provider = $this->providerRepo->findOneBy(['name' => $providerName]);
-        if (!$provider || !$provider->isConfigured()) {
-            return false;
-        }
-
-        // Vérifier que le modèle existe dans la registry
-        return $this->capabilityRegistry->isKnownModel($model);
-    }
-
-    /**
-     * Retourne la raison pour laquelle un preset est invalide.
-     */
-    private function getPresetInvalidReason(\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset $preset): ?string
-    {
-        $providerName = $preset->getProviderName();
-        $model = $preset->getModel();
-        $key = $preset->getKey();
-
-        if (empty($providerName) || empty($model) || empty($key)) {
-            if (empty($providerName) && empty($model) && empty($key)) {
-                return 'Configuration incomplète (fournisseur, modèle et clé technique requis)';
-            }
-
-            if (empty($key)) {
-                return 'Clé technique (slug) manquante';
-            }
-
-            if (empty($providerName)) {
-                return 'Aucun fournisseur défini';
-            }
-
-            return 'Aucun modèle défini';
-        }
-
-        $provider = $this->providerRepo->findOneBy(['name' => $providerName]);
-        if (!$provider) {
-            return 'Fournisseur "' . $providerName . '" introuvable';
-        }
-        if (!$provider->isConfigured()) {
-            return 'Fournisseur "' . $provider->getLabel() . '" non configuré';
-        }
-
-        if (!$this->capabilityRegistry->isKnownModel($model)) {
-            return 'Modèle "' . $model . '" inexistant ou désactivé';
-        }
-
-        return null;
     }
 }
