@@ -13,6 +13,7 @@ use ArnaudMoncondhuy\SynapseCore\Shared\Model\ModelCapabilities;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
+use ArnaudMoncondhuy\SynapseCore\PresetValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -43,72 +44,11 @@ class ModelPresetController extends AbstractController
         private PermissionCheckerInterface $permissionChecker,
         private CacheInterface $cache,
         private PresetValidatorAgent $presetValidatorAgent,
+        private PresetValidator $presetValidator,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {}
 
-    /**
-     * Vérifie si un preset est valide (provider configuré + modèle existe).
-     */
-    private function isPresetValid(SynapseModelPreset $preset): bool
-    {
-        // Vérifier que le provider, le modèle et la clé sont définis
-        $providerName = $preset->getProviderName();
-        $model = $preset->getModel();
-        $key = $preset->getKey();
 
-        if (empty($providerName) || empty($model) || empty($key)) {
-            return false;
-        }
-
-        // Vérifier que le provider est configuré
-        $provider = $this->providerRepo->findOneBy(['name' => $providerName]);
-        if (!$provider || !$provider->isConfigured()) {
-            return false;
-        }
-
-        // Vérifier que le modèle existe dans la registry
-        return $this->capabilityRegistry->isKnownModel($model);
-    }
-
-    /**
-     * Retourne la raison pour laquelle un preset est invalide.
-     */
-    private function getPresetInvalidReason(SynapseModelPreset $preset): ?string
-    {
-        $providerName = $preset->getProviderName();
-        $model = $preset->getModel();
-        $key = $preset->getKey();
-
-        if (empty($providerName) || empty($model) || empty($key)) {
-            if (empty($providerName) && empty($model) && empty($key)) {
-                return 'Configuration incomplète (fournisseur, modèle et clé technique requis)';
-            }
-
-            if (empty($key)) {
-                return 'Clé technique (slug) manquante';
-            }
-
-            if (empty($providerName)) {
-                return 'Aucun fournisseur défini';
-            }
-
-            return 'Aucun modèle défini';
-        }
-
-        $provider = $this->providerRepo->findOneBy(['name' => $providerName]);
-        if (!$provider) {
-            return 'Fournisseur "' . $providerName . '" introuvable';
-        }
-        if (!$provider->isConfigured()) {
-            return 'Fournisseur "' . $provider->getLabel() . '" non configuré';
-        }
-
-        if (!$this->capabilityRegistry->isKnownModel($model)) {
-            return 'Modèle "' . $model . '" inexistant ou désactivé';
-        }
-
-        return null;
-    }
 
     // ─── Nouveau ───────────────────────────────────────────────────────────────
 
@@ -142,6 +82,8 @@ class ModelPresetController extends AbstractController
             'providers' => $this->providerRepo->findAllOrdered(),
             'models_by_provider' => $this->getModelsByProvider(),
             'model_capabilities' => $this->getFullModelsCapabilities(),
+            'is_valid' => $this->presetValidator->isValid($preset),
+            'invalid_reason' => $this->presetValidator->getInvalidReason($preset),
         ]);
     }
 
@@ -169,6 +111,8 @@ class ModelPresetController extends AbstractController
             'providers' => $this->providerRepo->findAllOrdered(),
             'models_by_provider' => $this->getModelsByProvider(),
             'model_capabilities' => $this->getFullModelsCapabilities(),
+            'is_valid' => $this->presetValidator->isValid($preset),
+            'invalid_reason' => $this->presetValidator->getInvalidReason($preset),
         ]);
     }
 
