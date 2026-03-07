@@ -191,6 +191,49 @@
 			</div>
 		</div>
 
+		{# ── Outils autorisés ─────────────────────────────────────────────────── #}
+		<div class="synapse-admin-card synapse-admin-mb-lg">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="wrench"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Outils autorisés</div>
+					<div class="synapse-admin-card__subtitle">Sélectionnez les outils (function calling) disponibles pour cet agent</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+				<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
+					<i data-lucide="info"></i>
+					<span>Cochez les outils que cet agent est autorisé à utiliser. Les outils non cochés seront invisibles pour le LLM.</span>
+				</div>
+
+				{% if available_tools|default([])|length > 0 %}
+					<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-sm">
+						{% for tool in available_tools %}
+							<label class="synapse-admin-toggle" style="align-items: flex-start;">
+								<input type="checkbox"
+									name="allowed_tools[]"
+									value="{{ tool.name }}"
+									{{ tool.name in (agent.allowedToolNames|default([])) ? 'checked' : '' }}>
+								<span class="synapse-admin-toggle__slider"></span>
+								<span class="synapse-admin-toggle__label">
+									<strong class="synapse-admin-font-mono">{{ tool.name }}</strong><br>
+									<span class="synapse-admin-text-sm synapse-admin-text-muted">
+										{{ tool.description|length > 100 ? tool.description|slice(0, 100) ~ '…' : tool.description }}
+									</span>
+								</span>
+							</label>
+						{% endfor %}
+					</div>
+				{% else %}
+					<p class="synapse-admin-text-muted synapse-admin-text-sm">Aucun outil enregistré dans le système.</p>
+				{% endif %}
+
+			</div>
+		</div>
+
 		{# ── Paramètres ───────────────────────────────────────────────────────── #}
 		<div class="synapse-admin-card synapse-admin-mb-lg">
 			<div class="synapse-admin-card__header">

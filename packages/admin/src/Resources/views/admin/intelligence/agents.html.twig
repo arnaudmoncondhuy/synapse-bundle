@@ -79,6 +79,12 @@
 								<span><strong>Style :</strong> {{ tone.emoji }} {{ agent.tone.name }}</span>
 							</div>
 						{% endif %}
+						{% if agent.allowedToolNames|default([])|length > 0 %}
+							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
+								<i data-lucide="wrench" style="width: 1rem; height: 1rem;"></i>
+								<span><strong>Outils :</strong> {{ agent.allowedToolNames|length }} autorisé{{ agent.allowedToolNames|length > 1 ? 's' : '' }}</span>
+							</div>
+						{% endif %}
 					</div>
 
 					<details class="synapse-admin-collapsible" style="margin-top: 1rem;">
