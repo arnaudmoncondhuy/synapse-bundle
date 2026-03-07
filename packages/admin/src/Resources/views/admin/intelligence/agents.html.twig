@@ -11,23 +11,34 @@
 
 {% block admin_content %}
 
+{% block admin_page_title %}Agents | Intelligence | Synapse Administration Synapse{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_providers') }}" class="synapse-admin-topbar__breadcrumb">Intelligence</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-current">Agents</span>
+{% endblock %}
+
+{% block admin_content %}
+
 	<div class="synapse-admin-page-header">
 		<div class="synapse-admin-page-header__info">
 			<h1 class="synapse-admin-page-title">
 				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
 					<i data-lucide="target"></i>
 				</span>
-				Agents d'agents
+				Gestion des Agents
 			</h1>
 			<p class="synapse-admin-page-subtitle">
-				Configurez des profils d'agents préconfigurés combinant un prompt système, un modèle LLM et un ton de réponse.
-				Utilisez <code style="font-size: 0.875rem;">ChatService::ask($msg, ['agent' => 'cle'])</code> pour les invoquer.
+				Configurez des profils d'intelligence pré-paramétrés (système, modèle, ton).
+				Invocation via <code>ChatService::ask('...', ['agent' => 'cle'])</code>.
 			</p>
 		</div>
 		<div class="synapse-admin-page-header__actions">
 			<a href="{{ path('synapse_admin_agents_new') }}" class="synapse-admin-btn synapse-admin-btn--primary">
 				<i data-lucide="plus"></i>
-				Nouvelle agent
+				Nouvel agent
 			</a>
 		</div>
 	</div>
@@ -45,15 +56,15 @@
 						<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
 							<span class="synapse-admin-card__title">{{ agent.name }}</span>
 							{% if agent.isBuiltin %}
-								<span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="Agent intégrée au bundle — ne peut pas être supprimée">
+								<span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="Agent intégré au bundle — protégé contre la suppression">
 									<i data-lucide="lock"></i>
-									Builtin
+									Système
 								</span>
 							{% endif %}
 							{% if not agent.isActive %}
 								<span class="synapse-admin-badge synapse-admin-badge--warning">
 									<i data-lucide="eye-off"></i>
-									Inactif
+									Désactivé
 								</span>
 							{% endif %}
 						</div>
@@ -69,14 +80,14 @@
 					<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm synapse-admin-text-xs synapse-admin-text-muted">
 						{% if agent.modelPreset %}
 							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
-								<i data-lucide="settings" style="width: 1rem; height: 1rem;"></i>
-								<span><strong>Model Preset:</strong> {{ agent.modelPreset.name }}</span>
+								<i data-lucide="cpu" style="width: 1rem; height: 1rem;"></i>
+								<span><strong>Modèle :</strong> {{ agent.modelPreset.name }}</span>
 							</div>
 						{% endif %}
 						{% if agent.tone %}
 							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
 								<i data-lucide="mic-2" style="width: 1rem; height: 1rem;"></i>
-								<span><strong>Ton:</strong> {{ agent.tone.name }} ({{ agent.tone.emoji }})</span>
+								<span><strong>Style :</strong> {{ tone.emoji }} {{ agent.tone.name }}</span>
 							</div>
 						{% endif %}
 					</div>
@@ -104,17 +115,15 @@
 					<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center" style="position: relative; z-index: 10;">
 
 						{# Modifier #}
-						<form action="{{ path('synapse_admin_agents_edit', {id: agent.id}) }}" method="GET" class="synapse-admin-form-inline">
-							<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="Modifier">
-								<i data-lucide="edit-3"></i>
-							</button>
-						</form>
+						<a href="{{ path('synapse_admin_agents_edit', {id: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="Modifier les paramètres">
+							<i data-lucide="edit-3"></i>
+						</a>
 
 						{# Activer / Désactiver #}
 						<form action="{{ path('synapse_admin_agents_toggle', {id: agent.id}) }}" method="POST" class="synapse-admin-form-inline">
 							<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_toggle_' ~ agent.id) }}">
 							<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
-									data-synapse-admin-tooltip="{{ agent.isActive ? 'Désactiver' : 'Activer' }}">
+									data-synapse-admin-tooltip="{{ agent.isActive ? 'Désactiver l\'agent' : 'Activer l\'agent' }}">
 								{% if agent.isActive %}
 									<i data-lucide="eye-off"></i>
 								{% else %}
@@ -123,12 +132,12 @@
 							</button>
 						</form>
 
-						{# Supprimer (désactivé si builtin) #}
+						{# Supprimer (masqué ou désactivé si builtin) #}
 						<form action="{{ path('synapse_admin_agents_delete', {id: agent.id}) }}" method="POST" class="synapse-admin-form-inline"
-							{% if not agent.isBuiltin %}onsubmit="return confirm('Supprimer la agent « {{ agent.name }} » ?')"{% endif %}>
+							{% if not agent.isBuiltin %}onsubmit="return confirm('Confirmer la suppression définitive de l\'agent « {{ agent.name }} » ?')"{% endif %}>
 							<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_delete_' ~ agent.id) }}">
 							<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm synapse-admin-text-danger"
-									data-synapse-admin-tooltip="{{ agent.isBuiltin ? 'Builtin — non supprimable' : 'Supprimer' }}"
+									data-synapse-admin-tooltip="{{ agent.isBuiltin ? 'Agent système : non supprimable' : 'Supprimer définitivement' }}"
 									{% if agent.isBuiltin %}disabled{% endif %}>
 								<i data-lucide="trash-2"></i>
 							</button>
@@ -141,11 +150,11 @@
 		{% else %}
 			<div class="synapse-admin-empty-state" style="grid-column: 1 / -1;">
 				<i data-lucide="target" class="synapse-admin-empty-state__icon"></i>
-				<p class="synapse-admin-empty-state__title">Aucune agent configurée</p>
-				<p class="synapse-admin-empty-state__subtitle">Lancez la fixture ou créez votre première agent personnalisée.</p>
+				<p class="synapse-admin-empty-state__title">Aucun agent configuré</p>
+				<p class="synapse-admin-empty-state__subtitle">Commencez par créer un agent pour définir un comportement IA spécifique.</p>
 				<a href="{{ path('synapse_admin_agents_new') }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-mt-md">
 					<i data-lucide="plus"></i>
-					Créer une agent
+					Créer le premier agent
 				</a>
 			</div>
 		{% endfor %}
