@@ -1,13 +1,6 @@
 # 🐳 Synapse Monorepo - Docker Deployment Guide
 
-## Current Situation
-- basile.lab.bray-numerique.fr runs on **Docker**
-- Error 500 on `/synapse/` route
-- Monorepo needs to be deployed in the Docker container
-
----
-
-## Quick Fix for Docker
+## Deployment Steps
 
 ### 1. Access Docker Container
 ```bash

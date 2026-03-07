@@ -12,7 +12,7 @@ use ArnaudMoncondhuy\SynapseCore\Shared\Enum\SpendingLimitScope;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseSpendingLimit;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseConfigRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseLlmCallRepository;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseMissionRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseSpendingLimitRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,13 +37,12 @@ class QuotasController extends AbstractController
         private SynapseSpendingLimitRepository $spendingLimitRepo,
         private SynapseLlmCallRepository $tokenUsageRepo,
         private SynapseModelPresetRepository $presetRepo,
-        private SynapseMissionRepository $missionRepo,
+        private SynapseAgentRepository $agentRepo,
         private EntityManagerInterface $em,
         private DatabaseConfigProvider $configProvider,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {
-    }
+    ) {}
 
     #[Route('', name: 'quotas', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
@@ -98,9 +97,9 @@ class QuotasController extends AbstractController
                     $this->em->persist($limit);
                     $this->em->flush();
                     $this->addFlash('success', 'Plafond preset ajouté.');
-                } elseif ($scope === SpendingLimitScope::MISSION->value && '' !== $scopeId) {
+                } elseif ($scope === SpendingLimitScope::AGENT->value && '' !== $scopeId) {
                     $limit = new SynapseSpendingLimit();
-                    $limit->setScope(SpendingLimitScope::MISSION);
+                    $limit->setScope(SpendingLimitScope::AGENT);
                     $limit->setScopeId($scopeId);
                     $limit->setAmount('' !== $amount ? $amount : '0');
                     $limit->setCurrency('' !== $currency ? $currency : 'EUR');
@@ -108,9 +107,9 @@ class QuotasController extends AbstractController
                     $limit->setName('' !== $name ? $name : null);
                     $this->em->persist($limit);
                     $this->em->flush();
-                    $this->addFlash('success', 'Plafond mission ajouté.');
+                    $this->addFlash('success', 'Plafond agent ajouté.');
                 } else {
-                    $this->addFlash('error', 'Veuillez renseigner le périmètre (utilisateur, preset ou mission) et l\'identifiant.');
+                    $this->addFlash('error', 'Veuillez renseigner le périmètre (utilisateur, preset ou agent) et l\'identifiant.');
                 }
 
                 return $this->redirectToRoute('synapse_admin_quotas');
@@ -136,10 +135,10 @@ class QuotasController extends AbstractController
 
         $limits = $this->spendingLimitRepo->findBy([], ['scope' => 'ASC', 'scopeId' => 'ASC']);
         $presets = $this->presetRepo->findBy([], ['name' => 'ASC']);
-        $missions = $this->missionRepo->findAllOrdered();
+        $agents = $this->agentRepo->findAllOrdered();
         $usageByUser = $this->tokenUsageRepo->getUsageByUser($start, $end);
         $usageByPreset = $this->tokenUsageRepo->getUsageByPreset($start, $end);
-        $usageByMission = $this->tokenUsageRepo->getUsageByMission($start, $end);
+        $usageByAgent = $this->tokenUsageRepo->getUsageByAgent($start, $end);
 
         $periodLabel = match ($period) {
             7 => '7 derniers jours',
@@ -151,21 +150,21 @@ class QuotasController extends AbstractController
         foreach ($presets as $p) {
             $presetsById[$p->getId()] = $p;
         }
-        $missionsById = [];
-        foreach ($missions as $m) {
-            $missionsById[$m->getId()] = $m;
+        $agentsById = [];
+        foreach ($agents as $m) {
+            $agentsById[$m->getId()] = $m;
         }
 
         return $this->render('@Synapse/admin/usage/quotas.html.twig', [
             'config' => $config,
             'limits' => $limits,
             'presets' => $presets,
-            'missions' => $missions,
+            'agents' => $agents,
             'presets_by_id' => $presetsById,
-            'missions_by_id' => $missionsById,
+            'agents_by_id' => $agentsById,
             'usage_by_user' => $usageByUser,
             'usage_by_preset' => $usageByPreset,
-            'usage_by_mission' => $usageByMission,
+            'usage_by_agent' => $usageByAgent,
             'period' => $period,
             'period_label' => $periodLabel,
             'periods' => [

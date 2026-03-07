@@ -1,9 +1,6 @@
 # 🚀 Synapse Monorepo - Production Deployment on OVH VPS
 
-## Status
-🔴 **Error 500 detected on basile.lab.bray-numerique.fr**
-
-## Quick Fix
+## Deployment Steps
 
 ### 1. SSH into OVH Server
 ```bash
