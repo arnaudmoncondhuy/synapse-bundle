@@ -194,6 +194,14 @@
 				<i data-lucide="shield"></i>
 				Safety
 			</button>
+			<button type="button" id="filter-vision" onclick="toggleFilter('vision', this)" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" data-synapse-admin-tooltip="Filtrer les modèles supportant la vision (images en entrée)">
+				<i data-lucide="eye"></i>
+				Vision
+			</button>
+			<button type="button" id="filter-jsonmode" onclick="toggleFilter('jsonmode', this)" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" data-synapse-admin-tooltip="Filtrer les modèles supportant le JSON Mode / Structured Output">
+				<i data-lucide="braces"></i>
+				JSON Mode
+			</button>
 			<span style="flex:1"></span>
 			<button type="button" onclick="resetFilters()" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
 				<i data-lucide="x"></i>
@@ -262,7 +270,7 @@
 						<tbody>
 							{% for model in models %}
 								{% set safeId = model.id|replace({'.': '-', ':': '-'}) %}
-								<tr class="model-row" data-thinking="{{ model.capabilities.thinking ? '1' : '0' }}" data-tools="{{ model.capabilities.functionCalling ? '1' : '0' }}" data-streaming="{{ model.capabilities.streaming ? '1' : '0' }}" data-safety="{{ model.capabilities.safetySettings ? '1' : '0' }}" data-label="{{ model.label|lower }}" data-provider="{{ model.provider|lower }}" data-pricing="{{ model.pricing_input ?: '99999' }}">
+								<tr class="model-row" data-thinking="{{ model.capabilities.thinking ? '1' : '0' }}" data-tools="{{ model.capabilities.functionCalling ? '1' : '0' }}" data-streaming="{{ model.capabilities.streaming ? '1' : '0' }}" data-safety="{{ model.capabilities.safetySettings ? '1' : '0' }}" data-vision="{{ model.capabilities.supportsVision ? '1' : '0' }}" data-jsonmode="{{ model.capabilities.supportsResponseSchema ? '1' : '0' }}" data-label="{{ model.label|lower }}" data-provider="{{ model.provider|lower }}" data-pricing="{{ model.pricing_input ?: '99999' }}">
 
 									<td>
 										<div class="synapse-admin-table-cell-label">
@@ -296,6 +304,12 @@
 											{% endif %}
 											{% if model.capabilities.safetySettings %}
 												<i data-lucide="shield" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Paramètres de sécurité"></i>
+											{% endif %}
+											{% if model.capabilities.supportsVision %}
+												<i data-lucide="eye" style="opacity:.35" data-synapse-admin-tooltip="Vision (images en entrée) — Déclaré, implémentation à venir"></i>
+											{% endif %}
+											{% if model.capabilities.supportsResponseSchema %}
+												<i data-lucide="braces" style="opacity:.35" data-synapse-admin-tooltip="JSON Mode / Structured Output — Déclaré, implémentation à venir"></i>
 											{% endif %}
 										</div>
 									</td>
@@ -458,6 +472,12 @@
 							{% if caps.safetySettings %}
 								<i data-lucide="shield" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Paramètres de sécurité"></i>
 							{% endif %}
+							{% if caps.supportsVision %}
+								<i data-lucide="eye" style="opacity:.35" data-synapse-admin-tooltip="Vision (images en entrée) — Déclaré, implémentation à venir"></i>
+							{% endif %}
+							{% if caps.supportsResponseSchema %}
+								<i data-lucide="braces" style="opacity:.35" data-synapse-admin-tooltip="JSON Mode / Structured Output — Déclaré, implémentation à venir"></i>
+							{% endif %}
 						</div>
 
 						<details class="synapse-admin-collapsible">
@@ -578,7 +598,7 @@
 	{% if tab == 'modeles' %}
 		<script>
 			const activeFilters = new Set();
-const FILTER_BTN_IDS = ['filter-thinking', 'filter-tools', 'filter-streaming', 'filter-safety'];
+const FILTER_BTN_IDS = ['filter-thinking', 'filter-tools', 'filter-streaming', 'filter-safety', 'filter-vision', 'filter-jsonmode'];
 let currentSort = {
 col: null,
 dir: 'asc'
