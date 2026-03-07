@@ -10,8 +10,8 @@ use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\DatabaseConfigProvider;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\ModelCapabilities;
-use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapsePreset;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapsePresetRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,7 +35,7 @@ class ModelPresetController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapsePresetRepository $presetRepo,
+        private SynapseModelPresetRepository $presetRepo,
         private SynapseProviderRepository $providerRepo,
         private ModelCapabilityRegistry $capabilityRegistry,
         private DatabaseConfigProvider $configProvider,
@@ -49,7 +49,7 @@ class ModelPresetController extends AbstractController
     /**
      * Vérifie si un preset est valide (provider configuré + modèle existe).
      */
-    private function isPresetValid(SynapsePreset $preset): bool
+    private function isPresetValid(SynapseModelPreset $preset): bool
     {
         // Vérifier que le provider et le modèle sont définis
         $providerName = $preset->getProviderName();
@@ -72,7 +72,7 @@ class ModelPresetController extends AbstractController
     /**
      * Retourne la raison pour laquelle un preset est invalide.
      */
-    private function getPresetInvalidReason(SynapsePreset $preset): ?string
+    private function getPresetInvalidReason(SynapseModelPreset $preset): ?string
     {
         $providerName = $preset->getProviderName();
         $model = $preset->getModel();
