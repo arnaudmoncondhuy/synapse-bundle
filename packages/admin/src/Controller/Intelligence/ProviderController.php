@@ -9,7 +9,7 @@ use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\LlmClientRegistry;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseProvider;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapsePresetRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,7 +29,7 @@ class ProviderController extends AbstractController
 
     public function __construct(
         private SynapseProviderRepository $providerRepo,
-        private SynapsePresetRepository $presetRepo,
+        private SynapseModelPresetRepository $presetRepo,
         private EntityManagerInterface $em,
         private LlmClientRegistry $clientRegistry,
         private PermissionCheckerInterface $permissionChecker,

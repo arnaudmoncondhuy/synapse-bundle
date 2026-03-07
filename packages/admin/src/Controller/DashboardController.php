@@ -7,7 +7,7 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Controller;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseLlmCallRepository;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapsePresetRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseVectorMemoryRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,7 +29,7 @@ class DashboardController extends AbstractController
         private readonly PermissionCheckerInterface $permissionChecker,
         private readonly SynapseLlmCallRepository $tokenUsageRepo,
         private readonly SynapseProviderRepository $providerRepo,
-        private readonly SynapsePresetRepository $presetRepo,
+        private readonly SynapseModelPresetRepository $presetRepo,
         private readonly SynapseVectorMemoryRepository $vectorMemoryRepo,
     ) {
     }

@@ -11,7 +11,7 @@ use ArnaudMoncondhuy\SynapseCore\Shared\Enum\SpendingLimitScope;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseMission;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseSpendingLimit;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseMissionRepository;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapsePresetRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseSpendingLimitRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseToneRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,7 +34,7 @@ class MissionController extends AbstractController
 
     public function __construct(
         private SynapseMissionRepository $missionRepo,
-        private SynapsePresetRepository $presetRepo,
+        private SynapseModelPresetRepository $presetRepo,
         private SynapseToneRepository $toneRepo,
         private SynapseSpendingLimitRepository $spendingLimitRepo,
         private EntityManagerInterface $em,

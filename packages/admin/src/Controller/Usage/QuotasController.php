@@ -13,7 +13,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseSpendingLimit;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseConfigRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseLlmCallRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseMissionRepository;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapsePresetRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseSpendingLimitRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,7 +36,7 @@ class QuotasController extends AbstractController
         private SynapseConfigRepository $configRepo,
         private SynapseSpendingLimitRepository $spendingLimitRepo,
         private SynapseLlmCallRepository $tokenUsageRepo,
-        private SynapsePresetRepository $presetRepo,
+        private SynapseModelPresetRepository $presetRepo,
         private SynapseMissionRepository $missionRepo,
         private EntityManagerInterface $em,
         private DatabaseConfigProvider $configProvider,

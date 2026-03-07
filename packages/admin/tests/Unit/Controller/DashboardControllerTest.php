@@ -7,7 +7,7 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Tests\Unit\Controller;
 use ArnaudMoncondhuy\SynapseAdmin\Controller\DashboardController;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseLlmCallRepository;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapsePresetRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseVectorMemoryRepository;
 use PHPUnit\Framework\TestCase;
@@ -40,8 +40,8 @@ class DashboardControllerTest extends TestCase
         $providerRepo = $this->createMock(SynapseProviderRepository::class);
         $providerRepo->method('findAll')->willReturn($providers);
 
-        $presetRepo = $this->createMock(SynapsePresetRepository::class);
-        // findActive() returns SynapsePreset, not nullable
+        $presetRepo = $this->createMock(SynapseModelPresetRepository::class);
+        // findActive() returns SynapseModelPreset, not nullable
         // For testing, we use willThrowException to simulate "no active preset"
         $presetRepo->method('findActive')->willThrowException(
             new \Doctrine\ORM\NoResultException()
