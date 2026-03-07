@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseAdmin\Twig;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface;
-use ArnaudMoncondhuy\SynapseCore\MissionRegistry;
+use ArnaudMoncondhuy\SynapseCore\AgentRegistry;
 use ArnaudMoncondhuy\SynapseCore\ToneRegistry;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -20,11 +20,10 @@ class SynapseTwigExtension extends AbstractExtension
 {
     public function __construct(
         private ToneRegistry $toneRegistry,
-        private MissionRegistry $missionRegistry,
+        private AgentRegistry $agentRegistry,
         private ?EncryptionServiceInterface $encryptionService = null,
         private ?\ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface $permissionChecker = null,
-    ) {
-    }
+    ) {}
 
     /**
      * Enregistre les filtres Twig personnalisés du bundle.
@@ -52,8 +51,8 @@ class SynapseTwigExtension extends AbstractExtension
             // Retourne la liste des tons de réponse actifs (pour créer un sélecteur par exemple)
             new TwigFunction('synapse_get_tones', [$this->toneRegistry, 'getAll']),
 
-            // Retourne la liste des missions d'agents actives (pour créer un sélecteur par exemple)
-            new TwigFunction('synapse_get_missions', [$this->missionRegistry, 'getAll']),
+            // Retourne la liste des agents d'agents actives (pour créer un sélecteur par exemple)
+            new TwigFunction('synapse_get_agents', [$this->agentRegistry, 'getAll']),
 
             // Récupère le preset actif (Entité)
             new TwigFunction('synapse_config', [$this, 'findActive']),
@@ -113,7 +112,7 @@ class SynapseTwigExtension extends AbstractExtension
             function ($matches) {
                 $content = trim($matches[2]);
 
-                return '<pre><code>'.$content.'</code></pre>';
+                return '<pre><code>' . $content . '</code></pre>';
             },
             $html
         );
@@ -125,7 +124,7 @@ class SynapseTwigExtension extends AbstractExtension
             function ($matches) {
                 $content = preg_replace('/\s*(\r\n|\r|\n)\s*/', '', $matches[0]);
 
-                return '<div class="synapse-action-group">'.(string) $content.'</div>';
+                return '<div class="synapse-action-group">' . (string) $content . '</div>';
             },
             $html
         );

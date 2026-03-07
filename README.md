@@ -48,7 +48,7 @@ php bin/console synapse:doctor --init
 > En mode `--init`, Synapse crée un utilisateur de développement par défaut : `admin` / `admin`.
 
 
-### 2. Configuration minimale (Core)
+### 3. Configuration minimale (Core)
 
 ```yaml
 # config/packages/synapse_core.yaml (ou synapse.yaml selon votre config)

@@ -8,9 +8,9 @@ use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\SpendingLimitPeriod;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\SpendingLimitScope;
-use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseMission;
+use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseSpendingLimit;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseMissionRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseSpendingLimitRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseToneRepository;
@@ -22,18 +22,18 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
- * Gestion des missions d'agents — Administration Synapse.
+ * Gestion des agents IA — Administration Synapse.
  *
- * Une mission combine un prompt système dédié avec un preset LLM et un ton optionnels.
- * Les missions builtin fournies par le bundle ne peuvent pas être supprimées.
+ * Un agent combine un prompt système dédié avec un preset LLM et un ton optionnels.
+ * Les agents builtin fournis par le bundle ne peuvent pas être supprimés.
  */
-#[Route('%synapse.admin_prefix%/intelligence/missions', name: 'synapse_admin_')]
-class MissionController extends AbstractController
+#[Route('%synapse.admin_prefix%/intelligence/agents', name: 'synapse_admin_')]
+class AgentController extends AbstractController
 {
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapseMissionRepository $missionRepo,
+        private SynapseAgentRepository $agentRepo,
         private SynapseModelPresetRepository $presetRepo,
         private SynapseToneRepository $toneRepo,
         private SynapseSpendingLimitRepository $spendingLimitRepo,
@@ -44,44 +44,44 @@ class MissionController extends AbstractController
 
     // ─── Index ─────────────────────────────────────────────────────────────────
 
-    #[Route('', name: 'missions', methods: ['GET'])]
+    #[Route('', name: 'agents', methods: ['GET'])]
     public function index(): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
-        $missions = $this->missionRepo->findAllOrdered();
+        $agents = $this->agentRepo->findAllOrdered();
 
-        return $this->render('@Synapse/admin/intelligence/missions.html.twig', [
-            'missions' => $missions,
+        return $this->render('@Synapse/admin/intelligence/agents.html.twig', [
+            'agents' => $agents,
         ]);
     }
 
     // ─── Nouveau ───────────────────────────────────────────────────────────────
 
-    #[Route('/nouveau', name: 'missions_new', methods: ['GET', 'POST'])]
+    #[Route('/nouveau', name: 'agents_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
-        $mission = new SynapseMission();
-        $mission->setIsBuiltin(false);
+        $agent = new SynapseAgent();
+        $agent->setIsBuiltin(false);
 
         if ($request->isMethod('POST')) {
-            $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_mission_edit');
-            $this->applyFormData($mission, $request->request->all());
-            $this->em->persist($mission);
+            $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_edit');
+            $this->applyFormData($agent, $request->request->all());
+            $this->em->persist($agent);
             $this->em->flush();
 
-            $this->addFlash('success', sprintf('Mission "%s" créée avec succès.', $mission->getName()));
+            $this->addFlash('success', sprintf('Agent "%s" créé avec succès.', $agent->getName()));
 
-            return $this->redirectToRoute('synapse_admin_missions');
+            return $this->redirectToRoute('synapse_admin_agents');
         }
 
         $presets = $this->presetRepo->findAll();
         $tones = $this->toneRepo->findAllOrdered();
 
-        return $this->render('@Synapse/admin/intelligence/mission_edit.html.twig', [
-            'mission' => $mission,
+        return $this->render('@Synapse/admin/intelligence/agent_edit.html.twig', [
+            'agent' => $agent,
             'is_new' => true,
             'presets' => $presets,
             'tones' => $tones,
@@ -90,28 +90,28 @@ class MissionController extends AbstractController
 
     // ─── Édition ───────────────────────────────────────────────────────────────
 
-    #[Route('/{id}/editer', name: 'missions_edit', methods: ['GET', 'POST'])]
-    public function edit(SynapseMission $mission, Request $request): Response
+    #[Route('/{id}/editer', name: 'agents_edit', methods: ['GET', 'POST'])]
+    public function edit(SynapseAgent $agent, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
         if ($request->isMethod('POST')) {
-            $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_mission_edit');
-            $this->applyFormData($mission, $request->request->all());
+            $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_edit');
+            $this->applyFormData($agent, $request->request->all());
             $this->em->flush();
 
-            $this->addFlash('success', sprintf('Mission "%s" mise à jour.', $mission->getName()));
+            $this->addFlash('success', sprintf('Agent "%s" mis à jour.', $agent->getName()));
 
-            return $this->redirectToRoute('synapse_admin_missions');
+            return $this->redirectToRoute('synapse_admin_agents');
         }
 
         $presets = $this->presetRepo->findAll();
         $tones = $this->toneRepo->findAllOrdered();
-        $missionLimits = $this->spendingLimitRepo->findForMission((int) $mission->getId());
-        $spendingLimit = $missionLimits[0] ?? null;
+        $agentLimits = $this->spendingLimitRepo->findForAgent((int) $agent->getId());
+        $spendingLimit = $agentLimits[0] ?? null;
 
-        return $this->render('@Synapse/admin/intelligence/mission_edit.html.twig', [
-            'mission' => $mission,
+        return $this->render('@Synapse/admin/intelligence/agent_edit.html.twig', [
+            'agent' => $agent,
             'is_new' => false,
             'presets' => $presets,
             'tones' => $tones,
@@ -125,24 +125,24 @@ class MissionController extends AbstractController
         ]);
     }
 
-    // ─── Limite de dépense (mission) ───────────────────────────────────────────
+    // ─── Limite de dépense (agent) ───────────────────────────────────────────
 
-    #[Route('/{id}/limite', name: 'missions_limit', methods: ['POST'])]
-    public function saveLimit(SynapseMission $mission, Request $request): Response
+    #[Route('/{id}/limite', name: 'agents_limit', methods: ['POST'])]
+    public function saveLimit(SynapseAgent $agent, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_mission_limit_' . $mission->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_limit_' . $agent->getId());
 
         $action = $request->request->get('action', 'save');
-        $missionLimits = $this->spendingLimitRepo->findForMission((int) $mission->getId());
-        $limit = $missionLimits[0] ?? null;
+        $agentLimits = $this->spendingLimitRepo->findForAgent((int) $agent->getId());
+        $limit = $agentLimits[0] ?? null;
 
         if ('delete' === $action && null !== $limit) {
             $this->em->remove($limit);
             $this->em->flush();
-            $this->addFlash('success', 'Limite de dépense supprimée pour cette mission.');
+            $this->addFlash('success', 'Limite de dépense supprimée pour cet agent.');
 
-            return $this->redirectToRoute('synapse_admin_missions_edit', ['id' => $mission->getId()]);
+            return $this->redirectToRoute('synapse_admin_agents_edit', ['id' => $agent->getId()]);
         }
 
         $amount = trim((string) $request->request->get('amount', ''));
@@ -153,14 +153,14 @@ class MissionController extends AbstractController
         if ('' === $amount) {
             $this->addFlash('error', 'Le montant est requis.');
 
-            return $this->redirectToRoute('synapse_admin_missions_edit', ['id' => $mission->getId()]);
+            return $this->redirectToRoute('synapse_admin_agents_edit', ['id' => $agent->getId()]);
         }
 
         $isNew = (null === $limit);
         if (null === $limit) {
             $limit = new SynapseSpendingLimit();
-            $limit->setScope(SpendingLimitScope::MISSION);
-            $limit->setScopeId((string) $mission->getId());
+            $limit->setScope(SpendingLimitScope::AGENT);
+            $limit->setScopeId((string) $agent->getId());
             $this->em->persist($limit);
         }
 
@@ -170,9 +170,9 @@ class MissionController extends AbstractController
         $limit->setName('' !== $name ? $name : null);
         $this->em->flush();
 
-        $this->addFlash('success', $isNew ? 'Limite de dépense ajoutée pour cette mission.' : 'Limite de dépense mise à jour.');
+        $this->addFlash('success', $isNew ? 'Limite de dépense ajoutée pour cet agent.' : 'Limite de dépense mise à jour.');
 
-        return $this->redirectToRoute('synapse_admin_missions_edit', ['id' => $mission->getId()]);
+        return $this->redirectToRoute('synapse_admin_agents_edit', ['id' => $agent->getId()]);
     }
 
     private function parsePeriod(?string $period): SpendingLimitPeriod
@@ -186,42 +186,42 @@ class MissionController extends AbstractController
 
     // ─── Toggle actif/inactif ──────────────────────────────────────────────────
 
-    #[Route('/{id}/toggle', name: 'missions_toggle', methods: ['POST'])]
-    public function toggle(SynapseMission $mission, Request $request): Response
+    #[Route('/{id}/toggle', name: 'agents_toggle', methods: ['POST'])]
+    public function toggle(SynapseAgent $agent, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_mission_toggle_' . $mission->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_toggle_' . $agent->getId());
 
-        $mission->setIsActive(!$mission->isActive());
+        $agent->setIsActive(!$agent->isActive());
         $this->em->flush();
 
-        $state = $mission->isActive() ? 'activée' : 'désactivée';
-        $this->addFlash('success', sprintf('Mission "%s" %s.', $mission->getName(), $state));
+        $state = $agent->isActive() ? 'activé' : 'désactivé';
+        $this->addFlash('success', sprintf('Agent "%s" %s.', $agent->getName(), $state));
 
-        return $this->redirectToRoute('synapse_admin_missions');
+        return $this->redirectToRoute('synapse_admin_agents');
     }
 
     // ─── Suppression ───────────────────────────────────────────────────────────
 
-    #[Route('/{id}/supprimer', name: 'missions_delete', methods: ['POST'])]
-    public function delete(SynapseMission $mission, Request $request): Response
+    #[Route('/{id}/supprimer', name: 'agents_delete', methods: ['POST'])]
+    public function delete(SynapseAgent $agent, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_mission_delete_' . $mission->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_delete_' . $agent->getId());
 
-        if ($mission->isBuiltin()) {
-            $this->addFlash('error', 'Les missions intégrées au bundle ne peuvent pas être supprimées.');
+        if ($agent->isBuiltin()) {
+            $this->addFlash('error', 'Les agents intégrés au bundle ne peuvent pas être supprimés.');
 
-            return $this->redirectToRoute('synapse_admin_missions');
+            return $this->redirectToRoute('synapse_admin_agents');
         }
 
-        $name = $mission->getName();
-        $this->em->remove($mission);
+        $name = $agent->getName();
+        $this->em->remove($agent);
         $this->em->flush();
 
-        $this->addFlash('success', sprintf('Mission "%s" supprimée.', $name));
+        $this->addFlash('success', sprintf('Agent "%s" supprimé.', $name));
 
-        return $this->redirectToRoute('synapse_admin_missions');
+        return $this->redirectToRoute('synapse_admin_agents');
     }
 
     // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -229,56 +229,56 @@ class MissionController extends AbstractController
     /**
      * @param array<string, mixed> $data
      */
-    private function applyFormData(SynapseMission $mission, array $data): void
+    private function applyFormData(SynapseAgent $agent, array $data): void
     {
         $keyVal = $data['key'] ?? null;
-        if (is_string($keyVal) && !$mission->isBuiltin()) {
-            $mission->setKey(trim($keyVal));
+        if (is_string($keyVal) && !$agent->isBuiltin()) {
+            $agent->setKey(trim($keyVal));
         }
 
         $emojiVal = $data['emoji'] ?? null;
         if (is_string($emojiVal)) {
-            $mission->setEmoji(trim($emojiVal));
+            $agent->setEmoji(trim($emojiVal));
         }
 
         $nameVal = $data['name'] ?? null;
         if (is_string($nameVal)) {
-            $mission->setName(trim($nameVal));
+            $agent->setName(trim($nameVal));
         }
 
         $descVal = $data['description'] ?? null;
         if (is_string($descVal)) {
-            $mission->setDescription(trim($descVal));
+            $agent->setDescription(trim($descVal));
         }
 
         $promptVal = $data['system_prompt'] ?? null;
         if (is_string($promptVal)) {
-            $mission->setSystemPrompt(trim($promptVal));
+            $agent->setSystemPrompt(trim($promptVal));
         }
 
         // Set model preset if provided, otherwise null
         $modelPresetId = $data['model_preset_id'] ?? null;
         if (!empty($modelPresetId) && (is_string($modelPresetId) || is_int($modelPresetId))) {
             $preset = $this->presetRepo->find((int) $modelPresetId);
-            $mission->setModelPreset($preset);
+            $agent->setModelPreset($preset);
         } else {
-            $mission->setModelPreset(null);
+            $agent->setModelPreset(null);
         }
 
         // Set tone if provided, otherwise null
         $toneId = $data['tone_id'] ?? null;
         if (!empty($toneId) && (is_string($toneId) || is_int($toneId))) {
             $tone = $this->toneRepo->find((int) $toneId);
-            $mission->setTone($tone);
+            $agent->setTone($tone);
         } else {
-            $mission->setTone(null);
+            $agent->setTone(null);
         }
 
-        $mission->setIsActive(isset($data['is_active']));
+        $agent->setIsActive(isset($data['is_active']));
 
         $sortOrder = $data['sort_order'] ?? null;
         if (is_numeric($sortOrder)) {
-            $mission->setSortOrder((int) $sortOrder);
+            $agent->setSortOrder((int) $sortOrder);
         }
     }
 }

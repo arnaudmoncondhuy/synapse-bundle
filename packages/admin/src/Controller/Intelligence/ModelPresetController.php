@@ -125,11 +125,11 @@ class ModelPresetController extends AbstractController
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_activate_' . $preset->getId());
 
         // 🛡️ DÉFENSE : Vérifier que le preset est valide avant activation
-        if (!$this->isPresetValid($preset)) {
+        if (!$this->presetValidator->isValid($preset)) {
             $this->addFlash('error', sprintf(
                 'Impossible d\'activer le Model Preset "%s" : %s',
                 $preset->getName(),
-                $this->getPresetInvalidReason($preset)
+                $this->presetValidator->getInvalidReason($preset)
             ));
 
             return $this->redirectToRoute('synapse_admin_configuration_llm', ['tab' => 'presets']);
