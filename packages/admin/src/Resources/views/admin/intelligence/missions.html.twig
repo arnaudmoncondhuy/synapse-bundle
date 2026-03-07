@@ -67,10 +67,10 @@
 					<p class="synapse-admin-text-sm synapse-admin-text-muted synapse-admin-mb-md">{{ mission.description }}</p>
 
 					<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm synapse-admin-text-xs synapse-admin-text-muted">
-						{% if mission.preset %}
+						{% if mission.modelPreset %}
 							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
 								<i data-lucide="settings" style="width: 1rem; height: 1rem;"></i>
-								<span><strong>Preset:</strong> {{ mission.preset.name }}</span>
+								<span><strong>Preset:</strong> {{ mission.modelPreset.name }}</span>
 							</div>
 						{% endif %}
 						{% if mission.tone %}

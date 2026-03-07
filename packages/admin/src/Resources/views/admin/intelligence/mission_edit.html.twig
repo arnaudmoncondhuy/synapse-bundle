@@ -157,13 +157,13 @@
 				<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-lg">
 
 					<div class="synapse-admin-form-group">
-						<label class="synapse-admin-label" for="mission-preset">
+						<label class="synapse-admin-label" for="mission-model-preset">
 							Preset LLM
 						</label>
-						<select id="mission-preset" name="preset_id" class="synapse-admin-input">
+						<select id="mission-model-preset" name="model_preset_id" class="synapse-admin-input">
 							<option value="">— Utilise le preset actif global —</option>
 							{% for preset in presets %}
-								<option value="{{ preset.id }}" {% if mission.preset and mission.preset.id == preset.id %}selected{% endif %}>
+								<option value="{{ preset.id }}" {% if mission.modelPreset and mission.modelPreset.id == preset.id %}selected{% endif %}>
 									{{ preset.name }} ({{ preset.model }})
 								</option>
 							{% endfor %}
