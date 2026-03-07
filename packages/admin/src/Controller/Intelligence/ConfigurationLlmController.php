@@ -11,7 +11,7 @@ use ArnaudMoncondhuy\SynapseCore\PresetValidator;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseProvider;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelRepository;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapsePresetRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,7 +35,7 @@ class ConfigurationLlmController extends AbstractController
 
     public function __construct(
         private SynapseProviderRepository $providerRepo,
-        private SynapsePresetRepository $presetRepo,
+        private SynapseModelPresetRepository $presetRepo,
         private SynapseModelRepository $modelRepo,
         private LlmClientRegistry $clientRegistry,
         private ModelCapabilityRegistry $capabilityRegistry,
@@ -161,7 +161,7 @@ class ConfigurationLlmController extends AbstractController
     /**
      * Vérifie si un preset est valide (provider configuré + modèle existe).
      */
-    private function isPresetValid(\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapsePreset $preset): bool
+    private function isPresetValid(\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset $preset): bool
     {
         // Vérifier que le provider et le modèle sont définis
         $providerName = $preset->getProviderName();
@@ -184,7 +184,7 @@ class ConfigurationLlmController extends AbstractController
     /**
      * Retourne la raison pour laquelle un preset est invalide.
      */
-    private function getPresetInvalidReason(\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapsePreset $preset): ?string
+    private function getPresetInvalidReason(\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset $preset): ?string
     {
         $providerName = $preset->getProviderName();
         $model = $preset->getModel();

@@ -139,7 +139,7 @@ class SynapseTwigExtension extends AbstractExtension
     /**
      * Helper pour trouver le preset actif (utilisé par synapse_config)
      * Note: Ce helper était manquant dans l'implémentation précédente ou implicite.
-     * Je l'ajoute pour la cohérence si nécessaire, ou je vérifie si SynapsePresetRepository est requis.
+     * Je l'ajoute pour la cohérence si nécessaire, ou je vérifie si SynapseModelPresetRepository est requis.
      */
     public function findActive(): ?object
     {

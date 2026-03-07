@@ -30,7 +30,7 @@ use Symfony\Contracts\Cache\ItemInterface;
  * Un seul preset peut être actif à la fois (le reste est inactif).
  */
 #[Route('%synapse.admin_prefix%/intelligence/presets', name: 'synapse_admin_')]
-class PresetController extends AbstractController
+class ModelPresetController extends AbstractController
 {
     use AdminSecurityTrait;
 
@@ -44,8 +44,7 @@ class PresetController extends AbstractController
         private CacheInterface $cache,
         private PresetValidatorAgent $presetValidatorAgent,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {
-    }
+    ) {}
 
     /**
      * Vérifie si un preset est valide (provider configuré + modèle existe).
@@ -88,14 +87,14 @@ class PresetController extends AbstractController
 
         $provider = $this->providerRepo->findOneBy(['name' => $providerName]);
         if (!$provider) {
-            return 'Fournisseur "'.$providerName.'" introuvable';
+            return 'Fournisseur "' . $providerName . '" introuvable';
         }
         if (!$provider->isConfigured()) {
-            return 'Fournisseur "'.$provider->getLabel().'" non configuré';
+            return 'Fournisseur "' . $provider->getLabel() . '" non configuré';
         }
 
         if (!$this->capabilityRegistry->isKnownModel($model)) {
-            return 'Modèle "'.$model.'" inexistant ou désactivé';
+            return 'Modèle "' . $model . '" inexistant ou désactivé';
         }
 
         return null;
@@ -108,7 +107,7 @@ class PresetController extends AbstractController
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
-        $preset = new SynapsePreset();
+        $preset = new SynapseModelPreset();
 
         if ($request->isMethod('POST')) {
             $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_edit');
@@ -139,7 +138,7 @@ class PresetController extends AbstractController
     // ─── Édition ───────────────────────────────────────────────────────────────
 
     #[Route('/{id}/editer', name: 'presets_edit', methods: ['GET', 'POST'])]
-    public function edit(SynapsePreset $preset, Request $request): Response
+    public function edit(SynapseModelPreset $preset, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
@@ -166,10 +165,10 @@ class PresetController extends AbstractController
     // ─── Activation ────────────────────────────────────────────────────────────
 
     #[Route('/{id}/activate', name: 'presets_activate', methods: ['POST'])]
-    public function activate(SynapsePreset $preset, Request $request): Response
+    public function activate(SynapseModelPreset $preset, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_activate_'.$preset->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_activate_' . $preset->getId());
 
         // 🛡️ DÉFENSE : Vérifier que le preset est valide avant activation
         if (!$this->isPresetValid($preset)) {
@@ -196,13 +195,13 @@ class PresetController extends AbstractController
     // ─── Clone ─────────────────────────────────────────────────────────────────
 
     #[Route('/{id}/cloner', name: 'presets_clone', methods: ['POST'])]
-    public function clone(SynapsePreset $source, Request $request): Response
+    public function clone(SynapseModelPreset $source, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_clone_'.$source->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_clone_' . $source->getId());
 
-        $clone = new SynapsePreset();
-        $clone->setName($source->getName().' (copie)');
+        $clone = new SynapseModelPreset();
+        $clone->setName($source->getName() . ' (copie)');
         $clone->setProviderName($source->getProviderName());
         $clone->setModel($source->getModel());
         $clone->setGenerationTemperature($source->getGenerationTemperature());
@@ -226,10 +225,10 @@ class PresetController extends AbstractController
     // ─── Suppression ───────────────────────────────────────────────────────────
 
     #[Route('/{id}/supprimer', name: 'presets_delete', methods: ['POST'])]
-    public function delete(SynapsePreset $preset, Request $request): Response
+    public function delete(SynapseModelPreset $preset, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_delete_'.$preset->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_delete_' . $preset->getId());
 
         if ($preset->isActive()) {
             $this->addFlash('error', 'Impossible de supprimer le preset actif. Activez d\'abord un autre preset.');
@@ -254,7 +253,7 @@ class PresetController extends AbstractController
      * Retourne la page d'attente du test.
      */
     #[Route('/{id}/tester', name: 'presets_test', methods: ['POST'])]
-    public function test(SynapsePreset $preset): Response
+    public function test(SynapseModelPreset $preset): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
@@ -283,13 +282,13 @@ class PresetController extends AbstractController
      * en concentrant toute l'exécution dans une seule requête HTTP longue.
      */
     #[Route('/{id}/tester/statut', name: 'presets_test_status', methods: ['GET'])]
-    public function testStatus(SynapsePreset $preset): Response
+    public function testStatus(SynapseModelPreset $preset): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
         $cacheKey = sprintf('synapse_preset_test_%d', $preset->getId());
         /** @var array{status: string, report: array<string, mixed>|null, progress?: int}|null $data */
-        $data = $this->cache->get($cacheKey, fn () => null);
+        $data = $this->cache->get($cacheKey, fn() => null);
 
         if (!$data) {
             return new JsonResponse(['status' => 'not_found'], 404);
@@ -311,7 +310,7 @@ class PresetController extends AbstractController
                 $data['report'] = [
                     'sync_error' => $e->getMessage(),
                     'all_critical_ok' => false,
-                    'analysis' => 'Test interrompu par une exception critique : '.$e->getMessage(),
+                    'analysis' => 'Test interrompu par une exception critique : ' . $e->getMessage(),
                     'critical_checks' => ['response_not_empty' => false, 'debug_saved_in_db' => false],
                     'config_checks' => [],
                     'config_errors' => [],
@@ -345,7 +344,7 @@ class PresetController extends AbstractController
     /**
      * @param array<string, mixed> $data
      */
-    private function applyFormData(SynapsePreset $preset, array $data): void
+    private function applyFormData(SynapseModelPreset $preset, array $data): void
     {
         $activeConfig = $this->configProvider->getConfig();
         $defaultProvider = is_string($activeConfig['provider'] ?? null) ? $activeConfig['provider'] : 'gemini';
