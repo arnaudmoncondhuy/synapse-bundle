@@ -96,7 +96,7 @@
 									<tr>
 										<td>
 											<span class="synapse-admin-badge synapse-admin-badge--neutral">
-												{{ limit.scope.value == 'user' ? 'Utilisateur' : (limit.scope.value == 'mission' ? 'Mission' : 'Preset') }}
+												{{ limit.scope.value == 'user' ? 'Utilisateur' : (limit.scope.value == 'mission' ? 'Mission' : 'Model Preset') }}
 											</span>
 										</td>
 										<td>
@@ -152,7 +152,7 @@
 						<label class="synapse-admin-label">Périmètre</label>
 						<select name="scope" id="quota-scope" class="synapse-admin-input" required>
 							<option value="user">Utilisateur (ID)</option>
-							<option value="preset">Preset LLM</option>
+							<option value="preset">Model Preset LLM</option>
 							<option value="mission">Mission (assistant)</option>
 						</select>
 					</div>
@@ -162,9 +162,9 @@
 						<input type="text" id="scope_id_user" name="scope_id" class="synapse-admin-input synapse-admin-font-mono" placeholder="ex: 42 ou user_abc" maxlength="50">
 					</div>
 					<div class="synapse-admin-form-group" id="quota-scope-preset" style="display: none;">
-						<label class="synapse-admin-label" for="scope_id_preset">Preset</label>
+						<label class="synapse-admin-label" for="scope_id_preset">Model Preset</label>
 						<select id="scope_id_preset" class="synapse-admin-input">
-							<option value="">— Choisir un preset —</option>
+							<option value="">— Choisir un Model Preset —</option>
 							{% for preset in presets %}
 								<option value="{{ preset.id }}">{{ preset.name }} ({{ preset.model }})</option>
 							{% endfor %}
@@ -274,7 +274,7 @@
 					<i data-lucide="sliders-horizontal"></i>
 				</div>
 				<div>
-					<div class="synapse-admin-card__title">Par preset</div>
+					<div class="synapse-admin-card__title">Par Model Preset</div>
 					<div class="synapse-admin-card__subtitle">Tokens et coût (devise de référence)</div>
 				</div>
 			</div>
@@ -286,7 +286,7 @@
 						<table class="synapse-admin-table">
 							<thead>
 								<tr>
-									<th>Preset</th>
+									<th>Model Preset</th>
 									<th>Requêtes</th>
 									<th>Tokens</th>
 									<th>Coût</th>
@@ -295,7 +295,7 @@
 							<tbody>
 								{% for row in usage_by_preset %}
 									<tr>
-										<td>{{ presets_by_id[row.preset_id].name ?? 'Preset #' ~ row.preset_id }}</td>
+										<td>{{ presets_by_id[row.preset_id].name ?? 'Model Preset #' ~ row.preset_id }}</td>
 										<td>{{ row.count }}</td>
 										<td>{{ row.total_tokens|number_format(0, '', ' ') }}</td>
 										<td>{{ row.cost|number_format(4) }}</td>
