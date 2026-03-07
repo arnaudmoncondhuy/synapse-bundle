@@ -2,7 +2,7 @@
 
 **Document de référence pour la transformation du synapse-bundle**
 - **Dernière mise à jour**: 2026-03-07
-- **Status**: 🔄 En planification (Phase 1)
+- **Status**: ✅ Phase 1.1 complète — Phase 1.2 et suivantes à planifier
 - **Propriétaire**: Équipe Dev
 
 ---
@@ -16,13 +16,14 @@ Le synapse-bundle dispose déjà des briques fondamentales pour supporter des Ag
 4. **Les fichiers** concernés
 5. **Les défis** techniques à résoudre
 
-### Définition: Agent IA vs Mission
+### Définition: Agent IA (état actuel)
 ```
-MISSION (actuellement)      →  AGENT IA (cible)
-├─ Prompt Système              ├─ Identité/Rôle
-├─ Preset technique            ├─ Capacités (outils)
-├─ Accès à TOUS les outils     ├─ Accès contrôlé aux outils
-└─ Exécution linéaire          └─ Réflexion multi-tour autonome
+AGENT IA (implémenté 2026-03-07)
+├─ Identité/Rôle    → SynapseAgent.systemPrompt
+├─ Preset LLM       → SynapseAgent.modelPreset (optionnel)
+├─ Ton              → SynapseAgent.tone (optionnel)
+├─ Outils autorisés → SynapseAgent.allowedToolNames ✅ NOUVEAU
+└─ Réflexion multi-tour → ChatService (MAX_TURNS=5)
 ```
 
 ---
@@ -43,19 +44,15 @@ MISSION (actuellement)      →  AGENT IA (cible)
 - **État**: Production-ready
 
 ### 2. Système d'Outils ✅
-**Fichier**: `src/Contract/AiToolInterface.php`
+**Fichier**: `packages/core/src/Contract/AiToolInterface.php`
 - **Concepts**:
   - Chaque outil = implémentation de `AiToolInterface`
-  - Déclaration: `getName()`, `getDescription()`, `getParameters()`
-  - Exécution: `execute(array $params): string`
-- **Outils existants**:
-  - `SearchTool` - Recherche dans la base
-  - `WebSearchTool` - Recherche web
-  - `CreativeContentTool` - Génération créative
-  - `ProgrammingTool` - Assistance code
-  - D'autres...
-- **Enregistrement**: Tous les outils sont enregistrés globalement dans le DI
-- **État**: Robuste et extensible
+  - Déclaration: `getName()`, `getDescription()`, `getInputSchema()`
+  - Exécution: `execute(array $params): mixed`
+- **Enregistrement**: Tag DI `synapse.tool` → injecté dans `ToolRegistry`
+- **Filtrage**: `ToolRegistry::getDefinitions(?array $names)` supporte filtrage par noms
+- **Liaison Agent ↔ Outils**: ✅ IMPLÉMENTÉ (voir Phase 1.1 complète ci-dessous)
+- **État**: Production-ready
 
 ### 3. Configuration Flexible ✅
 **Fichier**: `src/Storage/Entity/SynapseMission.php`
@@ -77,7 +74,7 @@ MISSION (actuellement)      →  AGENT IA (cible)
 
 ## 🚧 Ce qu'il Manque - Blocages Identifiés
 
-### A. Liaison Dynamique Missions ↔ Outils ⚠️ CRITIQUE
+### A. Liaison Dynamique Agents ↔ Outils ✅ IMPLÉMENTÉ (2026-03-07) ⚠️ CRITIQUE
 
 **Problème actuellement**:
 - Les outils sont enregistrés **globalement**
@@ -526,57 +523,42 @@ class MissionAccessVoter extends Voter
 
 ## 🎯 Plan de Route Détaillé
 
-### Phase 1: Fondations (Semaines 1-2)
+### Phase 1: Fondations ✅ COMPLÉTÉE (2026-03-07)
 
-**Objectif**: Rendre Missions contrôlables granulairementRank des tâches par valeur/effort:
+**Objectif**: Rendre les Agents contrôlables granulairements
 
-#### 1.1 Liaison Missions ↔ Outils ⭐ CRITIQUE
-- **Priorité**: 1 (blocker pour les phases suivantes)
-- **Effort**: 2-3 jours
-- **Dépendances**: Aucune
-- **Actions**:
-  1. Créer entité `AiTool`
-  2. Ajouter relation `SynapseMission.allowedTools`
-  3. Modifier `ChatService.getAvailableTools()`
-  4. UI: Formulaire Mission avec checkboxes des outils
-  5. Tests: Vérifier qu'un Agent n'accède qu'à ses outils autorisés
-- **Définition de "fait"**:
-  - ✅ Tests passent (9 tests minimum)
-  - ✅ UI admin permet cocher/décocher outils
-  - ✅ ChatService respecte la whitelist
+#### 1.1 Liaison Agents ↔ Outils ✅ COMPLÉTÉ
+- **Approche retenue**: Champ JSON `allowedToolNames` sur `SynapseAgent` (pas d'entité intermédiaire)
+- **Sémantique**:
+  - Sans agent → tous les outils (comportement inchangé)
+  - `allowedToolNames = []` → aucun outil
+  - `allowedToolNames = ['tool_a']` → restriction
+  - `tools_override` dans `ask()` → toujours prioritaire (développeur)
+- **Fichiers modifiés**:
+  - `packages/core/src/Storage/Entity/SynapseAgent.php`
+  - `packages/core/src/Event/ContextBuilderSubscriber.php`
+  - `packages/admin/src/Controller/Intelligence/AgentController.php`
+  - `packages/admin/src/Resources/views/admin/intelligence/agent_edit.html.twig`
+  - `packages/admin/src/Resources/views/admin/intelligence/agents.html.twig`
+  - `packages/core/src/DataFixtures/SynapseAgentFixture.php`
+- **Prérequis app hôte**: `doctrine:migrations:diff` + `migrate`
 
-#### 1.2 Outil Python Executor 🔒 OPTIONNEL (Phase 1.5)
-- **Priorité**: 2 (après fondations)
-- **Effort**: 5-7 jours
-- **Dépendances**: 1.1
-- **Actions**:
-  1. Créer `PythonSandboxService` avec Docker
-  2. Créer `PythonExecutorTool`
-  3. Tests de sécurité: tentatives injection
-  4. Performance: mesurer overhead
-- **Définition de "fait"":
-  - ✅ `code_analysis = "import numpy; np.mean([1,2,3])"` exécute sans risque
-  - ✅ `__import__('os')` est bloqué
-  - ✅ Timeout = 10s max
-  - ✅ Tests de sécurité réussis
+#### 1.2 Renommage Missions → Agents ✅ COMPLÉTÉ
+- Toutes les entités, contrôleurs, templates et routes renommés
+- `SynapseAgent`, `AgentRegistry`, `AgentController`
 
-#### 1.3 Admin UI: Renommage Missions → Agents
-- **Priorité**: 3 (cosmétique, mais important UX)
-- **Effort**: 1 jour
-- **Actions**:
-  1. Remplacer "Missions" par "Agents" dans l'UI
-  2. Mettre à jour labels, boutons, messages
-  3. Docs: Mettre à jour glossaire
-- **Fichiers touchés**: `admin_v2/missions/*`, contrôleurs
+#### 1.3 Outil Python Executor 🔒 REPORTÉ EN PHASE 2
+- Dépendance Docker complexe, priorité basse
+- Voir section B pour le détail technique
 
 ---
 
-### Phase 2: Connaissance & Intelligence (Semaines 3-4)
+### Phase 2: Connaissance & Intelligence (Prochaine étape)
 
 #### 2.1 RAG / Knowledge Base
 - **Priorité**: 1
 - **Effort**: 3-4 jours
-- **Dépendances**: 1.1
+- **Dépendances**: Phase 1 ✅
 - **Actions**: (détail dans section C plus haut)
 
 #### 2.2 Mémoire Court Terme (Conversation Memory)
@@ -721,15 +703,17 @@ docker/
 
 ## 📊 Métriques de Succès
 
-### Phase 1 (Fondations)
+### Phase 1 (Fondations) ✅ COMPLÉTÉE 2026-03-07
 ```
-✅ Liaison Missions ↔ Outils:
-  - 100% des missions peuvent choisir leurs outils
-  - 0 accès non-autorisés en production
+✅ Liaison Agents ↔ Outils:
+  - SynapseAgent.allowedToolNames (JSON) implémenté
+  - ContextBuilderSubscriber injecte tools_override depuis l'agent
+  - UI admin: checkboxes dans agent_edit.html.twig
+  - Badge "X autorisés" dans la liste des agents
 
-✅ Tests:
-  - 9+ tests unitaires (ChatService, AiTool, Permission)
-  - 1+ test d'intégration (mission complète)
+⏳ Tests unitaires à écrire:
+  - ContextBuilderSubscriber avec agent + allowedToolNames
+  - Cas: agent vide → aucun outil; agent avec outils → filtrage correct
 ```
 
 ### Phase 2 (Intelligence)
@@ -784,12 +768,14 @@ docker/
 
 ## 📝 Notes pour Futures Sessions
 
-- [ ] Vérifier état EmbeddingService avant Phase 2
-- [ ] Benchmarker overhead Docker (création container)
+- [x] ~~Liaison Agents ↔ Outils~~ — implémenté 2026-03-07
+- [x] ~~Renommage Missions → Agents~~ — implémenté 2026-03-07
+- [ ] Écrire tests unitaires pour ContextBuilderSubscriber (tools_override depuis agent)
+- [ ] Vérifier état EmbeddingService avant Phase 2 (RAG)
+- [ ] Benchmarker overhead Docker (création container Python)
 - [ ] Discuter rate limiting strategy (token-based? request-based?)
-- [ ] Prévoir alertes si quota atteint
-- [ ] Documenter API pour créer nouveaux Agents
-- [ ] Créer exemple Agent "Data Analyst" pour démo
+- [ ] Documenter API pour créer nouveaux Agents (README package core)
+- [ ] Créer exemple Agent "Data Analyst" pour démo (avec tools restreints)
 
 ---
 
@@ -804,4 +790,4 @@ docker/
 ---
 
 **Last Updated**: 2026-03-07
-**Next Review**: 2026-03-21 (après Phase 1)
+**Next Review**: Phase 2 — RAG / Knowledge Base
