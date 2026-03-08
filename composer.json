@@ -75,7 +75,15 @@
         "validate-monorepo": "vendor/bin/monorepo-builder validate",
         "merge": "vendor/bin/monorepo-builder merge",
         "release": "vendor/bin/monorepo-builder release",
-        "phpstan": "vendor/bin/phpstan analyse"
+        "phpstan": "vendor/bin/phpstan analyse",
+        "cs-check": "vendor/bin/php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "vendor/bin/php-cs-fixer fix",
+        "test": "vendor/bin/phpunit",
+        "check": [
+            "@cs-check",
+            "@phpstan",
+            "@test"
+        ]
     },
     "minimum-stability": "dev",
     "prefer-stable": true
