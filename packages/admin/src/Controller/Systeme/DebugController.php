@@ -34,7 +34,8 @@ class DebugController extends AbstractController
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'debug', methods: ['GET', 'POST'])]
     public function index(Request $request): Response

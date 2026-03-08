@@ -10,8 +10,8 @@ use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\PresetValidator;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseProvider;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -42,7 +42,8 @@ class ConfigurationLlmController extends AbstractController
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private PresetValidator $presetValidator,
-    ) {}
+    ) {
+    }
 
     #[Route('/configuration-llm', name: 'configuration_llm', methods: ['GET'])]
     public function index(Request $request): Response
@@ -58,7 +59,7 @@ class ConfigurationLlmController extends AbstractController
         $providers = $this->providerRepo->findAllOrdered();
 
         // Synchronisation auto des providers disponibles
-        $existingNames = array_map(fn($p) => $p->getName(), $providers);
+        $existingNames = array_map(fn ($p) => $p->getName(), $providers);
         $changed = false;
         foreach ($this->clientRegistry->getAvailableProviders() as $name) {
             if (!in_array($name, $existingNames, true)) {
@@ -138,7 +139,7 @@ class ConfigurationLlmController extends AbstractController
 
         // ── Données Presets ──────────────────────────────────────────────────
         $presetsWithCaps = array_map(
-            fn($p) => [
+            fn ($p) => [
                 'entity' => $p,
                 'caps' => $this->capabilityRegistry->getCapabilities($p->getModel()),
                 'isValid' => $this->presetValidator->isValid($p),
@@ -146,7 +147,7 @@ class ConfigurationLlmController extends AbstractController
             ],
             $allPresets
         );
-        usort($presetsWithCaps, fn($a, $b) => $b['entity']->isActive() <=> $a['entity']->isActive());
+        usort($presetsWithCaps, fn ($a, $b) => $b['entity']->isActive() <=> $a['entity']->isActive());
 
         return $this->render('@Synapse/admin/intelligence/configuration_llm.html.twig', [
             'tab' => $tab,

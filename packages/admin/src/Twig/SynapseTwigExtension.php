@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseAdmin\Twig;
 
+use ArnaudMoncondhuy\SynapseCore\AgentRegistry;
 use ArnaudMoncondhuy\SynapseCore\Contract\ConfigProviderInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface;
-use ArnaudMoncondhuy\SynapseCore\AgentRegistry;
 use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\ToneRegistry;
 use Twig\Extension\AbstractExtension;
@@ -27,7 +27,8 @@ class SynapseTwigExtension extends AbstractExtension
         private ?\ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface $permissionChecker = null,
         private ?ConfigProviderInterface $configProvider = null,
         private ?ModelCapabilityRegistry $modelCapabilityRegistry = null,
-    ) {}
+    ) {
+    }
 
     /**
      * Enregistre les filtres Twig personnalisés du bundle.
@@ -119,7 +120,7 @@ class SynapseTwigExtension extends AbstractExtension
             function ($matches) {
                 $content = trim($matches[2]);
 
-                return '<pre><code>' . $content . '</code></pre>';
+                return '<pre><code>'.$content.'</code></pre>';
             },
             $html
         );
@@ -131,7 +132,7 @@ class SynapseTwigExtension extends AbstractExtension
             function ($matches) {
                 $content = preg_replace('/\s*(\r\n|\r|\n)\s*/', '', $matches[0]);
 
-                return '<div class="synapse-action-group">' . (string) $content . '</div>';
+                return '<div class="synapse-action-group">'.(string) $content.'</div>';
             },
             $html
         );
