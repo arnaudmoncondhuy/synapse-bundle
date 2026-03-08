@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Systeme;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
+use ArnaudMoncondhuy\SynapseCore\DatabaseConfigProvider;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseConfigRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,15 +29,31 @@ class DebugController extends AbstractController
 
     public function __construct(
         private SynapseDebugLogRepository $debugLogRepo,
+        private SynapseConfigRepository $configRepo,
+        private DatabaseConfigProvider $configProvider,
+        private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {
-    }
+    ) {}
 
-    #[Route('', name: 'debug', methods: ['GET'])]
-    public function index(): Response
+    #[Route('', name: 'debug', methods: ['GET', 'POST'])]
+    public function index(Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
+
+        $config = $this->configRepo->getGlobalConfig();
+
+        if ($request->isMethod('POST') && $request->request->has('debug_mode_toggle')) {
+            $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_admin_debug_toggle');
+
+            $config->setDebugMode($request->request->getBoolean('debug_mode'));
+            $this->em->flush();
+            $this->configProvider->clearCache();
+
+            $this->addFlash('success', sprintf('Le mode debug est désormais %s.', $config->isDebugMode() ? 'activé' : 'désactivé'));
+
+            return $this->redirectToRoute('synapse_admin_debug');
+        }
 
         $logs = $this->debugLogRepo->findRecent(100);
         $total = $this->debugLogRepo->count([]);
@@ -42,6 +61,7 @@ class DebugController extends AbstractController
         return $this->render('@Synapse/admin/systeme/debug.html.twig', [
             'logs' => $logs,
             'total' => $total,
+            'config' => $config,
         ]);
     }
 

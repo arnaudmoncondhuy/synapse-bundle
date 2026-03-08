@@ -283,6 +283,26 @@ const PROVIDER_SCHEMAS = {
 'gemini': {
 fields: [
 {
+name: 'vertex_region',
+type: 'select',
+label: 'Région Vertex AI',
+help: 'Région utilisée pour ce preset (override la région du provider)',
+options: [
+{ value: '', label: '— Hériter du provider —' },
+{ value: 'global', label: 'Global (modèles preview & nouveaux)' },
+{ value: 'europe-west9', label: 'Europe West 9 (Paris)' },
+{ value: 'europe-west1', label: 'Europe West 1 (Belgique)' },
+{ value: 'europe-west4', label: 'Europe West 4 (Pays-Bas)' },
+{ value: 'europe-west3', label: 'Europe West 3 (Francfort)' },
+{ value: 'europe-west2', label: 'Europe West 2 (Londres)' },
+{ value: 'us-central1', label: 'US Central 1 (Iowa)' },
+{ value: 'us-east1', label: 'US East 1 (Caroline du Sud)' },
+{ value: 'asia-east1', label: 'Asia East 1 (Taiwan)' },
+{ value: 'asia-northeast1', label: 'Asia Northeast 1 (Tokyo)' }
+],
+defaultValue: ''
+},
+{
 name: 'thinking.enabled',
 type: 'checkbox',
 label: 'Activer le thinking',
@@ -515,7 +535,9 @@ return;
 
 const value = getNestedValue(currentData, fieldDef.name);
 const isChecked = value === true || value === 'true';
-const fieldValue = value !== undefined ? value : fieldDef.defaultValue;
+// Pour vertex_region : si aucune valeur preset, utiliser le défaut YAML du modèle
+const yamlDefault = (fieldDef.name === 'vertex_region' && caps.vertexRegion) ? caps.vertexRegion : fieldDef.defaultValue;
+const fieldValue = value !== undefined ? value : yamlDefault;
 const fieldEl = document.createElement('div');
 fieldEl.className = 'synapse-admin-form-group';
 fieldEl.id = `field-${

@@ -22,9 +22,7 @@
 				Journaux de debug
 			</h1>
 			<p class="synapse-admin-page-subtitle">
-				Traces des échanges LLM enregistrées quand le mode debug est actif sur la configuration.
-				            Activez le mode debug dans
-				<a href="{{ path('synapse_admin_settings') }}">Paramètres</a>.
+				Traces des échanges LLM enregistrées en base de données pour le diagnostic.
 			</p>
 		</div>
 		<div class="synapse-admin-page-header__actions">
@@ -40,7 +38,32 @@
 		</div>
 	</div>
 
-	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	{# ── Configuration & KPIs ─────────────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--1 synapse-admin-mb-lg">
+		<div class="synapse-admin-card" style="background: var(--synapse-admin-bg-subtle);">
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact synapse-admin-flex synapse-admin-justify-between synapse-admin-items-center">
+				<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-md">
+					<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ config.debugMode ? 'warning' : 'neutral' }}">
+						<i data-lucide="{{ config.debugMode ? 'bug' : 'bug-off' }}"></i>
+					</div>
+					<div>
+						<div class="synapse-admin-card__title">Mode debug global</div>
+						<div class="synapse-admin-card__subtitle">Capture les prompts et réponses complètes en base de données.</div>
+					</div>
+				</div>
+				<form action="{{ path('synapse_admin_debug') }}" method="POST" id="debug-mode-form">
+					<input type="hidden" name="_token" value="{{ csrf_token('synapse_admin_debug_toggle') }}">
+					<input type="hidden" name="debug_mode_toggle" value="1">
+					<label class="synapse-admin-toggle">
+						<input type="checkbox" name="debug_mode" value="1" {{ config.debugMode ? 'checked' : '' }} onchange="this.form.submit()">
+						<span class="synapse-admin-toggle__slider"></span>
+						<span class="synapse-admin-toggle__label">{{ config.debugMode ? 'Activé' : 'Désactivé' }}</span>
+					</label>
+				</form>
+			</div>
+		</div>
+	</div>
+
 	<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
 
 		<div class="synapse-admin-card synapse-admin-card--hover">
@@ -71,13 +94,13 @@
 
 		<div class="synapse-admin-card synapse-admin-card--hover">
 			<div class="synapse-admin-kpi">
-				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ logs|length > 0 ? 'warning' : 'success' }}">
-					<i data-lucide="{{ logs|length > 0 ? 'activity' : 'check-circle-2' }}"></i>
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ config.debugMode ? 'warning' : 'success' }}">
+					<i data-lucide="{{ config.debugMode ? 'activity' : 'check-circle-2' }}"></i>
 				</div>
 				<div class="synapse-admin-kpi__body">
-					<div class="synapse-admin-kpi__label">Mode debug</div>
-					<div class="synapse-admin-kpi__value">{{ logs|length > 0 ? 'Actif' : 'Inactif' }}</div>
-					<div class="synapse-admin-kpi__sub">selon Paramètres</div>
+					<div class="synapse-admin-kpi__label">État du système</div>
+					<div class="synapse-admin-kpi__value">{{ config.debugMode ? 'Debug' : 'Optimal' }}</div>
+					<div class="synapse-admin-kpi__sub">{{ config.debugMode ? 'Enregistrement actif' : 'Performance optimisée' }}</div>
 				</div>
 			</div>
 		</div>
@@ -95,8 +118,7 @@
 				<p class="synapse-admin-empty__description">
 					Activez le
 					<strong>mode debug</strong>
-					dans les
-					<a href="{{ path('synapse_admin_settings') }}">Paramètres globaux</a>
+					ci-dessus
 					puis relancez quelques échanges pour voir les traces apparaître ici.
 				</p>
 			</div>

@@ -403,6 +403,7 @@ class ModelPresetController extends AbstractController
                 'maxInputTokens' => $caps->maxInputTokens,
                 'maxOutputTokens' => $caps->maxOutputTokens,
                 'deprecatedAt' => $caps->deprecatedAt,
+                'vertexRegion' => $caps->vertexRegion,
             ];
         }
 

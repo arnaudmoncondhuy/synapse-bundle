@@ -72,9 +72,6 @@ class SettingsController extends AbstractController
             $systemPrompt = $request->request->get('system_prompt');
             $config->setSystemPrompt(!empty($systemPrompt) ? (string) $systemPrompt : null);
 
-            // Mode debug
-            $config->setDebugMode($request->request->getBoolean('debug_mode'));
-
             $this->em->flush();
             $this->configProvider->clearCache();
 
