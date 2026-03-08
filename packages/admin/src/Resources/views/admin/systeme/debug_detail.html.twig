@@ -88,7 +88,10 @@
 						<div class="synapse-admin-kpi__body">
 							<div class="synapse-admin-kpi__label">Modèle</div>
 							<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ data.model ?? preset_config.model ?? '—' }}</div>
-							<div class="synapse-admin-kpi__sub">{{ data.provider ?? preset_config.provider ?? '—' }}</div>
+							<div class="synapse-admin-kpi__sub">
+							{{ data.provider ?? preset_config.provider ?? '—' }}
+							{% if preset_config.preset_name ?? false %} · <em>{{ preset_config.preset_name }}</em>{% endif %}
+						</div>
 						</div>
 					</div>
 				</div>
@@ -145,6 +148,57 @@
 					</div>
 				</div>
 			</div>
+		</div>
+
+		{# ── KPIs : Agent / Ton / Coût ── #}
+		<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
+			<div class="synapse-admin-card synapse-admin-card--hover">
+				<div class="synapse-admin-kpi">
+					<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (preset_config.agent_id ?? false) ? 'primary' : 'neutral' }}">
+						<i data-lucide="bot"></i>
+					</div>
+					<div class="synapse-admin-kpi__body">
+						<div class="synapse-admin-kpi__label">Agent</div>
+						{% if preset_config.agent_name ?? false %}
+							<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ preset_config.agent_emoji ?? '' }} {{ preset_config.agent_name }}</div>
+							<div class="synapse-admin-kpi__sub">ID #{{ preset_config.agent_id }}</div>
+						{% else %}
+							<div class="synapse-admin-kpi__value synapse-admin-text-sm synapse-admin-text-muted">Aucun</div>
+							<div class="synapse-admin-kpi__sub">Preset global par défaut</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card synapse-admin-card--hover">
+				<div class="synapse-admin-kpi">
+					<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (preset_config.active_tone ?? false) ? 'info' : 'neutral' }}">
+						<i data-lucide="sparkles"></i>
+					</div>
+					<div class="synapse-admin-kpi__body">
+						<div class="synapse-admin-kpi__label">Ton</div>
+						<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ preset_config.active_tone ?? 'Normal' }}</div>
+						<div class="synapse-admin-kpi__sub">{{ (preset_config.active_tone ?? false) ? 'Personnalité appliquée' : 'Par défaut' }}</div>
+					</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card synapse-admin-card--hover">
+				<div class="synapse-admin-kpi">
+					<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (data.estimated_cost ?? false) ? 'warning' : 'neutral' }}">
+						<i data-lucide="circle-dollar-sign"></i>
+					</div>
+					<div class="synapse-admin-kpi__body">
+						<div class="synapse-admin-kpi__label">Coût estimé</div>
+						{% if data.estimated_cost ?? false %}
+							<div class="synapse-admin-kpi__value synapse-admin-text-sm">${{ data.estimated_cost|number_format(6) }}</div>
+							<div class="synapse-admin-kpi__sub">In: ${{ preset_config.pricing_input ?? 0 }}/M · Out: ${{ preset_config.pricing_output ?? 0 }}/M</div>
+						{% else %}
+							<div class="synapse-admin-kpi__value synapse-admin-text-sm synapse-admin-text-muted">—</div>
+							<div class="synapse-admin-kpi__sub">Pricing non configuré</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
 
 			<div class="synapse-admin-layout">
 				<div
@@ -173,6 +227,29 @@
 					<div class="synapse-admin-card synapse-admin-mb-xl">
 						<div class="synapse-admin-card__header" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border);">
 							<div class="synapse-admin-card__title" style="font-size: 1rem;">Core & Sécurité</div>
+					</div>
+					<div class="synapse-admin-card__body" style="padding: 0;">
+						<ul style="list-style: none; padding: 0; margin: 0;">
+							<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+								<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Preset</span>
+								<span style="font-weight: 500;">{{ preset_config.preset_name ?? '—' }}</span>
+							</li>
+							<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+								<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Agent</span>
+								<span style="font-weight: 500;">{% if preset_config.agent_name ?? false %}{{ preset_config.agent_emoji ?? '' }} {{ preset_config.agent_name }}{% else %}<span class="synapse-admin-text-muted">Aucun</span>{% endif %}</span>
+							</li>
+							<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+								<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Ton</span>
+								<span style="font-weight: 500; font-family: monospace;">{{ preset_config.active_tone ?? 'Normal' }}</span>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				{# Paramètres de génération #}
+				<div class="synapse-admin-card synapse-admin-mb-xl">
+					<div class="synapse-admin-card__header" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border);">
+						<div class="synapse-admin-card__title" style="font-size: 1rem;">Core & Sécurité</div>
 						</div>
 						<div class="synapse-admin-card__body" style="padding: 0;">
 							<ul style="list-style: none; padding: 0; margin: 0;">

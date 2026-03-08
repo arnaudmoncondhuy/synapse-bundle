@@ -195,30 +195,10 @@
 			</div>
 		</div>
 
-		{# ── Mode Streaming ──────────────────────────────────────────────────────── #}
-		<div class="synapse-admin-card synapse-admin-mb-lg" id="transmission-mode-card">
-			<div class="synapse-admin-card__header">
-				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
-					<i data-lucide="activity"></i>
-				</div>
-				<div>
-					<div class="synapse-admin-card__title">Mode de transmission</div>
-					<div class="synapse-admin-card__subtitle">Streaming SSE ou réponse synchrone</div>
-				</div>
-			</div>
-			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-				<label class="synapse-admin-toggle">
-					<input type="checkbox" name="streaming_enabled" value="1" {% if preset.streamingEnabled %} checked {% endif %}>
-					<span class="synapse-admin-toggle__label">Activer le streaming (SSE)</span>
-				</label>
-				<p class="synapse-admin-help synapse-admin-mt-sm">
-					✓ Activé : réponses en temps réel (chunks SSE) ·
-					                ✗ Désactivé : mode synchrone, mieux pour le debug
-				</p>
-			</div>
-		</div>
+		{# streaming_enabled toujours true — la pilule Streaming dans disabled_capabilities contrôle le comportement #}
+		<input type="hidden" name="streaming_enabled" value="1">
 
-		{# ── Options Provider (champs dynamiques JS) ─────────────────────────────── #}
+	{# ── Options Provider (champs dynamiques JS) ─────────────────────────────── #}
 		<div class="synapse-admin-card synapse-admin-mb-lg" id="provider-options-card">
 			<div class="synapse-admin-card__header">
 				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
@@ -710,62 +690,123 @@ el.style.display = caps.supportsTopK ? '' : 'none';
 updateCapsBadges(modelId, caps);
 }
 
+function getDisabledCapabilities() {
+const ta = document.getElementById('provider-options-json');
+try { return JSON.parse(ta.value).disabled_capabilities || []; } catch(e) { return []; }
+}
+
+function setDisabledCapabilities(list) {
+const ta = document.getElementById('provider-options-json');
+let opts = {};
+try { opts = JSON.parse(ta.value); } catch(e) {}
+if (list.length === 0) {
+delete opts.disabled_capabilities;
+} else {
+opts.disabled_capabilities = list;
+}
+ta.value = JSON.stringify(opts, null, 2);
+}
+
+function toggleCapability(key) {
+let disabled = getDisabledCapabilities();
+if (disabled.includes(key)) {
+disabled = disabled.filter(k => k !== key);
+} else {
+disabled.push(key);
+}
+setDisabledCapabilities(disabled);
+}
+
 function updateCapsBadges(modelId, caps) {
 const displayEl = document.getElementById('model-caps-display');
-if (! displayEl) 
+if (! displayEl)
 return;
 
 const body = displayEl.querySelector('.synapse-admin-card__body');
-if (! body) 
+if (! body)
 return;
 
 body.innerHTML = '';
 const capabilities = [
 {
-key: 'supportsThinking',
+capsKey: 'supportsThinking',
+disableKey: 'thinking',
 label: 'Thinking',
-icon: 'brain'
+icon: 'brain',
+desc: 'Raisonnement avancé (chain-of-thought). Le modèle réfléchit avant de répondre pour des tâches complexes.'
 }, {
-key: 'supportsFunctionCalling',
+capsKey: 'supportsFunctionCalling',
+disableKey: 'function_calling',
 label: 'Tool Calls',
-icon: 'wrench'
+icon: 'wrench',
+desc: 'Appels d\'outils (function calling). Le modèle peut déclencher des fonctions externes pendant la conversation.'
 }, {
-key: 'supportsSafetySettings',
+capsKey: 'supportsSafetySettings',
+disableKey: 'safety_settings',
 label: 'Safety Filters',
-icon: 'shield'
+icon: 'shield',
+desc: 'Filtres de sécurité configurables (harcèlement, contenu explicite, etc.). Spécifique aux modèles Gemini/Vertex.'
 }, {
-key: 'supportsStreaming',
+capsKey: 'supportsStreaming',
+disableKey: 'streaming',
 label: 'Streaming',
-icon: 'activity'
+icon: 'activity',
+desc: 'Réponse en temps réel (SSE). Les tokens s\'affichent au fur et à mesure. Désactiver pour passer en mode synchrone (debug).'
 }, {
-key: 'supportsVision',
+capsKey: 'supportsVision',
+disableKey: 'vision',
 label: 'Vision',
-icon: 'eye'
+icon: 'eye',
+desc: 'Analyse d\'images en entrée. Permet d\'envoyer des photos ou captures d\'écran dans la conversation.'
 }, {
-key: 'supportsParallelToolCalls',
+capsKey: 'supportsParallelToolCalls',
+disableKey: null,
 label: 'Parallel Tools',
-icon: 'git-fork'
+icon: 'git-fork',
+desc: 'Le modèle peut exécuter plusieurs outils simultanément. Comportement automatique du modèle, non configurable.',
+infoOnly: true
 }, {
-key: 'supportsResponseSchema',
+capsKey: 'supportsResponseSchema',
+disableKey: 'response_schema',
 label: 'JSON Mode',
-icon: 'braces'
+icon: 'braces',
+desc: 'Sortie structurée en JSON (Structured Output). Force le modèle à répondre selon un schéma JSON défini.',
+notImplemented: true
 }
 ];
-let has = false;
-for (const {key, label, icon}
-of capabilities) {
-if (caps[key]) {
+const disabled = getDisabledCapabilities();
+for (const {capsKey: key, disableKey, label, icon, desc, notImplemented, infoOnly} of capabilities) {
+const isSupported = !!caps[key];
+const isDisabled = disableKey && disabled.includes(disableKey);
 const pill = document.createElement('span');
-pill.className = 'synapse-admin-badge synapse-admin-badge--success';
+if (!isSupported) {
+pill.className = 'synapse-admin-badge synapse-admin-badge--danger';
+pill.style.opacity = '0.65';
+pill.style.textDecoration = 'line-through';
+pill.setAttribute('data-synapse-admin-tooltip', `Non supporté par ce modèle. ${desc}`);
 pill.innerHTML = `<i data-lucide="${icon}"></i> ${label}`;
+} else if (notImplemented) {
+pill.className = 'synapse-admin-badge synapse-admin-badge--neutral';
+pill.style.opacity = '0.65';
+pill.setAttribute('data-synapse-admin-tooltip', `${desc} — Implémentation à venir.`);
+pill.innerHTML = `<i data-lucide="clock"></i> ${label}`;
+} else if (infoOnly) {
+pill.className = 'synapse-admin-badge synapse-admin-badge--info';
+pill.setAttribute('data-synapse-admin-tooltip', desc);
+pill.innerHTML = `<i data-lucide="${icon}"></i> ${label}`;
+} else {
+pill.className = isDisabled ? 'synapse-admin-badge synapse-admin-badge--neutral' : 'synapse-admin-badge synapse-admin-badge--success';
+pill.style.cursor = 'pointer';
+pill.style.userSelect = 'none';
+if (isDisabled) pill.style.opacity = '0.55';
+const actionHint = isDisabled ? 'Cliquer pour réactiver.' : 'Cliquer pour désactiver dans ce preset.';
+pill.setAttribute('data-synapse-admin-tooltip', `${desc} — ${actionHint}`);
+pill.innerHTML = `<i data-lucide="${isDisabled ? 'x-circle' : icon}"></i> ${label}`;
+pill.addEventListener('click', () => { toggleCapability(disableKey); updateCapsBadges(modelId, caps); });
+}
 body.appendChild(pill);
-has = true;
 }
-}
-if (! has) 
-body.innerHTML = '<p class="synapse-admin-text-sm synapse-admin-text-muted">Aucune capacité spéciale</p>';
- else if (typeof lucide !== 'undefined') 
-lucide.createIcons();
+if (typeof lucide !== 'undefined') lucide.createIcons();
 
 }
 
@@ -781,8 +822,13 @@ updateFormVisibility();
 renderDynamicFields(providerSelect.value);
 });
 const jsonTextarea = document.getElementById('provider-options-json');
-if (jsonTextarea) 
-jsonTextarea.addEventListener('change', () => renderDynamicFields(providerSelect.value));
+if (jsonTextarea)
+jsonTextarea.addEventListener('change', () => {
+renderDynamicFields(providerSelect.value);
+const modelId = document.getElementById('model-select').value;
+const caps = modelCapabilities[modelId] || {};
+updateCapsBadges(modelId, caps);
+});
 
 updateModelOptions(providerSelect.value);
 updateFormVisibility();

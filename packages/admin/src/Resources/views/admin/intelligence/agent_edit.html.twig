@@ -270,6 +270,20 @@
 			</div>
 		</div>
 
+
+		{# ── Actions ─────────────────────────────────────────────────────────── #}
+		<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-justify-end synapse-admin-mb-xl">
+			<a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
+				Annuler
+			</a>
+			<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
+				<i data-lucide="save"></i>
+				{{ is_new ? 'Créer l\'agent' : 'Enregistrer les modifications' }}
+			</button>
+		</div>
+
+	</form>
+
 		{# ── Limite de dépense (agent) ───────── #}
 		{% if not is_new and (spending_limit is defined) %}
 			<div class="synapse-admin-card synapse-admin-mb-lg">
@@ -325,17 +339,4 @@
 				</div>
 			</div>
 		{% endif %}
-
-		{# ── Actions ─────────────────────────────────────────────────────────── #}
-		<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-justify-end synapse-admin-mb-xl">
-			<a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
-				Annuler
-			</a>
-			<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
-				<i data-lucide="save"></i>
-				{{ is_new ? 'Créer l\'agent' : 'Enregistrer les modifications' }}
-			</button>
-		</div>
-
-	</form>
 {% endblock %}
