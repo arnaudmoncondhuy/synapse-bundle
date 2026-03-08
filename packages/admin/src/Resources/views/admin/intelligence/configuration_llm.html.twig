@@ -270,7 +270,7 @@
 						<tbody>
 							{% for model in models %}
 								{% set safeId = model.id|replace({'.': '-', ':': '-'}) %}
-								<tr class="model-row" data-thinking="{{ model.capabilities.thinking ? '1' : '0' }}" data-tools="{{ model.capabilities.functionCalling ? '1' : '0' }}" data-streaming="{{ model.capabilities.streaming ? '1' : '0' }}" data-safety="{{ model.capabilities.safetySettings ? '1' : '0' }}" data-vision="{{ model.capabilities.supportsVision ? '1' : '0' }}" data-jsonmode="{{ model.capabilities.supportsResponseSchema ? '1' : '0' }}" data-label="{{ model.label|lower }}" data-provider="{{ model.provider|lower }}" data-pricing="{{ model.pricing_input ?: '99999' }}">
+								<tr class="model-row" data-thinking="{{ model.capabilities.supportsThinking ? '1' : '0' }}" data-tools="{{ model.capabilities.supportsFunctionCalling ? '1' : '0' }}" data-streaming="{{ model.capabilities.supportsStreaming ? '1' : '0' }}" data-safety="{{ model.capabilities.supportsSafetySettings ? '1' : '0' }}" data-vision="{{ model.capabilities.supportsVision ? '1' : '0' }}" data-jsonmode="{{ model.capabilities.supportsResponseSchema ? '1' : '0' }}" data-label="{{ model.label|lower }}" data-provider="{{ model.provider|lower }}" data-pricing="{{ model.pricing_input ?: '99999' }}">
 
 									<td>
 										<div class="synapse-admin-table-cell-label">
@@ -293,16 +293,16 @@
 
 									<td>
 										<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center">
-											{% if model.capabilities.thinking %}
+											{% if model.capabilities.supportsThinking %}
 												<i data-lucide="brain" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Réflexion (thinking / raisonnement avancé)"></i>
 											{% endif %}
-											{% if model.capabilities.functionCalling %}
+											{% if model.capabilities.supportsFunctionCalling %}
 												<i data-lucide="wrench" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Outils (appels de fonctions)"></i>
 											{% endif %}
-											{% if model.capabilities.streaming %}
+											{% if model.capabilities.supportsStreaming %}
 												<i data-lucide="activity" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Réponse en streaming"></i>
 											{% endif %}
-											{% if model.capabilities.safetySettings %}
+											{% if model.capabilities.supportsSafetySettings %}
 												<i data-lucide="shield" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Paramètres de sécurité"></i>
 											{% endif %}
 											{% if model.capabilities.supportsVision %}
@@ -460,16 +460,16 @@
 					<div class="synapse-admin-card__body synapse-admin-card__body--compact">
 						<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center synapse-admin-mb-md">
 							<span class="synapse-admin-text-xs synapse-admin-text-tertiary">Capacités</span>
-							{% if caps.thinking %}
+							{% if caps.supportsThinking %}
 								<i data-lucide="brain" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Réflexion (thinking / raisonnement avancé)"></i>
 							{% endif %}
-							{% if caps.functionCalling %}
+							{% if caps.supportsFunctionCalling %}
 								<i data-lucide="wrench" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Outils (appels de fonctions)"></i>
 							{% endif %}
-							{% if caps.streaming %}
+							{% if caps.supportsStreaming %}
 								<i data-lucide="activity" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Réponse en streaming"></i>
 							{% endif %}
-							{% if caps.safetySettings %}
+							{% if caps.supportsSafetySettings %}
 								<i data-lucide="shield" class="synapse-admin-text-muted" data-synapse-admin-tooltip="Paramètres de sécurité"></i>
 							{% endif %}
 							{% if caps.supportsVision %}

@@ -287,7 +287,7 @@ name: 'thinking.enabled',
 type: 'checkbox',
 label: 'Activer le thinking',
 help: 'Réflexion interne approfondie',
-capability: 'thinking'
+capability: 'supportsThinking'
 },
 {
 name: 'thinking.budget',
@@ -304,7 +304,7 @@ name: 'safety_settings.enabled',
 type: 'checkbox',
 label: 'Activer les filtres de sécurité',
 help: 'Active les filtres de contenu inapproprié',
-capability: 'safetySettings'
+capability: 'supportsSafetySettings'
 },
 {
 name: 'safety_settings.default_threshold',
@@ -446,7 +446,7 @@ name: 'thinking.enabled',
 type: 'checkbox',
 label: 'Activer le thinking',
 help: 'Raisonnement approfondi',
-capability: 'thinking'
+capability: 'supportsThinking'
 }, {
 name: 'thinking.reasoning_effort',
 type: 'select',
@@ -683,7 +683,7 @@ topK: true
 };
 const el = document.getElementById('section-top-k');
 if (el) 
-el.style.display = caps.topK ? '' : 'none';
+el.style.display = caps.supportsTopK ? '' : 'none';
 
 updateCapsBadges(modelId, caps);
 }
@@ -700,19 +700,19 @@ return;
 body.innerHTML = '';
 const capabilities = [
 {
-key: 'thinking',
+key: 'supportsThinking',
 label: 'Thinking',
 icon: 'brain'
 }, {
-key: 'functionCalling',
+key: 'supportsFunctionCalling',
 label: 'Tool Calls',
 icon: 'wrench'
 }, {
-key: 'safetySettings',
+key: 'supportsSafetySettings',
 label: 'Safety Filters',
 icon: 'shield'
 }, {
-key: 'streaming',
+key: 'supportsStreaming',
 label: 'Streaming',
 icon: 'activity'
 }, {
