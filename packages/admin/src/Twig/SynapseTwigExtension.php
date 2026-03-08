@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseAdmin\Twig;
 
+use ArnaudMoncondhuy\SynapseCore\Contract\ConfigProviderInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseCore\AgentRegistry;
+use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\ToneRegistry;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -23,6 +25,8 @@ class SynapseTwigExtension extends AbstractExtension
         private AgentRegistry $agentRegistry,
         private ?EncryptionServiceInterface $encryptionService = null,
         private ?\ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface $permissionChecker = null,
+        private ?ConfigProviderInterface $configProvider = null,
+        private ?ModelCapabilityRegistry $modelCapabilityRegistry = null,
     ) {}
 
     /**
@@ -62,6 +66,9 @@ class SynapseTwigExtension extends AbstractExtension
 
             // Vérifie si l'utilisateur a les droits d'administration (pour le debug)
             new TwigFunction('synapse_can_debug', [$this, 'canDebug']),
+
+            // Vérifie si le preset actif supporte une capacité donnée (ex: 'vision')
+            new TwigFunction('synapse_active_model_supports', [$this, 'activeModelSupports']),
         ];
     }
 
@@ -133,6 +140,30 @@ class SynapseTwigExtension extends AbstractExtension
         $html = nl2br($html);
 
         return $html;
+    }
+
+    /**
+     * Vérifie si le modèle actif du preset courant supporte une capacité donnée.
+     * Utilisé pour afficher/masquer les contrôles UI (ex: bouton d'upload d'image pour la vision).
+     *
+     * @param string $capability ex: 'vision', 'function_calling', 'streaming'
+     */
+    public function activeModelSupports(string $capability): bool
+    {
+        if (null === $this->configProvider || null === $this->modelCapabilityRegistry) {
+            return false;
+        }
+        try {
+            $config = $this->configProvider->getConfig();
+            $model = is_string($config['model'] ?? null) ? (string) $config['model'] : null;
+            if (null === $model) {
+                return false;
+            }
+
+            return $this->modelCapabilityRegistry->supports($model, $capability);
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /**
