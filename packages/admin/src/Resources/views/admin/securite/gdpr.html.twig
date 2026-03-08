@@ -21,14 +21,8 @@
 				Conformité RGPD
 			</h1>
 			<p class="synapse-admin-page-subtitle">
-				Politique de rétention des données, statistiques de stockage et liens vers les outils de conformité.
+				Politique de rétention des données, statistiques de stockage et outils de conformité.
 			</p>
-		</div>
-		<div class="synapse-admin-page-header__actions">
-			<a href="{{ path('synapse_admin_settings') }}" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
-				<i data-lucide="settings"></i>
-				Modifier la rétention
-			</a>
 		</div>
 	</div>
 
@@ -88,7 +82,6 @@
 				<strong>Mode debug actif.</strong>
 				Les échanges LLM (prompts, réponses) sont
 							        enregistrés en base de données. Désactivez-le en production pour limiter les données personnelles stockées.
-				<a href="{{ path('synapse_admin_settings') }}">Modifier dans Paramètres</a>.
 			</div>
 		</div>
 	{% endif %}
@@ -96,36 +89,35 @@
 	{# ── Politique de rétention ───────────────────────────────────────────────── #}
 	<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-xl">
 
-		<div class="synapse-admin-card">
+		<form action="{{ path('synapse_admin_gdpr') }}" method="POST" class="synapse-admin-card">
+			<input type="hidden" name="_token" value="{{ csrf_token('synapse_admin_gdpr') }}">
 			<div class="synapse-admin-card__header">
 				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--success">
 					<i data-lucide="clock"></i>
 				</div>
 				<div>
 					<div class="synapse-admin-card__title">Politique de rétention</div>
-					<div class="synapse-admin-card__subtitle">Configuration actuelle</div>
+					<div class="synapse-admin-card__subtitle">Configuration de la purge automatique</div>
 				</div>
 			</div>
 			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-				<div class="synapse-admin-grid synapse-admin-grid--2">
-					<div>
-						<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">Durée de rétention</div>
-						<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ config.retentionDays }}
-							jours</div>
-					</div>
-					<div>
-						<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">Langue du contexte</div>
-						<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ config.contextLanguage|upper }}</div>
-					</div>
+				<div class="synapse-admin-form-group">
+					<label class="synapse-admin-label" for="retention_days">
+						Durée de rétention (jours)
+					</label>
+					<input type="number" id="retention_days" name="retention_days" class="synapse-admin-input" value="{{ config.retentionDays }}" min="1" max="3650">
+					<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">
+						Les conversations plus anciennes que cette durée seront automatiquement supprimées.
+					</p>
 				</div>
 			</div>
 			<div class="synapse-admin-card__footer">
-				<a href="{{ path('synapse_admin_settings') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
-					<i data-lucide="edit-3"></i>
-					Modifier
-				</a>
+				<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+					<i data-lucide="save"></i>
+					Mettre à jour la rétention
+				</button>
 			</div>
-		</div>
+		</form>
 
 		<div class="synapse-admin-card">
 			<div class="synapse-admin-card__header">
@@ -186,7 +178,7 @@
 			</div>
 		</div>
 		<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-			<div class="synapse-admin-grid synapse-admin-grid--3">
+			<div class="synapse-admin-grid synapse-admin-grid--2">
 				<a href="{{ path('synapse_admin_history') }}" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
 					<i data-lucide="messages-square"></i>
 					Voir les conversations (Break-Glass)
@@ -194,10 +186,6 @@
 				<a href="{{ path('synapse_admin_audit') }}" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
 					<i data-lucide="scroll-text"></i>
 					Journal d'audit LLM
-				</a>
-				<a href="{{ path('synapse_admin_settings') }}" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
-					<i data-lucide="settings"></i>
-					Modifier la rétention
 				</a>
 			</div>
 		</div>

@@ -1,13 +1,13 @@
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
-{% block admin_page_title %}Paramètres | Conversation | Synapse Administration Synapse
+{% block admin_page_title %}Configuration globale | Intelligence | Synapse Administration Synapse
 {% endblock %}
 
 {% block admin_breadcrumb %}
 	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="#" class="synapse-admin-topbar__breadcrumb">Conversation</a>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">Intelligence</a>
 	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<span class="synapse-admin-topbar__current">Paramètres</span>
+	<span class="synapse-admin-topbar__current">Configuration globale</span>
 {% endblock %}
 
 {% block admin_content %}
@@ -16,13 +16,12 @@
 		<div class="synapse-admin-page-header__info">
 			<h1 class="synapse-admin-page-title">
 				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
-					<i data-lucide="message-square-more"></i>
+					<i data-lucide="settings"></i>
 				</span>
-				Paramètres globaux
+				Configuration globale
 			</h1>
 			<p class="synapse-admin-page-subtitle">
-				Configurez les comportements globaux de Synapse : langue de contexte, prompt système,
-								            rétention RGPD et mode debug.
+				Configurez les comportements globaux de l'intelligence Synapse : langue de contexte, prompt système et mode debug.
 			</p>
 		</div>
 	</div>
@@ -32,7 +31,7 @@
 		<input type="hidden" name="_token" value="{{ csrf_token('synapse_admin_settings') }}">
 
 		<div
-			class="synapse-admin-grid synapse-admin-grid--2">
+			class="synapse-admin-grid synapse-admin-grid--1">
 
 			{# ── Carte 1 : Langue & Comportement ──────────────────────────────── #}
 			<div class="synapse-admin-card">
@@ -75,44 +74,6 @@
 								Impact performance
 							</span>
 						</p>
-					</div>
-
-				</div>
-			</div>
-
-			{# ── Carte 2 : Rétention RGPD ─────────────────────────────────────── #}
-			<div class="synapse-admin-card">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
-						<i data-lucide="shield"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">Rétention des données</div>
-						<div class="synapse-admin-card__subtitle">Conformité RGPD</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-
-					<div class="synapse-admin-form-group">
-						<label class="synapse-admin-label" for="retention_days">
-							Durée de rétention
-							<span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-ml-sm">
-								{{ config.retentionDays }}
-								jours actuellement
-							</span>
-						</label>
-						<input type="number" id="retention_days" name="retention_days" class="synapse-admin-input" value="{{ config.retentionDays }}" min="1" max="3650">
-						<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">
-							Les conversations plus anciennes seront automatiquement purgées.
-														                        (1 jour → 10 ans)
-						</p>
-					</div>
-
-					<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mt-md">
-						<i data-lucide="info"></i>
-						<div>
-							La purge automatique s'exécute quotidiennement via le scheduler Symfony.
-						</div>
 					</div>
 
 				</div>
