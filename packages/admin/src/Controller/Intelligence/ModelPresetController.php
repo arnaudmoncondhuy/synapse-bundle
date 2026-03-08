@@ -342,7 +342,7 @@ class ModelPresetController extends AbstractController
         $topP = $data['generation_top_p'] ?? 0.95;
         $preset->setGenerationTopP(is_numeric($topP) ? (float) $topP : 0.95);
 
-        if ($caps->topK) {
+        if ($caps->supportsTopK) {
             $topK = $data['generation_top_k'] ?? 40;
             $preset->setGenerationTopK(is_numeric($topK) ? (int) $topK : 40);
         } else {
@@ -380,7 +380,7 @@ class ModelPresetController extends AbstractController
     }
 
     /**
-     * @return array<string, array{provider: string, type: string, dimensions: int[], thinking: bool, safetySettings: bool, topK: bool, functionCalling: bool, streaming: bool, supportsVision: bool, supportsParallelToolCalls: bool, supportsResponseSchema: bool, maxInputTokens: int|null, maxOutputTokens: int|null, deprecatedAt: string|null}>
+     * @return array<string, array{provider: string, type: string, dimensions: int[], supportsThinking: bool, supportsSafetySettings: bool, supportsTopK: bool, supportsFunctionCalling: bool, supportsStreaming: bool, supportsVision: bool, supportsParallelToolCalls: bool, supportsResponseSchema: bool, maxInputTokens: int|null, maxOutputTokens: int|null, deprecatedAt: string|null}>
      */
     private function getFullModelsCapabilities(): array
     {
@@ -391,11 +391,11 @@ class ModelPresetController extends AbstractController
                 'provider' => $caps->provider,
                 'type' => $caps->type,
                 'dimensions' => $caps->dimensions,
-                'thinking' => $caps->thinking,
-                'safetySettings' => $caps->safetySettings,
-                'topK' => $caps->topK,
-                'functionCalling' => $caps->functionCalling,
-                'streaming' => $caps->streaming,
+                'supportsThinking' => $caps->supportsThinking,
+                'supportsSafetySettings' => $caps->supportsSafetySettings,
+                'supportsTopK' => $caps->supportsTopK,
+                'supportsFunctionCalling' => $caps->supportsFunctionCalling,
+                'supportsStreaming' => $caps->supportsStreaming,
                 // Phase 1
                 'supportsVision' => $caps->supportsVision,
                 'supportsParallelToolCalls' => $caps->supportsParallelToolCalls,
@@ -419,21 +419,21 @@ class ModelPresetController extends AbstractController
         $validBlockLevels = ['BLOCK_NONE', 'BLOCK_ONLY_HIGH', 'BLOCK_MEDIUM_AND_ABOVE', 'BLOCK_LOW_AND_ABOVE'];
         $validReasoningEfforts = ['low', 'medium', 'high'];
 
-        if (!$caps->thinking) {
+        if (!$caps->supportsThinking) {
             unset($options['thinking']);
         }
-        if (!$caps->safetySettings) {
+        if (!$caps->supportsSafetySettings) {
             unset($options['safety_settings']);
         }
 
         if ('gemini' === $providerName) {
-            if ($caps->thinking && isset($options['thinking']) && is_array($options['thinking']) && !empty($options['thinking']['budget'])) {
+            if ($caps->supportsThinking && isset($options['thinking']) && is_array($options['thinking']) && !empty($options['thinking']['budget'])) {
                 $budget = is_numeric($options['thinking']['budget']) ? (int) $options['thinking']['budget'] : 0;
                 if ($budget < 128 || $budget > 32000) {
                     $options['thinking']['budget'] = 1024;
                 }
             }
-            if ($caps->safetySettings && isset($options['safety_settings']) && is_array($options['safety_settings']) && !empty($options['safety_settings']['default_threshold'])) {
+            if ($caps->supportsSafetySettings && isset($options['safety_settings']) && is_array($options['safety_settings']) && !empty($options['safety_settings']['default_threshold'])) {
                 $defaultThreshold = $options['safety_settings']['default_threshold'];
                 if (!is_string($defaultThreshold) || !in_array($defaultThreshold, $validBlockLevels, true)) {
                     unset($options['safety_settings']['default_threshold']);
@@ -448,7 +448,7 @@ class ModelPresetController extends AbstractController
                 }
             }
         } elseif ('ovh' === $providerName) {
-            if ($caps->thinking && isset($options['thinking']) && is_array($options['thinking']) && !empty($options['thinking']['reasoning_effort'])) {
+            if ($caps->supportsThinking && isset($options['thinking']) && is_array($options['thinking']) && !empty($options['thinking']['reasoning_effort'])) {
                 $effort = $options['thinking']['reasoning_effort'];
                 if (!is_string($effort) || !in_array($effort, $validReasoningEfforts, true)) {
                     unset($options['thinking']['reasoning_effort']);

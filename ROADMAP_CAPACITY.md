@@ -2,7 +2,7 @@
 
 **Document de référence pour l'enrichissement de ModelCapabilities**
 - **Dernière mise à jour**: 2026-03-07
-- **Status**: Phase 1 à implémenter — Phases 2-4 planifiées
+- **Status**: ✅ Phases 1 & 1.5 implémentées — Phases 2-4 planifiées
 - **Source d'inspiration**: [LiteLLM model_prices_and_context_window.json](https://github.com/BerriAI/litellm)
 
 ---
@@ -12,6 +12,8 @@
 ### 1.1 Structure `ModelCapabilities` (readonly class)
 
 **Fichier**: `packages/core/src/Shared/Model/ModelCapabilities.php`
+
+#### Propriétés originales
 
 | Propriété | Type | Défaut | Usage actuel |
 |-----------|------|--------|-------------|
@@ -25,10 +27,32 @@
 | `functionCalling` | `bool` | `true` | Envoie les tools au provider |
 | `streaming` | `bool` | `true` | Mode SSE/NDJSON |
 | `systemPrompt` | `bool` | `true` | Envoie system instruction |
-| `contextWindow` | `?int` | `null` | Troncature automatique des messages |
+| `contextWindow` | `?int` | `null` | Troncature automatique des messages (legacy) |
 | `pricingInput` | `?float` | `null` | Coût par 1M tokens (input) — fallback YAML |
 | `pricingOutput` | `?float` | `null` | Coût par 1M tokens (output) — fallback YAML |
-| `modelId` | `?string` | `null` | ID technique alternatif (Vertex AI) |
+| `modelId` | `?string` | `null` | Alias technique (ex: ID Vertex AI) |
+
+#### ✅ Nouvelles propriétés Phase 1 (implémentées 2026-03-07)
+
+| Propriété | Type | Défaut | Usage |
+|-----------|------|--------|-------|
+| `maxInputTokens` | `?int` | `null` | Max tokens en entrée — `ContextTruncationSubscriber` via `getEffectiveMaxInputTokens()` |
+| `maxOutputTokens` | `?int` | `null` | Max tokens en sortie — informatif, exposé en admin UI |
+| `supportsVision` | `bool` | `false` | Affiché en admin UI (grisé, implémentation future) |
+| `supportsParallelToolCalls` | `bool` | `false` | Affiché en admin UI (grisé, implémentation future) |
+| `supportsResponseSchema` | `bool` | `false` | Affiché en admin UI (grisé, implémentation future) |
+| `deprecatedAt` | `?string` | `null` | Date YYYY-MM-DD — helper `isDeprecated()` disponible |
+
+#### ✅ Nouveaux helpers Phase 1
+
+| Méthode | Retour | Description |
+|---------|--------|-------------|
+| `getEffectiveMaxInputTokens()` | `?int` | `maxInputTokens ?? contextWindow` — utilisé par `ContextTruncationSubscriber` |
+| `isDeprecated(?\DateTimeInterface $at)` | `bool` | Vérifie si `deprecatedAt` est dans le passé |
+
+#### ✅ `supports()` étendu
+
+Nouvelles clés acceptées : `'vision'`, `'parallel_tool_calls'`, `'response_schema'`
 
 ### 1.2 Registre (`ModelCapabilityRegistry`)
 
@@ -38,29 +62,55 @@
 - Fournit `getCapabilities(string $model): ModelCapabilities`
 - Fournit `getModelsForProvider()`, `getKnownModels()`, `isKnownModel()`
 - Fallback vers `DEFAULTS` si modèle inconnu
+- ✅ Phase 1 : `DEFAULTS` étendu avec les 6 nouveaux champs
 
-### 1.3 Méthode `supports(string $capability)`
+### 1.3 Fichiers YAML des modèles
 
-Utilisée dans les clients pour vérifier dynamiquement les capacités :
-```php
-'thinking', 'safety_settings', 'top_k', 'function_calling', 'streaming', 'system_prompt'
-```
+| Fichier | Rôle |
+|---------|------|
+| `_default.yaml` | ✅ **NOUVEAU** — Référence documentaire (tous les champs + 2 templates copiables). `models: {}` → n'enregistre rien. |
+| `gemini.yaml` | ✅ Enrichi Phase 1 — `max_input_tokens`, `max_output_tokens`, `supports_vision: true`, `supports_parallel_tool_calls: true`, `supports_response_schema: true` |
+| `ovh.yaml` | ✅ Enrichi Phase 1 — `max_input_tokens`, `max_output_tokens`, `supports_response_schema: true` (gpt-oss, Qwen3), `false` (Llama, Mistral) |
 
-### 1.4 Fichiers de Consommation (Audit)
+### 1.4 `ContextTruncationSubscriber`
+
+**Fichier**: `packages/core/src/Event/ContextTruncationSubscriber.php`
+
+- ✅ Utilise désormais `getEffectiveMaxInputTokens()` au lieu de `->contextWindow`
+- Comportement inchangé pour les modèles sans `maxInputTokens` (fallback transparent)
+
+### 1.5 Admin UI — `ModelPresetController`
+
+**Fichier**: `packages/admin/src/Controller/Intelligence/ModelPresetController.php`
+
+- ✅ `getFullModelsCapabilities()` expose `supportsVision`, `supportsParallelToolCalls`, `supportsResponseSchema`, `maxInputTokens`, `maxOutputTokens`, `deprecatedAt`
+- Ces champs sont disponibles en JS via `modelCapabilities[modelId]`
+
+### 1.6 Admin UI — Templates Twig
+
+**`preset_edit.html.twig`** — ✅ 3 nouveaux badges dans `updateCapsBadges()` :
+- Vision (`eye`), Parallel Tools (`git-fork`), JSON Mode (`braces`)
+
+**`configuration_llm.html.twig`** — ✅ Onglet Modèles + onglet Presets :
+- 2 nouveaux boutons de filtre : Vision, JSON Mode
+- Icônes Vision et JSON Mode affichées **grisées** (opacity 0.35) avec tooltip *"Déclaré, implémentation à venir"*
+- `data-vision` et `data-jsonmode` sur les `<tr>` pour le filtrage JS
+
+### 1.7 Fichiers de Consommation (Audit)
 
 | Fichier | Capacités utilisées |
 |---------|-------------------|
 | `GeminiClient.php` | `thinking`, `safetySettings`, `topK`, `functionCalling`, `modelId` |
 | `OvhAiClient.php` | `thinking`, `functionCalling`, `systemPrompt` |
 | `TokenAccountingService.php` | `pricingInput`, `pricingOutput`, `provider` (devise) |
-| `ContextTruncationSubscriber.php` | `contextWindow` |
+| `ContextTruncationSubscriber.php` | `getEffectiveMaxInputTokens()` ← était `contextWindow` |
 | `EmbeddingService.php` | `type` (filtre `'embedding'`), `dimensions` |
 | `ModelPresetController.php` | Toutes (affichage UI + validation) |
 | `PresetValidator.php` | `isKnownModel()` |
-| `ConfigurationLlmController.php` | `pricingInput`, `pricingOutput`, `provider` |
+| `ConfigurationLlmController.php` | `pricingInput`, `pricingOutput`, `provider`, Phase 1 : `supportsVision`, `supportsResponseSchema` |
 | `EmbeddingController.php` | `type`, `dimensions` |
 
-### 1.5 Points Forts de l'Existant
+### 1.8 Points Forts de l'Architecture
 
 - **Zéro hardcoding** — Toutes les capacités lues depuis le registre
 - **Hiérarchie BDD > YAML > fallback** — Flexible et maintenable
@@ -72,50 +122,98 @@ Utilisée dans les clients pour vérifier dynamiquement les capacités :
 
 ### 2.1 Mapping Complet
 
-| Capacité LiteLLM | Synapse actuel | Phase cible | Notes |
-|-------------------|---------------|-------------|-------|
-| **Identité & Type** | | | |
-| `litellm_provider` | `provider` ✅ | — | Identique |
-| `mode` | `type` ✅ | — | Synapse: `chat`, `embedding`. LiteLLM ajoute: `completion`, `image_generation`, `audio_transcription`, `audio_speech`, `moderation`, `rerank`, `search` |
-| **Contexte** | | | |
-| `max_tokens` | `contextWindow` ✅ | — | Legacy LiteLLM, gardé pour compat |
-| `max_input_tokens` | ❌ | Phase 1 | Distinction input/output critique pour les modèles récents |
-| `max_output_tokens` | ❌ | Phase 1 | Gemini 2.5 Pro: 64k output vs 1M input |
-| **Capacités booléennes** | | | |
-| `supports_function_calling` | `functionCalling` ✅ | — | Identique |
-| `supports_parallel_function_calling` | ❌ | Phase 1 | Gemini/Claude supportent, pas tous les modèles |
-| `supports_system_messages` | `systemPrompt` ✅ | — | Identique |
-| `supports_reasoning` | `thinking` ✅ | — | Identique (nom différent) |
-| `supports_vision` | ❌ | Phase 1 | Gemini Pro/Flash supportent la vision |
-| `supports_audio_input` | ❌ | Phase 2 | Gemini 2.0+ supporte l'audio |
-| `supports_audio_output` | ❌ | Phase 2 | TTS / Audio generation |
-| `supports_prompt_caching` | ❌ | Phase 2 | Anthropic, Gemini, OpenAI — réduction coûts majeure |
-| `supports_response_schema` | ❌ | Phase 1 | JSON Mode / Structured Outputs — critique pour agents |
-| `supports_web_search` | ❌ | Phase 2 | Perplexity, Gemini Grounding |
-| **Tarification** | | | |
-| `input_cost_per_token` | `pricingInput` ✅ | — | Synapse: par 1M tokens |
-| `output_cost_per_token` | `pricingOutput` ✅ | — | Synapse: par 1M tokens |
-| `output_cost_per_reasoning_token` | ❌ | Phase 2 | Thinking tokens coûtent différemment |
-| `input_cost_per_audio_token` | ❌ | Phase 3 | Quand audio sera supporté |
-| `input_cost_per_pixel` | ❌ | Phase 3 | Vision pricing granulaire |
-| `search_context_cost_per_query` | ❌ | Phase 3 | Web search pricing |
-| **Caching** | | | |
-| `cache_creation_input_token_cost` | ❌ | Phase 2 | Coût d'écriture cache |
-| `cache_read_input_token_cost` | ❌ | Phase 2 | Coût de lecture cache (souvent -90%) |
-| **Lifecycle** | | | |
-| `deprecation_date` | ❌ | Phase 1 | Alerter l'admin avant suppression |
-| `supported_regions` | ❌ | Phase 3 | Multi-région pour latence/compliance |
-| **Spécifiques LiteLLM** | | | |
-| `code_interpreter_cost_per_session` | ❌ | — | Non pertinent (Synapse a son propre PythonExecutor) |
-| `file_search_cost_per_1k_calls` | ❌ | — | Non pertinent (Synapse a son propre RAG) |
-| `vector_store_cost_per_gb_per_day` | ❌ | — | Non pertinent |
-| `computer_use_*` | ❌ | — | Non pertinent pour Synapse |
+> **Convention de nommage YAML adoptée** (Phase 1.5) :
+> - Toutes les capacités booléennes → préfixe `supports_*`
+> - Tarification standard → préfixe `pricing_*` (ex: `pricing_input`, `pricing_thinking_output`)
+> - Caching → préfixe `cache_*` pour les métadonnées ; **`pricing_*` prime toujours pour les prix** (ex: `pricing_cache_write`, `pricing_cache_read`)
+> - `context_window` → **déprécié** (remplacé par `max_input_tokens`, conservé comme fallback)
+> - `model_id` → **supprimé** (la clé YAML est déjà le slug du modèle)
+
+| Capacité LiteLLM | Clé YAML Synapse | Propriété PHP | Phase | Notes |
+|-------------------|-----------------|---------------|-------|-------|
+| **Identité & Type** | | | | |
+| `litellm_provider` | `provider` | `$provider` | — | Identique |
+| `mode` | `type` | `$type` | — | `chat` \| `embedding` \| … (Phase 4: enum `ModelType`) |
+| *(pas d'équiv.)* | ~~`model_id`~~ supprimé | ~~`$modelId`~~ | — | **Supprimé** — la clé YAML = le slug du modèle |
+| **Contexte** | | | | |
+| `max_tokens` | ~~`context_window`~~ *(déprécié)* | `$contextWindow` | — | Legacy — fallback via `getEffectiveMaxInputTokens()` |
+| `max_input_tokens` | `max_input_tokens` | `$maxInputTokens` | ✅ Phase 1 | Utilisé par `ContextTruncationSubscriber` |
+| `max_output_tokens` | `max_output_tokens` | `$maxOutputTokens` | ✅ Phase 1 | Informatif, exposé en admin UI |
+| **Capacités booléennes — existantes (Phase 1.5 : renommage `supports_*`)** | | | | |
+| `supports_function_calling` | ~~`function_calling`~~ → `supports_function_calling` | `$supportsFunctionCalling` | Phase 1.5 | Convention harmonisée |
+| `supports_system_messages` | ~~`system_prompt`~~ → `supports_system_prompt` | `$supportsSystemPrompt` | Phase 1.5 | Convention harmonisée |
+| `supports_reasoning` | ~~`thinking`~~ → `supports_thinking` | `$supportsThinking` | Phase 1.5 | Convention harmonisée |
+| *(pas d'équiv.)* | ~~`safety_settings`~~ → `supports_safety_settings` | `$supportsSafetySettings` | Phase 1.5 | Spécifique Gemini, convention harmonisée |
+| *(pas d'équiv.)* | ~~`top_k`~~ → `supports_top_k` | `$supportsTopK` | Phase 1.5 | Paramètre de génération, convention harmonisée |
+| *(pas d'équiv.)* | ~~`streaming`~~ → `supports_streaming` | `$supportsStreaming` | Phase 1.5 | Convention harmonisée |
+| **Capacités booléennes — Phase 1 (déjà avec `supports_`)** | | | | |
+| `supports_parallel_function_calling` | `supports_parallel_tool_calls` | `$supportsParallelToolCalls` | ✅ Phase 1 | Déclaré en YAML, UI grisée |
+| `supports_vision` | `supports_vision` | `$supportsVision` | ✅ Phase 1 | Déclaré en YAML, UI grisée, client Phase 2 |
+| `supports_response_schema` | `supports_response_schema` | `$supportsResponseSchema` | ✅ Phase 1 | JSON Mode, UI grisée, client Phase 2 |
+| **Capacités booléennes — Phase 2** | | | | |
+| `supports_audio_input` | `supports_audio_input` | `$supportsAudioInput` | Phase 2 | Gemini 2.0+ |
+| `supports_audio_output` | `supports_audio_output` | `$supportsAudioOutput` | Phase 2 | TTS natif |
+| `supports_prompt_caching` | `supports_prompt_caching` | `$supportsPromptCaching` | Phase 2 | Réduction coûts 75-90% |
+| `supports_web_search` | `supports_web_search` | `$supportsWebSearch` | Phase 2 | Gemini Grounding, Perplexity |
+| **Tarification** | | | | |
+| `input_cost_per_token` | `pricing_input` | `$pricingInput` | — | Par 1M tokens |
+| `output_cost_per_token` | `pricing_output` | `$pricingOutput` | — | Par 1M tokens |
+| `output_cost_per_reasoning_token` | `pricing_thinking_output` | `$pricingThinkingOutput` | Phase 2 | Fallback → `pricing_output` |
+| `input_cost_per_audio_token` | `pricing_audio_input` | `$pricingAudioInput` | Phase 3 | Quand audio supporté |
+| `output_cost_per_audio_token` | `pricing_audio_output` | `$pricingAudioOutput` | Phase 3 | TTS |
+| `input_cost_per_pixel` | `pricing_vision_input` | `$pricingVisionInput` | Phase 3 | Vision granulaire |
+| `search_context_cost_per_query` | `pricing_web_search` | `$pricingWebSearch` | Phase 3 | Web search |
+| **Caching** | | | | |
+| `cache_creation_input_token_cost` | `pricing_cache_write` | `$pricingCacheWrite` | Phase 2 | Prix écriture cache / 1M tokens |
+| `cache_read_input_token_cost` | `pricing_cache_read` | `$pricingCacheRead` | Phase 2 | Prix lecture cache / 1M tokens (souvent -90%) |
+| **Lifecycle** | | | | |
+| `deprecation_date` | `deprecated_at` | `$deprecatedAt` | ✅ Phase 1 | Helper `isDeprecated()` disponible |
+| *(pas d'équiv.)* | `is_preview` | `$isPreview` | Phase 3 | Modèle en preview (pas encore GA) |
+| `supported_regions` | `supported_regions` | `$supportedRegions` | Phase 3 | Multi-région latence/compliance |
+| **Spécifiques LiteLLM (non retenus)** | | | | |
+| `code_interpreter_cost_per_session` | ❌ | — | — | Synapse a son propre PythonExecutor |
+| `file_search_cost_per_1k_calls` | ❌ | — | — | Synapse a son propre RAG |
+| `vector_store_cost_per_gb_per_day` | ❌ | — | — | Géré par l'infra, pas le provider |
+| `computer_use_*` | ❌ | — | — | Pas de cas d'usage Synapse |
 
 ---
 
 ## 3. Plan d'Implémentation par Phase
 
-### Phase 1 : Fondations Future-Proof (PRIORITAIRE)
+### ✅ Phase 1.5 : Harmonisation Convention `supports_*` (COMPLÉTÉE — 2026-03-07)
+
+**Objectif** : Uniformiser tous les champs booléens YAML sous la convention `supports_*`, supprimer `model_id` (le slug YAML suffit), déprécier `context_window` au profit de `max_input_tokens`.
+
+#### Renommages effectués
+
+| Ancienne clé YAML | Nouvelle clé YAML | Propriété PHP |
+|---|---|---|
+| `thinking` | `supports_thinking` | `$supportsThinking` |
+| `safety_settings` | `supports_safety_settings` | `$supportsSafetySettings` |
+| `top_k` | `supports_top_k` | `$supportsTopK` |
+| `function_calling` | `supports_function_calling` | `$supportsFunctionCalling` |
+| `streaming` | `supports_streaming` | `$supportsStreaming` |
+| `system_prompt` | `supports_system_prompt` | `$supportsSystemPrompt` |
+| `model_id` | ~~supprimé~~ | ~~`$modelId`~~ |
+
+#### Rétrocompatibilité
+
+`ModelCapabilityRegistry::getCapabilities()` accepte les deux formes pour les 6 champs renommés :
+```php
+supportsThinking: (bool) ($data['supports_thinking'] ?? $data['thinking'] ?? false),
+```
+Les anciens YAML de providers tiers continuent de fonctionner sans modification.
+
+#### Fichiers modifiés
+- `ModelCapabilities.php` — 6 propriétés renommées, `$modelId` supprimé, `supports()` étendu avec aliases
+- `ModelCapabilityRegistry.php` — DEFAULTS + getCapabilities() mis à jour
+- `gemini.yaml`, `ovh.yaml`, `_default.yaml` — champs YAML renommés
+- `GeminiClient.php`, `OvhAiClient.php` — accès aux propriétés mis à jour
+- `SynapseAgentBuilder.php`, `PresetValidatorAgent.php`, `ModelPresetController.php` — idem
+
+---
+
+### ✅ Phase 1 : Fondations Future-Proof (COMPLÉTÉE — 2026-03-07)
 
 **Objectif**: Préparer l'architecture sans changer le comportement existant. Tous les nouveaux champs sont optionnels avec des défauts rétrocompatibles.
 
@@ -996,22 +1094,37 @@ models:
 
 ## 9. Checklist d'Implémentation
 
-### Phase 1 (Prioritaire)
-- [ ] Ajouter `maxInputTokens`, `maxOutputTokens` à `ModelCapabilities`
-- [ ] Ajouter `supportsVision`, `supportsParallelToolCalls`, `supportsResponseSchema`
-- [ ] Ajouter `deprecatedAt`
-- [ ] Mettre à jour `ModelCapabilityRegistry::DEFAULTS`
-- [ ] Mettre à jour `ModelCapabilityRegistry::getCapabilities()`
-- [ ] Mettre à jour `supports()` avec les nouvelles clés
-- [ ] Ajouter helper `getEffectiveMaxInputTokens()`
-- [ ] Ajouter helper `isDeprecated()`
-- [ ] Mettre à jour `ContextTruncationSubscriber` → `getEffectiveMaxInputTokens()`
-- [ ] Enrichir `gemini.yaml` avec les nouveaux champs
-- [ ] Enrichir `ovh.yaml` avec les nouveaux champs
-- [ ] Mettre à jour `ModelPresetController::getFullModelsCapabilities()`
-- [ ] Ajouter badges dans `preset_edit.html.twig`
-- [ ] Ajouter tests unitaires pour les nouveaux champs
+### ✅ Phase 1 (Complétée — 2026-03-07)
+- [x] Ajouter `maxInputTokens`, `maxOutputTokens` à `ModelCapabilities`
+- [x] Ajouter `supportsVision`, `supportsParallelToolCalls`, `supportsResponseSchema`
+- [x] Ajouter `deprecatedAt`
+- [x] Mettre à jour `ModelCapabilityRegistry::DEFAULTS`
+- [x] Mettre à jour `ModelCapabilityRegistry::getCapabilities()`
+- [x] Mettre à jour `supports()` avec les nouvelles clés
+- [x] Ajouter helper `getEffectiveMaxInputTokens()`
+- [x] Ajouter helper `isDeprecated()`
+- [x] Mettre à jour `ContextTruncationSubscriber` → `getEffectiveMaxInputTokens()`
+- [x] Créer `_default.yaml` (fichier de référence documentaire)
+- [x] Enrichir `gemini.yaml` avec les nouveaux champs
+- [x] Enrichir `ovh.yaml` avec les nouveaux champs
+- [x] Mettre à jour `ModelPresetController::getFullModelsCapabilities()`
+- [x] Ajouter badges dans `preset_edit.html.twig` (Vision, Parallel Tools, JSON Mode)
+- [x] Ajouter filtres Vision / JSON Mode dans `configuration_llm.html.twig`
+- [x] Afficher icônes grisées "Déclaré, implémentation à venir" dans onglet Modèles et Presets
+- [ ] Ajouter tests unitaires pour les nouveaux champs (`ModelCapabilityRegistryTest`)
 - [ ] Ajouter test `isDeprecated()`
+
+### ✅ Phase 1.5 (Complétée — 2026-03-07)
+- [x] Renommer `thinking` → `supports_thinking` (YAML + PHP)
+- [x] Renommer `safety_settings` → `supports_safety_settings` (YAML + PHP)
+- [x] Renommer `top_k` → `supports_top_k` (YAML + PHP)
+- [x] Renommer `function_calling` → `supports_function_calling` (YAML + PHP)
+- [x] Renommer `streaming` → `supports_streaming` (YAML + PHP)
+- [x] Renommer `system_prompt` → `supports_system_prompt` (YAML + PHP)
+- [x] Supprimer `model_id` (PHP + YAML)
+- [x] `context_window` marqué déprécié dans `_default.yaml`
+- [x] Rétrocompatibilité via double lookup dans `getCapabilities()`
+- [x] Méthode `supports()` étendue avec les nouvelles clés + aliases
 
 ### Phase 2 (Quand nécessaire)
 - [ ] Ajouter `supportsAudioInput`, `supportsAudioOutput`
@@ -1042,4 +1155,4 @@ models:
 ---
 
 **Last Updated**: 2026-03-07
-**Next Review**: Phase 1 implémentation
+**Next Review**: Phase 2 — Audio, Prompt Caching, Web Search, Pricing granulaire
