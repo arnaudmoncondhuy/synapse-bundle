@@ -34,7 +34,8 @@ class GdprController extends AbstractController
         private PermissionCheckerInterface $permissionChecker,
         private EntityManagerInterface $em,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {}
+    ) {
+    }
 
     #[Route('', name: 'gdpr', methods: ['GET', 'POST'])]
     public function index(Request $request): Response

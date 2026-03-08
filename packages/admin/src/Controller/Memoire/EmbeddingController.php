@@ -6,11 +6,11 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Memoire;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
-use ArnaudMoncondhuy\SynapseCore\Service\EmbeddingService;
-use ArnaudMoncondhuy\SynapseCore\VectorStore\VectorStoreRegistry;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseCore\Service\EmbeddingService;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseConfigRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
+use ArnaudMoncondhuy\SynapseCore\VectorStore\VectorStoreRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;

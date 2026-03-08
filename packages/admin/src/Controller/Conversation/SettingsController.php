@@ -47,7 +47,8 @@ class SettingsController extends AbstractController
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {}
+    ) {
+    }
 
     /**
      * Afficher et modifier les paramètres globaux Synapse.

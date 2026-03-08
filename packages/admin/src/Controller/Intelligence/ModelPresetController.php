@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 
-use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Agent\PresetValidator\PresetValidatorAgent;
-use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
+use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\DatabaseConfigProvider;
+use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
+use ArnaudMoncondhuy\SynapseCore\PresetValidator;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\ModelCapabilities;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
-use ArnaudMoncondhuy\SynapseCore\PresetValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -46,9 +46,8 @@ class ModelPresetController extends AbstractController
         private PresetValidatorAgent $presetValidatorAgent,
         private PresetValidator $presetValidator,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {}
-
-
+    ) {
+    }
 
     // ─── Nouveau ───────────────────────────────────────────────────────────────
 
@@ -122,7 +121,7 @@ class ModelPresetController extends AbstractController
     public function activate(SynapseModelPreset $preset, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_activate_' . $preset->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_activate_'.$preset->getId());
 
         // 🛡️ DÉFENSE : Vérifier que le preset est valide avant activation
         if (!$this->presetValidator->isValid($preset)) {
@@ -152,10 +151,10 @@ class ModelPresetController extends AbstractController
     public function clone(SynapseModelPreset $source, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_clone_' . $source->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_clone_'.$source->getId());
 
         $clone = new SynapseModelPreset();
-        $clone->setName($source->getName() . ' (copie)');
+        $clone->setName($source->getName().' (copie)');
         $clone->setProviderName($source->getProviderName());
         $clone->setModel($source->getModel());
         $clone->setGenerationTemperature($source->getGenerationTemperature());
@@ -182,7 +181,7 @@ class ModelPresetController extends AbstractController
     public function delete(SynapseModelPreset $preset, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_delete_' . $preset->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_delete_'.$preset->getId());
 
         if ($preset->isActive()) {
             $this->addFlash('error', 'Impossible de supprimer le Model Preset actif. Activez d\'abord un autre Model Preset.');
@@ -242,7 +241,7 @@ class ModelPresetController extends AbstractController
 
         $cacheKey = sprintf('synapse_preset_test_%d', $preset->getId());
         /** @var array{status: string, report: array<string, mixed>|null, progress?: int}|null $data */
-        $data = $this->cache->get($cacheKey, fn() => null);
+        $data = $this->cache->get($cacheKey, fn () => null);
 
         if (!$data) {
             return new JsonResponse(['status' => 'not_found'], 404);
@@ -264,7 +263,7 @@ class ModelPresetController extends AbstractController
                 $data['report'] = [
                     'sync_error' => $e->getMessage(),
                     'all_critical_ok' => false,
-                    'analysis' => 'Test interrompu par une exception critique : ' . $e->getMessage(),
+                    'analysis' => 'Test interrompu par une exception critique : '.$e->getMessage(),
                     'critical_checks' => ['response_not_empty' => false, 'debug_saved_in_db' => false],
                     'config_checks' => [],
                     'config_errors' => [],

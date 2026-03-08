@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
+use ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\SpendingLimitPeriod;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\SpendingLimitScope;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseSpendingLimit;
-use ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseSpendingLimitRepository;
@@ -42,7 +42,8 @@ class AgentController extends AbstractController
         private PermissionCheckerInterface $permissionChecker,
         private ToolRegistry $toolRegistry,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {}
+    ) {
+    }
 
     // ─── Index ─────────────────────────────────────────────────────────────────
 
@@ -143,7 +144,7 @@ class AgentController extends AbstractController
     public function saveLimit(SynapseAgent $agent, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_limit_' . $agent->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_limit_'.$agent->getId());
 
         $action = $request->request->get('action', 'save');
         $agentLimits = $this->spendingLimitRepo->findForAgent((int) $agent->getId());
@@ -202,7 +203,7 @@ class AgentController extends AbstractController
     public function toggle(SynapseAgent $agent, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_toggle_' . $agent->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_toggle_'.$agent->getId());
 
         $agent->setIsActive(!$agent->isActive());
         $this->em->flush();
@@ -219,7 +220,7 @@ class AgentController extends AbstractController
     public function delete(SynapseAgent $agent, Request $request): Response
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
-        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_delete_' . $agent->getId());
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_delete_'.$agent->getId());
 
         if ($agent->isBuiltin()) {
             $this->addFlash('error', 'Les agents intégrés au bundle ne peuvent pas être supprimés.');
