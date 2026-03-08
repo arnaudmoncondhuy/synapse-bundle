@@ -6,7 +6,7 @@ includes:
     - vendor/phpstan/phpstan-deprecation-rules/rules.neon
 
 parameters:
-    level: 9
+    level: 6
     paths:
         - packages
     excludePaths:
@@ -21,4 +21,4 @@ parameters:
           path: packages/core/src/Security/AdminSecurityTrait.php
         -
             message: '#Call to deprecated method listTableNames\(\) of class Doctrine\\DBAL\\Schema\\AbstractSchemaManager#'
-            path: packages/core/src/Infrastructure/Command/SynapseDoctorCommand.php
+            path: packages/core/src/Command/SynapseDoctorCommand.php

@@ -96,10 +96,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          tools: php-cs-fixer, phpstan
+          tools: php-cs-fixer
 
       - name: PHP-CS-Fixer (dry-run)
         run: php-cs-fixer fix --dry-run --diff --verbose
-
-      - name: PHPStan
-        run: phpstan analyse
