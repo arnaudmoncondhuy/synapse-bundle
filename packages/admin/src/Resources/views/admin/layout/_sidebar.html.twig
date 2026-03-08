@@ -3,11 +3,10 @@
 
     Structure :
     - Tableau de bord
-    - 🧠 Intelligence  : Configuration LLM (hub onglets) · Assistants · Personnalisation
-    - 💬 Chat          : Paramètres · Outils
+    - 🧠 Intelligence  : Configuration LLM (hub onglets) · Assistants · Outils · Personnalité · Configuration globale
     - 🧩 Base de connaissance : Configuration (embeddings/RAG)
     - 📈 Monitoring    : Analytics · Quotas · Export
-    - 🔒 Sécurité      : Audit & Logs · Clés API · RGPD
+    - 🔒 Sécurité      : Audit & Logs · RGPD
     - ⚙️  Système       : Debug · Santé · À propos
 #}
 {% set route = app.request.attributes.get('_route') %}
@@ -54,34 +53,27 @@
                 Agents
             </a>
 
-            {# Personnalisation (ex Tons de réponse) #}
-            <a href="{{ path('synapse_admin_tones') }}"
-               class="synapse-admin-nav__link {% if route starts with 'synapse_admin_tones' %}is-active{% endif %}">
-                <span class="synapse-admin-nav__icon"><i data-lucide="mic-2"></i></span>
-                Personnalisation
-            </a>
-
-        </div>
-
-        {# ─────────────────────────────────────────────────────────────── #}
-        {# 💬 CHAT                                                         #}
-        {# ─────────────────────────────────────────────────────────────── #}
-        <div class="synapse-admin-nav__section">💬 Chat</div>
-        <div class="synapse-admin-nav__group">
-
-            <a href="{{ path('synapse_admin_settings') }}"
-               class="synapse-admin-nav__link {% if route starts with 'synapse_admin_settings' %}is-active{% endif %}">
-                <span class="synapse-admin-nav__icon"><i data-lucide="message-square-more"></i></span>
-                Paramètres
-            </a>
-
             <a href="{{ path('synapse_admin_tools') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_tools' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="wrench"></i></span>
                 Outils
             </a>
 
+            {# Personnalité (ex Tons de réponse) #}
+            <a href="{{ path('synapse_admin_tones') }}"
+               class="synapse-admin-nav__link {% if route starts with 'synapse_admin_tones' %}is-active{% endif %}">
+                <span class="synapse-admin-nav__icon"><i data-lucide="mic-2"></i></span>
+                Personnalité
+            </a>
+
+            <a href="{{ path('synapse_admin_settings') }}"
+               class="synapse-admin-nav__link {% if route starts with 'synapse_admin_settings' %}is-active{% endif %}">
+                <span class="synapse-admin-nav__icon"><i data-lucide="settings"></i></span>
+                Configuration globale
+            </a>
+
         </div>
+
 
         {# ─────────────────────────────────────────────────────────────── #}
         {# 🧩 BASE DE CONNAISSANCE                                         #}
@@ -140,7 +132,6 @@
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_gdpr' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="shield-check"></i></span>
                 RGPD
-                <span class="synapse-admin-nav__badge">Soon</span>
             </a>
 
         </div>

@@ -47,8 +47,7 @@ class SettingsController extends AbstractController
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-    ) {
-    }
+    ) {}
 
     /**
      * Afficher et modifier les paramètres globaux Synapse.
@@ -62,12 +61,6 @@ class SettingsController extends AbstractController
 
         if ($request->isMethod('POST')) {
             $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_admin_settings');
-
-            // Rétention RGPD (1 jour → 10 ans)
-            $retentionDays = (int) ($request->request->get('retention_days') ?? 30);
-            if ($retentionDays >= 1 && $retentionDays <= 3650) {
-                $config->setRetentionDays($retentionDays);
-            }
 
             // Langue
             $lang = (string) $request->request->get('context_language', 'fr');
