@@ -73,6 +73,10 @@ class SettingsController extends AbstractController
             $systemPrompt = $request->request->get('system_prompt');
             $config->setSystemPrompt(!empty($systemPrompt) ? (string) $systemPrompt : null);
 
+            // Nombre maximum de tours (function calling)
+            $maxTurns = $request->request->getInt('max_turns', 5);
+            $config->setMaxTurns(max(1, min(20, $maxTurns)));
+
             $this->em->flush();
             $this->configProvider->clearCache();
 
