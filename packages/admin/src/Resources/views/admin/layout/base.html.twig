@@ -105,21 +105,22 @@
             tip.id = 'synapse-admin-tooltip-global';
             document.body.appendChild(tip);
 
-            document.querySelectorAll('.synapse-admin-card [data-synapse-admin-tooltip]').forEach(el => {
-                el.addEventListener('mouseenter', function (e) {
-                    const text = this.getAttribute('data-synapse-admin-tooltip');
-                    if (!text) return;
-                    tip.textContent = text;
-                    tip.style.opacity = '1';
-                    positionTip(e, this);
-                });
-                el.addEventListener('mouseleave', function () {
-                    tip.style.opacity = '0';
-                });
-                el.addEventListener('mousemove', function (e) {
-                    positionTip(e, this);
-                });
-            });
+            document.addEventListener('mouseenter', function (e) {
+                const el = e.target.closest('[data-synapse-admin-tooltip]');
+                if (!el) return;
+                const text = el.getAttribute('data-synapse-admin-tooltip');
+                if (!text) return;
+                tip.textContent = text;
+                tip.style.opacity = '1';
+                positionTip(e, el);
+            }, true);
+            document.addEventListener('mouseleave', function (e) {
+                if (e.target.closest('[data-synapse-admin-tooltip]')) tip.style.opacity = '0';
+            }, true);
+            document.addEventListener('mousemove', function (e) {
+                const el = e.target.closest('[data-synapse-admin-tooltip]');
+                if (el && tip.style.opacity === '1') positionTip(e, el);
+            }, true);
 
             function positionTip(e, el) {
                 const rect = el.getBoundingClientRect();

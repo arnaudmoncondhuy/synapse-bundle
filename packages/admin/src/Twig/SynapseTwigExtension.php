@@ -161,7 +161,15 @@ class SynapseTwigExtension extends AbstractExtension
                 return false;
             }
 
-            return $this->modelCapabilityRegistry->supports($model, $capability);
+            if (!$this->modelCapabilityRegistry->supports($model, $capability)) {
+                return false;
+            }
+            $disabled = $config['disabled_capabilities'] ?? [];
+            if (is_array($disabled) && in_array($capability, $disabled, true)) {
+                return false;
+            }
+
+            return true;
         } catch (\Throwable) {
             return false;
         }

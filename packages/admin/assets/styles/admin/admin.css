@@ -191,13 +191,16 @@
     bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
-    padding: 4px 10px;
+    padding: 5px 10px;
     background: var(--synapse-admin-text-primary);
     color: white;
     font-size: 0.72rem;
     font-weight: 600;
+    line-height: 1.4;
     border-radius: var(--synapse-admin-radius-sm);
-    white-space: nowrap;
+    white-space: normal;
+    max-width: 280px;
+    text-align: center;
     pointer-events: none;
     opacity: 0;
     transition: opacity var(--synapse-admin-transition-fast);
@@ -216,13 +219,16 @@
 /* Tooltip JS global (positionné sur le body avec position:fixed) */
 #synapse-admin-tooltip-global {
     position: fixed;
-    padding: 4px 10px;
+    padding: 5px 10px;
     background: var(--synapse-admin-text-primary);
     color: white;
     font-size: 0.72rem;
     font-weight: 600;
+    line-height: 1.4;
     border-radius: var(--synapse-admin-radius-sm);
-    white-space: nowrap;
+    white-space: normal;
+    max-width: 280px;
+    text-align: center;
     pointer-events: none;
     z-index: 9999;
     opacity: 0;
