@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Souvenirs — Visualisation des mémoires utilisateur — Administration Synapse.
@@ -29,6 +30,7 @@ class MemoryController extends AbstractController
     public function __construct(
         private readonly SynapseVectorMemoryRepository $memoryRepository,
         private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly TranslatorInterface $translator,
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
@@ -66,10 +68,10 @@ class MemoryController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
         return $this->render('@Synapse/admin/shared/placeholder.html.twig', [
-            'page_title' => 'Documents',
+            'page_title' => $this->translator->trans('synapse.admin.sidebar.documents', [], 'synapse_admin'),
             'icon' => 'files',
-            'breadcrumb_section' => 'Mémoire',
-            'coming_soon_message' => 'Gérez les documents sources indexés dans la base vectorielle pour le RAG.',
+            'breadcrumb_section' => $this->translator->trans('synapse.admin.sidebar.section.memory', [], 'synapse_admin'),
+            'coming_soon_message' => $this->translator->trans('synapse.admin.memory.documents.coming_soon', [], 'synapse_admin'),
         ]);
     }
 
@@ -82,9 +84,9 @@ class MemoryController extends AbstractController
         $memory = $this->memoryRepository->find($id);
         if ($memory) {
             $this->memoryRepository->remove($memory, true);
-            $this->addFlash('success', 'Souvenir supprimé.');
+            $this->addFlash('success', $this->translator->trans('synapse.admin.memory.flash.deleted', [], 'synapse_admin'));
         } else {
-            $this->addFlash('error', 'Souvenir introuvable.');
+            $this->addFlash('error', $this->translator->trans('synapse.admin.memory.flash.not_found', [], 'synapse_admin'));
         }
 
         return $this->redirectToRoute('synapse_admin_memories', [

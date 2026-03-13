@@ -12,7 +12,8 @@
     "require": {
         "arnaudmoncondhuy/synapse-core": "dev-main",
         "arnaudmoncondhuy/synapse-admin": "dev-main",
-        "arnaudmoncondhuy/synapse-chat": "dev-main"
+        "arnaudmoncondhuy/synapse-chat": "dev-main",
+        "symfony/translation": "^7.0 || ^8.0"
     },
     "require-dev": {
         "arnaudmoncondhuy/synapse-admin": "@dev",

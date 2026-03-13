@@ -1,13 +1,12 @@
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
-{% block admin_page_title %}Embeddings | Mémoire | Synapse Administration Synapse
-{% endblock %}
+{% block admin_page_title %}{{ 'synapse.admin.memory.embeddings.page_title'|trans(domain='synapse_admin') }}{% endblock %}
 
 {% block admin_breadcrumb %}
 	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="#" class="synapse-admin-topbar__breadcrumb">Mémoire</a>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.memory'|trans(domain='synapse_admin') }}</a>
 	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<span class="synapse-admin-topbar__current">Embeddings</span>
+	<span class="synapse-admin-topbar__current">{{ 'synapse.admin.sidebar.embeddings'|trans(domain='synapse_admin') }}</span>
 {% endblock %}
 
 {% block admin_content %}
@@ -19,11 +18,10 @@
 				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--success">
 					<i data-lucide="database-zap"></i>
 				</span>
-				Embeddings & RAG
+				{{ 'synapse.admin.memory.embeddings.title'|trans(domain='synapse_admin') }}
 			</h1>
 			<p class="synapse-admin-page-subtitle">
-				Configurez le moteur sémantique de Synapse : modèle d'embedding,
-												            stratégie de chunking et vector store.
+				{{ 'synapse.admin.memory.embeddings.subtitle'|trans(domain='synapse_admin') }}
 			</p>
 		</div>
 	</div>
@@ -37,9 +35,9 @@
 					<i data-lucide="{{ config.embeddingProvider ? 'check-circle-2' : 'alert-triangle' }}"></i>
 				</div>
 				<div class="synapse-admin-kpi__body">
-					<div class="synapse-admin-kpi__label">Modèle d'Embedding</div>
+					<div class="synapse-admin-kpi__label">{{ 'synapse.admin.memory.embeddings.kpi.model_label'|trans(domain='synapse_admin') }}</div>
 					<div class="synapse-admin-kpi__value synapse-admin-text-sm">
-						{{ config.embeddingModel ?: 'Non configuré' }}
+						{{ config.embeddingModel ?: 'synapse.admin.llm_config.provider.status.unconfigured'|trans(domain='synapse_admin') }}
 					</div>
 					<div class="synapse-admin-kpi__sub">{{ config.embeddingProvider ?: '—' }}</div>
 				</div>
@@ -52,7 +50,7 @@
 					<i data-lucide="layers"></i>
 				</div>
 				<div class="synapse-admin-kpi__body">
-					<div class="synapse-admin-kpi__label">Vector Store</div>
+					<div class="synapse-admin-kpi__label">{{ 'synapse.admin.memory.embeddings.kpi.vector_store_label'|trans(domain='synapse_admin') }}</div>
 					<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ config.vectorStore }}</div>
 					<div class="synapse-admin-kpi__sub">
 						{% if db_is_postgres %}
@@ -60,11 +58,11 @@
 							{% if db_vector_ready %}
 								<span class="synapse-admin-badge synapse-admin-badge--success synapse-admin-text-xs">
 									<i data-lucide="check"></i>
-									pgvector
+									{{ 'synapse.admin.memory.embeddings.kpi.pgvector_ready'|trans(domain='synapse_admin') }}
 								</span>
 							{% else %}
 								<span class="synapse-admin-badge synapse-admin-badge--warning synapse-admin-text-xs">
-									pgvector manquant
+									{{ 'synapse.admin.memory.embeddings.kpi.pgvector_missing'|trans(domain='synapse_admin') }}
 								</span>
 							{% endif %}
 						{% else %}
@@ -81,13 +79,10 @@
 					<i data-lucide="scissors"></i>
 				</div>
 				<div class="synapse-admin-kpi__body">
-					<div class="synapse-admin-kpi__label">Chunking</div>
+					<div class="synapse-admin-kpi__label">{{ 'synapse.admin.memory.embeddings.kpi.chunking_label'|trans(domain='synapse_admin') }}</div>
 					<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ config.chunkingStrategy }}</div>
 					<div class="synapse-admin-kpi__sub">
-						{{ config.chunkSize }}
-						car. /
-						{{ config.chunkOverlap }}
-						chevauchement
+						{{ 'synapse.admin.memory.embeddings.kpi.chunking_desc'|trans({'%size%': config.chunkSize, '%overlap%': config.chunkOverlap}, domain='synapse_admin') }}
 					</div>
 				</div>
 			</div>
@@ -109,8 +104,8 @@
 						<i data-lucide="cpu"></i>
 					</div>
 					<div>
-						<div class="synapse-admin-card__title">Modèle d'Embedding</div>
-						<div class="synapse-admin-card__subtitle">Fournisseur et modèle actifs</div>
+						<div class="synapse-admin-card__title">{{ 'synapse.admin.memory.embeddings.kpi.model_label'|trans(domain='synapse_admin') }}</div>
+						<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.memory.embeddings.form.model_subtitle'|trans(domain='synapse_admin') }}</div>
 					</div>
 				</div>
 				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
@@ -134,12 +129,12 @@
 
 					<div class="synapse-admin-form-group synapse-admin-mt-md">
 						<label class="synapse-admin-label" for="embedding_dimension">
-							Dimensions
-							<span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-ml-sm">optionnel</span>
+							{{ 'synapse.admin.memory.embeddings.form.label.dimension'|trans(domain='synapse_admin') }}
+							<span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-ml-sm">{{ 'synapse.admin.common.optional'|trans(domain='synapse_admin')|lower }}</span>
 						</label>
 						<input type="number" id="embedding_dimension" name="embedding_dimension" class="synapse-admin-input" value="{{ config.embeddingDimension }}" placeholder="Ex : 768 ou 1536">
 						<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">
-							Laissez vide pour utiliser la dimension par défaut du modèle.
+							{{ 'synapse.admin.memory.embeddings.form.help.dimension'|trans(domain='synapse_admin') }}
 						</p>
 					</div>
 
@@ -153,8 +148,8 @@
 						<i data-lucide="layers"></i>
 					</div>
 					<div>
-						<div class="synapse-admin-card__title">Stockage & Chunking</div>
-						<div class="synapse-admin-card__subtitle">Vector store et stratégie de découpage</div>
+						<div class="synapse-admin-card__title">{{ 'synapse.admin.memory.embeddings.form.storage_title'|trans(domain='synapse_admin') }}</div>
+						<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.memory.embeddings.form.storage_subtitle'|trans(domain='synapse_admin') }}</div>
 					</div>
 				</div>
 				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
@@ -171,11 +166,11 @@
 					</div>
 
 					<div class="synapse-admin-form-group synapse-admin-mt-md">
-						<label class="synapse-admin-label" for="chunking_strategy">Stratégie de chunking</label>
+						<label class="synapse-admin-label" for="chunking_strategy">{{ 'synapse.admin.memory.embeddings.form.label.chunking_strategy'|trans(domain='synapse_admin') }}</label>
 						<select id="chunking_strategy" name="chunking_strategy" class="synapse-admin-select">
 							{% for strategy in ['recursive', 'sentence', 'paragraph', 'fixed'] %}
 								<option value="{{ strategy }}" {{ config.chunkingStrategy == strategy ? 'selected' : '' }}>
-									{{ strategy|capitalize }}
+									{{ ('synapse.admin.memory.embeddings.form.option.strategy.' ~ strategy)|trans(domain='synapse_admin') }}
 								</option>
 							{% endfor %}
 						</select>
@@ -183,11 +178,11 @@
 
 					<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mt-md">
 						<div class="synapse-admin-form-group">
-							<label class="synapse-admin-label" for="chunk_size">Taille chunk</label>
+							<label class="synapse-admin-label" for="chunk_size">{{ 'synapse.admin.memory.embeddings.form.label.chunk_size'|trans(domain='synapse_admin') }}</label>
 							<input type="number" id="chunk_size" name="chunk_size" class="synapse-admin-input" value="{{ config.chunkSize }}" min="100" max="20000">
 						</div>
 						<div class="synapse-admin-form-group">
-							<label class="synapse-admin-label" for="chunk_overlap">Chevauchement</label>
+							<label class="synapse-admin-label" for="chunk_overlap">{{ 'synapse.admin.memory.embeddings.form.label.chunk_overlap'|trans(domain='synapse_admin') }}</label>
 							<input type="number" id="chunk_overlap" name="chunk_overlap" class="synapse-admin-input" value="{{ config.chunkOverlap }}" min="0">
 						</div>
 					</div>
@@ -196,12 +191,12 @@
 				<div class="synapse-admin-card__footer">
 					<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
 						<i data-lucide="save"></i>
-						Enregistrer
+						{{ 'synapse.admin.agent.edit.action.save'|trans(domain='synapse_admin') }}
 					</button>
 					{# Test d'embedding rapide via JS #}
 					<button type="button" id="btn-test-embedding" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
 						<i data-lucide="flask-conical"></i>
-						Tester l'embedding
+						{{ 'synapse.admin.memory.embeddings.form.action.test'|trans(domain='synapse_admin') }}
 					</button>
 				</div>
 			</div>
@@ -216,12 +211,12 @@
 			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
 				<i data-lucide="flask-conical"></i>
 			</div>
-			<div class="synapse-admin-card__title">Test d'embedding</div>
+			<div class="synapse-admin-card__title">{{ 'synapse.admin.memory.embeddings.test.title'|trans(domain='synapse_admin') }}</div>
 		</div>
 		<div class="synapse-admin-card__body synapse-admin-card__body--compact">
 			<div class="synapse-admin-form-group">
-				<label class="synapse-admin-label" for="test-text">Texte de test</label>
-				<input type="text" id="test-text" class="synapse-admin-input" value="La mémoire contextuelle améliore les conversations IA." placeholder="Entrez un texte à vectoriser…">
+				<label class="synapse-admin-label" for="test-text">{{ 'synapse.admin.memory.embeddings.test.label.text'|trans(domain='synapse_admin') }}</label>
+				<input type="text" id="test-text" class="synapse-admin-input" value="{{ 'synapse.admin.memory.embeddings.test.placeholder.text_val'|trans(domain='synapse_admin') }}" placeholder="{{ 'synapse.admin.memory.embeddings.test.placeholder.text'|trans(domain='synapse_admin') }}">
 			</div>
 			<div id="test-result" class="synapse-admin-mt-md"></div>
 		</div>
@@ -235,7 +230,7 @@ panel.scrollIntoView({behavior: 'smooth'});
 
 const text = document.getElementById('test-text').value;
 const resultDiv = document.getElementById('test-result');
-resultDiv.innerHTML = '<span class="synapse-admin-text-tertiary">Génération en cours…</span>';
+resultDiv.innerHTML = '<span class="synapse-admin-text-tertiary">{{ 'synapse.admin.memory.embeddings.test.status.ongoing'|trans(domain='synapse_admin') }}</span>';
 
 try {
 const res = await fetch('{{ path('synapse_admin_embeddings_test') }}', {
@@ -250,19 +245,20 @@ body: new URLSearchParams(
 const data = await res.json();
 if (data.success) {
 resultDiv.innerHTML = `
-                <div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center">
-                    <span class="synapse-admin-badge synapse-admin-badge--success">
-                        <i data-lucide="check-circle-2"></i> Succès
-                    </span>
-                    <span class="synapse-admin-text-sm synapse-admin-text-muted">
-                        Dimension : <strong>${
-data.dimension
-}</strong>
-                        &nbsp;·&nbsp; Temps : <strong>${
-data.time_ms
-}ms</strong>
-                    </span>
-                </div>`;
+252: resultDiv.innerHTML = `
+253:                 <div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center">
+254:                     <span class="synapse-admin-badge synapse-admin-badge--success">
+255:                         <i data-lucide="check-circle-2"></i> {{ 'synapse.admin.llm_config.provider.status.active'|trans(domain='synapse_admin') }}
+256:                     </span>
+257:                     <span class="synapse-admin-text-sm synapse-admin-text-muted">
+258:                         {{ 'synapse.admin.memory.embeddings.test.result.dimension'|trans(domain='synapse_admin') }} : <strong>${
+259: data.dimension
+260: }</strong>
+261:                         &nbsp;·&nbsp; {{ 'synapse.admin.memory.embeddings.test.result.time'|trans(domain='synapse_admin') }} : <strong>${
+262: data.time_ms
+263: }ms</strong>
+264:                     </span>
+265:                 </div>`;
 } else {
 resultDiv.innerHTML = `<span class="synapse-admin-badge synapse-admin-badge--danger"><i data-lucide="x-circle"></i> ${
 data.error
@@ -274,7 +270,7 @@ lucide.createIcons();
 
 
 } catch (e) {
-resultDiv.innerHTML = '<span class="synapse-admin-badge synapse-admin-badge--danger">Erreur réseau</span>';
+resultDiv.innerHTML = '<span class="synapse-admin-badge synapse-admin-badge--danger">{{ 'synapse.admin.memory.embeddings.test.status.refresh_error'|trans(domain='synapse_admin') }}</span>';
 }
 });
 	</script>

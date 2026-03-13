@@ -1,14 +1,13 @@
 
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
-{% block admin_page_title %}À propos | Système | Synapse Administration Synapse
-{% endblock %}
+{% block admin_page_title %}{{ 'synapse.admin.about.page_title'|trans(domain='synapse_admin') }}{% endblock %}
 
 {% block admin_breadcrumb %}
 	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="#" class="synapse-admin-topbar__breadcrumb">Système</a>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.system'|trans(domain='synapse_admin') }}</a>
 	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<span class="synapse-admin-topbar__current">À propos</span>
+	<span class="synapse-admin-topbar__current">{{ 'synapse.admin.sidebar.about'|trans(domain='synapse_admin') }}</span>
 {% endblock %}
 
 {% block admin_content %}
@@ -20,10 +19,10 @@
 				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
 					<i data-lucide="info"></i>
 				</span>
-				À propos de Synapse
+				{{ 'synapse.admin.about.title'|trans(domain='synapse_admin') }}
 			</h1>
 			<p class="synapse-admin-page-subtitle">
-				Informations sur le bundle, la version et les dépendances de l'environnement.
+				{{ 'synapse.admin.about.subtitle'|trans(domain='synapse_admin') }}
 			</p>
 		</div>
 	</div>
@@ -67,19 +66,19 @@
 					<i data-lucide="link"></i>
 				</div>
 				<div>
-					<div class="synapse-admin-card__title">Ressources</div>
-					<div class="synapse-admin-card__subtitle">Documentation et support</div>
+					<div class="synapse-admin-card__title">{{ 'synapse.admin.about.resources.title'|trans(domain='synapse_admin') }}</div>
+					<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.about.resources.subtitle'|trans(domain='synapse_admin') }}</div>
 				</div>
 			</div>
 			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
 				<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
 					<a href="https://github.com/arnaud-moncondhuy/synapse-bundle" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" target="_blank" rel="noopener">
 						<i data-lucide="github"></i>
-						GitHub
+						{{ 'synapse.admin.about.resources.github'|trans(domain='synapse_admin') }}
 					</a>
 					<a href="{{ path('synapse_admin_health') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
 						<i data-lucide="activity"></i>
-						Santé système
+						{{ 'synapse.admin.sidebar.health'|trans(domain='synapse_admin') }}
 					</a>
 				</div>
 			</div>
@@ -94,8 +93,8 @@
 				<i data-lucide="layers"></i>
 			</div>
 			<div>
-				<div class="synapse-admin-card__title">Dépendances principales</div>
-				<div class="synapse-admin-card__subtitle">Packages Composer requis par le bundle</div>
+				<div class="synapse-admin-card__title">{{ 'synapse.admin.about.deps.title'|trans(domain='synapse_admin') }}</div>
+				<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.about.deps.subtitle'|trans(domain='synapse_admin') }}</div>
 			</div>
 		</div>
 
@@ -103,9 +102,9 @@
 			<table class="synapse-admin-table">
 				<thead>
 					<tr>
-						<th>Package</th>
-						<th>Contrainte</th>
-						<th>Statut</th>
+						<th>{{ 'synapse.admin.about.deps.table.package'|trans(domain='synapse_admin') }}</th>
+						<th>{{ 'synapse.admin.about.deps.table.constraint'|trans(domain='synapse_admin') }}</th>
+						<th>{{ 'synapse.admin.llm_config.model.table.head.status'|trans(domain='synapse_admin') }}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -140,13 +139,8 @@
 	<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mt-xl">
 		<i data-lucide="sparkles"></i>
 		<div>
-			Interface
-			<strong>Administration Synapse</strong>
-			conçue avec le
-			<strong>Synapse Design System</strong>
-			(synapse-admin-*) —
-			        Glassmorphism, Lucide Icons, zéro style inline.
-			<a href="{{ path('synapse_admin_health') }}">Vérifier la santé système</a>.
+			{{ 'synapse.admin.about.credit.text'|trans(domain='synapse_admin')|raw }}
+			<a href="{{ path('synapse_admin_health') }}">{{ 'synapse.admin.sidebar.health'|trans(domain='synapse_admin') }}</a>.
 		</div>
 	</div>
 

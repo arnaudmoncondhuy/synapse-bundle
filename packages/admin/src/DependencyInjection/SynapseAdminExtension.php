@@ -42,6 +42,17 @@ class SynapseAdminExtension extends Extension implements PrependExtensionInterfa
                 ],
             ]);
         }
+
+        // Enregistrement des traductions admin.
+        if ($container->hasExtension('framework')) {
+            $container->prependExtensionConfig('framework', [
+                'translator' => [
+                    'paths' => [
+                        \dirname(__DIR__, 2).'/translations',
+                    ],
+                ],
+            ]);
+        }
     }
 
     /**

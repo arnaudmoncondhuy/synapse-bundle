@@ -12,6 +12,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Santé du système — Administration Synapse.
@@ -31,6 +32,7 @@ class HealthController extends AbstractController
         private SynapseProviderRepository $providerRepo,
         private SynapseConfigRepository $configRepo,
         private PermissionCheckerInterface $permissionChecker,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -46,14 +48,14 @@ class HealthController extends AbstractController
             $this->em->getConnection()->executeQuery('SELECT 1');
             $platform = (new \ReflectionClass($this->em->getConnection()->getDatabasePlatform()::class))->getShortName();
             $checks['database'] = [
-                'label' => 'Base de données',
+                'label' => $this->translator->trans('synapse.admin.health.check.database.label', [], 'synapse_admin'),
                 'status' => 'ok',
                 'detail' => $platform,
                 'icon' => 'database',
             ];
         } catch (\Exception $e) {
             $checks['database'] = [
-                'label' => 'Base de données',
+                'label' => $this->translator->trans('synapse.admin.health.check.database.label', [], 'synapse_admin'),
                 'status' => 'error',
                 'detail' => $e->getMessage(),
                 'icon' => 'database',
@@ -67,14 +69,18 @@ class HealthController extends AbstractController
             $configured = array_filter($providers, fn ($p) => $p->isConfigured());
 
             $checks['providers'] = [
-                'label' => 'Providers LLM',
+                'label' => $this->translator->trans('synapse.admin.health.check.providers.label', [], 'synapse_admin'),
                 'status' => count($configured) > 0 ? 'ok' : 'warning',
-                'detail' => sprintf('%d actif(s), %d configuré(s) / %d total', count($enabled), count($configured), count($providers)),
+                'detail' => $this->translator->trans(
+                    'synapse.admin.health.check.providers.detail',
+                    ['%enabled%' => count($enabled), '%configured%' => count($configured), '%total%' => count($providers)],
+                    'synapse_admin'
+                ),
                 'icon' => 'plug',
             ];
         } catch (\Exception $e) {
             $checks['providers'] = [
-                'label' => 'Providers LLM',
+                'label' => $this->translator->trans('synapse.admin.health.check.providers.label', [], 'synapse_admin'),
                 'status' => 'error',
                 'detail' => $e->getMessage(),
                 'icon' => 'plug',
@@ -85,28 +91,35 @@ class HealthController extends AbstractController
         try {
             $config = $this->configRepo->getGlobalConfig();
             $checks['config'] = [
-                'label' => 'Configuration Synapse',
+                'label' => $this->translator->trans('synapse.admin.health.check.config.label', [], 'synapse_admin'),
                 'status' => 'ok',
-                'detail' => sprintf(
-                    'Langue: %s | Debug: %s | Rétention: %dj',
-                    $config->getContextLanguage(),
-                    $config->isDebugMode() ? 'ON' : 'OFF',
-                    $config->getRetentionDays(),
+                'detail' => $this->translator->trans(
+                    'synapse.admin.health.check.config.detail',
+                    [
+                        '%lang%' => $config->getContextLanguage(),
+                        '%debug%' => $config->isDebugMode() ? 'ON' : 'OFF',
+                        '%days%' => $config->getRetentionDays(),
+                    ],
+                    'synapse_admin'
                 ),
                 'icon' => 'settings',
             ];
 
             $checks['embedding'] = [
-                'label' => 'Embedding',
+                'label' => $this->translator->trans('synapse.admin.memory.embeddings.kpi.chunking_label', [], 'synapse_admin'),
                 'status' => $config->getEmbeddingModel() ? 'ok' : 'warning',
                 'detail' => $config->getEmbeddingModel()
-                    ? sprintf('%s via %s', $config->getEmbeddingModel(), $config->getEmbeddingProvider())
-                    : 'Non configuré',
+                    ? $this->translator->trans(
+                        'synapse.admin.health.check.embedding.detail',
+                        ['%model%' => $config->getEmbeddingModel(), '%provider%' => $config->getEmbeddingProvider()],
+                        'synapse_admin'
+                    )
+                    : $this->translator->trans('synapse.admin.llm_config.provider.status.unconfigured', [], 'synapse_admin'),
                 'icon' => 'database-zap',
             ];
         } catch (\Exception $e) {
             $checks['config'] = [
-                'label' => 'Configuration Synapse',
+                'label' => $this->translator->trans('synapse.admin.health.check.config.label', [], 'synapse_admin'),
                 'status' => 'error',
                 'detail' => $e->getMessage(),
                 'icon' => 'settings',

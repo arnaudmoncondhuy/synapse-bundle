@@ -11,7 +11,7 @@
     - admin_body_scripts : Scripts avant </body>
 #}
 <!DOCTYPE html>
-<html lang="fr" class="synapse-admin-root">
+<html lang="{{ app.request.locale|default('fr') }}" class="synapse-admin-root">
 <head>
     {% block admin_meta %}
         <meta charset="UTF-8">
@@ -19,7 +19,7 @@
         <meta name="robots" content="noindex, nofollow">
     {% endblock %}
 
-    <title>{% block admin_page_title %}Synapse Administration Synapse{% endblock %}</title>
+    <title>{% block admin_page_title %}{{ 'synapse.admin.title'|trans(domain='synapse_admin') }}{% endblock %}</title>
 
     {# CSRF token global #}
     {% if csrf_token is defined %}
@@ -63,9 +63,9 @@
 
         {# Topbar sticky #}
         <div class="synapse-admin-topbar">
-            <nav class="synapse-admin-topbar__breadcrumb" aria-label="Fil d'ariane">
+            <nav class="synapse-admin-topbar__breadcrumb" aria-label="{{ 'synapse.admin.breadcrumb.label'|trans(domain='synapse_admin') }}">
                 <a href="{{ path('synapse_admin_dashboard') }}">
-                    <i data-lucide="home" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>Administration Synapse
+                    <i data-lucide="home" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>{{ 'synapse.admin.topbar.home'|trans(domain='synapse_admin') }}
                 </a>
                 {% block admin_breadcrumb %}{% endblock %}
             </nav>

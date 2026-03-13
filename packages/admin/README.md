@@ -136,9 +136,15 @@ Le bundle auto-découvre les contrôleurs et services du core :
 - Formulaires de preset/provider
 - Gestion des outils enregistrés
 
-## Licence
+## Internationalisation
 
-PolyForm Noncommercial 1.0.0 (usage non-commercial uniquement)
+Le bundle supporte nativement le multilingue.
+- **Domaine de traduction** : `synapse_admin`
+- **Langues supportées** : FR (par défaut). Extension possible via les fichiers de traduction Symfony.
+
+---
+
+## Licence
 
 ## Support
 
