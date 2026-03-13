@@ -2539,6 +2539,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#endpoints-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endpoints API
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoints API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chat
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gestion-des-conversations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gestion des conversations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#protection-csrf" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2636,6 +2675,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#endpoints-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endpoints API
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoints API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#chat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chat
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gestion-des-conversations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gestion des conversations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#protection-csrf" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2701,12 +2779,74 @@
 <h2 id="installation">Installation</h2>
 <div class="highlight"><pre><span></span><code>composer<span class="w"> </span>require<span class="w"> </span>arnaudmoncondhuy/synapse-core<span class="w"> </span>arnaudmoncondhuy/synapse-chat
 </code></pre></div>
-<ul>
-<li><strong>POST <code>/synapse/api/chat</code></strong> : envoi d’un message et réception de la réponse.</li>
-<li><strong>POST <code>/synapse/api/estimate-cost</code></strong> : estimation du coût d'un message avant envoi.</li>
-<li><strong>POST <code>/synapse/api/conversation/reset</code></strong> : réinitialisation de la conversation courante.</li>
-<li><strong>Auto-titling</strong> : Le bundle génère automatiquement un titre après le premier échange (événement <code>title</code> envoyé en NDJSON).</li>
-</ul>
+<h2 id="endpoints-api">Endpoints API</h2>
+<h3 id="chat">Chat</h3>
+<table>
+<thead>
+<tr>
+<th>Méthode</th>
+<th>Route</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/synapse/api/chat</code></td>
+<td>Envoi d’un message, réponse en streaming NDJSON.</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/synapse/api/estimate-cost</code></td>
+<td>Estimation du coût en tokens avant envoi.</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/synapse/api/conversation/reset</code></td>
+<td>Réinitialisation de la conversation courante.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/synapse/api/csrf-token</code></td>
+<td>Récupérer le jeton CSRF (SPA, page surchargée).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Auto-titling</strong> : Le bundle génère automatiquement un titre après le premier échange (événement <code>title</code> envoyé en NDJSON).</p>
+<h3 id="gestion-des-conversations">Gestion des conversations</h3>
+<p>Ces endpoints permettent de gérer l’historique des conversations de l’utilisateur authentifié.</p>
+<table>
+<thead>
+<tr>
+<th>Méthode</th>
+<th>Route</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/synapse/api/conversations</code></td>
+<td>Liste les conversations de l’utilisateur (<code>?limit=50</code>, max 500).</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/synapse/api/conversations/{id}</code></td>
+<td>Supprime (soft-delete) une conversation.</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td><code>/synapse/api/conversations/{id}/rename</code></td>
+<td>Renomme une conversation. Body : <code>{"title": "Nouveau nom"}</code>.</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/synapse/api/conversations/{id}/messages</code></td>
+<td>Récupère tous les messages d’une conversation.</td>
+</tr>
+</tbody>
+</table>
+<p>Toutes ces routes nécessitent que l’utilisateur implémente <code>ConversationOwnerInterface</code>.</p>
 <h2 id="protection-csrf">Protection CSRF</h2>
 <p>Le bundle applique une protection CSRF sur les requêtes POST/PUT/DELETE. Le jeton est exposé via :</p>
 <ul>

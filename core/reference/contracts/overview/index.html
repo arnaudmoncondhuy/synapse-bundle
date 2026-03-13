@@ -2815,6 +2815,14 @@
 <td style="text-align: left;"><a href="../config-provider-interface/"><strong>ConfigProvider</strong></a></td>
 <td style="text-align: left;"><strong>Le Réglage.</strong> Ajuste la température et les filtres dynamiquement.</td>
 </tr>
+<tr>
+<td style="text-align: left;"><strong>MessageFormatterInterface</strong></td>
+<td style="text-align: left;"><strong>Le Normalisateur.</strong> Convertit les entités <code>SynapseMessage</code> vers le format OpenAI canonique et vice-versa.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SynapseDebugLoggerInterface</strong></td>
+<td style="text-align: left;"><strong>Le Débogueur.</strong> Enregistre les payloads bruts (requêtes/réponses API) pour l'analyse d'erreurs et la qualité. Méthodes : <code>logExchange(debugId, metadata, rawPayload)</code>, <code>findByDebugId(debugId)</code>.</td>
+</tr>
 </tbody>
 </table>
 <hr />

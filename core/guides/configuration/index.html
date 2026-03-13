@@ -905,10 +905,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#plafonds-couts-spending_limits-accounting" class="md-nav__link">
+  <a href="#suivi-de-tokens-couts-token_tracking" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Plafonds &amp; Coûts (spending_limits &amp; accounting)
+        Suivi de tokens &amp; coûts (token_tracking)
       
     </span>
   </a>
@@ -938,10 +938,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#retention-rgpd-retention" class="md-nav__link">
+  <a href="#retention-rgpd" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Rétention RGPD (retention)
+        Rétention RGPD
       
     </span>
   </a>
@@ -2819,10 +2819,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#plafonds-couts-spending_limits-accounting" class="md-nav__link">
+  <a href="#suivi-de-tokens-couts-token_tracking" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Plafonds &amp; Coûts (spending_limits &amp; accounting)
+        Suivi de tokens &amp; coûts (token_tracking)
       
     </span>
   </a>
@@ -2852,10 +2852,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#retention-rgpd-retention" class="md-nav__link">
+  <a href="#retention-rgpd" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Rétention RGPD (retention)
+        Rétention RGPD
       
     </span>
   </a>
@@ -2994,12 +2994,6 @@
 </thead>
 <tbody>
 <tr>
-<td><code>enabled</code></td>
-<td>bool</td>
-<td><code>false</code></td>
-<td>Activer la persistance Doctrine.</td>
-</tr>
-<tr>
 <td><code>conversation_class</code></td>
 <td>string</td>
 <td><code>null</code></td>
@@ -3013,6 +3007,9 @@
 </tr>
 </tbody>
 </table>
+<blockquote>
+<p>La persistance est automatiquement activée dès que <code>conversation_class</code> et <code>message_class</code> sont définis.</p>
+</blockquote>
 <h3 id="securite-security">Sécurité (<code>security</code>)</h3>
 <p>Gère les accès à l'administration et au chat.</p>
 <table>
@@ -3077,7 +3074,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="plafonds-couts-spending_limits-accounting">Plafonds &amp; Coûts (<code>spending_limits</code> &amp; <code>accounting</code>)</h3>
+<h3 id="suivi-de-tokens-couts-token_tracking">Suivi de tokens &amp; coûts (<code>token_tracking</code>)</h3>
 <p>Synapse permet de suivre l'usage et de brider la consommation.</p>
 <table>
 <thead>
@@ -3090,19 +3087,40 @@
 </thead>
 <tbody>
 <tr>
-<td><code>spending_limits.enabled</code></td>
+<td><code>enabled</code></td>
 <td>bool</td>
-<td><code>true</code></td>
-<td>Active la vérification des quotas avant chaque requête.</td>
+<td><code>false</code></td>
+<td>Active l'enregistrement des tokens et des coûts en base.</td>
 </tr>
 <tr>
-<td><code>accounting.reference_currency</code></td>
+<td><code>reference_currency</code></td>
 <td>string</td>
 <td><code>EUR</code></td>
-<td>Devise utilisée pour les plafonds et agrégats (EUR/USD).</td>
+<td>Devise de référence pour les plafonds et agrégats.</td>
+</tr>
+<tr>
+<td><code>currency_rates</code></td>
+<td>array</td>
+<td><code>{}</code></td>
+<td>Taux de conversion (ex: <code>{ USD: 0.92, GBP: 1.17 }</code>).</td>
+</tr>
+<tr>
+<td><code>sliding_day_hours</code></td>
+<td>int</td>
+<td><code>4</code></td>
+<td>Durée (en heures) de la fenêtre glissante pour les quotas journaliers (1–8760).</td>
 </tr>
 </tbody>
 </table>
+<div class="highlight"><pre><span></span><code><span class="nt">synapse</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">token_tracking</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">reference_currency</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">EUR</span>
+<span class="w">        </span><span class="nt">currency_rates</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">USD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.92</span>
+<span class="w">            </span><span class="nt">GBP</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.17</span>
+<span class="w">        </span><span class="nt">sliding_day_hours</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+</code></pre></div>
 <h3 id="protection-csrf">Protection CSRF</h3>
 <p>Le bundle implémente une protection CSRF automatique sur tous ses formulaires et endpoints d'API (POST/PUT/DELETE) si le composant <code>symfony/security-csrf</code> est installé et activé dans votre application.</p>
 <ul>
@@ -3128,26 +3146,8 @@
 <p>[!WARNING]
 N'activez le chiffrement que si vous avez configuré une clé 32 bytes valide.</p>
 </blockquote>
-<h3 id="retention-rgpd-retention">Rétention RGPD (<code>retention</code>)</h3>
-<p>Suppression automatique des anciennes conversations.</p>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Type</th>
-<th>Défaut</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>days</code></td>
-<td>int</td>
-<td><code>30</code></td>
-<td>Nombre de jours avant que les conversations ne soient purgées par <code>synapse:purge</code>.</td>
-</tr>
-</tbody>
-</table>
+<h3 id="retention-rgpd">Rétention RGPD</h3>
+<p>La durée de rétention est configurable depuis l'interface d'administration (Paramètres → Rétention RGPD). Elle définit le nombre de jours avant que les conversations soient purgées par <code>synapse:purge</code>. Ce n'est pas une option YAML.</p>
 <h3 id="memoire-vectorielle-vector_store">Mémoire Vectorielle (<code>vector_store</code>)</h3>
 <p>Permet de choisir l'implémentation de stockage pour le RAG.</p>
 <table>

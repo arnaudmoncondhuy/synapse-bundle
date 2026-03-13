@@ -2175,10 +2175,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#synapsetest-preset-interne" class="md-nav__link">
+  <a href="#synapsedebugembedding" class="md-nav__link">
     <span class="md-ellipsis">
       
-        synapse:test-preset (Interne)
+        synapse:debug:embedding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#synapsespendingwarm-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        synapse:spending:warm-cache
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#synapseversionupdate-interne" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        synapse:version:update (Interne)
       
     </span>
   </a>
@@ -2641,10 +2663,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#synapsetest-preset-interne" class="md-nav__link">
+  <a href="#synapsedebugembedding" class="md-nav__link">
     <span class="md-ellipsis">
       
-        synapse:test-preset (Interne)
+        synapse:debug:embedding
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#synapsespendingwarm-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        synapse:spending:warm-cache
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#synapseversionupdate-interne" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        synapse:version:update (Interne)
       
     </span>
   </a>
@@ -2695,8 +2739,22 @@ php<span class="w"> </span>bin/console<span class="w"> </span>synapse:purge<span
 <span class="c1"># Purge réelle</span>
 php<span class="w"> </span>bin/console<span class="w"> </span>synapse:purge
 </code></pre></div>
-<h2 id="synapsetest-preset-interne"><code>synapse:test-preset</code> (Interne)</h2>
-<p>Utilisé par l'interface d'administration pour valider qu'un preset est fonctionnel avant son activation.</p>
+<h2 id="synapsedebugembedding"><code>synapse:debug:embedding</code></h2>
+<p>Teste la génération d'un embedding avec le provider actif. Utile pour diagnostiquer les problèmes de connexion au service d'embeddings.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Tester avec un texte</span>
+php<span class="w"> </span>bin/console<span class="w"> </span>synapse:debug:embedding<span class="w"> </span><span class="s2">&quot;Bonjour monde&quot;</span>
+
+<span class="c1"># Tester avec un texte et afficher le vecteur complet</span>
+php<span class="w"> </span>bin/console<span class="w"> </span>synapse:debug:embedding<span class="w"> </span><span class="s2">&quot;Bonjour monde&quot;</span><span class="w"> </span>--show-vector
+</code></pre></div>
+<h2 id="synapsespendingwarm-cache"><code>synapse:spending:warm-cache</code></h2>
+<p>Recalcule les compteurs de dépenses depuis la base de données et met à jour le cache. Utile après une migration, une correction manuelle en base, ou si le cache a été vidé.</p>
+<div class="highlight"><pre><span></span><code>php<span class="w"> </span>bin/console<span class="w"> </span>synapse:spending:warm-cache
+</code></pre></div>
+<h2 id="synapseversionupdate-interne"><code>synapse:version:update</code> (Interne)</h2>
+<p>Met à jour le fichier <code>VERSION</code> avec la date courante au format <code>dev 0.YYMMDD</code>. Utilisé lors du process de release.</p>
+<div class="highlight"><pre><span></span><code>php<span class="w"> </span>bin/console<span class="w"> </span>synapse:version:update
+</code></pre></div>
 
 
 

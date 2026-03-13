@@ -1758,6 +1758,34 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#evenements-hors-cycle-de-chat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Événements hors cycle de chat
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Événements hors cycle de chat">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#synapseembeddingcompletedevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseEmbeddingCompletedEvent
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#diagramme-des-flux" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2619,6 +2647,34 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#evenements-hors-cycle-de-chat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Événements hors cycle de chat
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Événements hors cycle de chat">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#synapseembeddingcompletedevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseEmbeddingCompletedEvent
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#diagramme-des-flux" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2660,6 +2716,30 @@
 <li><strong><code>SynapseGenerationCompletedEvent</code></strong> : Fin de la génération textuelle.</li>
 <li><strong><code>SynapseExchangeCompletedEvent</code></strong> : Fin technique de l'échange (Debug &amp; Logs).</li>
 </ol>
+<h2 id="evenements-hors-cycle-de-chat">Événements hors cycle de chat</h2>
+<h3 id="synapseembeddingcompletedevent"><code>SynapseEmbeddingCompletedEvent</code></h3>
+<p>Déclenché à chaque fois qu'un embedding est généré (via <code>EmbeddingService</code>). Utilisé notamment par <code>TokenAccountingService</code> pour enregistrer la consommation en tokens liée aux embeddings.</p>
+<div class="highlight"><pre><span></span><code><span class="x">use ArnaudMoncondhuy\SynapseCore\Shared\Event\SynapseEmbeddingCompletedEvent;</span>
+
+<span class="x">class MyEmbeddingSubscriber implements EventSubscriberInterface</span>
+<span class="x">{</span>
+<span class="x">    public function onEmbeddingCompleted(SynapseEmbeddingCompletedEvent $event): void</span>
+<span class="x">    {</span>
+<span class="x">        echo $event-&gt;getModel();        // ex: &quot;text-embedding-004&quot;</span>
+<span class="x">        echo $event-&gt;getProvider();     // ex: &quot;gemini&quot;</span>
+<span class="x">        echo $event-&gt;getPromptTokens(); // tokens consommés</span>
+<span class="x">        echo $event-&gt;getTotalTokens();  // total tokens</span>
+<span class="x">    }</span>
+
+<span class="x">    public static function getSubscribedEvents(): array</span>
+<span class="x">    {</span>
+<span class="x">        return [SynapseEmbeddingCompletedEvent::class =&gt; &#39;onEmbeddingCompleted&#39;];</span>
+<span class="x">    }</span>
+<span class="x">}</span>
+</code></pre></div>
+<blockquote>
+<p><strong>Note</strong> : <code>SynapseSpendingLimitExceededEvent</code> est planifié mais pas encore implémenté.</p>
+</blockquote>
 <h2 id="diagramme-des-flux">Diagramme des flux</h2>
 <div class="highlight"><pre><span></span><code>sequenceDiagram
     participant App
