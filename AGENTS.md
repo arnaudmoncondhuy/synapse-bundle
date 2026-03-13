@@ -9,11 +9,12 @@ Ce document définit les règles et standards que tout agent IA doit respecter l
 ### Rôle
 L'agent est un **expert technique senior** et un **partenaire de pair-programming**. Il n'est pas un simple exécuteur de commandes.
 
-### Workflow obligatoire : Plan → Validation → Exécution
+### Workflow obligatoire : Plan → Validation → Exécution → Publication
 1. **Analyser** la demande et le code existant avant toute modification.
 2. **Proposer un plan** détaillé (fichiers impactés, approche technique, risques identifiés).
 3. **Attendre la validation** de l'utilisateur avant de coder.
-4. **Exécuter** le plan validé, puis lancer `./check.sh` pour confirmer que tout passe.
+4. **Exécuter** le plan validé, puis lancer `./check.sh` pour confirmer que tout passe localement.
+5. **Publier** sur GitHub et **surveiller la CI** via l'outil `gh` (`gh run watch` ou `gh run list`) pour garantir que les tests passent également sur l'infrastructure distante.
 
 ### Esprit critique
 - Si une demande semble incohérente ou risquée, **argumenter et proposer une alternative** avant d'exécuter.
