@@ -21,6 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Gestion des agents IA — Administration Synapse.
@@ -41,6 +42,7 @@ class AgentController extends AbstractController
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private ToolRegistry $toolRegistry,
+        private TranslatorInterface $translator,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
@@ -75,7 +77,7 @@ class AgentController extends AbstractController
             $this->em->persist($agent);
             $this->em->flush();
 
-            $this->addFlash('success', sprintf('Agent "%s" créé avec succès.', $agent->getName()));
+            $this->addFlash('success', $this->translator->trans('synapse.admin.agent.flash.created', ['%name%' => $agent->getName()], 'synapse_admin'));
 
             return $this->redirectToRoute('synapse_admin_agents');
         }
@@ -108,7 +110,7 @@ class AgentController extends AbstractController
             $this->applyFormData($agent, $request->request->all());
             $this->em->flush();
 
-            $this->addFlash('success', sprintf('Agent "%s" mis à jour.', $agent->getName()));
+            $this->addFlash('success', $this->translator->trans('synapse.admin.agent.flash.updated', ['%name%' => $agent->getName()], 'synapse_admin'));
 
             return $this->redirectToRoute('synapse_admin_agents');
         }
@@ -130,10 +132,10 @@ class AgentController extends AbstractController
             'available_tools' => $availableTools,
             'spending_limit' => $spendingLimit,
             'periods' => [
-                SpendingLimitPeriod::SLIDING_DAY->value => 'Glissante (4h)',
-                SpendingLimitPeriod::SLIDING_MONTH->value => 'Glissante 30j',
-                SpendingLimitPeriod::CALENDAR_DAY->value => 'Jour calendaire',
-                SpendingLimitPeriod::CALENDAR_MONTH->value => 'Mois calendaire',
+                SpendingLimitPeriod::SLIDING_DAY->value => $this->translator->trans('synapse.admin.agent.limit.period.sliding_day', [], 'synapse_admin'),
+                SpendingLimitPeriod::SLIDING_MONTH->value => $this->translator->trans('synapse.admin.agent.limit.period.sliding_month', [], 'synapse_admin'),
+                SpendingLimitPeriod::CALENDAR_DAY->value => $this->translator->trans('synapse.admin.agent.limit.period.calendar_day', [], 'synapse_admin'),
+                SpendingLimitPeriod::CALENDAR_MONTH->value => $this->translator->trans('synapse.admin.agent.limit.period.calendar_month', [], 'synapse_admin'),
             ],
         ]);
     }
@@ -153,7 +155,7 @@ class AgentController extends AbstractController
         if ('delete' === $action && null !== $limit) {
             $this->em->remove($limit);
             $this->em->flush();
-            $this->addFlash('success', 'Limite de dépense supprimée pour cet agent.');
+            $this->addFlash('success', $this->translator->trans('synapse.admin.agent.limit.flash.deleted', [], 'synapse_admin'));
 
             return $this->redirectToRoute('synapse_admin_agents_edit', ['id' => $agent->getId()]);
         }
@@ -164,7 +166,7 @@ class AgentController extends AbstractController
         $name = trim((string) $request->request->get('name', ''));
 
         if ('' === $amount) {
-            $this->addFlash('error', 'Le montant est requis.');
+            $this->addFlash('error', $this->translator->trans('synapse.admin.agent.limit.flash.amount_required', [], 'synapse_admin'));
 
             return $this->redirectToRoute('synapse_admin_agents_edit', ['id' => $agent->getId()]);
         }
@@ -183,7 +185,8 @@ class AgentController extends AbstractController
         $limit->setName('' !== $name ? $name : null);
         $this->em->flush();
 
-        $this->addFlash('success', $isNew ? 'Limite de dépense ajoutée pour cet agent.' : 'Limite de dépense mise à jour.');
+        $flashKey = $isNew ? 'synapse.admin.agent.limit.flash.added' : 'synapse.admin.agent.limit.flash.updated';
+        $this->addFlash('success', $this->translator->trans($flashKey, [], 'synapse_admin'));
 
         return $this->redirectToRoute('synapse_admin_agents_edit', ['id' => $agent->getId()]);
     }
@@ -208,8 +211,8 @@ class AgentController extends AbstractController
         $agent->setIsActive(!$agent->isActive());
         $this->em->flush();
 
-        $state = $agent->isActive() ? 'activé' : 'désactivé';
-        $this->addFlash('success', sprintf('Agent "%s" %s.', $agent->getName(), $state));
+        $stateKey = $agent->isActive() ? 'synapse.admin.agent.flash.enabled' : 'synapse.admin.agent.flash.disabled';
+        $this->addFlash('success', $this->translator->trans($stateKey, ['%name%' => $agent->getName()], 'synapse_admin'));
 
         return $this->redirectToRoute('synapse_admin_agents');
     }
@@ -223,7 +226,7 @@ class AgentController extends AbstractController
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_delete_'.$agent->getId());
 
         if ($agent->isBuiltin()) {
-            $this->addFlash('error', 'Les agents intégrés au bundle ne peuvent pas être supprimés.');
+            $this->addFlash('error', $this->translator->trans('synapse.admin.agent.flash.delete_builtin_error', [], 'synapse_admin'));
 
             return $this->redirectToRoute('synapse_admin_agents');
         }
@@ -232,7 +235,7 @@ class AgentController extends AbstractController
         $this->em->remove($agent);
         $this->em->flush();
 
-        $this->addFlash('success', sprintf('Agent "%s" supprimé.', $name));
+        $this->addFlash('success', $this->translator->trans('synapse.admin.agent.flash.deleted', ['%name%' => $name], 'synapse_admin'));
 
         return $this->redirectToRoute('synapse_admin_agents');
     }

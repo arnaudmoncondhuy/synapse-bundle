@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Journal de debug des échanges LLM — Administration Synapse.
@@ -33,6 +34,7 @@ class DebugController extends AbstractController
         private DatabaseConfigProvider $configProvider,
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
+        private TranslatorInterface $translator,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
@@ -51,7 +53,8 @@ class DebugController extends AbstractController
             $this->em->flush();
             $this->configProvider->clearCache();
 
-            $this->addFlash('success', sprintf('Le mode debug est désormais %s.', $config->isDebugMode() ? 'activé' : 'désactivé'));
+            $statusKey = $config->isDebugMode() ? 'synapse.admin.health.status.enabled' : 'synapse.admin.health.status.disabled';
+            $this->addFlash('success', $this->translator->trans('synapse.admin.debug.flash.mode_updated', ['%status%' => $this->translator->trans($statusKey, [], 'synapse_admin')], 'synapse_admin'));
 
             return $this->redirectToRoute('synapse_admin_debug');
         }
@@ -73,7 +76,7 @@ class DebugController extends AbstractController
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'debug_clear');
 
         $count = $this->debugLogRepo->clearAll();
-        $this->addFlash('success', sprintf('%d logs de debug supprimés.', $count));
+        $this->addFlash('success', $this->translator->trans('synapse.admin.debug.flash.cleared', ['%count%' => $count], 'synapse_admin'));
 
         return $this->redirectToRoute('synapse_admin_debug');
     }

@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Embeddings & RAG — Configuration du moteur sémantique — Administration Synapse.
@@ -35,6 +36,7 @@ class EmbeddingController extends AbstractController
         private VectorStoreRegistry $vectorStoreRegistry,
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
+        private TranslatorInterface $translator,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
@@ -76,7 +78,7 @@ class EmbeddingController extends AbstractController
 
             // Validation : le modèle doit appartenir au provider
             if ($embProvider && $embModel && !isset($embeddingModelsByProvider[$embProvider][$embModel])) {
-                $this->addFlash('error', 'Le modèle sélectionné n\'appartient pas au fournisseur choisi.');
+                $this->addFlash('error', $this->translator->trans('synapse.admin.memory.embeddings.flash.mismatch', [], 'synapse_admin'));
 
                 return $this->redirectToRoute('synapse_admin_embeddings');
             }
@@ -97,7 +99,7 @@ class EmbeddingController extends AbstractController
                 ->setVectorStore($vectorStore);
 
             $this->em->flush();
-            $this->addFlash('success', 'Configuration des Embeddings mise à jour.');
+            $this->addFlash('success', $this->translator->trans('synapse.admin.memory.embeddings.flash.updated', [], 'synapse_admin'));
 
             return $this->redirectToRoute('synapse_admin_embeddings');
         }

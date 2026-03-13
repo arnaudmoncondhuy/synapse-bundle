@@ -31,7 +31,7 @@ Nouveauté majeure de la V2, cette page permet de définir des limites de dépen
 
 ## ⚙️ Paramètres Globaux (Settings)
 Cette page permet de configurer le comportement par défaut du bundle :
-*   **Langue du Contexte** : Définit la langue dans laquelle l'IA doit s'exprimer par défaut.
+*   **Langue du Contexte** : Définit la langue de l'IA et de l'interface par défaut (via le système de translation `synapse_admin`).
 *   **Rétention RGPD** : Nombre de jours avant la purge automatique des messages.
 *   **Prompt Système Global** : Instructions de base qui seront ajoutées à toutes les conversations.
 *   **Mode Debug** : Active ou désactive le logging technique approfondi.

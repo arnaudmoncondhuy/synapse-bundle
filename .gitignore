@@ -1,17 +1,25 @@
 ###> php ###
-/vendor/
+**/vendor/
 composer.phar
-composer.lock
-.env.local
-.env.*.local
+**/composer.lock
+**/.env.local
+**/.env.*.local
 ###< php ###
+
+###> symfony ###
+**/var/
+**/site/
+**/coverage/
+###< symfony ###
 
 ###> dev tools ###
 /.idea/
 /.vscode/
-.claude/settings.local.json
+.claude/
 .phpunit.result.cache
 *.cache
+.php-cs-fixer.cache
+/phpstan.neon.cache
 ###< dev tools ###
 
 ###> assets ###
@@ -21,8 +29,10 @@ composer.lock
 ###> system ###
 .DS_Store
 Thumbs.db
-nul
 ###< system ###
 
 # Instructions internes
 GEMINI.md
+.gemini/
+.evolutions/
+.agents/
