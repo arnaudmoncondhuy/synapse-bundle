@@ -47,6 +47,10 @@ markdown_extensions:
 
 nav:
   - Accueil: index.md
+  - Déploiement:
+      - Guide de déploiement: deployment/DEPLOYMENT_GUIDE.md
+      - Déploiement Docker: deployment/DOCKER_DEPLOYMENT.md
+      - Déploiement Production: deployment/PRODUCTION_DEPLOYMENT.md
   - Synapse Core: '!include packages/core/mkdocs.yml'
   - Synapse Admin: '!include packages/admin/mkdocs.yml'
   - Synapse Chat: '!include packages/chat/mkdocs.yml'
