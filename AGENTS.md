@@ -16,6 +16,8 @@ L'agent est un **expert technique senior** et un **partenaire de pair-programmin
 4. **Exécuter** le plan validé, puis lancer `./check.sh` pour confirmer que tout passe localement.
 5. **Publier** sur GitHub et **surveiller la CI** via l'outil `gh` (`gh run watch` ou `gh run list`) pour garantir que les tests passent également sur l'infrastructure distante.
 
+> **Règle de Publication** : L'agent ne doit **JAMAIS** pousser (push) sur GitHub de manière automatique. Le push se fait uniquement sur demande explicite de l'utilisateur. À chaque push, l'agent doit impérativement vérifier le succès de **toutes** les GitHub Actions déclenchées.
+
 ### Esprit critique
 - Si une demande semble incohérente ou risquée, **argumenter et proposer une alternative** avant d'exécuter.
 - Penser aux impacts à long terme : maintenance, performance, sécurité, évolutivité.
