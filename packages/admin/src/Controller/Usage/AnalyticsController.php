@@ -72,7 +72,7 @@ class AnalyticsController extends AbstractController
     /**
      * Complète le tableau daily_usage avec des entrées à zéro pour les jours sans donnée.
      *
-     * @param array<string, array{date: string, total_tokens: int, ...}> $data
+     * @param array<string, array<string, mixed>> $data
      *
      * @return array<string, array{date: string, total_tokens: int, prompt_tokens: int, completion_tokens: int, thinking_tokens: int}>
      */
@@ -84,12 +84,14 @@ class AnalyticsController extends AbstractController
 
         while ($cursor <= $endDate) {
             $key = $cursor->format('Y-m-d');
-            $filled[$key] = $data[$key] ?? [
+            $row = $data[$key] ?? [];
+
+            $filled[$key] = [
                 'date' => $key,
-                'total_tokens' => 0,
-                'prompt_tokens' => 0,
-                'completion_tokens' => 0,
-                'thinking_tokens' => 0,
+                'total_tokens' => (int) ($row['total_tokens'] ?? 0),
+                'prompt_tokens' => (int) ($row['prompt_tokens'] ?? 0),
+                'completion_tokens' => (int) ($row['completion_tokens'] ?? 0),
+                'thinking_tokens' => (int) ($row['thinking_tokens'] ?? 0),
             ];
             $cursor = $cursor->modify('+1 day');
         }
