@@ -7,6 +7,7 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseCore\Security\RoleProvider;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\SpendingLimitPeriod;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\SpendingLimitScope;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
@@ -42,6 +43,7 @@ class AgentController extends AbstractController
         private EntityManagerInterface $em,
         private PermissionCheckerInterface $permissionChecker,
         private ToolRegistry $toolRegistry,
+        private RoleProvider $roleProvider,
         private TranslatorInterface $translator,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
@@ -95,6 +97,7 @@ class AgentController extends AbstractController
             'presets' => $presets,
             'tones' => $tones,
             'available_tools' => $availableTools,
+            'available_roles' => $this->roleProvider->getAvailableRoles(),
         ]);
     }
 
@@ -130,6 +133,7 @@ class AgentController extends AbstractController
             'presets' => $presets,
             'tones' => $tones,
             'available_tools' => $availableTools,
+            'available_roles' => $this->roleProvider->getAvailableRoles(),
             'spending_limit' => $spendingLimit,
             'periods' => [
                 SpendingLimitPeriod::SLIDING_DAY->value => $this->translator->trans('synapse.admin.agent.limit.period.sliding_day', [], 'synapse_admin'),
@@ -302,17 +306,12 @@ class AgentController extends AbstractController
         $agent->setAllowedToolNames(is_array($toolNames) ? $toolNames : []);
 
         // Contrôle d'accès (rôles et utilisateurs autorisés)
-        $rolesRaw = $data['access_roles'] ?? '';
+        // Les rôles arrivent comme un tableau depuis les checkboxes
+        $rolesRaw = $data['access_roles'] ?? [];
+        $roles = is_array($rolesRaw) ? $rolesRaw : [];
+
+        // Les identifiants utilisateur arrivent toujours en textarea
         $usersRaw = $data['access_users'] ?? '';
-
-        // Parser les rôles (séparés par des virgules ou des retours à la ligne)
-        $rolesSplit = preg_split('/[\n,]+/', is_string($rolesRaw) ? $rolesRaw : '');
-        $roles = array_filter(
-            array_map('trim', false !== $rolesSplit ? $rolesSplit : []),
-            fn ($role) => '' !== $role
-        );
-
-        // Parser les identifiants utilisateur (séparés par des virgules ou des retours à la ligne)
         $usersSplit = preg_split('/[\n,]+/', is_string($usersRaw) ? $usersRaw : '');
         $userIdentifiers = array_filter(
             array_map('trim', false !== $usersSplit ? $usersSplit : []),
@@ -324,7 +323,7 @@ class AgentController extends AbstractController
             $agent->setAccessControl(null);
         } else {
             $agent->setAccessControl([
-                'roles' => array_values($roles),
+                'roles' => $roles,
                 'userIdentifiers' => array_values($userIdentifiers),
             ]);
         }
