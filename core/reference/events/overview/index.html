@@ -1780,6 +1780,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#synapsespendinglimitexceededevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseSpendingLimitExceededEvent
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2669,6 +2680,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#synapsespendinglimitexceededevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseSpendingLimitExceededEvent
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2737,8 +2759,39 @@
 <span class="x">    }</span>
 <span class="x">}</span>
 </code></pre></div>
+<h3 id="synapsespendinglimitexceededevent"><code>SynapseSpendingLimitExceededEvent</code></h3>
+<p>Déclenché par <code>SpendingLimitChecker::assertCanSpend()</code> juste <strong>avant</strong> de lever <code>LlmQuotaException</code>, lorsqu'une requête dépasserait un plafond de dépense configuré.</p>
+<p>Permet à l'application hôte de réagir sans modifier le core : envoyer une notification, logger l'incident, ou déclencher un fallback.</p>
+<div class="highlight"><pre><span></span><code><span class="x">use ArnaudMoncondhuy\SynapseCore\Event\SynapseSpendingLimitExceededEvent;</span>
+<span class="x">use Symfony\Component\EventDispatcher\EventSubscriberInterface;</span>
+
+<span class="x">class SpendingAlertSubscriber implements EventSubscriberInterface</span>
+<span class="x">{</span>
+<span class="x">    public function onLimitExceeded(SynapseSpendingLimitExceededEvent $event): void</span>
+<span class="x">    {</span>
+<span class="x">        // Qui a déclenché le blocage ?</span>
+<span class="x">        $event-&gt;getUserId();         // ex: &quot;user-42&quot;</span>
+<span class="x">        $event-&gt;getScope();          // &#39;user&#39; | &#39;preset&#39; | &#39;agent&#39;</span>
+<span class="x">        $event-&gt;getScopeId();        // identifiant de la ressource</span>
+
+<span class="x">        // Chiffres</span>
+<span class="x">        $event-&gt;getLimitAmount();    // ex: 10.0</span>
+<span class="x">        $event-&gt;getConsumption();    // ex: 9.5</span>
+<span class="x">        $event-&gt;getEstimatedCost(); // ex: 1.2</span>
+<span class="x">        $event-&gt;getProjectedConsumption(); // 10.7 (au-dessus du plafond)</span>
+<span class="x">        $event-&gt;getOverrunAmount();  // 0.7 (dépassement)</span>
+<span class="x">        $event-&gt;getCurrency();       // &#39;EUR&#39;</span>
+<span class="x">        $event-&gt;getPeriod();         // SpendingLimitPeriod::SLIDING_DAY</span>
+<span class="x">    }</span>
+
+<span class="x">    public static function getSubscribedEvents(): array</span>
+<span class="x">    {</span>
+<span class="x">        return [SynapseSpendingLimitExceededEvent::class =&gt; &#39;onLimitExceeded&#39;];</span>
+<span class="x">    }</span>
+<span class="x">}</span>
+</code></pre></div>
 <blockquote>
-<p><strong>Note</strong> : <code>SynapseSpendingLimitExceededEvent</code> est planifié mais pas encore implémenté.</p>
+<p><code>LlmQuotaException</code> est toujours levée après le dispatch — cet event ne permet pas d'annuler le blocage.</p>
 </blockquote>
 <h2 id="diagramme-des-flux">Diagramme des flux</h2>
 <div class="highlight"><pre><span></span><code>sequenceDiagram
