@@ -300,5 +300,33 @@ class AgentController extends AbstractController
         // Outils autorisés
         $toolNames = $data['allowed_tools'] ?? [];
         $agent->setAllowedToolNames(is_array($toolNames) ? $toolNames : []);
+
+        // Contrôle d'accès (rôles et utilisateurs autorisés)
+        $rolesRaw = $data['access_roles'] ?? '';
+        $usersRaw = $data['access_users'] ?? '';
+
+        // Parser les rôles (séparés par des virgules ou des retours à la ligne)
+        $rolesSplit = preg_split('/[\n,]+/', is_string($rolesRaw) ? $rolesRaw : '');
+        $roles = array_filter(
+            array_map('trim', false !== $rolesSplit ? $rolesSplit : []),
+            fn ($role) => '' !== $role
+        );
+
+        // Parser les identifiants utilisateur (séparés par des virgules ou des retours à la ligne)
+        $usersSplit = preg_split('/[\n,]+/', is_string($usersRaw) ? $usersRaw : '');
+        $userIdentifiers = array_filter(
+            array_map('trim', false !== $usersSplit ? $usersSplit : []),
+            fn ($id) => '' !== $id
+        );
+
+        // Si les deux listes sont vides, on met null (agent public)
+        if (empty($roles) && empty($userIdentifiers)) {
+            $agent->setAccessControl(null);
+        } else {
+            $agent->setAccessControl([
+                'roles' => array_values($roles),
+                'userIdentifiers' => array_values($userIdentifiers),
+            ]);
+        }
     }
 }

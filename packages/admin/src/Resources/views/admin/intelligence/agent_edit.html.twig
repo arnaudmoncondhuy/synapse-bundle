@@ -234,6 +234,56 @@
 			</div>
 		</div>
 
+		{# ── Contrôle d'accès ─────────────────────────────────────────────────── #}
+		<div class="synapse-admin-card synapse-admin-mb-lg">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--accent">
+					<i data-lucide="shield-check"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.access.title'|trans(domain='synapse_admin') }}</div>
+					<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.access.subtitle'|trans(domain='synapse_admin') }}</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+				<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
+					<i data-lucide="info"></i>
+					<span>{{ 'synapse.admin.agent.edit.alert.access_tip'|trans(domain='synapse_admin') }}</span>
+				</div>
+
+				<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-md">
+
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label" for="agent-access-roles">
+							{{ 'synapse.admin.agent.edit.label.access_roles'|trans(domain='synapse_admin') }}
+						</label>
+						<textarea id="agent-access-roles" name="access_roles" rows="5"
+							class="synapse-admin-input synapse-admin-font-mono"
+							placeholder="{{ 'synapse.admin.agent.edit.placeholder.access_roles'|trans(domain='synapse_admin') }}">{% if agent.accessControl and agent.accessControl.roles|default([])|length > 0 %}{{ agent.accessControl.roles|join('\n') }}{% endif %}</textarea>
+						<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.access_roles'|trans(domain='synapse_admin') }}</p>
+					</div>
+
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label" for="agent-access-users">
+							{{ 'synapse.admin.agent.edit.label.access_users'|trans(domain='synapse_admin') }}
+						</label>
+						<textarea id="agent-access-users" name="access_users" rows="5"
+							class="synapse-admin-input synapse-admin-font-mono"
+							placeholder="{{ 'synapse.admin.agent.edit.placeholder.access_users'|trans(domain='synapse_admin') }}">{% if agent.accessControl and agent.accessControl.userIdentifiers|default([])|length > 0 %}{{ agent.accessControl.userIdentifiers|join('\n') }}{% endif %}</textarea>
+						<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.access_users'|trans(domain='synapse_admin') }}</p>
+					</div>
+
+				</div>
+
+				<div class="synapse-admin-alert synapse-admin-alert--warning synapse-admin-mt-md">
+					<i data-lucide="alert-triangle"></i>
+					<span>{{ 'synapse.admin.agent.edit.alert.access_public'|trans(domain='synapse_admin') }}</span>
+				</div>
+
+			</div>
+		</div>
+
 		{# ── Paramètres ───────────────────────────────────────────────────────── #}
 		<div class="synapse-admin-card synapse-admin-mb-lg">
 			<div class="synapse-admin-card__header">
