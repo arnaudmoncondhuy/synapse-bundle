@@ -160,3 +160,39 @@ Il exécute dans l'ordre :
 - Ne jamais stocker de credentials en clair dans le code ou les fichiers de config.
 - Utiliser `isEncrypted()` avant de chiffrer pour éviter le double-chiffrement.
 - Respecter OWASP Top 10 : pas d'injection SQL, XSS, CSRF, etc.
+
+### Contrôle d'accès aux agents
+
+Le système de contrôle d'accès permet de restreindre l'utilisation d'un agent à certains rôles Symfony ou utilisateurs spécifiques.
+
+#### Architecture
+- **Stockage** : Le champ `accessControl` (JSON) de l'entité `SynapseAgent` stocke les restrictions sous la forme :
+  ```json
+  {
+    "roles": ["ROLE_ADMIN", "ROLE_MANAGER"],
+    "userIdentifiers": ["alice@example.com", "bob@example.com"]
+  }
+  ```
+- **Vérification** : `PermissionCheckerInterface::canUseAgent(SynapseAgent $agent)` implémente la logique de contrôle.
+- **Logique** :
+  - Si `accessControl` est `null` ou vide → agent **public** (accessible à tous).
+  - Sinon → l'utilisateur doit avoir **au moins un des rôles autorisés OU** son identifiant doit figurer dans la liste.
+- **Points de contrôle** :
+  - `AgentRegistry::get()` → retourne `null` si l'utilisateur n'a pas accès (fail silently).
+  - `AgentRegistry::getAll()` → filtre les agents non autorisés.
+
+#### Interface d'administration
+- **Traductions** : Les clés de traduction pour l'interface de gestion des accès sont dans `packages/admin/translations/synapse_admin+intl-icu.fr.yaml` sous le préfixe `synapse.admin.agent.edit.*.access.*`.
+- **Template** : La section de contrôle d'accès est dans `packages/admin/src/Resources/views/admin/intelligence/agent_edit.html.twig`.
+- **Controller** : Le parsing des rôles et identifiants (textarea → tableau) est géré dans `AgentController::applyFormData()`.
+
+#### Conventions lors du développement
+- **Ajout de rôles** : Si vous ajoutez un nouveau rôle dans l'application hôte, aucune modification du bundle n'est requise. Le système utilise les rôles Symfony standards.
+- **Identifiants utilisateurs** : Utiliser `ConversationOwnerInterface::getIdentifier()` pour obtenir l'identifiant (email, pseudo, etc.). Ne **jamais** hardcoder `->getEmail()` ou une méthode spécifique.
+- **Tests** : Toujours tester les scénarios suivants :
+  - Agent public (pas de restriction).
+  - Agent restreint par rôle uniquement.
+  - Agent restreint par identifiant utilisateur uniquement.
+  - Agent restreint par rôle ET identifiant (logique OR).
+  - Utilisateur non autorisé (doit échouer silencieusement).
+- **Documentation** : La documentation complète est dans `packages/core/docs/agent-access-control.md`.

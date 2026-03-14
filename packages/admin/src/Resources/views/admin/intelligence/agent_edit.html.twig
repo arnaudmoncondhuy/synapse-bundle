@@ -1,7 +1,7 @@
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
 {% block admin_page_title %}
-	{{ is_new ? 'synapse.admin.agent.edit.page_title.new'|trans(domain='synapse_admin') : 'synapse.admin.agent.edit.page_title.edit'|trans({'%name%': agent.name}, domain='synapse_admin') }}
+	{{ is_new ? 'synapse.admin.agent.edit.page_title.new'|trans(domain='synapse_admin') : 'synapse.admin.agent.edit.page_title.edit'|trans({'name': agent.name}, domain='synapse_admin') }}
 	| {{ 'synapse.admin.sidebar.section.intelligence'|trans(domain='synapse_admin') }} | Synapse Administration Synapse
 {% endblock %}
 
@@ -22,7 +22,7 @@
 				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
 					<i data-lucide="target"></i>
 				</span>
-				{{ is_new ? 'synapse.admin.agent.edit.title.new'|trans(domain='synapse_admin') : 'synapse.admin.agent.edit.title.edit'|trans({'%name%': agent.name}, domain='synapse_admin') }}
+				{{ is_new ? 'synapse.admin.agent.edit.title.new'|trans(domain='synapse_admin') : 'synapse.admin.agent.edit.title.edit'|trans({'name': agent.name}, domain='synapse_admin') }}
 			</h1>
 			<p class="synapse-admin-page-subtitle">
 				{{ is_new
@@ -249,18 +249,31 @@
 
 				<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
 					<i data-lucide="info"></i>
-					<span>{{ 'synapse.admin.agent.edit.alert.access_tip'|trans(domain='synapse_admin') }}</span>
+					<span>{{ 'synapse.admin.agent.edit.alert.access_tip'|trans(domain='synapse_admin')|raw }}</span>
 				</div>
 
 				<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-md">
 
 					<div class="synapse-admin-form-group">
-						<label class="synapse-admin-label" for="agent-access-roles">
+						<div class="synapse-admin-label">
 							{{ 'synapse.admin.agent.edit.label.access_roles'|trans(domain='synapse_admin') }}
-						</label>
-						<textarea id="agent-access-roles" name="access_roles" rows="5"
-							class="synapse-admin-input synapse-admin-font-mono"
-							placeholder="{{ 'synapse.admin.agent.edit.placeholder.access_roles'|trans(domain='synapse_admin') }}">{% if agent.accessControl and agent.accessControl.roles|default([])|length > 0 %}{{ agent.accessControl.roles|join('\n') }}{% endif %}</textarea>
+						</div>
+						{% if available_roles|default([])|length > 0 %}
+							<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs synapse-admin-mb-sm">
+								{% for role in available_roles %}
+									<label class="synapse-admin-toggle" style="align-items: flex-start;">
+										<input type="checkbox"
+											name="access_roles[]"
+											value="{{ role }}"
+											{{ role in (agent.accessControl.roles|default([])) ? 'checked' : '' }}>
+										<span class="synapse-admin-toggle__slider"></span>
+										<span class="synapse-admin-toggle__label">
+											<strong class="synapse-admin-font-mono">{{ role }}</strong>
+										</span>
+									</label>
+								{% endfor %}
+							</div>
+						{% endif %}
 						<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.access_roles'|trans(domain='synapse_admin') }}</p>
 					</div>
 
@@ -276,10 +289,12 @@
 
 				</div>
 
-				<div class="synapse-admin-alert synapse-admin-alert--warning synapse-admin-mt-md">
-					<i data-lucide="alert-triangle"></i>
-					<span>{{ 'synapse.admin.agent.edit.alert.access_public'|trans(domain='synapse_admin') }}</span>
-				</div>
+				{% if agent.isPublic %}
+					<div class="synapse-admin-alert synapse-admin-alert--warning synapse-admin-mt-md">
+						<i data-lucide="alert-triangle"></i>
+						<span>{{ 'synapse.admin.agent.edit.alert.access_public'|trans(domain='synapse_admin')|raw }}</span>
+					</div>
+				{% endif %}
 
 			</div>
 		</div>

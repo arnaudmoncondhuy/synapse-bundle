@@ -148,61 +148,60 @@
 					</div>
 				</div>
 			</div>
-		</div>
 
-		{# ── KPIs : Agent / Ton / Coût ── #}
-		<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
-			<div class="synapse-admin-card synapse-admin-card--hover">
-				<div class="synapse-admin-kpi">
-					<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (preset_config.agent_id ?? false) ? 'primary' : 'neutral' }}">
-						<i data-lucide="bot"></i>
+			{# ── KPIs : Agent / Ton / Coût ── #}
+			<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
+				<div class="synapse-admin-card synapse-admin-card--hover">
+					<div class="synapse-admin-kpi">
+						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (preset_config.agent_id ?? false) ? 'primary' : 'neutral' }}">
+							<i data-lucide="bot"></i>
+						</div>
+						<div class="synapse-admin-kpi__body">
+							<div class="synapse-admin-kpi__label">Agent</div>
+							{% if preset_config.agent_name ?? false %}
+								<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ preset_config.agent_emoji ?? '' }}
+									{{ preset_config.agent_name }}</div>
+								<div class="synapse-admin-kpi__sub">ID #{{ preset_config.agent_id }}</div>
+							{% else %}
+								<div class="synapse-admin-kpi__value synapse-admin-text-sm synapse-admin-text-muted">Aucun</div>
+								<div class="synapse-admin-kpi__sub">Preset global par défaut</div>
+							{% endif %}
+						</div>
 					</div>
-					<div class="synapse-admin-kpi__body">
-						<div class="synapse-admin-kpi__label">Agent</div>
-						{% if preset_config.agent_name ?? false %}
-							<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ preset_config.agent_emoji ?? '' }} {{ preset_config.agent_name }}</div>
-							<div class="synapse-admin-kpi__sub">ID #{{ preset_config.agent_id }}</div>
-						{% else %}
-							<div class="synapse-admin-kpi__value synapse-admin-text-sm synapse-admin-text-muted">Aucun</div>
-							<div class="synapse-admin-kpi__sub">Preset global par défaut</div>
-						{% endif %}
+				</div>
+				<div class="synapse-admin-card synapse-admin-card--hover">
+					<div class="synapse-admin-kpi">
+						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (preset_config.active_tone ?? false) ? 'info' : 'neutral' }}">
+							<i data-lucide="sparkles"></i>
+						</div>
+						<div class="synapse-admin-kpi__body">
+							<div class="synapse-admin-kpi__label">Ton</div>
+							<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ preset_config.active_tone ?? 'Normal' }}</div>
+							<div class="synapse-admin-kpi__sub">{{ (preset_config.active_tone ?? false) ? 'Personnalité appliquée' : 'Par défaut' }}</div>
+						</div>
+					</div>
+				</div>
+				<div class="synapse-admin-card synapse-admin-card--hover">
+					<div class="synapse-admin-kpi">
+						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (data.estimated_cost ?? false) ? 'warning' : 'neutral' }}">
+							<i data-lucide="circle-dollar-sign"></i>
+						</div>
+						<div class="synapse-admin-kpi__body">
+							<div class="synapse-admin-kpi__label">Coût estimé</div>
+							{% if data.estimated_cost ?? false %}
+								<div class="synapse-admin-kpi__value synapse-admin-text-sm">${{ data.estimated_cost|number_format(6) }}</div>
+								<div class="synapse-admin-kpi__sub">In: ${{ preset_config.pricing_input ?? 0 }}/M · Out: ${{ preset_config.pricing_output ?? 0 }}/M</div>
+							{% else %}
+								<div class="synapse-admin-kpi__value synapse-admin-text-sm synapse-admin-text-muted">—</div>
+								<div class="synapse-admin-kpi__sub">Pricing non configuré</div>
+							{% endif %}
+						</div>
 					</div>
 				</div>
 			</div>
-			<div class="synapse-admin-card synapse-admin-card--hover">
-				<div class="synapse-admin-kpi">
-					<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (preset_config.active_tone ?? false) ? 'info' : 'neutral' }}">
-						<i data-lucide="sparkles"></i>
-					</div>
-					<div class="synapse-admin-kpi__body">
-						<div class="synapse-admin-kpi__label">Ton</div>
-						<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ preset_config.active_tone ?? 'Normal' }}</div>
-						<div class="synapse-admin-kpi__sub">{{ (preset_config.active_tone ?? false) ? 'Personnalité appliquée' : 'Par défaut' }}</div>
-					</div>
-				</div>
-			</div>
-			<div class="synapse-admin-card synapse-admin-card--hover">
-				<div class="synapse-admin-kpi">
-					<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (data.estimated_cost ?? false) ? 'warning' : 'neutral' }}">
-						<i data-lucide="circle-dollar-sign"></i>
-					</div>
-					<div class="synapse-admin-kpi__body">
-						<div class="synapse-admin-kpi__label">Coût estimé</div>
-						{% if data.estimated_cost ?? false %}
-							<div class="synapse-admin-kpi__value synapse-admin-text-sm">${{ data.estimated_cost|number_format(6) }}</div>
-							<div class="synapse-admin-kpi__sub">In: ${{ preset_config.pricing_input ?? 0 }}/M · Out: ${{ preset_config.pricing_output ?? 0 }}/M</div>
-						{% else %}
-							<div class="synapse-admin-kpi__value synapse-admin-text-sm synapse-admin-text-muted">—</div>
-							<div class="synapse-admin-kpi__sub">Pricing non configuré</div>
-						{% endif %}
-					</div>
-				</div>
-			</div>
-		</div>
 
 			<div class="synapse-admin-layout">
-				<div
-					class="synapse-admin-layout__main">
+				<div class="synapse-admin-layout__main">
 					{# Prompt Système #}
 					{% if data.system_prompt ?? false %}
 						<div class="synapse-admin-card synapse-admin-mb-xl">
@@ -221,35 +220,35 @@
 						</div>
 					{% endif %}
 				</div>
-				<div
-					class="synapse-admin-layout__sidebar">
+				<div class="synapse-admin-layout__sidebar">
 					{# Configuration #}
 					<div class="synapse-admin-card synapse-admin-mb-xl">
 						<div class="synapse-admin-card__header" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border);">
 							<div class="synapse-admin-card__title" style="font-size: 1rem;">Core & Sécurité</div>
+						</div>
+						<div class="synapse-admin-card__body" style="padding: 0;">
+							<ul style="list-style: none; padding: 0; margin: 0;">
+								<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+									<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Preset</span>
+									<span style="font-weight: 500;">{{ preset_config.preset_name ?? '—' }}</span>
+								</li>
+								<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+									<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Agent</span>
+									<span style="font-weight: 500;">{% if preset_config.agent_name ?? false %}{{ preset_config.agent_emoji ?? '' }}
+										{{ preset_config.agent_name }}{% else %}<span class="synapse-admin-text-muted">Aucun</span>{% endif %}</span>
+								</li>
+								<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+									<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Ton</span>
+									<span style="font-weight: 500; font-family: monospace;">{{ preset_config.active_tone ?? 'Normal' }}</span>
+								</li>
+							</ul>
+						</div>
 					</div>
-					<div class="synapse-admin-card__body" style="padding: 0;">
-						<ul style="list-style: none; padding: 0; margin: 0;">
-							<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
-								<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Preset</span>
-								<span style="font-weight: 500;">{{ preset_config.preset_name ?? '—' }}</span>
-							</li>
-							<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
-								<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Agent</span>
-								<span style="font-weight: 500;">{% if preset_config.agent_name ?? false %}{{ preset_config.agent_emoji ?? '' }} {{ preset_config.agent_name }}{% else %}<span class="synapse-admin-text-muted">Aucun</span>{% endif %}</span>
-							</li>
-							<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
-								<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Ton</span>
-								<span style="font-weight: 500; font-family: monospace;">{{ preset_config.active_tone ?? 'Normal' }}</span>
-							</li>
-						</ul>
-					</div>
-				</div>
 
-				{# Paramètres de génération #}
-				<div class="synapse-admin-card synapse-admin-mb-xl">
-					<div class="synapse-admin-card__header" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border);">
-						<div class="synapse-admin-card__title" style="font-size: 1rem;">Core & Sécurité</div>
+					{# Paramètres de génération #}
+					<div class="synapse-admin-card synapse-admin-mb-xl">
+						<div class="synapse-admin-card__header" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border);">
+							<div class="synapse-admin-card__title" style="font-size: 1rem;">Génération & Samplers</div>
 						</div>
 						<div class="synapse-admin-card__body" style="padding: 0;">
 							<ul style="list-style: none; padding: 0; margin: 0;">
@@ -285,7 +284,7 @@
 										<span style="font-weight: 500; font-family: monospace;">{{ preset_config.thinking_budget ?? 'Automatique' }}</span>
 									</li>
 								{% endif %}
-								<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+								<li style="padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center;">
 									<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Streaming</span>
 									<span>
 										{% if preset_config.streaming_enabled ?? false %}
@@ -725,26 +724,37 @@
 	</div>
 
 	{# Script JS pour naviguer entre les onglets #}
+	{# Script JS pour naviguer entre les onglets #}
 	<script>
-		document.addEventListener('DOMContentLoaded', () => {
-const buttons = document.querySelectorAll('.synapse-admin-tab-btn');
-const panes = document.querySelectorAll('.synapse-admin-tab-pane');
+		const initDebugTabs = () => {
+			const buttons = document.querySelectorAll('.synapse-admin-tab-btn');
+			const panes = document.querySelectorAll('.synapse-admin-tab-pane');
 
-buttons.forEach(button => {
-button.addEventListener('click', () => { // Remove active class from all
-buttons.forEach(btn => btn.classList.remove('active'));
-panes.forEach(pane => pane.style.display = 'none');
+			if (buttons.length === 0) return;
 
-// Add active class to clicked button and show pane
-button.classList.add('active');
-const targetId = 'tab-' + button.getAttribute('data-tab');
-const targetPane = document.getElementById(targetId);
-if (targetPane) {
-targetPane.style.display = 'block';
-}
-});
-});
-});
+			buttons.forEach(button => {
+				button.addEventListener('click', () => {
+					// Remove active class from all
+					buttons.forEach(btn => btn.classList.remove('active'));
+					panes.forEach(pane => pane.style.display = 'none');
+
+					// Add active class to clicked button and show pane
+					button.classList.add('active');
+					const targetId = 'tab-' + button.getAttribute('data-tab');
+					const targetPane = document.getElementById(targetId);
+					if (targetPane) {
+						targetPane.style.display = 'block';
+						// Trigger lucide icons if needed
+						if (window.lucide) {
+							window.lucide.createIcons();
+						}
+					}
+				});
+			});
+		};
+
+		document.addEventListener('DOMContentLoaded', initDebugTabs);
+		document.addEventListener('turbo:load', initDebugTabs);
 	</script>
 
 {% endblock %}

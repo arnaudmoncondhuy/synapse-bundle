@@ -76,13 +76,13 @@
 						{% if agent.tone %}
 							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
 								<i data-lucide="mic-2" style="width: 1rem; height: 1rem;"></i>
-								<span><strong>{{ 'synapse.admin.agent.list.label.style'|trans(domain='synapse_admin') }} :</strong> {{ tone.emoji }} {{ agent.tone.name }}</span>
+								<span><strong>{{ 'synapse.admin.agent.list.label.style'|trans(domain='synapse_admin') }} :</strong> {{ agent.tone.emoji }} {{ agent.tone.name }}</span>
 							</div>
 						{% endif %}
 						{% if agent.allowedToolNames|default([])|length > 0 %}
 							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
 								<i data-lucide="wrench" style="width: 1rem; height: 1rem;"></i>
-								<span><strong>{{ 'synapse.admin.agent.list.label.tools'|trans(domain='synapse_admin') }} :</strong> {{ 'synapse.admin.agent.list.tools_count'|trans({'%count%': agent.allowedToolNames|length}, domain='synapse_admin') }}</span>
+								<span><strong>{{ 'synapse.admin.agent.list.label.tools'|trans(domain='synapse_admin') }} :</strong> {{ 'synapse.admin.agent.list.tools_count'|trans({'count': agent.allowedToolNames|length}, domain='synapse_admin') }}</span>
 							</div>
 						{% endif %}
 					</div>
