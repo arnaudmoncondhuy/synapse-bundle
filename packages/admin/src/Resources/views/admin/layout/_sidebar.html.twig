@@ -36,7 +36,7 @@
         {# ─────────────────────────────────────────────────────────────── #}
         {# 🧠 INTELLIGENCE                                                 #}
         {# ─────────────────────────────────────────────────────────────── #}
-        <div class="synapse-admin-nav__section">{{ 'synapse.admin.sidebar.section.intelligence'|trans(domain='synapse_admin') }}</div>
+        <div class="synapse-admin-nav__section">🧠 {{ 'synapse.admin.sidebar.section.intelligence'|trans(domain='synapse_admin') }}</div>
         <div class="synapse-admin-nav__group">
 
             {# Configuration LLM — hub onglets (fournisseurs + modèles + presets) #}
@@ -78,7 +78,7 @@
         {# ─────────────────────────────────────────────────────────────── #}
         {# 🧩 BASE DE CONNAISSANCE                                         #}
         {# ─────────────────────────────────────────────────────────────── #}
-        <div class="synapse-admin-nav__section">{{ 'synapse.admin.sidebar.section.knowledge'|trans(domain='synapse_admin') }}</div>
+        <div class="synapse-admin-nav__section">🧩 {{ 'synapse.admin.sidebar.section.knowledge'|trans(domain='synapse_admin') }}</div>
         <div class="synapse-admin-nav__group">
 
             <a href="{{ path('synapse_admin_embeddings') }}"
@@ -92,7 +92,7 @@
         {# ─────────────────────────────────────────────────────────────── #}
         {# 📈 MONITORING                                                   #}
         {# ─────────────────────────────────────────────────────────────── #}
-        <div class="synapse-admin-nav__section">{{ 'synapse.admin.sidebar.section.monitoring'|trans(domain='synapse_admin') }}</div>
+        <div class="synapse-admin-nav__section">📈 {{ 'synapse.admin.sidebar.section.monitoring'|trans(domain='synapse_admin') }}</div>
         <div class="synapse-admin-nav__group">
 
             <a href="{{ path('synapse_admin_analytics') }}"
@@ -107,6 +107,12 @@
                 {{ 'synapse.admin.sidebar.quotas'|trans(domain='synapse_admin') }}
             </a>
 
+            <a href="{{ path('synapse_admin_spending_alerts') }}"
+               class="synapse-admin-nav__link {% if route starts with 'synapse_admin_spending_alerts' %}is-active{% endif %}">
+                <span class="synapse-admin-nav__icon"><i data-lucide="triangle-alert"></i></span>
+                {{ 'synapse.admin.sidebar.spending_alerts'|trans(domain='synapse_admin') }}
+            </a>
+
             <a href="{{ path('synapse_admin_export') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_export' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="download"></i></span>
@@ -119,7 +125,7 @@
         {# ─────────────────────────────────────────────────────────────── #}
         {# 🔒 SÉCURITÉ                                                     #}
         {# ─────────────────────────────────────────────────────────────── #}
-        <div class="synapse-admin-nav__section">{{ 'synapse.admin.sidebar.section.security'|trans(domain='synapse_admin') }}</div>
+        <div class="synapse-admin-nav__section">🔒 {{ 'synapse.admin.sidebar.section.security'|trans(domain='synapse_admin') }}</div>
         <div class="synapse-admin-nav__group">
 
             <a href="{{ path('synapse_admin_audit') }}"
@@ -139,7 +145,7 @@
         {# ─────────────────────────────────────────────────────────────── #}
         {# ⚙️ SYSTÈME                                                      #}
         {# ─────────────────────────────────────────────────────────────── #}
-        <div class="synapse-admin-nav__section">{{ 'synapse.admin.sidebar.section.system'|trans(domain='synapse_admin') }}</div>
+        <div class="synapse-admin-nav__section">⚙️ {{ 'synapse.admin.sidebar.section.system'|trans(domain='synapse_admin') }}</div>
         <div class="synapse-admin-nav__group">
 
             <a href="{{ path('synapse_admin_debug') }}"

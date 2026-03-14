@@ -1,0 +1,211 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Alertes budget | Synapse Administration{% endblock %}
+
+{% block admin_breadcrumb %}
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <a href="#" class="synapse-admin-topbar__breadcrumb">Monitoring</a>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <span class="synapse-admin-topbar__current">Alertes budget</span>
+{% endblock %}
+
+{% block admin_content %}
+
+    <div class="synapse-admin-page-header">
+        <div class="synapse-admin-page-header__info">
+            <h1 class="synapse-admin-page-title">
+                <span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--danger">
+                    <i data-lucide="triangle-alert"></i>
+                </span>
+                Alertes budget
+            </h1>
+            <p class="synapse-admin-page-subtitle">
+                Historique des dépassements de plafond de dépense. Chaque ligne correspond à une requête LLM bloquée.
+            </p>
+        </div>
+        <div class="synapse-admin-page-header__actions">
+            <a href="{{ path('synapse_admin_quotas') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+                <i data-lucide="gauge"></i>
+                Gérer les quotas
+            </a>
+        </div>
+    </div>
+
+    {# ── KPIs ─────────────────────────────────────────────────────────────── #}
+    <div class="synapse-admin-grid synapse-admin-grid--4 synapse-admin-mb-xl">
+
+        <div class="synapse-admin-card synapse-admin-card--hover">
+            <div class="synapse-admin-kpi">
+                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--danger">
+                    <i data-lucide="triangle-alert"></i>
+                </div>
+                <div class="synapse-admin-kpi__body">
+                    <div class="synapse-admin-kpi__label">Incidents total</div>
+                    <div class="synapse-admin-kpi__value">{{ total }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="synapse-admin-card synapse-admin-card--hover">
+            <div class="synapse-admin-kpi">
+                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary">
+                    <i data-lucide="user"></i>
+                </div>
+                <div class="synapse-admin-kpi__body">
+                    <div class="synapse-admin-kpi__label">Par utilisateur</div>
+                    <div class="synapse-admin-kpi__value">{{ count_by_scope.user ?? 0 }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="synapse-admin-card synapse-admin-card--hover">
+            <div class="synapse-admin-kpi">
+                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--warning">
+                    <i data-lucide="layers"></i>
+                </div>
+                <div class="synapse-admin-kpi__body">
+                    <div class="synapse-admin-kpi__label">Par preset</div>
+                    <div class="synapse-admin-kpi__value">{{ count_by_scope.preset ?? 0 }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="synapse-admin-card synapse-admin-card--hover">
+            <div class="synapse-admin-kpi">
+                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--success">
+                    <i data-lucide="bot"></i>
+                </div>
+                <div class="synapse-admin-kpi__body">
+                    <div class="synapse-admin-kpi__label">Par agent</div>
+                    <div class="synapse-admin-kpi__value">{{ count_by_scope.agent ?? 0 }}</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    {# ── Filtres ───────────────────────────────────────────────────────────── #}
+    <div class="synapse-admin-card synapse-admin-mb-xl">
+        <div class="synapse-admin-card__header">
+            <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+                <i data-lucide="filter"></i>
+            </div>
+            <div>
+                <div class="synapse-admin-card__title">Filtres</div>
+            </div>
+        </div>
+        <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+            <div class="synapse-admin-flex synapse-admin-gap-lg synapse-admin-items-center" style="flex-wrap: wrap;">
+                <div>
+                    <div class="synapse-admin-text-xs synapse-admin-text-secondary synapse-admin-mb-xs">Période</div>
+                    <div class="synapse-admin-flex synapse-admin-gap-xs">
+                        {% for d, label in {7: '7 jours', 30: '30 jours', 90: '90 jours', 365: '1 an'} %}
+                            <a href="{{ path('synapse_admin_spending_alerts', {days: d, scope: scope_filter}) }}"
+                               class="synapse-admin-btn synapse-admin-btn--sm {{ days == d ? 'synapse-admin-btn--primary' : 'synapse-admin-btn--ghost' }}">
+                                {{ label }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div>
+                    <div class="synapse-admin-text-xs synapse-admin-text-secondary synapse-admin-mb-xs">Portée</div>
+                    <div class="synapse-admin-flex synapse-admin-gap-xs">
+                        <a href="{{ path('synapse_admin_spending_alerts', {days: days}) }}"
+                           class="synapse-admin-btn synapse-admin-btn--sm {{ scope_filter == '' ? 'synapse-admin-btn--primary' : 'synapse-admin-btn--ghost' }}">
+                            Tous
+                        </a>
+                        {% for s, label in {user: 'Utilisateur', preset: 'Preset', agent: 'Agent'} %}
+                            <a href="{{ path('synapse_admin_spending_alerts', {days: days, scope: s}) }}"
+                               class="synapse-admin-btn synapse-admin-btn--sm {{ scope_filter == s ? 'synapse-admin-btn--primary' : 'synapse-admin-btn--ghost' }}">
+                                {{ label }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Table des incidents ────────────────────────────────────────────────── #}
+    <div class="synapse-admin-card">
+        <div class="synapse-admin-card__header">
+            <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--danger">
+                <i data-lucide="list"></i>
+            </div>
+            <div>
+                <div class="synapse-admin-card__title">Incidents de dépassement</div>
+                <div class="synapse-admin-card__subtitle">
+                    {{ logs|length }} incident{{ logs|length != 1 ? 's' : '' }} sur les {{ days }} derniers jours
+                </div>
+            </div>
+        </div>
+        <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+            {% if logs is empty %}
+                <div class="synapse-admin-empty">
+                    <div class="synapse-admin-empty__icon"><i data-lucide="check-circle-2"></i></div>
+                    <div class="synapse-admin-empty__text">Aucun dépassement de plafond sur cette période.</div>
+                </div>
+            {% else %}
+                <div class="synapse-admin-table-wrapper">
+                    <table class="synapse-admin-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Utilisateur</th>
+                                <th>Portée</th>
+                                <th>Identifiant périmètre</th>
+                                <th>Période</th>
+                                <th class="synapse-admin-table__col--right">Plafond</th>
+                                <th class="synapse-admin-table__col--right">Consommé</th>
+                                <th class="synapse-admin-table__col--right">Dépassement</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                                <tr>
+                                    <td class="synapse-admin-table__cell--mono">
+                                        {{ log.exceededAt|date('d/m/Y H:i:s') }}
+                                    </td>
+                                    <td>{{ log.userId }}</td>
+                                    <td>
+                                        {% if log.scope == 'user' %}
+                                            <span class="synapse-admin-badge synapse-admin-badge--primary">Utilisateur</span>
+                                        {% elseif log.scope == 'preset' %}
+                                            <span class="synapse-admin-badge synapse-admin-badge--warning">Preset</span>
+                                        {% else %}
+                                            <span class="synapse-admin-badge synapse-admin-badge--success">Agent</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="synapse-admin-table__cell--mono">{{ log.scopeId }}</td>
+                                    <td>
+                                        {% set period_labels = {
+                                            'sliding_day': 'Glissant 4h',
+                                            'sliding_month': 'Glissant 30j',
+                                            'calendar_day': 'Jour cal.',
+                                            'calendar_month': 'Mois cal.'
+                                        } %}
+                                        {{ period_labels[log.period.value] ?? log.period.value }}
+                                    </td>
+                                    <td class="synapse-admin-table__col--right">
+                                        {{ log.limitAmount|number_format(4, ',', ' ') }} {{ log.currency }}
+                                    </td>
+                                    <td class="synapse-admin-table__col--right">
+                                        {{ log.consumption|number_format(4, ',', ' ') }} {{ log.currency }}
+                                    </td>
+                                    <td class="synapse-admin-table__col--right">
+                                        <span class="synapse-admin-text--danger synapse-admin-text--bold">
+                                            +{{ log.overrunAmount|number_format(4, ',', ' ') }} {{ log.currency }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+{% endblock %}

@@ -41,7 +41,7 @@ class AnalyticsController extends AbstractController
         $end = new \DateTimeImmutable();
 
         $globalStats = $this->tokenUsageRepo->getGlobalStats($start, $end);
-        $dailyUsage = $this->tokenUsageRepo->getDailyUsage($start, $end);
+        $dailyUsage = $this->fillMissingDays($this->tokenUsageRepo->getDailyUsage($start, $end), $start, $end);
         $usageByModule = $this->tokenUsageRepo->getUsageByModule($start, $end);
         $usageByModel = $this->tokenUsageRepo->getUsageByModel($start, $end);
 
@@ -67,6 +67,34 @@ class AnalyticsController extends AbstractController
             'usage_by_model' => $usageByModel,
             'conversation_stats' => $usageByModule['chat'] ?? ['count' => 0, 'total_tokens' => 0],
         ]);
+    }
+
+    /**
+     * Complète le tableau daily_usage avec des entrées à zéro pour les jours sans donnée.
+     *
+     * @param array<string, array{date: string, total_tokens: int, ...}> $data
+     *
+     * @return array<string, array{date: string, total_tokens: int, prompt_tokens: int, completion_tokens: int, thinking_tokens: int}>
+     */
+    private function fillMissingDays(array $data, \DateTimeImmutable $start, \DateTimeImmutable $end): array
+    {
+        $filled = [];
+        $cursor = $start;
+        $endDate = $end->setTime(0, 0, 0);
+
+        while ($cursor <= $endDate) {
+            $key = $cursor->format('Y-m-d');
+            $filled[$key] = $data[$key] ?? [
+                'date' => $key,
+                'total_tokens' => 0,
+                'prompt_tokens' => 0,
+                'completion_tokens' => 0,
+                'thinking_tokens' => 0,
+            ];
+            $cursor = $cursor->modify('+1 day');
+        }
+
+        return $filled;
     }
 
     #[Route('/export', name: 'export', methods: ['GET'])]
