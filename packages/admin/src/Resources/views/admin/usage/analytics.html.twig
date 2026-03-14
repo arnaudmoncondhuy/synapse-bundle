@@ -38,30 +38,32 @@
 
 	{# ── KPI Globaux ────────────────────────────────────────────────────────── #}
 	<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-lg">
-		<div class="synapse-admin-kpi">
-			<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--indigo">
-				<i data-lucide="coins"></i>
-			</div>
-			<div class="synapse-admin-kpi__content">
-				<div class="synapse-admin-kpi__label">Coût total estimé</div>
-				<div class="synapse-admin-kpi__value">{{ costs_eur|number_format(2) }} €</div>
-				{% if costs_usd > 0 %}
-					<div class="synapse-admin-kpi__trend synapse-admin-text-xs">
-						({{ costs_usd|number_format(2) }} $)
-					</div>
-				{% endif %}
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--indigo">
+					<i data-lucide="coins"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Coût total estimé</div>
+					<div class="synapse-admin-kpi__value">{{ costs_eur|number_format(2) }} €</div>
+					{% if costs_usd > 0 %}
+						<div class="synapse-admin-kpi__sub">
+							({{ costs_usd|number_format(2) }} $)
+						</div>
+					{% endif %}
+				</div>
 			</div>
 		</div>
 
-		<div class="synapse-admin-kpi">
-			<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--indigo">
-				<i data-lucide="cpu"></i>
-			</div>
-			<div class="synapse-admin-kpi__content">
-				<div class="synapse-admin-kpi__label">Consommation LLM</div>
-				<div class="synapse-admin-kpi__value">{{ (stats.total_tokens ?? 0)|number_format(0, '', ' ') }}</div>
-				<div class="synapse-admin-kpi__trend synapse-admin-text-xs">
-					Tokens total
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--indigo">
+					<i data-lucide="cpu"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">Consommation LLM</div>
+					<div class="synapse-admin-kpi__value">{{ (stats.total_tokens ?? 0)|number_format(0, '', ' ') }}</div>
+					<div class="synapse-admin-kpi__sub">Tokens total</div>
 				</div>
 			</div>
 		</div>
@@ -79,29 +81,41 @@
 		</div>
 	</div>
 
-	{# ── Graphique (CSS simpliste pour placeholder) ─────────────────────────── #}
+	{# ── Graphique ───────────────────────────────────────────────────────────── #}
 	<div class="synapse-admin-card synapse-admin-mb-xl">
 		<div class="synapse-admin-card__body">
-			<div style="height: 120px; display: flex; align-items: flex-end; gap: 4px; padding: 10px 0;">
-				{% if daily_usage is empty %}
-					<div class="synapse-admin-text-secondary synapse-admin-w-full synapse-admin-text-center">Aucune donnée disponible pour cette période.</div>
-				{% else %}
-					{% set max_tokens = 1 %}
-					{% for day in daily_usage %}
-						{% if (day.total_tokens ?? 0) > max_tokens %}
-							{% set max_tokens = day.total_tokens %}
-						{% endif %}
+			{% if daily_usage is empty %}
+				<div class="synapse-admin-text-secondary synapse-admin-text-center" style="padding: 40px 0;">Aucune donnée disponible pour cette période.</div>
+			{% else %}
+				{% set max_tokens = 1 %}
+				{% for day in daily_usage %}
+					{% if (day.total_tokens ?? 0) > max_tokens %}{% set max_tokens = day.total_tokens %}{% endif %}
+				{% endfor %}
+
+				{# Zone graphique avec grille #}
+				<div style="position: relative; height: 140px; margin-bottom: 4px;">
+
+					{# Lignes de grille horizontales (25 / 50 / 75 / 100 %) #}
+					{% for pct in [100, 75, 50, 25] %}
+						<div style="position: absolute; left: 0; right: 0; bottom: {{ pct }}%; border-top: 1px dashed var(--synapse-admin-border); pointer-events: none;"></div>
 					{% endfor %}
 
-					{% for day in daily_usage %}
-						<div class="synapse-admin-bg-indigo" style="flex: 1; height: {{ max_tokens > 0 ? ((day.total_tokens ?? 0) / max_tokens * 100)|round : 0 }}%; min-width: 8px; border-radius: 2px; opacity: 0.8;" title="{{ day.date }} : {{ day.total_tokens }} tokens"></div>
-					{% endfor %}
-				{% endif %}
-			</div>
-			<div class="synapse-admin-flex synapse-admin-justify-between synapse-admin-text-xs synapse-admin-text-secondary synapse-admin-mt-sm">
-				<span>Il y a {{ period }} jours</span>
-				<span>Aujourd'hui</span>
-			</div>
+					{# Barres #}
+					<div style="position: absolute; inset: 0; display: flex; align-items: flex-end; gap: 3px;">
+						{% for day in daily_usage %}
+							<div
+								data-synapse-admin-tooltip="{{ day.date }} · {{ (day.total_tokens ?? 0)|number_format(0, '', ' ') }} tokens"
+								style="flex: 1; height: {{ max_tokens > 0 ? ((day.total_tokens ?? 0) / max_tokens * 100)|round : 0 }}%; min-width: 4px; border-radius: 2px 2px 0 0; background: var(--synapse-admin-primary); opacity: {{ (day.total_tokens ?? 0) > 0 ? '0.85' : '0.12' }}; transition: opacity .15s;"
+							></div>
+						{% endfor %}
+					</div>
+				</div>
+
+				<div class="synapse-admin-flex synapse-admin-justify-between synapse-admin-text-xs synapse-admin-text-secondary synapse-admin-mt-sm">
+					<span>Il y a {{ period }} jours</span>
+					<span>Aujourd'hui</span>
+				</div>
+			{% endif %}
 		</div>
 	</div>
 
