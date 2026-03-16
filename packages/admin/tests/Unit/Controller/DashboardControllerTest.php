@@ -6,9 +6,12 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Tests\Unit\Controller;
 
 use ArnaudMoncondhuy\SynapseAdmin\Controller\DashboardController;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
+use ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseLlmCallRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseSpendingLimitLogRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseVectorMemoryRepository;
 use PHPUnit\Framework\TestCase;
 
@@ -50,12 +53,24 @@ class DashboardControllerTest extends TestCase
         $vectorMemoryRepo = $this->createMock(SynapseVectorMemoryRepository::class);
         $vectorMemoryRepo->method('count')->willReturn($totalMemories);
 
+        $agentRepo = $this->createMock(SynapseAgentRepository::class);
+        $agentRepo->method('findAllOrdered')->willReturn([]);
+
+        $spendingAlertRepo = $this->createMock(SynapseSpendingLimitLogRepository::class);
+        $spendingAlertRepo->method('findByPeriod')->willReturn([]);
+
+        $toolRegistry = $this->createMock(ToolRegistry::class);
+        $toolRegistry->method('getTools')->willReturn([]);
+
         return new DashboardController(
             permissionChecker: $permissionChecker,
             tokenUsageRepo: $tokenUsageRepo,
             providerRepo: $providerRepo,
             presetRepo: $presetRepo,
             vectorMemoryRepo: $vectorMemoryRepo,
+            agentRepo: $agentRepo,
+            spendingAlertRepo: $spendingAlertRepo,
+            toolRegistry: $toolRegistry,
         );
     }
 
