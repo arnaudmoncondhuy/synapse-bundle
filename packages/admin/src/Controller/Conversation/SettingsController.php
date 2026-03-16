@@ -77,6 +77,11 @@ class SettingsController extends AbstractController
             $maxTurns = $request->request->getInt('max_turns', 5);
             $config->setMaxTurns(max(1, min(20, $maxTurns)));
 
+            // Directive Fondamentale
+            $masterPrompt = $request->request->get('master_prompt');
+            $config->setMasterPrompt(!empty($masterPrompt) ? (string) $masterPrompt : null);
+            $config->setMasterPromptStateless($request->request->has('master_prompt_stateless'));
+
             $this->em->flush();
             $this->configProvider->clearCache();
 

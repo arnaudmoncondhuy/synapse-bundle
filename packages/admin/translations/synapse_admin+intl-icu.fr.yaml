@@ -37,7 +37,7 @@ synapse.admin.common.unknown: "Inconnu"
 synapse.admin.dashboard.page_title: "Tableau de bord | Synapse Administration Synapse"
 synapse.admin.dashboard.breadcrumb: "Tableau de bord"
 synapse.admin.dashboard.title: "Tableau de bord"
-synapse.admin.dashboard.subtitle: "Vue d'overview de votre instance Synapse — utilisation, coûts et état du système."
+synapse.admin.dashboard.subtitle: "Vue d'ensemble de votre instance Synapse."
 
 synapse.admin.dashboard.onboarding.title: "Commencez ici"
 synapse.admin.dashboard.onboarding.step1: "Ajouter un fournisseur LLM"
@@ -56,14 +56,45 @@ synapse.admin.dashboard.kpi.config_provider: "Configurer provider"
 
 synapse.admin.dashboard.chart.tokens_30d.title: "Activité tokens (30 jours)"
 synapse.admin.dashboard.chart.tokens_30d.subtitle: "Consommation quotidienne"
+synapse.admin.dashboard.chart.tokens_activity.title: "Activité tokens"
+synapse.admin.dashboard.chart.tokens_activity.subtitle: "Consommation quotidienne"
 synapse.admin.dashboard.chart.no_data: "Aucune donnée d'activité pour cette période."
 synapse.admin.dashboard.chart.top_models.title: "Top modèles (7 jours)"
 synapse.admin.dashboard.chart.top_models.subtitle: "Consommation par modèle LLM"
 
+# Sections
+synapse.admin.dashboard.section.system: "État du système"
+synapse.admin.dashboard.section.activity: "Activité"
+synapse.admin.dashboard.section.activity_hint: "7 derniers jours"
+synapse.admin.dashboard.section.shortcuts: "Navigation rapide"
+
+# Système
+synapse.admin.dashboard.system.preset: "Preset actif"
+synapse.admin.dashboard.system.providers: "Providers actifs"
+synapse.admin.dashboard.system.alerts: "Alertes budget"
+synapse.admin.dashboard.system.alerts_sub: "déclenchées sur 7 jours"
+
+# Activité
+synapse.admin.dashboard.activity.tokens_sub: "tokens consommés sur 7 jours"
+synapse.admin.dashboard.activity.requests: "Appels LLM"
+synapse.admin.dashboard.activity.requests_sub: "requêtes sur 7 jours"
+synapse.admin.dashboard.activity.cost: "Coût estimé"
+synapse.admin.dashboard.activity.cost_sub: "coût de référence sur 7 jours"
+
+# Raccourcis
 synapse.admin.dashboard.shortcut.presets.title: "Model Presets LLM"
-synapse.admin.dashboard.shortcut.presets.desc: "Configurez les paramètres de génération IA (température, top-p, modèle…)"
+synapse.admin.dashboard.shortcut.presets.count: "presets"
+synapse.admin.dashboard.shortcut.agents.title: "Agents"
+synapse.admin.dashboard.shortcut.agents.count: "agents"
+synapse.admin.dashboard.shortcut.agents.custom: "personnalisés"
+synapse.admin.dashboard.shortcut.tools.title: "Outils (Function Calling)"
+synapse.admin.dashboard.shortcut.tools.count: "outils disponibles"
+synapse.admin.dashboard.shortcut.personality.title: "Personnalité"
+synapse.admin.dashboard.shortcut.personality.desc: "Tons et comportement du chat"
 synapse.admin.dashboard.shortcut.rag.title: "Embeddings & RAG"
-synapse.admin.dashboard.shortcut.rag.desc: "Paramétrez votre base vectorielle, modèles d'embedding et stratégie de chunking."
+synapse.admin.dashboard.shortcut.rag.count: "souvenirs indexés"
+synapse.admin.dashboard.shortcut.analytics.title: "Analytics"
+synapse.admin.dashboard.shortcut.analytics.desc: "Statistiques détaillées d'usage"
 
 synapse.admin.agent.flash.created: "Agent \"%name%\" créé avec succès."
 synapse.admin.agent.flash.updated: "Agent \"%name%\" mis à jour."

@@ -9,8 +9,8 @@
 
 {% block admin_content %}
 
-{# ── Banner onboarding (uniquement si aucun provider configuré) ────────────── #}
-{% if kpis.active_providers == 0 %}
+{# ── Banner onboarding ─────────────────────────────────────────────────────── #}
+{% if not system.is_healthy %}
 <div class="synapse-admin-onboarding-banner synapse-admin-mb-lg" id="onboarding-banner">
     <div class="synapse-admin-onboarding-banner__content">
         <div class="synapse-admin-onboarding-banner__header">
@@ -45,24 +45,108 @@
 {% endif %}
 
 {# ── En-tête ──────────────────────────────────────────────────────────────── #}
-<div class="synapse-admin-page-header">
+<div class="synapse-admin-page-header synapse-admin-mb-xl">
     <div class="synapse-admin-page-header__info">
-        <h1 class="synapse-admin-page-title">
-            </span>
-            {{ 'synapse.admin.dashboard.title'|trans(domain='synapse_admin') }}
-        </h1>
-        <p class="synapse-admin-page-subtitle">
-            {{ 'synapse.admin.dashboard.subtitle'|trans(domain='synapse_admin') }}
-        </p>
-    </div>
-    <div class="synapse-admin-page-header__actions">
+        <h1 class="synapse-admin-page-title">{{ 'synapse.admin.dashboard.title'|trans(domain='synapse_admin') }}</h1>
+        <p class="synapse-admin-page-subtitle">{{ 'synapse.admin.dashboard.subtitle'|trans(domain='synapse_admin') }}</p>
     </div>
 </div>
 
-{# ── KPIs — 3 colonnes ────────────────────────────────────────────────────── #}
+{# ══════════════════════════════════════════════════════════════════════════ #}
+{# BLOC 1 — ÉTAT DU SYSTÈME                                                  #}
+{# ══════════════════════════════════════════════════════════════════════════ #}
+<h2 class="synapse-admin-section-title synapse-admin-mb-md">
+    <i data-lucide="activity"></i>
+    {{ 'synapse.admin.dashboard.section.system'|trans(domain='synapse_admin') }}
+</h2>
 <div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
 
-    {# Tokens consommés (7j) #}
+    {# Preset actif #}
+    {% set preset_ok = system.preset is not null and system.providers_active > 0 %}
+    <div class="synapse-admin-card synapse-admin-card--hover {% if not preset_ok %}synapse-admin-card--warning{% endif %}">
+        <div class="synapse-admin-kpi">
+            <div class="synapse-admin-kpi__icon {% if preset_ok %}synapse-admin-kpi__icon--primary{% else %}synapse-admin-kpi__icon--warning{% endif %}">
+                <i data-lucide="sliders-horizontal"></i>
+            </div>
+            <div class="synapse-admin-kpi__body">
+                <div class="synapse-admin-kpi__label">{{ 'synapse.admin.dashboard.system.preset'|trans(domain='synapse_admin') }}</div>
+                {% if preset_ok %}
+                    <div class="synapse-admin-kpi__value" style="font-size:1.05rem;">{{ system.preset.name }}</div>
+                    <div class="synapse-admin-kpi__sub">{{ system.preset.providerName }} · {{ system.preset.model }}</div>
+                {% else %}
+                    <div class="synapse-admin-kpi__value" style="font-size:0.95rem;color:var(--synapse-admin-warning);">
+                        {{ 'synapse.admin.dashboard.kpi.incomplete'|trans(domain='synapse_admin') }}
+                    </div>
+                    <div class="synapse-admin-kpi__sub">
+                        {% if system.preset is null %}
+                            <a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" style="color:var(--synapse-admin-warning);font-weight:500;">
+                                {{ 'synapse.admin.dashboard.kpi.create_preset'|trans(domain='synapse_admin') }}
+                            </a>
+                        {% else %}
+                            <a href="{{ path('synapse_admin_configuration_llm', {tab: 'fournisseurs'}) }}" style="color:var(--synapse-admin-warning);font-weight:500;">
+                                {{ 'synapse.admin.dashboard.kpi.config_provider'|trans(domain='synapse_admin') }}
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# Providers #}
+    {% set providers_ok = system.providers_active > 0 %}
+    <div class="synapse-admin-card synapse-admin-card--hover">
+        <div class="synapse-admin-kpi">
+            <div class="synapse-admin-kpi__icon {% if providers_ok %}synapse-admin-kpi__icon--success{% else %}synapse-admin-kpi__icon--warning{% endif %}">
+                <i data-lucide="plug"></i>
+            </div>
+            <div class="synapse-admin-kpi__body">
+                <div class="synapse-admin-kpi__label">{{ 'synapse.admin.dashboard.system.providers'|trans(domain='synapse_admin') }}</div>
+                <div class="synapse-admin-kpi__value">{{ system.providers_active }} <span style="font-size:0.9rem;font-weight:400;color:var(--synapse-admin-text-secondary);">/ {{ system.providers_total }}</span></div>
+                <div class="synapse-admin-kpi__sub">
+                    {% if system.providers_list is not empty %}
+                        {{ system.providers_list|map(p => p.label)|join(', ') }}
+                    {% else %}
+                        <a href="{{ path('synapse_admin_configuration_llm') }}" style="color:var(--synapse-admin-warning);font-weight:500;">
+                            {{ 'synapse.admin.dashboard.kpi.config_provider'|trans(domain='synapse_admin') }}
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Alertes budget #}
+    {% set has_alerts = system.alerts_count > 0 %}
+    <a href="{{ path('synapse_admin_spending_alerts') }}" class="synapse-admin-card synapse-admin-card--hover" style="text-decoration:none;">
+        <div class="synapse-admin-kpi">
+            <div class="synapse-admin-kpi__icon {% if has_alerts %}synapse-admin-kpi__icon--danger{% else %}synapse-admin-kpi__icon--success{% endif %}">
+                <i data-lucide="bell{% if has_alerts %}-ring{% endif %}"></i>
+            </div>
+            <div class="synapse-admin-kpi__body">
+                <div class="synapse-admin-kpi__label">{{ 'synapse.admin.dashboard.system.alerts'|trans(domain='synapse_admin') }}</div>
+                <div class="synapse-admin-kpi__value">{{ system.alerts_count }}</div>
+                <div class="synapse-admin-kpi__sub">{{ 'synapse.admin.dashboard.system.alerts_sub'|trans(domain='synapse_admin') }}</div>
+            </div>
+        </div>
+    </a>
+
+</div>
+
+{# ══════════════════════════════════════════════════════════════════════════ #}
+{# BLOC 2 — ACTIVITÉ 7 JOURS                                                 #}
+{# ══════════════════════════════════════════════════════════════════════════ #}
+<h2 class="synapse-admin-section-title synapse-admin-mb-md">
+    <i data-lucide="bar-chart-3"></i>
+    {{ 'synapse.admin.dashboard.section.activity'|trans(domain='synapse_admin') }}
+    <span class="synapse-admin-section-title__hint">{{ 'synapse.admin.dashboard.section.activity_hint'|trans(domain='synapse_admin') }}</span>
+    <a href="{{ path('synapse_admin_analytics') }}" class="synapse-admin-section-title__link">
+        {{ 'synapse.admin.common.see_all'|trans(domain='synapse_admin') }} <i data-lucide="arrow-right"></i>
+    </a>
+</h2>
+<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
+
+    {# Tokens consommés #}
     <div class="synapse-admin-card synapse-admin-card--hover">
         <div class="synapse-admin-kpi">
             <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary">
@@ -70,178 +154,151 @@
             </div>
             <div class="synapse-admin-kpi__body">
                 <div class="synapse-admin-kpi__label">{{ 'synapse.admin.dashboard.kpi.tokens_7d'|trans(domain='synapse_admin') }}</div>
-                <div class="synapse-admin-kpi__value">{{ (kpis.tokens_7d ?? 0)|number_format(0, ',', ' ') }}</div>
-                <div class="synapse-admin-kpi__sub">
-                    {% if (kpis.costs_eur ?? 0) > 0 or (kpis.costs_usd ?? 0) > 0 %}
-                        <span>
-                            {% if (kpis.costs_eur ?? 0) > 0 %}
-                                ~€{{ kpis.costs_eur|number_format(4) }}
-                            {% endif %}
-                            {% if (kpis.costs_eur ?? 0) > 0 and (kpis.costs_usd ?? 0) > 0 %}
-                                /
-                            {% endif %}
-                            {% if (kpis.costs_usd ?? 0) > 0 %}
-                                ~${{ kpis.costs_usd|number_format(4) }}
-                            {% endif %}
-                        </span>
-                    {% else %}
-                        <span style="color:var(--synapse-admin-text-secondary);">{{ 'synapse.admin.dashboard.kpi.no_data'|trans(domain='synapse_admin') }}</span>
-                    {% endif %}
-                </div>
+                <div class="synapse-admin-kpi__value">{{ (activity.tokens ?? 0)|number_format(0, ',', ' ') }}</div>
+                <div class="synapse-admin-kpi__sub">{{ 'synapse.admin.dashboard.activity.tokens_sub'|trans(domain='synapse_admin') }}</div>
             </div>
         </div>
     </div>
 
-    {# Souvenirs mémorisés #}
+    {# Requêtes LLM #}
     <div class="synapse-admin-card synapse-admin-card--hover">
         <div class="synapse-admin-kpi">
-            <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--success">
-                <i data-lucide="sparkles"></i>
+            <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--indigo">
+                <i data-lucide="messages-square"></i>
             </div>
             <div class="synapse-admin-kpi__body">
-                <div class="synapse-admin-kpi__label">{{ 'synapse.admin.dashboard.kpi.memories'|trans(domain='synapse_admin') }}</div>
-                <div class="synapse-admin-kpi__value">{{ kpis.total_memories ?? 0 }}</div>
-                <div class="synapse-admin-kpi__sub">{{ 'synapse.admin.dashboard.kpi.memories_sub'|trans(domain='synapse_admin') }}</div>
+                <div class="synapse-admin-kpi__label">{{ 'synapse.admin.dashboard.activity.requests'|trans(domain='synapse_admin') }}</div>
+                <div class="synapse-admin-kpi__value">{{ (activity.requests ?? 0)|number_format(0, ',', ' ') }}</div>
+                <div class="synapse-admin-kpi__sub">{{ 'synapse.admin.dashboard.activity.requests_sub'|trans(domain='synapse_admin') }}</div>
             </div>
         </div>
     </div>
 
-    {# Configuration active #}
-    {% set is_fully_configured = active_preset and kpis.active_providers > 0 %}
-    <div class="synapse-admin-card synapse-admin-card--hover {% if not is_fully_configured %}synapse-admin-card--warning{% endif %}">
+    {# Coût estimé 7j #}
+    <a href="{{ path('synapse_admin_analytics') }}" class="synapse-admin-card synapse-admin-card--hover" style="text-decoration:none;">
         <div class="synapse-admin-kpi">
-            <div class="synapse-admin-kpi__icon {% if is_fully_configured %}synapse-admin-kpi__icon--primary{% else %}synapse-admin-kpi__icon--warning{% endif %}">
-                <i data-lucide="sliders-horizontal"></i>
+            <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--success">
+                <i data-lucide="coins"></i>
             </div>
             <div class="synapse-admin-kpi__body">
-                <div class="synapse-admin-kpi__label">{{ 'synapse.admin.dashboard.kpi.active_config'|trans(domain='synapse_admin') }}</div>
-                {% if is_fully_configured %}
-                    <div class="synapse-admin-kpi__value" style="font-size:1.1rem;">{{ active_preset.name }}</div>
-                    <div class="synapse-admin-kpi__sub">{{ active_preset.providerName }} · {{ active_preset.model }}</div>
-                {% else %}
-                    <div class="synapse-admin-kpi__value" style="font-size:1rem;color:var(--synapse-admin-warning);">{{ 'synapse.admin.dashboard.kpi.incomplete'|trans(domain='synapse_admin') }}</div>
-                    <div class="synapse-admin-kpi__sub">
-                        {% if not active_preset %}
-                            <a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" style="color:var(--synapse-admin-warning);font-weight:500;">{{ 'synapse.admin.dashboard.kpi.create_preset'|trans(domain='synapse_admin') }}</a>
-                        {% elseif kpis.active_providers == 0 %}
-                            <a href="{{ path('synapse_admin_configuration_llm', {tab: 'fournisseurs'}) }}" style="color:var(--synapse-admin-warning);font-weight:500;">{{ 'synapse.admin.dashboard.kpi.config_provider'|trans(domain='synapse_admin') }}</a>
-                        {% endif %}
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-</div>
-
-{# ── Activité tokens (30j) — pleine largeur ───────────────────────────────── #}
-<div class="synapse-admin-card synapse-admin-mb-xl">
-    <div class="synapse-admin-card__header">
-        <div class="synapse-admin-card__header-icon" style="background:var(--synapse-admin-primary-light);color:var(--synapse-admin-primary);">
-            <i data-lucide="bar-chart-3"></i>
-        </div>
-        <div>
-            <div class="synapse-admin-card__title">{{ 'synapse.admin.dashboard.chart.tokens_30d.title'|trans(domain='synapse_admin') }}</div>
-            <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.dashboard.chart.tokens_30d.subtitle'|trans(domain='synapse_admin') }}</div>
-        </div>
-        <div class="synapse-admin-card__header-actions">
-            <a href="{{ path('synapse_admin_analytics') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
-                {{ 'synapse.admin.common.see_all'|trans(domain='synapse_admin') }} <i data-lucide="arrow-right"></i>
-            </a>
-        </div>
-    </div>
-    <div class="synapse-admin-card__body synapse-admin-card__body--compact">
-        {% if daily_usage is empty %}
-            <div class="synapse-admin-empty" style="padding:2rem;">
-                <div class="synapse-admin-empty__icon"><i data-lucide="bar-chart-2"></i></div>
-                <p class="synapse-admin-empty__description">{{ 'synapse.admin.dashboard.chart.no_data'|trans(domain='synapse_admin') }}</p>
-            </div>
-        {% else %}
-            {% set max_tokens = 1 %}
-            {% for day in daily_usage %}
-                {% if (day.total_tokens ?? 0) > max_tokens %}
-                    {% set max_tokens = day.total_tokens %}
-                {% endif %}
-            {% endfor %}
-            <div class="synapse-admin-chart">
-                {% for day in daily_usage|slice(-15) %}
-                    <div class="synapse-admin-chart__row">
-                        <span class="synapse-admin-chart__label">{{ day.date|date('d/m') }}</span>
-                        <div class="synapse-admin-chart__track">
-                            <div class="synapse-admin-chart__bar"
-                                 style="width: {{ max_tokens > 0 ? ((day.total_tokens ?? 0) / max_tokens * 100)|round ~ '%' : '0%' }}">
-                            </div>
-                        </div>
-                        <span class="synapse-admin-chart__value">{{ ((day.total_tokens ?? 0) / 1000)|number_format(1) }}k</span>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    </div>
-</div>
-
-{# ── Top modèles (7j) ─────────────────────────────────────────────────────── #}
-{% if usage_by_model is not empty %}
-<div class="synapse-admin-card synapse-admin-mb-xl">
-    <div class="synapse-admin-card__header">
-        <div class="synapse-admin-card__header-icon" style="background:hsl(38,90%,95%);color:var(--synapse-admin-warning);">
-            <i data-lucide="cpu"></i>
-        </div>
-        <div>
-            <div class="synapse-admin-card__title">{{ 'synapse.admin.dashboard.chart.top_models.title'|trans(domain='synapse_admin') }}</div>
-            <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.dashboard.chart.top_models.subtitle'|trans(domain='synapse_admin') }}</div>
-        </div>
-    </div>
-    <div class="synapse-admin-card__body synapse-admin-card__body--compact">
-        <div style="display:flex;flex-direction:column;gap:0.5rem;">
-            {% for model in usage_by_model|slice(0, 6) %}
-                <div class="synapse-admin-stat-row">
-                    <div class="synapse-admin-stat-row__label">
-                        <i data-lucide="cpu"></i>
-                        <span>{{ model.model_id ?? ('synapse.admin.common.unknown'|trans(domain='synapse_admin')) }}</span>
-                    </div>
-                    <div class="synapse-admin-stat-row__value">
-                        {{ ((model.total_tokens ?? 0) / 1000)|number_format(1) }}k tokens
-                        {% if model.cost is defined and model.cost > 0 %}
-                            {% set symbol = (model.currency ?? 'USD') == 'EUR' ? '€' : '$' %}
-                            · <span class="synapse-admin-text-muted">{{ symbol }}{{ model.cost|number_format(4) }}</span>
-                        {% endif %}
-                    </div>
+                <div class="synapse-admin-kpi__label">{{ 'synapse.admin.dashboard.activity.cost'|trans(domain='synapse_admin') }}</div>
+                <div class="synapse-admin-kpi__value">
+                    {% if (activity.costs_eur ?? 0) > 0 %}
+                        {{ activity.costs_eur|number_format(4) }} €
+                    {% elseif (activity.costs_usd ?? 0) > 0 %}
+                        {{ activity.costs_usd|number_format(4) }} $
+                    {% else %}
+                        0.00
+                    {% endif %}
                 </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
-{% endif %}
-
-{# ── Raccourcis ───────────────────────────────────────────────────────────── #}
-<div class="synapse-admin-grid synapse-admin-grid--2">
-
-    <a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-card synapse-admin-card--hover" style="text-decoration:none;display:block;">
-        <div class="synapse-admin-card__body synapse-admin-card__body--compact">
-            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.625rem;">
-                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary" style="width:36px;height:36px;border-radius:0.625rem;">
-                    <i data-lucide="sliders-horizontal" style="width:16px;height:16px;"></i>
-                </div>
-                <strong style="font-size:0.9rem;color:var(--synapse-admin-text-primary);">{{ 'synapse.admin.dashboard.shortcut.presets.title'|trans(domain='synapse_admin') }}</strong>
+                <div class="synapse-admin-kpi__sub">{{ 'synapse.admin.dashboard.activity.cost_sub'|trans(domain='synapse_admin') }}</div>
             </div>
-            <p style="font-size:0.8rem;color:var(--synapse-admin-text-secondary);margin:0;">
-                {{ 'synapse.admin.dashboard.shortcut.presets.desc'|trans(domain='synapse_admin') }}
-            </p>
         </div>
     </a>
 
-    <a href="{{ path('synapse_admin_embeddings') }}" class="synapse-admin-card synapse-admin-card--hover" style="text-decoration:none;display:block;">
+</div>
+
+{# ══════════════════════════════════════════════════════════════════════════ #}
+{# BLOC 3 — INVENTAIRE + RACCOURCIS                                          #}
+{# ══════════════════════════════════════════════════════════════════════════ #}
+<h2 class="synapse-admin-section-title synapse-admin-mb-md">
+    <i data-lucide="layout-grid"></i>
+    {{ 'synapse.admin.dashboard.section.shortcuts'|trans(domain='synapse_admin') }}
+</h2>
+<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
+
+    {# Intelligence / Config LLM #}
+    <a href="{{ path('synapse_admin_configuration_llm') }}" class="synapse-admin-card synapse-admin-card--hover" style="text-decoration:none;">
         <div class="synapse-admin-card__body synapse-admin-card__body--compact">
-            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.625rem;">
-                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--success" style="width:36px;height:36px;border-radius:0.625rem;">
-                    <i data-lucide="database-zap" style="width:16px;height:16px;"></i>
+            <div class="synapse-admin-shortcut">
+                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary synapse-admin-shortcut__icon">
+                    <i data-lucide="sliders-horizontal"></i>
                 </div>
-                <strong style="font-size:0.9rem;color:var(--synapse-admin-text-primary);">{{ 'synapse.admin.dashboard.shortcut.rag.title'|trans(domain='synapse_admin') }}</strong>
+                <div>
+                    <div class="synapse-admin-shortcut__title">{{ 'synapse.admin.dashboard.shortcut.presets.title'|trans(domain='synapse_admin') }}</div>
+                    <div class="synapse-admin-shortcut__meta">{{ inventory.presets_total }} {{ 'synapse.admin.dashboard.shortcut.presets.count'|trans(domain='synapse_admin') }}</div>
+                </div>
             </div>
-            <p style="font-size:0.8rem;color:var(--synapse-admin-text-secondary);margin:0;">
-                {{ 'synapse.admin.dashboard.shortcut.rag.desc'|trans(domain='synapse_admin') }}
-            </p>
+        </div>
+    </a>
+
+    {# Agents #}
+    <a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-card synapse-admin-card--hover" style="text-decoration:none;">
+        <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+            <div class="synapse-admin-shortcut">
+                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--indigo synapse-admin-shortcut__icon">
+                    <i data-lucide="bot"></i>
+                </div>
+                <div>
+                    <div class="synapse-admin-shortcut__title">{{ 'synapse.admin.dashboard.shortcut.agents.title'|trans(domain='synapse_admin') }}</div>
+                    <div class="synapse-admin-shortcut__meta">
+                        {{ inventory.agents_total }} {{ 'synapse.admin.dashboard.shortcut.agents.count'|trans(domain='synapse_admin') }}
+                        {% if inventory.agents_custom > 0 %}
+                            · {{ inventory.agents_custom }} {{ 'synapse.admin.dashboard.shortcut.agents.custom'|trans(domain='synapse_admin') }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </a>
+
+    {# Outils #}
+    <a href="{{ path('synapse_admin_tools') }}" class="synapse-admin-card synapse-admin-card--hover" style="text-decoration:none;">
+        <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+            <div class="synapse-admin-shortcut">
+                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--success synapse-admin-shortcut__icon">
+                    <i data-lucide="wrench"></i>
+                </div>
+                <div>
+                    <div class="synapse-admin-shortcut__title">{{ 'synapse.admin.dashboard.shortcut.tools.title'|trans(domain='synapse_admin') }}</div>
+                    <div class="synapse-admin-shortcut__meta">{{ inventory.tools_total }} {{ 'synapse.admin.dashboard.shortcut.tools.count'|trans(domain='synapse_admin') }}</div>
+                </div>
+            </div>
+        </div>
+    </a>
+
+    {# Personnalité #}
+    <a href="{{ path('synapse_admin_tones') }}" class="synapse-admin-card synapse-admin-card--hover" style="text-decoration:none;">
+        <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+            <div class="synapse-admin-shortcut">
+                <div class="synapse-admin-kpi__icon synapse-admin-shortcut__icon" style="background:hsl(280,70%,95%);color:hsl(280,70%,45%);">
+                    <i data-lucide="smile"></i>
+                </div>
+                <div>
+                    <div class="synapse-admin-shortcut__title">{{ 'synapse.admin.dashboard.shortcut.personality.title'|trans(domain='synapse_admin') }}</div>
+                    <div class="synapse-admin-shortcut__meta">{{ 'synapse.admin.dashboard.shortcut.personality.desc'|trans(domain='synapse_admin') }}</div>
+                </div>
+            </div>
+        </div>
+    </a>
+
+    {# Embeddings & RAG #}
+    <a href="{{ path('synapse_admin_embeddings') }}" class="synapse-admin-card synapse-admin-card--hover" style="text-decoration:none;">
+        <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+            <div class="synapse-admin-shortcut">
+                <div class="synapse-admin-kpi__icon synapse-admin-shortcut__icon" style="background:hsl(170,70%,93%);color:hsl(170,60%,35%);">
+                    <i data-lucide="database-zap"></i>
+                </div>
+                <div>
+                    <div class="synapse-admin-shortcut__title">{{ 'synapse.admin.dashboard.shortcut.rag.title'|trans(domain='synapse_admin') }}</div>
+                    <div class="synapse-admin-shortcut__meta">{{ inventory.memories_total }} {{ 'synapse.admin.dashboard.shortcut.rag.count'|trans(domain='synapse_admin') }}</div>
+                </div>
+            </div>
+        </div>
+    </a>
+
+    {# Analytics #}
+    <a href="{{ path('synapse_admin_analytics') }}" class="synapse-admin-card synapse-admin-card--hover" style="text-decoration:none;">
+        <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+            <div class="synapse-admin-shortcut">
+                <div class="synapse-admin-kpi__icon synapse-admin-shortcut__icon" style="background:hsl(38,90%,95%);color:hsl(38,80%,40%);">
+                    <i data-lucide="bar-chart-3"></i>
+                </div>
+                <div>
+                    <div class="synapse-admin-shortcut__title">{{ 'synapse.admin.dashboard.shortcut.analytics.title'|trans(domain='synapse_admin') }}</div>
+                    <div class="synapse-admin-shortcut__meta">{{ 'synapse.admin.dashboard.shortcut.analytics.desc'|trans(domain='synapse_admin') }}</div>
+                </div>
+            </div>
         </div>
     </a>
 
