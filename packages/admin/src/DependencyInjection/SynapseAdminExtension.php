@@ -69,6 +69,16 @@ class SynapseAdminExtension extends Extension implements PrependExtensionInterfa
             $container->getDefinition(SynapseRuntime::class)
                 ->setArgument('$version', '%synapse.version%');
         }
+
+        // Inject synapse_admin_outer_layout as a Twig global so base.html.twig
+        // can extend the host app's layout when configured.
+        if ($container->hasExtension('twig')) {
+            $container->loadFromExtension('twig', [
+                'globals' => [
+                    'synapse_admin_outer_layout' => '%synapse.admin_outer_layout%',
+                ],
+            ]);
+        }
     }
 
     public function getAlias(): string

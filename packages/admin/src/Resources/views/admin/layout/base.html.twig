@@ -1,52 +1,47 @@
 {#
     Synapse Administration — Base Layout
 
-    BLOCS DISPONIBLES :
-    - admin_page_title   : Titre de l'onglet (ex: "Intelligence | Administration Synapse")
-    - admin_stylesheets  : CSS supplémentaires
-    - admin_head_scripts : Scripts dans <head>
-    - admin_breadcrumb   : Fil d'Ariane dans la topbar
-    - admin_topbar_actions : Boutons/actions à droite de la topbar
-    - admin_content      : Zone de contenu principale ← À surcharger
-    - admin_body_scripts : Scripts avant </body>
+    En mode standalone (synapse.admin_outer_layout: null) :
+        Étend _standalone.html.twig → page HTML complète autonome.
+
+    En mode intégré (synapse.admin_outer_layout: 'core/base.html.twig') :
+        Étend le layout de l'app hôte, exactement comme le composant chat.
+        Le shell admin (sidebar + contenu) s'insère dans {% block body %}.
+
+    BLOCS DISPONIBLES POUR LES PAGES ADMIN :
+    - admin_page_title      : Titre de l'onglet
+    - admin_breadcrumb      : Fil d'Ariane dans la topbar
+    - admin_topbar_actions  : Boutons/actions à droite de la topbar
+    - admin_content         : Zone de contenu principale ← À surcharger
 #}
-<!DOCTYPE html>
-<html lang="{{ app.request.locale|default('fr') }}" class="synapse-admin-root">
-<head>
-    {% block admin_meta %}
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="robots" content="noindex, nofollow">
-    {% endblock %}
+{% extends synapse_admin_outer_layout ?? '@Synapse/admin/layout/_standalone.html.twig' %}
 
-    <title>{% block admin_page_title %}{{ 'synapse.admin.title'|trans(domain='synapse_admin') }}{% endblock %}</title>
+{# ── Titre de page ─────────────────────────────────────────────────────────── #}
+{% block title %}{% block admin_page_title %}{{ 'synapse.admin.title'|trans(domain='synapse_admin') }}{% endblock %}{% endblock %}
 
-    {# CSRF token global #}
-    {% if csrf_token is defined %}
-        <meta name="synapse-csrf" content="{{ csrf_token('synapse_admin') }}">
-    {% endif %}
+{# ── CSS admin + CSRF meta ────────────────────────────────────────────────── #}
+{% block stylesheets %}
+    {{ parent() }}
 
-    {% block admin_stylesheets %}
-        {# Google Fonts : Plus Jakarta Sans #}
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    {# CSRF token global pour les actions admin #}
+    <meta name="synapse-csrf" content="{{ csrf_token('synapse_admin') }}">
 
-        {# Synapse Administration Synapse Design System #}
-        <link rel="stylesheet" href="{{ asset('synapse-admin/styles/admin/admin.css') }}">
+    {# Google Fonts : Plus Jakarta Sans #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 
-        {# Slot pour surcharger les tokens de couleur (thème projet) #}
-        {% block admin_theme %}{% endblock %}
-    {% endblock %}
+    {# Synapse Design System #}
+    <link rel="stylesheet" href="{{ asset('synapse-admin/styles/admin/admin.css') }}">
 
-    {% block admin_head_scripts %}
-        {# ImportMap Symfony AssetMapper — nécessaire en mode dev #}
-        {{ importmap('app') }}
-        {# Lucide Icons — via jsDelivr (autorisé par CSP) #}
-        <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
-    {% endblock %}
-</head>
-<body>
+    {# Slot pour surcharger les tokens de couleur (thème projet) #}
+    {% block admin_theme %}{% endblock %}
+
+    {% block admin_stylesheets %}{% endblock %}
+{% endblock %}
+
+{# ── Shell admin (sidebar + main) ─────────────────────────────────────────── #}
+{% block body %}
 <div class="synapse-admin-shell">
 
     {# ═══════════════════════════════════════════════════════════════════════
@@ -71,9 +66,7 @@
             </nav>
 
             <div class="synapse-admin-topbar__actions">
-                {% block admin_topbar_actions %}
-                    {# Espace pour actions globales #}
-                {% endblock %}
+                {% block admin_topbar_actions %}{% endblock %}
             </div>
         </div>
 
@@ -90,9 +83,9 @@
     </main>
 </div>
 
+{# Scripts (lucide init + tooltips) — en dehors du shell pour le DOM complet #}
 {% block admin_body_scripts %}
     <script>
-        // Init Lucide icons after DOM ready
         document.addEventListener('DOMContentLoaded', function () {
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
@@ -130,5 +123,4 @@
         });
     </script>
 {% endblock %}
-</body>
-</html>
+{% endblock %}
