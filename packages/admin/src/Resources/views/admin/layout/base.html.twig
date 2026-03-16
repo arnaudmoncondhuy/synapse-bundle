@@ -16,9 +16,6 @@
 #}
 {% extends synapse_admin_outer_layout ?? '@Synapse/admin/layout/_standalone.html.twig' %}
 
-{# ── Classe body : ajoute synapse-admin-embedded en mode intégré ──────────── #}
-{% block body_class %}{% if synapse_admin_outer_layout %}synapse-admin-embedded{% endif %}{% endblock %}
-
 {# ── Titre de page ─────────────────────────────────────────────────────────── #}
 {% block title %}{% block admin_page_title %}{{ 'synapse.admin.title'|trans(domain='synapse_admin') }}{% endblock %}{% endblock %}
 
@@ -41,22 +38,7 @@
     {% block admin_theme %}{% endblock %}
 
     {% block admin_stylesheets %}{% endblock %}
-
-    {# En mode embarqué : reset des contraintes du <main> de l'app hôte #}
-    {% if synapse_admin_outer_layout %}
-    <style>
-        body.synapse-admin-embedded main:first-of-type {
-            max-width: 100%;
-            margin: 0;
-            padding: 0;
-        }
-    </style>
-    {% endif %}
 {% endblock %}
-
-{# ── En mode embarqué : empêche l'app hôte de consommer les flash messages ── #}
-{# (le bloc admin_flash les affichera lui-même via _flash.html.twig)           #}
-{% if synapse_admin_outer_layout %}{% block host_flash_messages %}{% endblock %}{% endif %}
 
 {# ── Shell admin (sidebar + main) ─────────────────────────────────────────── #}
 {% block body %}
@@ -70,9 +52,9 @@
     {% endblock %}
 
     {# ═══════════════════════════════════════════════════════════════════════
-       MAIN — <div> pour éviter l'imbrication <main> dans <main>
+       MAIN
        ═══════════════════════════════════════════════════════════════════════ #}
-    <div class="synapse-admin-main">
+    <main class="synapse-admin-main">
 
         {# Topbar sticky #}
         <div class="synapse-admin-topbar">
@@ -98,7 +80,7 @@
             {% block admin_content %}{% endblock %}
         </div>
 
-    </div>
+    </main>
 </div>
 
 {# Scripts (lucide init + tooltips) — en dehors du shell pour le DOM complet #}
