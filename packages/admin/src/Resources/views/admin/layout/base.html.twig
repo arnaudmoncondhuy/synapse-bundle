@@ -54,6 +54,10 @@
     {% endif %}
 {% endblock %}
 
+{# ── En mode embarqué : empêche l'app hôte de consommer les flash messages ── #}
+{# (le bloc admin_flash les affichera lui-même via _flash.html.twig)           #}
+{% if synapse_admin_outer_layout %}{% block host_flash_messages %}{% endblock %}{% endif %}
+
 {# ── Shell admin (sidebar + main) ─────────────────────────────────────────── #}
 {% block body %}
 <div class="synapse-admin-shell">
