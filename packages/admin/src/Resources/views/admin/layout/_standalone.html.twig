@@ -1,0 +1,29 @@
+{#
+    Synapse Administration — Enveloppe HTML standalone
+
+    Utilisée quand synapse.admin_outer_layout est null (mode autonome).
+    Dans ce mode, l'admin génère sa propre page HTML complète.
+
+    Quand synapse.admin_outer_layout est défini (ex: 'core/base.html.twig'),
+    c'est le layout de l'app hôte qui est utilisé à la place.
+#}
+<!DOCTYPE html>
+<html lang="{{ app.request.locale|default('fr') }}" class="synapse-admin-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+
+    <title>{% block title %}{% endblock %}</title>
+
+    {% block stylesheets %}{% endblock %}
+
+    {% block javascripts %}
+        {{ importmap('app') }}
+        <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    {% endblock %}
+</head>
+<body>
+{% block body %}{% endblock %}
+</body>
+</html>
