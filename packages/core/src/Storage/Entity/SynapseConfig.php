@@ -109,6 +109,19 @@ class SynapseConfig
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 5])]
     private int $maxTurns = 5;
 
+    /**
+     * Directive Fondamentale — injectée en queue du prompt système, inescamotable.
+     * Prévalent sur tout autre prompt, même les agents.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $masterPrompt = null;
+
+    /**
+     * Si true, la directive fondamentale s'applique aussi aux appels stateless.
+     */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => true])]
+    private bool $masterPromptStateless = true;
+
     // Getters et Setters
 
     public function getId(): ?int
@@ -277,6 +290,30 @@ class SynapseConfig
      *
      * @return array<string, mixed> Configuration formatée pour DatabaseConfigProvider
      */
+    public function getMasterPrompt(): ?string
+    {
+        return $this->masterPrompt;
+    }
+
+    public function setMasterPrompt(?string $masterPrompt): self
+    {
+        $this->masterPrompt = $masterPrompt;
+
+        return $this;
+    }
+
+    public function isMasterPromptStateless(): bool
+    {
+        return $this->masterPromptStateless;
+    }
+
+    public function setMasterPromptStateless(bool $masterPromptStateless): self
+    {
+        $this->masterPromptStateless = $masterPromptStateless;
+
+        return $this;
+    }
+
     public function toArray(): array
     {
         return [
@@ -287,6 +324,8 @@ class SynapseConfig
                 'language' => $this->contextLanguage,
             ],
             'system_prompt' => $this->systemPrompt,
+            'master_prompt' => $this->masterPrompt,
+            'master_prompt_stateless' => $this->masterPromptStateless,
             'debug_mode' => $this->debugMode,
             'spending_limits_enabled' => $this->spendingLimitsEnabled,
             'max_turns' => $this->maxTurns,

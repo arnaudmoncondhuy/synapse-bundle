@@ -1,0 +1,85 @@
+/**
+ * Synapse Administration — Dashboard Components
+ * Section titles & shortcut cards
+ */
+
+/* ── Section Title ──────────────────────────────────────────────────────── */
+
+.synapse-admin-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--synapse-admin-text-secondary);
+}
+
+.synapse-admin-section-title i {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.synapse-admin-section-title__hint {
+    font-weight: 400;
+    opacity: 0.7;
+    margin-left: 0.25rem;
+}
+
+.synapse-admin-section-title__link {
+    margin-left: auto;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--synapse-admin-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    letter-spacing: 0;
+    text-transform: none;
+    opacity: 0.85;
+    transition: opacity var(--synapse-admin-transition);
+}
+
+.synapse-admin-section-title__link:hover {
+    opacity: 1;
+}
+
+.synapse-admin-section-title__link i {
+    width: 12px;
+    height: 12px;
+}
+
+/* ── Shortcut Card ──────────────────────────────────────────────────────── */
+
+.synapse-admin-shortcut {
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-md);
+}
+
+.synapse-admin-shortcut__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--synapse-admin-radius);
+    flex-shrink: 0;
+}
+
+.synapse-admin-shortcut__icon i {
+    width: 18px;
+    height: 18px;
+}
+
+.synapse-admin-shortcut__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--synapse-admin-text-primary);
+    margin-bottom: 0.2rem;
+}
+
+.synapse-admin-shortcut__meta {
+    font-size: 0.75rem;
+    color: var(--synapse-admin-text-secondary);
+}
