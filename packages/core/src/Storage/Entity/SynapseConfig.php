@@ -285,11 +285,6 @@ class SynapseConfig
         return $this;
     }
 
-    /**
-     * Convertit la config globale en tableau.
-     *
-     * @return array<string, mixed> Configuration formatée pour DatabaseConfigProvider
-     */
     public function getMasterPrompt(): ?string
     {
         return $this->masterPrompt;
@@ -314,6 +309,9 @@ class SynapseConfig
         return $this;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return [
