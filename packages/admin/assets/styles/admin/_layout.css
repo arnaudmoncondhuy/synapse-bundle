@@ -423,30 +423,6 @@
     }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   MODE EMBARQUÉ — app hôte avec header fixe (ex: lycée intranet)
-   Variable CSS personnalisable : --synapse-admin-host-header-height (défaut 64px)
-   ══════════════════════════════════════════════════════════════════════════ */
-
-body.synapse-admin-embedded .synapse-admin-shell {
-    min-height: calc(100dvh - var(--synapse-admin-host-header-height, 64px));
-}
-
-body.synapse-admin-embedded .synapse-admin-sidebar {
-    top: var(--synapse-admin-host-header-height, 64px);
-    height: calc(100dvh - var(--synapse-admin-host-header-height, 64px));
-}
-
-body.synapse-admin-embedded .synapse-admin-topbar {
-    top: var(--synapse-admin-host-header-height, 64px);
-}
-
-body.synapse-admin-embedded .synapse-admin-main {
-    min-height: calc(100dvh - var(--synapse-admin-host-header-height, 64px));
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════ */
-
 @media (max-width: 768px) {
     .synapse-admin-shell {
         grid-template-columns: 1fr;
