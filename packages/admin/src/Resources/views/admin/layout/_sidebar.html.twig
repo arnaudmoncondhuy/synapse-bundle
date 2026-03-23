@@ -87,6 +87,18 @@
                 {{ 'synapse.admin.sidebar.settings'|trans(domain='synapse_admin') }}
             </a>
 
+            <a href="{{ path('synapse_admin_rag_sources') }}"
+               class="synapse-admin-nav__link {% if route starts with 'synapse_admin_rag_sources' %}is-active{% endif %}">
+                <span class="synapse-admin-nav__icon"><i data-lucide="database"></i></span>
+                {{ 'synapse.admin.sidebar.rag_sources'|trans(domain='synapse_admin') }}
+            </a>
+
+            <a href="{{ path('synapse_admin_memories') }}"
+               class="synapse-admin-nav__link {% if route starts with 'synapse_admin_memories' %}is-active{% endif %}">
+                <span class="synapse-admin-nav__icon"><i data-lucide="sparkles"></i></span>
+                {{ 'synapse.admin.sidebar.memories'|trans(domain='synapse_admin') }}
+            </a>
+
         </div>
 
         {# ─────────────────────────────────────────────────────────────── #}

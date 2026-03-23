@@ -1,0 +1,174 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}{{ 'synapse.admin.rag.list.page_title'|trans(domain='synapse_admin') }}{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.memory'|trans(domain='synapse_admin') }}</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">{{ 'synapse.admin.sidebar.rag_sources'|trans(domain='synapse_admin') }}</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="database"></i>
+				</span>
+				{{ 'synapse.admin.rag.list.title'|trans(domain='synapse_admin') }}
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				{{ 'synapse.admin.rag.list.subtitle'|trans(domain='synapse_admin') }}
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			<a href="{{ path('synapse_admin_rag_sources_new') }}" class="synapse-admin-btn synapse-admin-btn--primary">
+				<i data-lucide="plus"></i>
+				{{ 'synapse.admin.rag.list.action.new'|trans(domain='synapse_admin') }}
+			</a>
+		</div>
+	</div>
+
+	{# ── KPIs ─────────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="database"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">{{ 'synapse.admin.rag.list.kpi.total'|trans(domain='synapse_admin') }}</div>
+					<div class="synapse-admin-kpi__value">{{ sources|length }}</div>
+				</div>
+			</div>
+		</div>
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--success">
+					<i data-lucide="check-circle"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">{{ 'synapse.admin.rag.list.kpi.active'|trans(domain='synapse_admin') }}</div>
+					<div class="synapse-admin-kpi__value">{{ sources|filter(s => s.isActive)|length }}</div>
+				</div>
+			</div>
+		</div>
+		<div class="synapse-admin-card synapse-admin-card--hover">
+			<div class="synapse-admin-kpi">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--info">
+					<i data-lucide="file-text"></i>
+				</div>
+				<div class="synapse-admin-kpi__body">
+					<div class="synapse-admin-kpi__label">{{ 'synapse.admin.rag.list.kpi.documents'|trans(domain='synapse_admin') }}</div>
+					<div class="synapse-admin-kpi__value">{{ sources|map(s => s.documentCount)|reduce((carry, v) => carry + v, 0) }}</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	{# ── Tableau des sources ──────────────────────────────────────────────────── #}
+	<div class="synapse-admin-card">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+				<i data-lucide="list"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">{{ 'synapse.admin.rag.list.table.title'|trans(domain='synapse_admin') }}</div>
+			</div>
+		</div>
+
+		<div class="synapse-admin-table-container">
+			<table class="synapse-admin-table">
+				<thead>
+					<tr>
+						<th>{{ 'synapse.admin.rag.list.table.head.name'|trans(domain='synapse_admin') }}</th>
+						<th>{{ 'synapse.admin.rag.list.table.head.status'|trans(domain='synapse_admin') }}</th>
+						<th>{{ 'synapse.admin.rag.list.table.head.documents'|trans(domain='synapse_admin') }}</th>
+						<th>{{ 'synapse.admin.rag.list.table.head.provider'|trans(domain='synapse_admin') }}</th>
+						<th>{{ 'synapse.admin.rag.list.table.head.last_indexed'|trans(domain='synapse_admin') }}</th>
+						<th class="synapse-admin-table__cell--actions">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for source in sources %}
+						<tr class="{{ not source.isActive ? 'synapse-admin-table__row--muted' : '' }}">
+							<td>
+								<div class="synapse-admin-table-cell-label">
+									<div class="synapse-admin-table-cell-label__icon synapse-admin-kpi__icon--primary">
+										<i data-lucide="database"></i>
+									</div>
+									<div>
+										<div class="synapse-admin-table-cell-label__title">{{ source.name }}</div>
+										<div class="synapse-admin-table-cell-label__sub synapse-admin-font-mono">{{ source.slug }}</div>
+									</div>
+								</div>
+							</td>
+							<td>
+								{% if source.isActive %}
+									<span class="synapse-admin-badge synapse-admin-badge--success">{{ 'synapse.admin.rag.list.badge.active'|trans(domain='synapse_admin') }}</span>
+								{% else %}
+									<span class="synapse-admin-badge synapse-admin-badge--warning">{{ 'synapse.admin.rag.list.badge.inactive'|trans(domain='synapse_admin') }}</span>
+								{% endif %}
+							</td>
+							<td>
+								<a href="{{ path('synapse_admin_rag_sources_documents', {id: source.id}) }}" class="synapse-admin-link">
+									{{ source.documentCount }} {{ 'synapse.admin.rag.list.label.chunks'|trans(domain='synapse_admin') }}
+								</a>
+							</td>
+							<td>
+								{% if source.slug in registered_slugs %}
+									<span class="synapse-admin-badge synapse-admin-badge--info">
+										<i data-lucide="plug"></i>
+										{{ 'synapse.admin.rag.list.badge.provider'|trans(domain='synapse_admin') }}
+									</span>
+								{% else %}
+									<span class="synapse-admin-text-muted synapse-admin-text-sm">{{ 'synapse.admin.rag.list.badge.manual'|trans(domain='synapse_admin') }}</span>
+								{% endif %}
+							</td>
+							<td class="synapse-admin-table__cell--muted">
+								{{ source.lastIndexedAt ? source.lastIndexedAt|date('d/m/Y H:i') : '—' }}
+							</td>
+							<td class="synapse-admin-table__cell--actions">
+								<div class="synapse-admin-flex synapse-admin-gap-xs">
+									<a href="{{ path('synapse_admin_rag_sources_edit', {id: source.id}) }}"
+									   class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon"
+									   data-synapse-admin-tooltip="{{ 'synapse.admin.common.edit'|trans(domain='synapse_admin') }}">
+										<i data-lucide="edit-3"></i>
+									</a>
+									<form action="{{ path('synapse_admin_rag_sources_toggle', {id: source.id}) }}" method="POST" class="synapse-admin-form-inline">
+										<input type="hidden" name="_token" value="{{ csrf_token('synapse_rag_source_toggle_' ~ source.id) }}">
+										<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon"
+												data-synapse-admin-tooltip="{{ source.isActive ? 'synapse.admin.rag.list.tooltip.disable'|trans(domain='synapse_admin') : 'synapse.admin.rag.list.tooltip.enable'|trans(domain='synapse_admin') }}">
+											<i data-lucide="{{ source.isActive ? 'eye-off' : 'eye' }}"></i>
+										</button>
+									</form>
+									<form action="{{ path('synapse_admin_rag_sources_delete', {id: source.id}) }}" method="POST" class="synapse-admin-form-inline"
+										  onsubmit="return confirm('{{ 'synapse.admin.rag.list.confirm_delete'|trans({'%name%': source.name}, domain='synapse_admin')|escape('js') }}')">
+										<input type="hidden" name="_token" value="{{ csrf_token('synapse_rag_source_delete_' ~ source.id) }}">
+										<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon synapse-admin-text-danger"
+												data-synapse-admin-tooltip="{{ 'synapse.admin.common.delete'|trans(domain='synapse_admin') }}">
+											<i data-lucide="trash-2"></i>
+										</button>
+									</form>
+								</div>
+							</td>
+						</tr>
+					{% else %}
+						<tr>
+							<td colspan="6">
+								<div class="synapse-admin-empty">
+									<div class="synapse-admin-empty__icon"><i data-lucide="database"></i></div>
+									<div class="synapse-admin-empty__title">{{ 'synapse.admin.rag.list.empty.title'|trans(domain='synapse_admin') }}</div>
+									<p class="synapse-admin-empty__description">{{ 'synapse.admin.rag.list.empty.subtitle'|trans(domain='synapse_admin') }}</p>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+{% endblock %}
