@@ -7,7 +7,6 @@ namespace ArnaudMoncondhuy\SynapseCore\Storage\Repository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseRagDocument;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseRagSource;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 
@@ -105,10 +104,10 @@ class SynapseRagDocumentRepository extends ServiceEntityRepository
     /**
      * Recherche les documents les plus similaires au vecteur donné, filtrés par sources.
      *
-     * @param float[]      $vector    vecteur de la requête
-     * @param int[]        $sourceIds IDs des sources à interroger
-     * @param int          $limit     nombre max de résultats
-     * @param float        $minScore  score minimum de similarité
+     * @param float[] $vector vecteur de la requête
+     * @param int[] $sourceIds IDs des sources à interroger
+     * @param int $limit nombre max de résultats
+     * @param float $minScore score minimum de similarité
      *
      * @return array<int, array{content: string, score: float, metadata: array<string, mixed>|null, sourceSlug: string, sourceIdentifier: string}>
      */
@@ -131,7 +130,7 @@ class SynapseRagDocumentRepository extends ServiceEntityRepository
 
     /**
      * @param float[] $vector
-     * @param int[]   $sourceIds
+     * @param int[] $sourceIds
      *
      * @return array<int, array{content: string, score: float, metadata: array<string, mixed>|null, sourceSlug: string, sourceIdentifier: string}>
      */
@@ -184,7 +183,7 @@ class SynapseRagDocumentRepository extends ServiceEntityRepository
 
     /**
      * @param float[] $vector
-     * @param int[]   $sourceIds
+     * @param int[] $sourceIds
      *
      * @return array<int, array{content: string, score: float, metadata: array<string, mixed>|null, sourceSlug: string, sourceIdentifier: string}>
      */
