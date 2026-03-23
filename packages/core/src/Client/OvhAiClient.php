@@ -285,7 +285,7 @@ class OvhAiClient implements LlmClientInterface, EmbeddingClientInterface
      *
      * @param string[] $inputs
      *
-     * @return array{embeddings: float[][], usage: array{prompt_tokens: int, total_tokens: int}}
+     * @return array{embeddings: list<list<float>>, usage: array{prompt_tokens: int, total_tokens: int}}
      */
     private function generateEmbeddingsInBatches(array $inputs, string $model): array
     {
@@ -314,7 +314,7 @@ class OvhAiClient implements LlmClientInterface, EmbeddingClientInterface
      *
      * @param string|string[] $input
      *
-     * @return array{embeddings: float[][], usage: array{prompt_tokens: int, total_tokens: int}}
+     * @return array{embeddings: list<list<float>>, usage: array{prompt_tokens: int, total_tokens: int}}
      */
     private function doGenerateEmbeddings(string|array $input, string $model): array
     {
