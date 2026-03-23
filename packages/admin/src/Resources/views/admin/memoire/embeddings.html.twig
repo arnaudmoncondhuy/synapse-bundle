@@ -193,19 +193,22 @@
 					</div>
 
 				</div>
-				<div class="synapse-admin-card__footer">
-					<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
-						<i data-lucide="save"></i>
-						{{ 'synapse.admin.agent.edit.action.save'|trans(domain='synapse_admin') }}
-					</button>
-					{# Test d'embedding rapide via JS #}
-					<button type="button" id="btn-test-embedding" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
-						<i data-lucide="flask-conical"></i>
-						{{ 'synapse.admin.memory.embeddings.form.action.test'|trans(domain='synapse_admin') }}
-					</button>
-				</div>
 			</div>
 
+		</div>
+
+		{# ── Actions ─────────────────────────────────────────────────────────── #}
+		<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-justify-end synapse-admin-mt-xl synapse-admin-mb-xl">
+			{# Test d'embedding rapide via JS #}
+			<button type="button" id="btn-test-embedding" class="synapse-admin-btn synapse-admin-btn--ghost">
+				<i data-lucide="flask-conical"></i>
+				{{ 'synapse.admin.memory.embeddings.form.action.test'|trans(domain='synapse_admin') }}
+			</button>
+			
+			<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
+				<i data-lucide="save"></i>
+				{{ 'synapse.admin.agent.edit.action.save'|trans(domain='synapse_admin') }}
+			</button>
 		</div>
 
 	</form>
@@ -288,36 +291,27 @@ body: new URLSearchParams(
 )
 });
 const data = await res.json();
-if (data.success) {
-resultDiv.innerHTML = `
-252: resultDiv.innerHTML = `
-253:                 <div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center">
-254:                     <span class="synapse-admin-badge synapse-admin-badge--success">
-255:                         <i data-lucide="check-circle-2"></i> {{ 'synapse.admin.llm_config.provider.status.active'|trans(domain='synapse_admin') }}
-256:                     </span>
-257:                     <span class="synapse-admin-text-sm synapse-admin-text-muted">
-258:                         {{ 'synapse.admin.memory.embeddings.test.result.dimension'|trans(domain='synapse_admin') }} : <strong>${
-259: data.dimension
-260: }</strong>
-261:                         &nbsp;·&nbsp; {{ 'synapse.admin.memory.embeddings.test.result.time'|trans(domain='synapse_admin') }} : <strong>${
-262: data.time_ms
-263: }ms</strong>
-264:                     </span>
-265:                 </div>`;
-} else {
-resultDiv.innerHTML = `<span class="synapse-admin-badge synapse-admin-badge--danger"><i data-lucide="x-circle"></i> ${
-data.error
-}</span>`;
-}
-if (window.lucide) 
-lucide.createIcons();
-
-
-
-} catch (e) {
-resultDiv.innerHTML = '<span class="synapse-admin-badge synapse-admin-badge--danger">{{ 'synapse.admin.memory.embeddings.test.status.refresh_error'|trans(domain='synapse_admin') }}</span>';
-}
-});
+					if (data.success) {
+						resultDiv.innerHTML = `
+                <div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center">
+                    <span class="synapse-admin-badge synapse-admin-badge--success">
+                        <i data-lucide="check-circle-2"></i> {{ 'synapse.admin.llm_config.provider.status.active'|trans(domain='synapse_admin') }}
+                    </span>
+                    <span class="synapse-admin-text-sm synapse-admin-text-muted">
+                        {{ 'synapse.admin.memory.embeddings.test.result.dimension'|trans(domain='synapse_admin') }} : <strong>${data.dimension}</strong>
+                        &nbsp;·&nbsp; {{ 'synapse.admin.memory.embeddings.test.result.time'|trans(domain='synapse_admin') }} : <strong>${data.time_ms}ms</strong>
+                    </span>
+                </div>`;
+					} else {
+						resultDiv.innerHTML = `<span class="synapse-admin-badge synapse-admin-badge--danger"><i data-lucide="x-circle"></i> ${data.error}</span>`;
+					}
+					if (window.lucide) {
+						lucide.createIcons();
+					}
+				} catch (e) {
+					resultDiv.innerHTML = '<span class="synapse-admin-badge synapse-admin-badge--danger">{{ 'synapse.admin.memory.embeddings.test.status.refresh_error'|trans(domain='synapse_admin') }}</span>';
+				}
+			});
 	</script>
 
 {% endblock %}
