@@ -124,7 +124,12 @@
 
 					<div class="synapse-admin-form-group synapse-admin-mt-md">
 						<label class="synapse-admin-label" for="embedding_model">Modèle</label>
-						<input type="text" id="embedding_model" name="embedding_model" class="synapse-admin-input" value="{{ config.embeddingModel }}" placeholder="Ex : text-embedding-004">
+						<select id="embedding_model" name="embedding_model" class="synapse-admin-select">
+							<option value="">— Sélectionner un fournisseur d'abord —</option>
+						</select>
+						<p id="embedding_model_no_registered" class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm" hidden>
+							Aucun modèle d'embedding enregistré pour ce fournisseur.
+						</p>
 					</div>
 
 					<div class="synapse-admin-form-group synapse-admin-mt-md">
@@ -223,6 +228,46 @@
 	</div>
 
 	<script>
+		{# ── Données des modèles d'embedding par fournisseur ── #}
+		const embeddingModelsByProvider = {{ embedding_models_by_provider|keys|reduce((carry, provider) => carry|merge({(provider): embedding_models_by_provider[provider]|keys}), {})|json_encode|raw }};
+		const currentModel = {{ config.embeddingModel ? config.embeddingModel|json_encode|raw : 'null' }};
+
+		function updateModelSelect(providerName) {
+			const select = document.getElementById('embedding_model');
+			const noRegistered = document.getElementById('embedding_model_no_registered');
+			const models = embeddingModelsByProvider[providerName] || [];
+
+			select.innerHTML = '';
+
+			if (!providerName) {
+				select.innerHTML = '<option value="">— Sélectionner un fournisseur d\'abord —</option>';
+				noRegistered.hidden = true;
+				return;
+			}
+
+			if (models.length === 0) {
+				select.innerHTML = '<option value="">— Aucun modèle enregistré —</option>';
+				noRegistered.hidden = false;
+				return;
+			}
+
+			noRegistered.hidden = true;
+			models.forEach(modelId => {
+				const opt = document.createElement('option');
+				opt.value = modelId;
+				opt.textContent = modelId;
+				if (modelId === currentModel) opt.selected = true;
+				select.appendChild(opt);
+			});
+		}
+
+		document.getElementById('embedding_provider').addEventListener('change', function () {
+			updateModelSelect(this.value);
+		});
+
+		// Init au chargement
+		updateModelSelect(document.getElementById('embedding_provider').value);
+
 		document.getElementById('btn-test-embedding') ?. addEventListener('click', async function () {
 const panel = document.getElementById('panel-test');
 panel.hidden = false;
