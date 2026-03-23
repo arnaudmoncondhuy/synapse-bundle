@@ -40,7 +40,7 @@ class RagManager
      * Chaque document est découpé en chunks, vectorisé et persisté.
      * La source est auto-créée si elle n'existe pas encore.
      *
-     * @param string   $slug      identifiant de la source
+     * @param string $slug identifiant de la source
      * @param iterable<array{content: string, sourceIdentifier: string, metadata?: array<string, mixed>}> $documents
      *
      * @return int nombre de chunks créés
@@ -139,10 +139,10 @@ class RagManager
     /**
      * Recherche sémantique dans les sources assignées.
      *
-     * @param string   $query       texte de la requête utilisateur
+     * @param string $query texte de la requête utilisateur
      * @param string[] $sourceSlugs slugs des sources à interroger
-     * @param int      $limit       nombre max de résultats
-     * @param float    $minScore    score minimum
+     * @param int $limit nombre max de résultats
+     * @param float $minScore score minimum
      *
      * @return array<int, array{content: string, score: float, metadata: array<string, mixed>|null, sourceSlug: string, sourceIdentifier: string}>
      */
@@ -156,7 +156,7 @@ class RagManager
         $sourceIds = [];
         foreach ($sourceSlugs as $slug) {
             $source = $this->sourceRepository->findBySlug($slug);
-            if ($source && $source->isActive()) {
+            if ($source && $source->isActive() && null !== $source->getId()) {
                 $sourceIds[] = $source->getId();
             }
         }
@@ -179,9 +179,9 @@ class RagManager
     /**
      * Réindexe une source via son provider enregistré.
      *
-     * @return int nombre de chunks créés
-     *
      * @throws \RuntimeException si aucun provider n'est enregistré pour ce slug
+     *
+     * @return int nombre de chunks créés
      */
     public function reindex(string $slug): int
     {
