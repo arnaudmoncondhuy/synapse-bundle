@@ -234,6 +234,66 @@
 			</div>
 		</div>
 
+		{# ── Sources RAG ─────────────────────────────────────────────────────── #}
+		<div class="synapse-admin-card synapse-admin-mb-lg">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="database"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.rag.title'|trans(domain='synapse_admin') }}</div>
+					<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.rag.subtitle'|trans(domain='synapse_admin') }}</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+				<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
+					<i data-lucide="info"></i>
+					<span>{{ 'synapse.admin.agent.edit.alert.rag_tip'|trans(domain='synapse_admin') }}</span>
+				</div>
+
+				{% if available_rag_sources|default([])|length > 0 %}
+					<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-sm synapse-admin-mb-md">
+						{% for source in available_rag_sources %}
+							<label class="synapse-admin-toggle" style="align-items: flex-start;">
+								<input type="checkbox"
+									name="allowed_rag_sources[]"
+									value="{{ source.slug }}"
+									{{ source.slug in (agent.allowedRagSources|default([])) ? 'checked' : '' }}>
+								<span class="synapse-admin-toggle__slider"></span>
+								<span class="synapse-admin-toggle__label">
+									<strong>{{ source.name }}</strong><br>
+									<span class="synapse-admin-text-sm synapse-admin-text-muted synapse-admin-font-mono">{{ source.slug }}</span>
+									{% if source.description %}
+										<br><span class="synapse-admin-text-sm synapse-admin-text-muted">{{ source.description|length > 100 ? source.description|slice(0, 100) ~ '…' : source.description }}</span>
+									{% endif %}
+									<br><span class="synapse-admin-text-xs synapse-admin-text-muted">{{ source.documentCount }} chunks</span>
+								</span>
+							</label>
+						{% endfor %}
+					</div>
+
+					<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-md">
+						<div class="synapse-admin-form-group">
+							<label class="synapse-admin-label" for="agent-rag-max-results">{{ 'synapse.admin.agent.edit.label.rag_max_results'|trans(domain='synapse_admin') }}</label>
+							<input type="number" id="agent-rag-max-results" name="rag_max_results" value="{{ agent.ragMaxResults }}"
+								class="synapse-admin-input" min="1" max="20" step="1">
+							<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.rag_max_results'|trans(domain='synapse_admin') }}</p>
+						</div>
+						<div class="synapse-admin-form-group">
+							<label class="synapse-admin-label" for="agent-rag-min-score">{{ 'synapse.admin.agent.edit.label.rag_min_score'|trans(domain='synapse_admin') }}</label>
+							<input type="number" id="agent-rag-min-score" name="rag_min_score" value="{{ agent.ragMinScore }}"
+								class="synapse-admin-input" min="0" max="1" step="0.05">
+							<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.rag_min_score'|trans(domain='synapse_admin') }}</p>
+						</div>
+					</div>
+				{% else %}
+					<p class="synapse-admin-text-muted synapse-admin-text-sm">{{ 'synapse.admin.agent.edit.no_rag_sources'|trans(domain='synapse_admin') }}</p>
+				{% endif %}
+
+			</div>
+		</div>
+
 		{# ── Contrôle d'accès ─────────────────────────────────────────────────── #}
 		<div class="synapse-admin-card synapse-admin-mb-lg">
 			<div class="synapse-admin-card__header">

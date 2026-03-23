@@ -14,6 +14,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseSpendingLimit;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseRagSourceRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseSpendingLimitRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseToneRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -44,6 +45,7 @@ class AgentController extends AbstractController
         private PermissionCheckerInterface $permissionChecker,
         private ToolRegistry $toolRegistry,
         private RoleProvider $roleProvider,
+        private SynapseRagSourceRepository $ragSourceRepository,
         private TranslatorInterface $translator,
         private ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
@@ -90,6 +92,7 @@ class AgentController extends AbstractController
             'name' => $tool->getName(),
             'description' => $tool->getDescription(),
         ], $this->toolRegistry->getTools());
+        $availableRagSources = array_map(fn ($s) => $s->toArray(), $this->ragSourceRepository->findActive());
 
         return $this->render('@Synapse/admin/intelligence/agent_edit.html.twig', [
             'agent' => $agent,
@@ -97,6 +100,7 @@ class AgentController extends AbstractController
             'presets' => $presets,
             'tones' => $tones,
             'available_tools' => $availableTools,
+            'available_rag_sources' => $availableRagSources,
             'available_roles' => $this->roleProvider->getAvailableRoles(),
         ]);
     }
@@ -126,6 +130,7 @@ class AgentController extends AbstractController
             'name' => $tool->getName(),
             'description' => $tool->getDescription(),
         ], $this->toolRegistry->getTools());
+        $availableRagSources = array_map(fn ($s) => $s->toArray(), $this->ragSourceRepository->findActive());
 
         return $this->render('@Synapse/admin/intelligence/agent_edit.html.twig', [
             'agent' => $agent,
@@ -133,6 +138,7 @@ class AgentController extends AbstractController
             'presets' => $presets,
             'tones' => $tones,
             'available_tools' => $availableTools,
+            'available_rag_sources' => $availableRagSources,
             'available_roles' => $this->roleProvider->getAvailableRoles(),
             'spending_limit' => $spendingLimit,
             'periods' => [
@@ -304,6 +310,20 @@ class AgentController extends AbstractController
         // Outils autorisés
         $toolNames = $data['allowed_tools'] ?? [];
         $agent->setAllowedToolNames(is_array($toolNames) ? $toolNames : []);
+
+        // Sources RAG autorisées
+        $ragSources = $data['allowed_rag_sources'] ?? [];
+        $agent->setAllowedRagSources(is_array($ragSources) ? $ragSources : []);
+
+        $ragMaxResults = $data['rag_max_results'] ?? null;
+        if (is_numeric($ragMaxResults)) {
+            $agent->setRagMaxResults(max(1, (int) $ragMaxResults));
+        }
+
+        $ragMinScore = $data['rag_min_score'] ?? null;
+        if (is_numeric($ragMinScore)) {
+            $agent->setRagMinScore(max(0.0, min(1.0, (float) $ragMinScore)));
+        }
 
         // Contrôle d'accès (rôles et utilisateurs autorisés)
         // Les rôles arrivent comme un tableau depuis les checkboxes
