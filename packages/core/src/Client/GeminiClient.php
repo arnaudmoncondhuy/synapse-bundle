@@ -399,11 +399,11 @@ class GeminiClient implements LlmClientInterface, EmbeddingClientInterface
         }
 
         if (!empty($textParts)) {
-            $normalized['text'] = implode('', $textParts);
+            $normalized['text'] = TextUtil::sanitizeUtf8(implode('', $textParts));
         }
 
         if (!empty($thinkingParts)) {
-            $normalized['thinking'] = implode('', $thinkingParts);
+            $normalized['thinking'] = TextUtil::sanitizeUtf8(implode('', $thinkingParts));
         }
 
         return $normalized;
