@@ -227,7 +227,7 @@ class OvhAiClient implements LlmClientInterface, EmbeddingClientInterface
             'system_prompt_sent' => $caps->supportsSystemPrompt && !empty($contents) && ($contents[0]['role'] ?? '') === 'system',
             'context_caching' => false,  // OVH n'a pas de context caching
         ];
-        $debugOut['raw_request_body'] = $payload;
+        $debugOut['raw_request_body'] = \ArnaudMoncondhuy\SynapseCore\Shared\Util\TextUtil::sanitizeArrayUtf8($payload);
 
         try {
             $response = $this->httpClient->request('POST', rtrim((string) $this->endpoint, '/').'/chat/completions', [
@@ -242,7 +242,7 @@ class OvhAiClient implements LlmClientInterface, EmbeddingClientInterface
             $data = $response->toArray();
 
             // Passer la réponse brute de l'API au debug (VRAI brut, avant normalisation)
-            $debugOut['raw_api_response'] = $data;
+            $debugOut['raw_api_response'] = \ArnaudMoncondhuy\SynapseCore\Shared\Util\TextUtil::sanitizeArrayUtf8($data);
 
             return $this->normalizeCompletionResponse($data);
         } catch (\Throwable $e) {

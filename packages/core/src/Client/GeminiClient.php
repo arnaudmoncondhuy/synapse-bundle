@@ -108,7 +108,7 @@ class GeminiClient implements LlmClientInterface, EmbeddingClientInterface
 
             $data = $response->toArray();
             // Passer la réponse brute de l'API au debug (VRAI brut, avant normalisation)
-            $debugOut['raw_api_response'] = $data;
+            $debugOut['raw_api_response'] = TextUtil::sanitizeArrayUtf8($data);
 
             return $this->normalizeChunk($data);
         } catch (\Throwable $e) {
