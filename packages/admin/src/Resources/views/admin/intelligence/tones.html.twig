@@ -24,7 +24,14 @@
 				des réponses, jamais sur la capacité de raisonnement.
 			</p>
 		</div>
-		<div class="synapse-admin-page-header__actions">
+		<div class="synapse-admin-page-header__actions synapse-admin-flex synapse-admin-gap-md">
+			<form action="{{ path('synapse_admin_tones_reset') }}" method="POST" class="synapse-admin-form-inline" onsubmit="return confirm('Restaurer les tons par défaut ? Les tons supprimés seront réintégrés.')">
+				<input type="hidden" name="_token" value="{{ csrf_token('synapse_tone_reset') }}">
+				<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost">
+					<i data-lucide="rotate-ccw"></i>
+					Restaurer les défauts
+				</button>
+			</form>
 			<a href="{{ path('synapse_admin_tones_new') }}" class="synapse-admin-btn synapse-admin-btn--primary">
 				<i data-lucide="plus"></i>
 				Nouveau ton
@@ -45,9 +52,9 @@
 						<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
 							<span class="synapse-admin-card__title">{{ tone.name }}</span>
 							{% if tone.isBuiltin %}
-								<span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="Ton intégré au bundle — ne peut pas être supprimé">
-									<i data-lucide="lock"></i>
-									Builtin
+								<span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="Ton intégré au bundle. Peut être supprimé ou restauré">
+									<i data-lucide="star"></i>
+									Défaut
 								</span>
 							{% endif %}
 							{% if not tone.isActive %}
@@ -108,13 +115,12 @@
 							</button>
 						</form>
 
-						{# Supprimer (désactivé si builtin) #}
+						{# Supprimer #}
 						<form action="{{ path('synapse_admin_tones_delete', {id: tone.id}) }}" method="POST" class="synapse-admin-form-inline"
-							{% if not tone.isBuiltin %}onsubmit="return confirm('Supprimer le ton « {{ tone.name }} » ?')"{% endif %}>
+							onsubmit="return confirm('Supprimer le ton « {{ tone.name }} » ?')">
 							<input type="hidden" name="_token" value="{{ csrf_token('synapse_tone_delete_' ~ tone.id) }}">
 							<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm synapse-admin-text-danger"
-									data-synapse-admin-tooltip="{{ tone.isBuiltin ? 'Builtin — non supprimable' : 'Supprimer' }}"
-									{% if tone.isBuiltin %}disabled{% endif %}>
+									data-synapse-admin-tooltip="Supprimer">
 								<i data-lucide="trash-2"></i>
 							</button>
 						</form>
