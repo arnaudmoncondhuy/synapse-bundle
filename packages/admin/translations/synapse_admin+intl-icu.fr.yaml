@@ -484,6 +484,8 @@ synapse.admin.rag.flash.enabled: "Source « %name% » activée."
 synapse.admin.rag.flash.disabled: "Source « %name% » désactivée."
 synapse.admin.rag.flash.reindexed: "Réindexation terminée : %count% chunks créés pour « %name% »."
 synapse.admin.rag.flash.reindex_error: "Erreur lors de la réindexation : %error%"
+synapse.admin.rag.flash.reindex_queued: "Réindexation de « %name% » lancée en arrière-plan. La progression est visible sur cette page."
+synapse.admin.rag.flash.already_indexing: "La source « %name% » est déjà en cours de réindexation."
 synapse.admin.rag.flash.no_provider: "Aucun provider enregistré pour le slug « %slug% »."
 
 # Agent edit - section RAG

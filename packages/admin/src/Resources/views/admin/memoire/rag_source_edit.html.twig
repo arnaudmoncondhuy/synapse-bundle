@@ -132,7 +132,9 @@
 
 		{# ── Réindexation ────────────────────────────────────────────────────── #}
 		{% if has_provider %}
-			<div class="synapse-admin-card synapse-admin-mb-lg">
+			<div class="synapse-admin-card synapse-admin-mb-lg" id="reindex-card"
+				data-indexing-status="{{ source.indexingStatus }}"
+				data-status-url="{{ path('synapse_admin_rag_sources_status', {id: source.id}) }}">
 				<div class="synapse-admin-card__header">
 					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info"><i data-lucide="refresh-cw"></i></div>
 					<div>
@@ -141,16 +143,72 @@
 					</div>
 				</div>
 				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+					{% if source.indexingStatus == 'indexing' %}
+						<div style="margin-bottom: 1rem;">
+							<span class="synapse-admin-badge synapse-admin-badge--info" style="animation: pulse 1.5s ease-in-out infinite;">
+								⏳ Indexation en cours…
+							</span>
+							<div style="margin-top: 0.75rem; height: 6px; background: rgba(0,0,0,0.05); border-radius: 3px; overflow: hidden; max-width: 300px;">
+								<div id="synapse-progress-bar" style="height: 100%; background: var(--synapse-color-primary, #6366f1); width: 0%; transition: width 0.3s ease;"></div>
+							</div>
+							<div id="synapse-progress-text" style="font-size: 0.75rem; color: var(--synapse-color-muted, #888); margin-top: 0.4rem;">Initialisation…</div>
+							<div id="synapse-chunk-count" style="font-size: 0.75rem; margin-top: 0.2rem; font-weight: 600;">{{ source.documentCount }} chunks</div>
+						</div>
+					{% elseif source.indexingStatus == 'error' %}
+						<div class="synapse-admin-alert synapse-admin-alert--danger synapse-admin-mb-md">
+							<i data-lucide="alert-triangle"></i>
+							<span>Erreur : {{ source.lastError }}</span>
+						</div>
+					{% endif %}
 					<form method="post" action="{{ path('synapse_admin_rag_sources_reindex', {id: source.id}) }}">
 						<input type="hidden" name="_token" value="{{ csrf_token('synapse_rag_source_reindex_' ~ source.id) }}">
 						<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary"
-								onclick="return confirm('{{ 'synapse.admin.rag.edit.confirm_reindex'|trans(domain='synapse_admin')|escape('js') }}')">
-							<i data-lucide="refresh-cw"></i>
-							{{ 'synapse.admin.rag.edit.action.reindex'|trans(domain='synapse_admin') }}
+							{{ source.indexingStatus == 'indexing' ? 'disabled' : '' }}
+							{% if source.indexingStatus != 'indexing' %}onclick="return confirm('{{ 'synapse.admin.rag.edit.confirm_reindex'|trans(domain='synapse_admin')|escape('js') }}')"{% endif %}>
+							<i data-lucide="{{ source.indexingStatus == 'indexing' ? 'loader' : 'refresh-cw' }}"></i>
+							{{ source.indexingStatus == 'indexing' ? 'En cours…' : 'synapse.admin.rag.edit.action.reindex'|trans(domain='synapse_admin') }}
 						</button>
 					</form>
 				</div>
 			</div>
+		{% endif %}
+
+		{# Polling temps réel #}
+		{% if source.indexingStatus == 'indexing' %}
+		<script>
+		(function () {
+			const card = document.getElementById('reindex-card');
+			if (!card || card.dataset.indexingStatus !== 'indexing') return;
+
+			const statusUrl = card.dataset.statusUrl;
+			const bar = document.getElementById('synapse-progress-bar');
+			const text = document.getElementById('synapse-progress-text');
+			const chunkEl = document.getElementById('synapse-chunk-count');
+
+			const interval = setInterval(async function () {
+				try {
+					const res = await fetch(statusUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+					if (!res.ok) return;
+					const data = await res.json();
+
+					if (chunkEl) chunkEl.textContent = data.documentCount + ' chunks';
+
+					if (data.totalFiles > 0) {
+						const pct = Math.round((data.processedFiles / data.totalFiles) * 100);
+						if (bar) bar.style.width = pct + '%';
+						if (text) text.textContent = pct + '% (' + data.processedFiles + '/' + data.totalFiles + ' fichiers)';
+					} else if (text) {
+						text.textContent = 'Initialisation…';
+					}
+
+					if (data.status !== 'indexing') {
+						clearInterval(interval);
+						window.location.reload();
+					}
+				} catch (e) {}
+			}, 2000);
+		})();
+		</script>
 		{% endif %}
 
 		{# ── Test recherche ──────────────────────────────────────────────────── #}
