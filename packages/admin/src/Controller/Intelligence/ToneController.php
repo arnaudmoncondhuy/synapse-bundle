@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
+use ArnaudMoncondhuy\SynapseCore\DataFixtures\SynapseToneFixture;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseTone;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseToneRepository;
@@ -19,7 +20,6 @@ use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
  * Gestion des tons de réponse de l'IA — Administration Synapse.
  *
  * Un ton définit le style de communication du LLM (registre, format, posture).
- * Les tons builtin fournis par le bundle ne peuvent pas être supprimés.
  */
 #[Route('%synapse.admin_prefix%/intelligence/tones', name: 'synapse_admin_')]
 class ToneController extends AbstractController
@@ -123,17 +123,27 @@ class ToneController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_tone_delete_'.$tone->getId());
 
-        if ($tone->isBuiltin()) {
-            $this->addFlash('error', 'Les tons intégrés au bundle ne peuvent pas être supprimés.');
-
-            return $this->redirectToRoute('synapse_admin_tones');
-        }
-
         $name = $tone->getName();
         $this->em->remove($tone);
         $this->em->flush();
 
         $this->addFlash('success', sprintf('Ton "%s" supprimé.', $name));
+
+        return $this->redirectToRoute('synapse_admin_tones');
+    }
+
+    // ─── Réinitialisation ──────────────────────────────────────────────────────
+
+    #[Route('/restaurer/defauts', name: 'tones_reset', methods: ['POST'])]
+    public function reset(Request $request): Response
+    {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_tone_reset');
+
+        $fixture = new SynapseToneFixture();
+        $fixture->load($this->em);
+
+        $this->addFlash('success', 'Tons par défaut réintégrés avec succès.');
 
         return $this->redirectToRoute('synapse_admin_tones');
     }
