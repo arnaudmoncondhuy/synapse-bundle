@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Memoire;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
+use ArnaudMoncondhuy\SynapseCore\Message\ReindexRagSourceMessage;
 use ArnaudMoncondhuy\SynapseCore\Rag\RagManager;
 use ArnaudMoncondhuy\SynapseCore\Rag\RagSourceRegistry;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
@@ -13,8 +14,10 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseRagDocumentRepository
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseRagSourceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -35,6 +38,7 @@ class RagSourceController extends AbstractController
         private readonly RagManager $ragManager,
         private readonly RagSourceRegistry $registry,
         private readonly EntityManagerInterface $em,
+        private readonly MessageBusInterface $bus,
         private readonly PermissionCheckerInterface $permissionChecker,
         private readonly TranslatorInterface $translator,
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
@@ -145,14 +149,38 @@ class RagSourceController extends AbstractController
             return $this->redirectToRoute('synapse_admin_rag_sources_edit', ['id' => $source->getId()]);
         }
 
-        try {
-            $count = $this->ragManager->reindex($source->getSlug());
-            $this->addFlash('success', $this->translator->trans('synapse.admin.rag.flash.reindexed', ['%count%' => $count, '%name%' => $source->getName()], 'synapse_admin'));
-        } catch (\Throwable $e) {
-            $this->addFlash('error', $this->translator->trans('synapse.admin.rag.flash.reindex_error', ['%error%' => $e->getMessage()], 'synapse_admin'));
+        if ('indexing' === $source->getIndexingStatus()) {
+            $this->addFlash('warning', $this->translator->trans('synapse.admin.rag.flash.already_indexing', ['%name%' => $source->getName()], 'synapse_admin'));
+
+            return $this->redirectToRoute('synapse_admin_rag_sources_edit', ['id' => $source->getId()]);
         }
 
+        $source->setIndexingStatus('indexing');
+        $source->setLastError(null);
+        $this->em->flush();
+
+        $this->bus->dispatch(new ReindexRagSourceMessage($source->getId() ?? throw new \InvalidArgumentException('RAG source must be persisted')));
+
+        $this->addFlash('success', $this->translator->trans('synapse.admin.rag.flash.reindex_queued', ['%name%' => $source->getName()], 'synapse_admin'));
+
         return $this->redirectToRoute('synapse_admin_rag_sources_edit', ['id' => $source->getId()]);
+    }
+
+    // ─── Statut temps réel ──────────────────────────────────────────────────────
+
+    #[Route('/{id}/status', name: 'rag_sources_status', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function status(SynapseRagSource $source): JsonResponse
+    {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
+        return $this->json([
+            'status' => $source->getIndexingStatus(),
+            'documentCount' => $source->getDocumentCount(),
+            'totalFiles' => $source->getTotalFiles(),
+            'processedFiles' => $source->getProcessedFiles(),
+            'lastError' => $source->getLastError(),
+            'lastIndexedAt' => $source->getLastIndexedAt()?->format('d/m/Y H:i'),
+        ]);
     }
 
     // ─── Toggle actif/inactif ───────────────────────────────────────────────────

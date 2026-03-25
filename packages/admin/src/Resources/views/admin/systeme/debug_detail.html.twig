@@ -562,6 +562,74 @@
 					</div>
 				</div>
 			{% endif %}
+
+			{# ── Section RAG ── #}
+			{% set ragMatching = null %}
+			{% if data.prompt_metadata ?? false and data.prompt_metadata.rag_matching is defined %}
+				{% set ragMatching = data.prompt_metadata.rag_matching %}
+			{% endif %}
+
+			{% if ragMatching is not null %}
+				<div class="synapse-admin-card synapse-admin-mb-xl">
+					<div class="synapse-admin-card__header">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
+							<i data-lucide="database"></i>
+						</div>
+						<div>
+							<div class="synapse-admin-card__title">Base de Connaissance (RAG)</div>
+							<div class="synapse-admin-card__subtitle">
+								Recherche sémantique dans les sources documentaires
+								{% if ragMatching.agent ?? false %}
+									<span class="synapse-admin-badge synapse-admin-badge--neutral" style="margin-left: 0.5rem;">{{ ragMatching.agent }}</span>
+								{% endif %}
+							</div>
+						</div>
+					</div>
+					<div class="synapse-admin-card__body">
+						{% if ragMatching.error ?? false %}
+							<div style="background-color: var(--synapse-admin-error); color: white; padding: 1rem; border-radius: var(--synapse-admin-radius); margin-bottom: 1rem;">
+								<strong>Erreur lors de la recherche RAG :</strong><br>{{ ragMatching.error }}
+							</div>
+						{% endif %}
+
+						{% if ragMatching.sources_queried ?? false %}
+							<div style="margin-bottom: 1rem; display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;">
+								<span style="font-size: 0.8rem; color: var(--synapse-admin-text-muted);">Sources interrogées :</span>
+								{% for slug in ragMatching.sources_queried %}
+									<span class="synapse-admin-badge synapse-admin-badge--info">{{ slug }}</span>
+								{% endfor %}
+							</div>
+						{% endif %}
+
+						{% if (ragMatching.found ?? 0) > 0 %}
+							<div style="margin-bottom: 1rem;">
+								<strong>{{ ragMatching.found }}</strong> chunk(s) trouvé(s),
+								dont <strong>{{ ragMatching.details|length }}</strong> injecté(s) dans le prompt
+								(seuil&nbsp;: {{ ragMatching.threshold }}).
+							</div>
+							<div style="display: flex; flex-direction: column; gap: 0.5rem;">
+								{% for chunk in ragMatching.details %}
+									<div style="padding: 0.75rem; background-color: var(--synapse-admin-bg-hover); border-left: 3px solid {{ chunk.score >= ragMatching.threshold ? 'var(--synapse-admin-success)' : 'var(--synapse-admin-border)' }}; border-radius: 0 var(--synapse-admin-radius) var(--synapse-admin-radius) 0;">
+										<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+											<span style="font-size: 0.875rem; color: var(--synapse-admin-text); flex: 1;">{{ chunk.content }}</span>
+											<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; flex-shrink: 0;">
+												<span class="synapse-admin-badge synapse-admin-badge--{{ chunk.score >= ragMatching.threshold ? 'success' : 'neutral' }}">Score&nbsp;: {{ chunk.score|number_format(3) }}</span>
+												{% if chunk.source ?? false %}
+													<span class="synapse-admin-badge synapse-admin-badge--info" style="font-size: 0.7rem;">{{ chunk.source }}</span>
+												{% endif %}
+											</div>
+										</div>
+									</div>
+								{% endfor %}
+							</div>
+						{% else %}
+							<p class="synapse-admin-text-muted m-0">
+								Aucun chunk pertinent trouvé{% if (ragMatching.sources_queried ?? [])|length > 0 %} dans {{ ragMatching.sources_queried|length }} source(s) (seuil&nbsp;: {{ ragMatching.threshold }}){% endif %}.
+							</p>
+						{% endif %}
+					</div>
+				</div>
+			{% endif %}
 		</div>
 
 		{# TAB 5: OUTILS & REQUÊTES (TOOLS) #}
