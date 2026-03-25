@@ -2663,8 +2663,8 @@ Il n'affecte pas la capacité de raisonnement, uniquement la façon dont les ré
 <p>Les tons sont stockés en base de données et gérables depuis <strong>Intelligence › Tons de réponse</strong> dans l'admin Synapse V2.</p>
 <ul>
 <li><strong>20 tons builtin</strong> sont fournis par le bundle (efficace, zen, senior_dev, etc.)</li>
-<li>Vous pouvez en <strong>créer</strong>, <strong>modifier</strong> et <strong>désactiver</strong> librement</li>
-<li>Les tons builtin ne peuvent pas être supprimés (marqués <code>isBuiltin = true</code>)</li>
+<li>Vous pouvez en <strong>créer</strong>, <strong>modifier</strong>, <strong>supprimer</strong> et <strong>désactiver</strong> librement</li>
+<li>Les tons par défaut peuvent être restaurés à tout moment via le bouton "Restaurer les défauts"</li>
 </ul>
 <h3 id="chargement-initial-des-tons-builtin">Chargement initial des tons builtin</h3>
 <div class="highlight"><pre><span></span><code>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:fixtures:load<span class="w"> </span>--append
