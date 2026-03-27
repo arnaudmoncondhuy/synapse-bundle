@@ -553,7 +553,7 @@
 							</form>
 
 							{# Supprimer #}
-							<form action="{{ path('synapse_admin_presets_delete', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline" onsubmit="return confirm('{{ 'synapse.admin.llm_config.preset.confirm_delete'|trans({'%name%': preset.name}, domain='synapse_admin')|escape('js') }}')">
+							<form action="{{ path('synapse_admin_presets_delete', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline" onsubmit="return confirm('{{ 'synapse.admin.llm_config.preset.confirm_delete'|trans({'name': preset.name}, domain='synapse_admin')|escape('js') }}')">
 								<input type="hidden" name="_token" value="{{ csrf_token('synapse_preset_delete_' ~ preset.id) }}">
 								<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm synapse-admin-text-danger" data-synapse-admin-tooltip="{% if preset.isActive %}{{ 'synapse.admin.llm_config.preset.tooltip.active_no_delete'|trans(domain='synapse_admin') }}{% else %}{{ 'synapse.admin.common.delete'|trans(domain='synapse_admin') }}{% endif %}" data-synapse-admin-tooltip-placement="top" {% if preset.isActive %} disabled {% endif %}>
 									<i data-lucide="trash-2"></i>

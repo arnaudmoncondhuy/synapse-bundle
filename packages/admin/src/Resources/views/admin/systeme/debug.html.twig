@@ -28,7 +28,7 @@
 			{% if logs|length > 0 %}
 				<form action="{{ path('synapse_admin_debug_clear') }}" method="POST">
 					<input type="hidden" name="token" value="{{ csrf_token('debug_clear') }}">
-					<button type="submit" class="synapse-admin-btn synapse-admin-btn--danger synapse-admin-btn--sm" onclick="return confirm('{{ 'synapse.admin.debug.action.clear_confirm'|trans({'%total%': total}, domain='synapse_admin')|escape('js') }}')">
+					<button type="submit" class="synapse-admin-btn synapse-admin-btn--danger synapse-admin-btn--sm" onclick="return confirm('{{ 'synapse.admin.debug.action.clear_confirm'|trans({'total': total}, domain='synapse_admin')|escape('js') }}')">
 						<i data-lucide="trash-2"></i>
 						{{ 'synapse.admin.debug.action.clear'|trans(domain='synapse_admin') }}
 					</button>

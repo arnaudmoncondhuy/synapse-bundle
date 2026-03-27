@@ -32,9 +32,13 @@
 		</div>
 		<div class="synapse-admin-page-header__actions">
 			<a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
-				<i data-lucide="arrow-left"></i>
-				{{ 'synapse.admin.agent.edit.action.back'|trans(domain='synapse_admin') }}
+				<i data-lucide="x"></i>
+				{{ 'synapse.admin.common.cancel'|trans(domain='synapse_admin') }}
 			</a>
+			<button type="submit" form="agent-form" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+				<i data-lucide="save"></i>
+				{{ is_new ? 'synapse.admin.agent.edit.action.create'|trans(domain='synapse_admin') : 'synapse.admin.agent.edit.action.save'|trans(domain='synapse_admin') }}
+			</button>
 		</div>
 	</div>
 
@@ -54,7 +58,7 @@
 		</button>
 	</div>
 
-	<form method="post" action="{{ is_new ? path('synapse_admin_agents_new') : path('synapse_admin_agents_edit', {id: agent.id}) }}">
+	<form id="agent-form" method="post" action="{{ is_new ? path('synapse_admin_agents_new') : path('synapse_admin_agents_edit', {id: agent.id}) }}">
 
 		<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_edit') }}">
 
@@ -107,7 +111,7 @@
 							{{ agent.isBuiltin ? 'readonly' : '' }}
 							required placeholder="ex: support_client"
 							pattern="[a-z0-9_]+" title="{{ 'synapse.admin.agent.edit.pattern_title'|trans(domain='synapse_admin') }}">
-						<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.usage_tip'|trans({'%key%': agent.key ?: 'mon_agent'}, domain='synapse_admin')|raw }}</p>
+						<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.usage_tip'|trans({'key': agent.key ?: 'mon_agent'}, domain='synapse_admin')|raw }}</p>
 					</div>
 
 				</div>
@@ -425,17 +429,6 @@
 			</div>
 
 		</div>{# /tab-panel-acces #}
-
-		{# ── Actions ───────────────────────────────────────────────────────────── #}
-		<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-justify-end synapse-admin-mb-xl">
-			<a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
-				{{ 'synapse.admin.common.cancel'|trans(domain='synapse_admin') }}
-			</a>
-			<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
-				<i data-lucide="save"></i>
-				{{ is_new ? 'synapse.admin.agent.edit.action.create'|trans(domain='synapse_admin') : 'synapse.admin.agent.edit.action.save'|trans(domain='synapse_admin') }}
-			</button>
-		</div>
 
 	</form>
 

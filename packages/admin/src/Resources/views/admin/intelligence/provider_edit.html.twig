@@ -27,9 +27,19 @@
 				Configurez les identifiants d'accès pour ce fournisseur LLM.
 			</p>
 		</div>
+		<div class="synapse-admin-page-header__actions">
+			<a href="{{ path('synapse_admin_configuration_llm', {tab: 'fournisseurs'}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+				<i data-lucide="x"></i>
+				Annuler
+			</a>
+			<button type="submit" form="provider-form" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+				<i data-lucide="save"></i>
+				Enregistrer
+			</button>
+		</div>
 	</div>
 
-	<form method="post" action="{{ path('synapse_admin_providers_edit', {id: provider.id}) }}">
+	<form id="provider-form" method="post" action="{{ path('synapse_admin_providers_edit', {id: provider.id}) }}">
 		<input
 		type="hidden" name="_token" value="{{ csrf_token('synapse_provider_edit_' ~ provider.id) }}">
 
@@ -152,17 +162,6 @@
 			</div>
 		{% endif %}
 
-		{# ── Actions ───────────────────────────────────────────────────────────── #}
-		<div class="synapse-admin-sticky-actions">
-			<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
-				<i data-lucide="save"></i>
-				Enregistrer
-			</button>
-			<a href="{{ path('synapse_admin_configuration_llm', {tab: 'fournisseurs'}) }}" class="synapse-admin-btn synapse-admin-btn--ghost">
-				<i data-lucide="x"></i>
-				Annuler
-			</a>
-		</div>
 
 	</form>
 

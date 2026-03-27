@@ -1,6 +1,6 @@
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
-{% block admin_page_title %}{{ 'synapse.admin.rag.documents.page_title'|trans({'%name%': source.name}, domain='synapse_admin') }}{% endblock %}
+{% block admin_page_title %}{{ 'synapse.admin.rag.documents.page_title'|trans({'name': source.name}, domain='synapse_admin') }}{% endblock %}
 
 {% block admin_breadcrumb %}
 	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
@@ -21,10 +21,10 @@
 				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
 					<i data-lucide="file-text"></i>
 				</span>
-				{{ 'synapse.admin.rag.documents.title'|trans({'%name%': source.name}, domain='synapse_admin') }}
+				{{ 'synapse.admin.rag.documents.title'|trans({'name': source.name}, domain='synapse_admin') }}
 			</h1>
 			<p class="synapse-admin-page-subtitle">
-				{{ 'synapse.admin.rag.documents.subtitle'|trans({'%total%': total}, domain='synapse_admin') }}
+				{{ 'synapse.admin.rag.documents.subtitle'|trans({'total': total}, domain='synapse_admin') }}
 			</p>
 		</div>
 		<div class="synapse-admin-page-header__actions">

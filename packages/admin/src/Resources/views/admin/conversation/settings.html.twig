@@ -24,10 +24,16 @@
 				Configurez les comportements globaux de l'intelligence Synapse : langue de contexte, prompt système et mode debug.
 			</p>
 		</div>
+		<div class="synapse-admin-page-header__actions">
+			<button type="submit" form="settings-form" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+				<i data-lucide="save"></i>
+				Enregistrer les paramètres
+			</button>
+		</div>
 	</div>
 
 	{# ── Formulaire de paramètres ─────────────────────────────────────────────── #}
-	<form action="{{ path('synapse_admin_settings') }}" method="POST">
+	<form id="settings-form" action="{{ path('synapse_admin_settings') }}" method="POST">
 		<input type="hidden" name="_token" value="{{ csrf_token('synapse_admin_settings') }}">
 
 		<div
@@ -157,12 +163,6 @@
 					Si décoché, la directive ne s'applique pas aux appels sans historique (agents autonomes, tâches planifiées).
 				</p>
 			</div>
-		</div>
-		<div class="synapse-admin-card__footer">
-			<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
-				<i data-lucide="save"></i>
-				Enregistrer les paramètres
-			</button>
 		</div>
 	</div>
 
