@@ -33,10 +33,6 @@
 			</p>
 		</div>
 		<div class="synapse-admin-page-header__actions">
-			<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
-				<i data-lucide="arrow-left"></i>
-				Retour
-			</a>
 			{% if not is_new %}
 				<form method="post" action="{{ path('synapse_admin_presets_test', {id: preset.id}) }}" style="display:inline">
 					<button type="submit" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
@@ -45,6 +41,14 @@
 					</button>
 				</form>
 			{% endif %}
+			<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+				<i data-lucide="x"></i>
+				Annuler
+			</a>
+			<button type="submit" form="preset-form" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+				<i data-lucide="save"></i>
+				{{ is_new ? 'Créer le Model Preset' : 'Enregistrer les modifications' }}
+			</button>
 		</div>
 	</div>
 
@@ -240,17 +244,6 @@
 				</div>
 				<input type="hidden" name="provider_options" id="provider-options-hidden" value="{{ preset.providerOptions ? preset.providerOptions|json_encode : '{}' }}">
 			</div>
-		</div>
-
-		{# ── Actions de sauvegarde ──────────────────────────────────────────────── #}
-		<div class="synapse-admin-sticky-actions">
-			<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
-				<i data-lucide="save"></i>
-				{{ is_new ? 'Créer le Model Preset' : 'Enregistrer les modifications' }}
-			</button>
-			<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-btn synapse-admin-btn--ghost">
-				Annuler
-			</a>
 		</div>
 
 	</form>

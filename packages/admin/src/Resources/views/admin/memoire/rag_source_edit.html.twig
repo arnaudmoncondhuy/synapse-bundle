@@ -1,7 +1,7 @@
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
 {% block admin_page_title %}
-	{{ is_new ? 'synapse.admin.rag.edit.page_title.new'|trans(domain='synapse_admin') : 'synapse.admin.rag.edit.page_title.edit'|trans({'%name%': source.name}, domain='synapse_admin') }}
+	{{ is_new ? 'synapse.admin.rag.edit.page_title.new'|trans(domain='synapse_admin') : 'synapse.admin.rag.edit.page_title.edit'|trans({'name': source.name}, domain='synapse_admin') }}
 {% endblock %}
 
 {% block admin_breadcrumb %}
@@ -21,18 +21,22 @@
 				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
 					<i data-lucide="database"></i>
 				</span>
-				{{ is_new ? 'synapse.admin.rag.edit.title.new'|trans(domain='synapse_admin') : 'synapse.admin.rag.edit.title.edit'|trans({'%name%': source.name}, domain='synapse_admin') }}
+				{{ is_new ? 'synapse.admin.rag.edit.title.new'|trans(domain='synapse_admin') : 'synapse.admin.rag.edit.title.edit'|trans({'name': source.name}, domain='synapse_admin') }}
 			</h1>
 		</div>
 		<div class="synapse-admin-page-header__actions">
 			<a href="{{ path('synapse_admin_rag_sources') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
-				<i data-lucide="arrow-left"></i>
-				{{ 'synapse.admin.rag.edit.action.back'|trans(domain='synapse_admin') }}
+				<i data-lucide="x"></i>
+				{{ 'synapse.admin.common.cancel'|trans(domain='synapse_admin') }}
 			</a>
+			<button type="submit" form="rag-source-form" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+				<i data-lucide="save"></i>
+				{{ is_new ? 'synapse.admin.rag.edit.action.create'|trans(domain='synapse_admin') : 'synapse.admin.rag.edit.action.save'|trans(domain='synapse_admin') }}
+			</button>
 		</div>
 	</div>
 
-	<form method="post" action="{{ is_new ? path('synapse_admin_rag_sources_new') : path('synapse_admin_rag_sources_edit', {id: source.id}) }}">
+	<form id="rag-source-form" method="post" action="{{ is_new ? path('synapse_admin_rag_sources_new') : path('synapse_admin_rag_sources_edit', {id: source.id}) }}">
 		<input type="hidden" name="_token" value="{{ csrf_token('synapse_rag_source_edit') }}">
 
 		{# ── Identification ────────────────────────────────────────────────────── #}
@@ -83,16 +87,6 @@
 			</div>
 		</div>
 
-		{# ── Actions ─────────────────────────────────────────────────────────── #}
-		<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-justify-end synapse-admin-mb-xl">
-			<a href="{{ path('synapse_admin_rag_sources') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
-				{{ 'synapse.admin.common.cancel'|trans(domain='synapse_admin') }}
-			</a>
-			<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
-				<i data-lucide="save"></i>
-				{{ is_new ? 'synapse.admin.rag.edit.action.create'|trans(domain='synapse_admin') : 'synapse.admin.rag.edit.action.save'|trans(domain='synapse_admin') }}
-			</button>
-		</div>
 	</form>
 
 	{% if not is_new %}

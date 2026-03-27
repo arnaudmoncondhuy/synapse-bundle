@@ -32,13 +32,17 @@
 		</div>
 		<div class="synapse-admin-page-header__actions">
 			<a href="{{ path('synapse_admin_tones') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
-				<i data-lucide="arrow-left"></i>
-				Retour
+				<i data-lucide="x"></i>
+				Annuler
 			</a>
+			<button type="submit" form="tone-form" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+				<i data-lucide="save"></i>
+				{{ is_new ? 'Créer le ton' : 'Enregistrer' }}
+			</button>
 		</div>
 	</div>
 
-	<form method="post" action="{{ is_new ? path('synapse_admin_tones_new') : path('synapse_admin_tones_edit', {id: tone.id}) }}">
+	<form id="tone-form" method="post" action="{{ is_new ? path('synapse_admin_tones_new') : path('synapse_admin_tones_edit', {id: tone.id}) }}">
 
 		<input type="hidden" name="_token" value="{{ csrf_token('synapse_tone_edit') }}">
 
@@ -177,16 +181,6 @@
 			</div>
 		</div>
 
-		{# ── Actions ─────────────────────────────────────────────────────────── #}
-		<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-justify-end synapse-admin-mb-xl">
-			<a href="{{ path('synapse_admin_tones') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
-				Annuler
-			</a>
-			<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
-				<i data-lucide="save"></i>
-				{{ is_new ? 'Créer le ton' : 'Enregistrer' }}
-			</button>
-		</div>
 
 	</form>
 

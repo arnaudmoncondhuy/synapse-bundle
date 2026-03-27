@@ -24,6 +24,16 @@
 				{{ 'synapse.admin.memory.embeddings.subtitle'|trans(domain='synapse_admin') }}
 			</p>
 		</div>
+		<div class="synapse-admin-page-header__actions">
+			<button type="button" id="btn-test-embedding" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
+				<i data-lucide="flask-conical"></i>
+				{{ 'synapse.admin.memory.embeddings.form.action.test'|trans(domain='synapse_admin') }}
+			</button>
+			<button type="submit" form="embeddings-form" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+				<i data-lucide="save"></i>
+				{{ 'synapse.admin.agent.edit.action.save'|trans(domain='synapse_admin') }}
+			</button>
+		</div>
 	</div>
 
 	{# ── État de l'infrastructure ─────────────────────────────────────────────── #}
@@ -82,7 +92,7 @@
 					<div class="synapse-admin-kpi__label">{{ 'synapse.admin.memory.embeddings.kpi.chunking_label'|trans(domain='synapse_admin') }}</div>
 					<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ config.chunkingStrategy }}</div>
 					<div class="synapse-admin-kpi__sub">
-						{{ 'synapse.admin.memory.embeddings.kpi.chunking_desc'|trans({'%size%': config.chunkSize, '%overlap%': config.chunkOverlap}, domain='synapse_admin') }}
+						{{ 'synapse.admin.memory.embeddings.kpi.chunking_desc'|trans({'size': config.chunkSize, 'overlap': config.chunkOverlap}, domain='synapse_admin') }}
 					</div>
 				</div>
 			</div>
@@ -91,7 +101,7 @@
 	</div>
 
 	{# ── Formulaire de configuration ──────────────────────────────────────────── #}
-	<form action="{{ path('synapse_admin_embeddings') }}" method="POST">
+	<form id="embeddings-form" action="{{ path('synapse_admin_embeddings') }}" method="POST">
 		<input type="hidden" name="_token" value="{{ csrf_token('synapse_admin_embeddings') }}">
 
 		<div
@@ -195,20 +205,6 @@
 				</div>
 			</div>
 
-		</div>
-
-		{# ── Actions ─────────────────────────────────────────────────────────── #}
-		<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-justify-end synapse-admin-mt-xl synapse-admin-mb-xl">
-			{# Test d'embedding rapide via JS #}
-			<button type="button" id="btn-test-embedding" class="synapse-admin-btn synapse-admin-btn--ghost">
-				<i data-lucide="flask-conical"></i>
-				{{ 'synapse.admin.memory.embeddings.form.action.test'|trans(domain='synapse_admin') }}
-			</button>
-			
-			<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
-				<i data-lucide="save"></i>
-				{{ 'synapse.admin.agent.edit.action.save'|trans(domain='synapse_admin') }}
-			</button>
 		</div>
 
 	</form>

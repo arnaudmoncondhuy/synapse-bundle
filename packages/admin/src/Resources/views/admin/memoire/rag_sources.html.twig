@@ -145,7 +145,7 @@
 										</button>
 									</form>
 									<form action="{{ path('synapse_admin_rag_sources_delete', {id: source.id}) }}" method="POST" class="synapse-admin-form-inline"
-										  onsubmit="return confirm('{{ 'synapse.admin.rag.list.confirm_delete'|trans({'%name%': source.name}, domain='synapse_admin')|escape('js') }}')">
+										  onsubmit="return confirm('{{ 'synapse.admin.rag.list.confirm_delete'|trans({'name': source.name}, domain='synapse_admin')|escape('js') }}')">
 										<input type="hidden" name="_token" value="{{ csrf_token('synapse_rag_source_delete_' ~ source.id) }}">
 										<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon synapse-admin-text-danger"
 												data-synapse-admin-tooltip="{{ 'synapse.admin.common.delete'|trans(domain='synapse_admin') }}">

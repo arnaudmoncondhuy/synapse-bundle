@@ -235,6 +235,29 @@
     gap: var(--synapse-admin-space-sm);
 }
 
+/* ── Sticky actions (formulaires d'édition) ──────────────────────────────── */
+
+.synapse-admin-sticky-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: var(--synapse-admin-z-sticky);
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-md);
+    padding: var(--synapse-admin-space-lg);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border-top: 1px solid var(--synapse-admin-border-light);
+    box-shadow: var(--synapse-admin-shadow-lg);
+    margin-top: var(--synapse-admin-space-2xl);
+    width: 100%;
+}
+
+.synapse-admin-sticky-actions > button:last-child {
+    margin-left: auto;
+}
+
 /* ── Input avec icône ────────────────────────────────────────────────────────── */
 
 .synapse-admin-input-group {

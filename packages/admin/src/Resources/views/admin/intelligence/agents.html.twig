@@ -129,7 +129,7 @@
 
 						{# Supprimer (masqué ou désactivé si builtin) #}
 						<form action="{{ path('synapse_admin_agents_delete', {id: agent.id}) }}" method="POST" class="synapse-admin-form-inline"
-							{% if not agent.isBuiltin %}onsubmit="return confirm('{{ 'synapse.admin.agent.list.confirm_delete'|trans({'%name%': agent.name}, domain='synapse_admin')|escape('js') }}')"{% endif %}>
+							{% if not agent.isBuiltin %}onsubmit="return confirm('{{ 'synapse.admin.agent.list.confirm_delete'|trans({'name': agent.name}, domain='synapse_admin')|escape('js') }}')"{% endif %}>
 							<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_delete_' ~ agent.id) }}">
 							<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm synapse-admin-text-danger"
 									data-synapse-admin-tooltip="{{ agent.isBuiltin ? 'synapse.admin.agent.list.tooltip.builtin_no_delete'|trans(domain='synapse_admin') : 'synapse.admin.agent.list.tooltip.delete'|trans(domain='synapse_admin') }}"
