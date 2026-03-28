@@ -10,6 +10,7 @@ use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Service\EmbeddingService;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseConfigRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseRagDocumentRepository;
 use ArnaudMoncondhuy\SynapseCore\VectorStore\VectorStoreRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -31,6 +32,7 @@ class EmbeddingController extends AbstractController
     public function __construct(
         private SynapseConfigRepository $configRepo,
         private SynapseProviderRepository $providerRepo,
+        private SynapseRagDocumentRepository $ragDocumentRepo,
         private ModelCapabilityRegistry $modelRegistry,
         private EmbeddingService $embeddingService,
         private VectorStoreRegistry $vectorStoreRegistry,
@@ -83,6 +85,20 @@ class EmbeddingController extends AbstractController
                 return $this->redirectToRoute('synapse_admin_embeddings');
             }
 
+            // ⚠️ Protection critique : empêcher changement de modèle si RAG documents existent
+            if (
+                ($embProvider !== $config->getEmbeddingProvider() || $embModel !== $config->getEmbeddingModel())
+                && $this->ragDocumentRepo->countAll() > 0
+            ) {
+                $this->addFlash('error', $this->translator->trans(
+                    'synapse.admin.memory.embeddings.flash.rag_documents_exist',
+                    ['count' => $this->ragDocumentRepo->countAll()],
+                    'synapse_admin'
+                ));
+
+                return $this->redirectToRoute('synapse_admin_embeddings');
+            }
+
             $chunkSize = max(100, min(20000, (int) ($data['chunk_size'] ?? 1000)));
             $chunkOverlap = max(0, min($chunkSize - 50, (int) ($data['chunk_overlap'] ?? 200)));
             $vectorStoreVal = !empty($data['vector_store']) ? $data['vector_store'] : 'doctrine';
@@ -118,6 +134,9 @@ class EmbeddingController extends AbstractController
             }
         }
 
+        // Compter les documents RAG existants
+        $ragDocumentCount = $this->ragDocumentRepo->countAll();
+
         return $this->render('@Synapse/admin/memoire/embeddings.html.twig', [
             'config' => $config,
             'active_providers' => $activeProviders,
@@ -125,6 +144,7 @@ class EmbeddingController extends AbstractController
             'db_is_postgres' => $isPostgres,
             'db_vector_ready' => $vectorExtensionEnabled,
             'available_vector_stores' => $this->vectorStoreRegistry->getAvailableAliases(),
+            'rag_document_count' => $ragDocumentCount,
         ]);
     }
 

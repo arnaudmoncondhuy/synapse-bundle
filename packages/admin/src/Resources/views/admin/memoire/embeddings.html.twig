@@ -36,6 +36,29 @@
 		</div>
 	</div>
 
+	{# ── Alerte RAG ───────────────────────────────────────────────────────────── #}
+	{% if rag_document_count > 0 %}
+		<div class="synapse-admin-card synapse-admin-card--danger synapse-admin-mb-xl">
+			<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-start">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--danger" style="margin-top: 0.5rem;">
+					<i data-lucide="alert-triangle"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-font-bold">⚠️ Attention : {{ rag_document_count }} documents RAG indexés</div>
+					<p class="synapse-admin-text-sm synapse-admin-mt-sm synapse-admin-text-muted">
+						Vous avez {{ rag_document_count }} document(s) RAG en base.
+						<strong>Vous ne pouvez pas changer le modèle d'embedding</strong> tant que ces documents existent.
+					</p>
+					<p class="synapse-admin-text-sm synapse-admin-mt-xs synapse-admin-text-muted">
+						💡 <strong>Solution :</strong>
+						<a href="{{ path('synapse_admin_rag_sources') }}" class="synapse-admin-link">Allez dans RAG Sources</a>
+						et videz l'index des sources (bouton 🗑️).
+					</p>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+
 	{# ── État de l'infrastructure ─────────────────────────────────────────────── #}
 	<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
 
@@ -121,8 +144,13 @@
 				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
 
 					<div class="synapse-admin-form-group">
-						<label class="synapse-admin-label" for="embedding_provider">Fournisseur</label>
-						<select id="embedding_provider" name="embedding_provider" class="synapse-admin-select">
+						<label class="synapse-admin-label" for="embedding_provider">
+							Fournisseur
+							{% if rag_document_count > 0 %}
+								<span class="synapse-admin-badge synapse-admin-badge--danger synapse-admin-ml-sm">🔒 Verrouillé</span>
+							{% endif %}
+						</label>
+						<select id="embedding_provider" name="embedding_provider" class="synapse-admin-select" {% if rag_document_count > 0 %}disabled{% endif %}>
 							<option value="">— Sélectionner —</option>
 							{% for provider in active_providers %}
 								<option value="{{ provider.name }}" {{ config.embeddingProvider == provider.name ? 'selected' : '' }}>
@@ -130,27 +158,52 @@
 								</option>
 							{% endfor %}
 						</select>
+						{% if rag_document_count > 0 %}
+							<p class="synapse-admin-text-xs synapse-admin-text-danger synapse-admin-mt-sm">
+								Champ désactivé : vider les documents RAG pour pouvoir changer de modèle.
+							</p>
+						{% endif %}
 					</div>
 
 					<div class="synapse-admin-form-group synapse-admin-mt-md">
-						<label class="synapse-admin-label" for="embedding_model">Modèle</label>
-						<select id="embedding_model" name="embedding_model" class="synapse-admin-select">
+						<label class="synapse-admin-label" for="embedding_model">
+							Modèle
+							{% if rag_document_count > 0 %}
+								<span class="synapse-admin-badge synapse-admin-badge--danger synapse-admin-ml-sm">🔒 Verrouillé</span>
+							{% endif %}
+						</label>
+						<select id="embedding_model" name="embedding_model" class="synapse-admin-select" {% if rag_document_count > 0 %}disabled{% endif %}>
 							<option value="">— Sélectionner un fournisseur d'abord —</option>
 						</select>
 						<p id="embedding_model_no_registered" class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm" hidden>
 							Aucun modèle d'embedding enregistré pour ce fournisseur.
 						</p>
+						{% if rag_document_count > 0 %}
+							<p class="synapse-admin-text-xs synapse-admin-text-danger synapse-admin-mt-sm">
+								Champ désactivé : vider les documents RAG pour pouvoir changer de modèle.
+							</p>
+						{% endif %}
 					</div>
 
 					<div class="synapse-admin-form-group synapse-admin-mt-md">
 						<label class="synapse-admin-label" for="embedding_dimension">
 							{{ 'synapse.admin.memory.embeddings.form.label.dimension'|trans(domain='synapse_admin') }}
+							{% if rag_document_count > 0 %}
+							<span class="synapse-admin-badge synapse-admin-badge--danger synapse-admin-ml-sm">🔒 Verrouillé</span>
+						{% else %}
 							<span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-ml-sm">{{ 'synapse.admin.common.optional'|trans(domain='synapse_admin')|lower }}</span>
+						{% endif %}
 						</label>
-						<input type="number" id="embedding_dimension" name="embedding_dimension" class="synapse-admin-input" value="{{ config.embeddingDimension }}" placeholder="Ex : 768 ou 1536">
-						<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">
-							{{ 'synapse.admin.memory.embeddings.form.help.dimension'|trans(domain='synapse_admin') }}
-						</p>
+						<input type="number" id="embedding_dimension" name="embedding_dimension" class="synapse-admin-input" value="{{ config.embeddingDimension }}" placeholder="Ex : 768 ou 1536" {% if rag_document_count > 0 %}disabled{% endif %}>
+						{% if rag_document_count > 0 %}
+							<p class="synapse-admin-text-xs synapse-admin-text-danger synapse-admin-mt-sm">
+								Champ désactivé : vider les documents RAG pour pouvoir changer la dimension.
+							</p>
+						{% else %}
+							<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">
+								{{ 'synapse.admin.memory.embeddings.form.help.dimension'|trans(domain='synapse_admin') }}
+							</p>
+						{% endif %}
 					</div>
 
 				</div>

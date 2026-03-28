@@ -219,6 +219,32 @@ class RagSourceController extends AbstractController
 
     // ─── Test recherche ─────────────────────────────────────────────────────────
 
+    // ─── Vider l'index (sans supprimer la source) ──────────────────────────
+
+    #[Route('/{id}/purge', name: 'rag_sources_purge', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function purge(SynapseRagSource $source, Request $request): Response
+    {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_rag_source_purge_'.$source->getId());
+
+        // Supprimer tous les documents de cette source
+        $this->documentRepository->deleteBySource($source);
+
+        // Réinitialiser les compteurs sur la source
+        $source->setDocumentCount(0);
+        $source->setTotalFiles(0);
+        $source->setProcessedFiles(0);
+        $source->setIndexingStatus('pending');
+        $source->setLastError(null);
+        $this->em->flush();
+
+        $this->addFlash('success', $this->translator->trans('synapse.admin.rag.flash.index_purged', ['%name%' => $source->getName()], 'synapse_admin'));
+
+        return $this->redirectToRoute('synapse_admin_rag_sources');
+    }
+
+    // ─── Test recherche ─────────────────────────────────────────────────────
+
     #[Route('/{id}/recherche', name: 'rag_sources_search', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function search(SynapseRagSource $source, Request $request): Response
     {

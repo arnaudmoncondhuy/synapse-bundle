@@ -137,6 +137,16 @@
 									   data-synapse-admin-tooltip="{{ 'synapse.admin.common.edit'|trans(domain='synapse_admin') }}">
 										<i data-lucide="edit-3"></i>
 									</a>
+									{% if source.documentCount > 0 %}
+										<form action="{{ path('synapse_admin_rag_sources_purge', {id: source.id}) }}" method="POST" class="synapse-admin-form-inline"
+											  onsubmit="return confirm('Vider l\'index de « {{ source.name }} » ? ({{ source.documentCount }} documents seront supprimés)')">
+											<input type="hidden" name="_token" value="{{ csrf_token('synapse_rag_source_purge_' ~ source.id) }}">
+											<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon synapse-admin-text-warning"
+													data-synapse-admin-tooltip="Vider l'index RAG (conserve la source)">
+												<i data-lucide="trash"></i>
+											</button>
+										</form>
+									{% endif %}
 									<form action="{{ path('synapse_admin_rag_sources_toggle', {id: source.id}) }}" method="POST" class="synapse-admin-form-inline">
 										<input type="hidden" name="_token" value="{{ csrf_token('synapse_rag_source_toggle_' ~ source.id) }}">
 										<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon"
