@@ -20,6 +20,7 @@ composer.phar
 *.cache
 .php-cs-fixer.cache
 /phpstan.neon.cache
+/qa/
 ###< dev tools ###
 
 ###> assets ###
