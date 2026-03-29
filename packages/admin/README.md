@@ -66,7 +66,7 @@ composer require arnaudmoncondhuy/synapse-admin:^0.1
 ### 🎛️ Architecture Administration Synapse
 - **Hybrid HTML/JSON form pattern** - Formulaires dynamiques s'adaptant au provider LLM
 - **Live preset testing** - Test des presets avec streaming en temps réel dans l'admin
-- **Gestion des Missions** - Interface de configuration des agents (Missions & Tons)
+- **Gestion des Agents** - Interface de configuration des agents (system prompt, preset, ton et outils)
 
 ## Configuration
 

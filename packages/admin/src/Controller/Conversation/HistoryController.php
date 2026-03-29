@@ -28,9 +28,9 @@ class HistoryController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private ConversationManager $conversationManager,
-        private PermissionCheckerInterface $permissionChecker,
-        private ?LoggerInterface $logger = null,
+        private readonly ConversationManager $conversationManager,
+        private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly ?LoggerInterface $logger = null,
     ) {
     }
 

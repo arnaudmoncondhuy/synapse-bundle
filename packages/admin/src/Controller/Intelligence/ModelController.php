@@ -25,11 +25,11 @@ class ModelController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapseModelRepository $modelRepo,
-        private ModelCapabilityRegistry $capabilityRegistry,
-        private EntityManagerInterface $em,
-        private PermissionCheckerInterface $permissionChecker,
-        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
+        private readonly SynapseModelRepository $modelRepo,
+        private readonly ModelCapabilityRegistry $capabilityRegistry,
+        private readonly EntityManagerInterface $em,
+        private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
 

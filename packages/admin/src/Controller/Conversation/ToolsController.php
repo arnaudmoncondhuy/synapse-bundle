@@ -23,8 +23,8 @@ class ToolsController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private ToolRegistry $toolRegistry,
-        private PermissionCheckerInterface $permissionChecker,
+        private readonly ToolRegistry $toolRegistry,
+        private readonly PermissionCheckerInterface $permissionChecker,
     ) {
     }
 

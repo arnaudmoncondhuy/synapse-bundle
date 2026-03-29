@@ -28,13 +28,13 @@ class ProviderController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapseProviderRepository $providerRepo,
-        private SynapseModelPresetRepository $presetRepo,
-        private EntityManagerInterface $em,
-        private LlmClientRegistry $clientRegistry,
-        private PermissionCheckerInterface $permissionChecker,
-        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
-        private ?EncryptionServiceInterface $encryptionService = null,
+        private readonly SynapseProviderRepository $providerRepo,
+        private readonly SynapseModelPresetRepository $presetRepo,
+        private readonly EntityManagerInterface $em,
+        private readonly LlmClientRegistry $clientRegistry,
+        private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
+        private readonly ?EncryptionServiceInterface $encryptionService = null,
     ) {
     }
 

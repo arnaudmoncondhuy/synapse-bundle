@@ -29,13 +29,13 @@ class DebugController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapseDebugLogRepository $debugLogRepo,
-        private SynapseConfigRepository $configRepo,
-        private DatabaseConfigProvider $configProvider,
-        private EntityManagerInterface $em,
-        private PermissionCheckerInterface $permissionChecker,
-        private TranslatorInterface $translator,
-        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
+        private readonly SynapseDebugLogRepository $debugLogRepo,
+        private readonly SynapseConfigRepository $configRepo,
+        private readonly DatabaseConfigProvider $configProvider,
+        private readonly EntityManagerInterface $em,
+        private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly TranslatorInterface $translator,
+        private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
 

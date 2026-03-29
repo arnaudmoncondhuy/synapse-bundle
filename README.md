@@ -15,7 +15,7 @@ Synapse est un écosystème de bundles Symfony pour déployer des agents IA auto
 ## ✨ Points Forts
 
 - 🤖 **Agnosticisme LLM** : Standardisation sur le format OpenAI pour passer de Gemini à OVH ou OpenAI sans changer une ligne de code.
-- 🔧 **Agents & Missions** : Créez des agents spécialisés avec leurs propres instructions (Missions), tons de réponse et outils via `AgentInterface`.
+- 🔧 **Agents** : Créez des agents spécialisés avec leurs propres instructions, tons de réponse et outils via `AgentInterface`.
 - 💰 **Suivi des Coûts (Accounting)** : Tracking précis des tokens (input/output/thinking), estimation avant requête et gestion multi-devises (EUR/USD).
 - 📉 **Quotas & Limites** : Plafonds de dépense configurables par utilisateur, mission ou preset avec fenêtres glissantes et calendaires.
 - 🩺 **Synapse Doctor** : Assistant de diagnostic intégré pour automatiser l'installation et la réparation (`php bin/console synapse:doctor`).
@@ -81,7 +81,7 @@ echo $result['answer'];
 
 La documentation est générée depuis ce dépôt et publiée sur **[GitHub Pages](https://arnaudmoncondhuy.github.io/synapse-bundle/)**. Elle est organisée en trois sections :
 
-- **[Synapse Core](https://arnaudmoncondhuy.github.io/synapse-bundle/core/)** — Architecture headless, contrats, **Accounting (coûts)**, **Quotas**, **Missions**, RAG, mémoire et CLI (**Synapse Doctor**).
+- **[Synapse Core](https://arnaudmoncondhuy.github.io/synapse-bundle/core/)** — Architecture headless, contrats, **Accounting (coûts)**, **Quotas**, **Agents**, RAG, mémoire et CLI (**Synapse Doctor**).
 - **[Synapse Admin](https://arnaudmoncondhuy.github.io/synapse-bundle/admin/)** — Interface d'administration **V2**, Dashboard Analytics et monitoring.
 - **[Synapse Chat](https://arnaudmoncondhuy.github.io/synapse-bundle/chat/)** — Routes API, composants front, **Auto-titling** et sécurité CSRF.
 

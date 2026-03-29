@@ -1,9 +1,10 @@
 <?php
 
 $finder = (new PhpCsFixer\Finder())
-    ->in(__DIR__)
+    ->in(dirname(__DIR__))
     ->exclude('var')
-    ->exclude('vendor');
+    ->exclude('vendor')
+    ->exclude('node_modules');
 
 return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)

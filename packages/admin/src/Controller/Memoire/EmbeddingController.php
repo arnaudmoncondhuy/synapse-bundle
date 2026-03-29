@@ -30,16 +30,16 @@ class EmbeddingController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapseConfigRepository $configRepo,
-        private SynapseProviderRepository $providerRepo,
-        private SynapseRagDocumentRepository $ragDocumentRepo,
-        private ModelCapabilityRegistry $modelRegistry,
-        private EmbeddingService $embeddingService,
-        private VectorStoreRegistry $vectorStoreRegistry,
-        private EntityManagerInterface $em,
-        private PermissionCheckerInterface $permissionChecker,
-        private TranslatorInterface $translator,
-        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
+        private readonly SynapseConfigRepository $configRepo,
+        private readonly SynapseProviderRepository $providerRepo,
+        private readonly SynapseRagDocumentRepository $ragDocumentRepo,
+        private readonly ModelCapabilityRegistry $modelRegistry,
+        private readonly EmbeddingService $embeddingService,
+        private readonly VectorStoreRegistry $vectorStoreRegistry,
+        private readonly EntityManagerInterface $em,
+        private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly TranslatorInterface $translator,
+        private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
 

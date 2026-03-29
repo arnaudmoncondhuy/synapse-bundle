@@ -36,16 +36,16 @@ class ModelPresetController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapseModelPresetRepository $presetRepo,
-        private SynapseProviderRepository $providerRepo,
-        private ModelCapabilityRegistry $capabilityRegistry,
-        private DatabaseConfigProvider $configProvider,
-        private EntityManagerInterface $em,
-        private PermissionCheckerInterface $permissionChecker,
-        private CacheInterface $cache,
-        private PresetValidatorAgent $presetValidatorAgent,
-        private PresetValidator $presetValidator,
-        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
+        private readonly SynapseModelPresetRepository $presetRepo,
+        private readonly SynapseProviderRepository $providerRepo,
+        private readonly ModelCapabilityRegistry $capabilityRegistry,
+        private readonly DatabaseConfigProvider $configProvider,
+        private readonly EntityManagerInterface $em,
+        private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly CacheInterface $cache,
+        private readonly PresetValidatorAgent $presetValidatorAgent,
+        private readonly PresetValidator $presetValidator,
+        private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
 
@@ -72,8 +72,8 @@ class ModelPresetController extends AbstractController
 
         // Pré-remplir avec les valeurs de config active
         $activeConfig = $this->configProvider->getConfig();
-        $preset->setProviderName(is_string($activeConfig['provider'] ?? null) ? $activeConfig['provider'] : 'gemini');
-        $preset->setModel(is_string($activeConfig['model'] ?? null) ? $activeConfig['model'] : 'gemini-2.5-flash');
+        $preset->setProviderName('' !== $activeConfig->provider ? $activeConfig->provider : 'gemini');
+        $preset->setModel('' !== $activeConfig->model ? $activeConfig->model : 'gemini-2.5-flash');
 
         return $this->render('@Synapse/admin/intelligence/preset_edit.html.twig', [
             'preset' => $preset,
@@ -300,8 +300,8 @@ class ModelPresetController extends AbstractController
     private function applyFormData(SynapseModelPreset $preset, array $data): void
     {
         $activeConfig = $this->configProvider->getConfig();
-        $defaultProvider = is_string($activeConfig['provider'] ?? null) ? $activeConfig['provider'] : 'gemini';
-        $defaultModel = is_string($activeConfig['model'] ?? null) ? $activeConfig['model'] : 'gemini-2.5-flash';
+        $defaultProvider = '' !== $activeConfig->provider ? $activeConfig->provider : 'gemini';
+        $defaultModel = '' !== $activeConfig->model ? $activeConfig->model : 'gemini-2.5-flash';
 
         $nameVal = $data['name'] ?? 'Model Preset';
         $preset->setName(is_string($nameVal) ? $nameVal : 'Model Preset');

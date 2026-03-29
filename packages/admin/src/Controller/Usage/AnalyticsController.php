@@ -24,8 +24,8 @@ class AnalyticsController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapseLlmCallRepository $tokenUsageRepo,
-        private PermissionCheckerInterface $permissionChecker,
+        private readonly SynapseLlmCallRepository $tokenUsageRepo,
+        private readonly PermissionCheckerInterface $permissionChecker,
     ) {
     }
 

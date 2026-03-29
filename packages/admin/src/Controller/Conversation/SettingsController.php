@@ -42,11 +42,11 @@ class SettingsController extends AbstractController
     ];
 
     public function __construct(
-        private SynapseConfigRepository $configRepo,
-        private DatabaseConfigProvider $configProvider,
-        private EntityManagerInterface $em,
-        private PermissionCheckerInterface $permissionChecker,
-        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
+        private readonly SynapseConfigRepository $configRepo,
+        private readonly DatabaseConfigProvider $configProvider,
+        private readonly EntityManagerInterface $em,
+        private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
 

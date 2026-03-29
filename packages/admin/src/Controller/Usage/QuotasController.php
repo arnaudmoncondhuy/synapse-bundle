@@ -33,15 +33,15 @@ class QuotasController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapseConfigRepository $configRepo,
-        private SynapseSpendingLimitRepository $spendingLimitRepo,
-        private SynapseLlmCallRepository $tokenUsageRepo,
-        private SynapseModelPresetRepository $presetRepo,
-        private SynapseAgentRepository $agentRepo,
-        private EntityManagerInterface $em,
-        private DatabaseConfigProvider $configProvider,
-        private PermissionCheckerInterface $permissionChecker,
-        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
+        private readonly SynapseConfigRepository $configRepo,
+        private readonly SynapseSpendingLimitRepository $spendingLimitRepo,
+        private readonly SynapseLlmCallRepository $tokenUsageRepo,
+        private readonly SynapseModelPresetRepository $presetRepo,
+        private readonly SynapseAgentRepository $agentRepo,
+        private readonly EntityManagerInterface $em,
+        private readonly DatabaseConfigProvider $configProvider,
+        private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
 

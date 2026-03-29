@@ -34,14 +34,14 @@ class ConfigurationLlmController extends AbstractController
     private const VALID_TABS = ['fournisseurs', 'modeles', 'presets'];
 
     public function __construct(
-        private SynapseProviderRepository $providerRepo,
-        private SynapseModelPresetRepository $presetRepo,
-        private SynapseModelRepository $modelRepo,
-        private LlmClientRegistry $clientRegistry,
-        private ModelCapabilityRegistry $capabilityRegistry,
-        private EntityManagerInterface $em,
-        private PermissionCheckerInterface $permissionChecker,
-        private PresetValidator $presetValidator,
+        private readonly SynapseProviderRepository $providerRepo,
+        private readonly SynapseModelPresetRepository $presetRepo,
+        private readonly SynapseModelRepository $modelRepo,
+        private readonly LlmClientRegistry $clientRegistry,
+        private readonly ModelCapabilityRegistry $capabilityRegistry,
+        private readonly EntityManagerInterface $em,
+        private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly PresetValidator $presetValidator,
     ) {
     }
 

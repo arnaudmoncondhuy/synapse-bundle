@@ -67,7 +67,6 @@
 details[open]>.synapse-admin-collapsible__summary {
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    border-bottom-color: var(--synapse-admin-border-light);
     background: var(--synapse-admin-primary-light);
     border-color: var(--synapse-admin-primary-border);
     color: var(--synapse-admin-primary-dark);

@@ -21,12 +21,12 @@ use Twig\TwigFunction;
 class SynapseTwigExtension extends AbstractExtension
 {
     public function __construct(
-        private ToneRegistry $toneRegistry,
-        private AgentRegistry $agentRegistry,
-        private ?EncryptionServiceInterface $encryptionService = null,
-        private ?\ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface $permissionChecker = null,
-        private ?ConfigProviderInterface $configProvider = null,
-        private ?ModelCapabilityRegistry $modelCapabilityRegistry = null,
+        private readonly ToneRegistry $toneRegistry,
+        private readonly AgentRegistry $agentRegistry,
+        private readonly ?EncryptionServiceInterface $encryptionService = null,
+        private readonly ?\ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface $permissionChecker = null,
+        private readonly ?ConfigProviderInterface $configProvider = null,
+        private readonly ?ModelCapabilityRegistry $modelCapabilityRegistry = null,
     ) {
     }
 
@@ -156,7 +156,7 @@ class SynapseTwigExtension extends AbstractExtension
         }
         try {
             $config = $this->configProvider->getConfig();
-            $model = is_string($config['model'] ?? null) ? (string) $config['model'] : null;
+            $model = '' !== $config->model ? $config->model : null;
             if (null === $model) {
                 return false;
             }
@@ -164,8 +164,8 @@ class SynapseTwigExtension extends AbstractExtension
             if (!$this->modelCapabilityRegistry->supports($model, $capability)) {
                 return false;
             }
-            $disabled = $config['disabled_capabilities'] ?? [];
-            if (is_array($disabled) && in_array($capability, $disabled, true)) {
+            $disabled = $config->disabledCapabilities;
+            if (in_array($capability, $disabled, true)) {
                 return false;
             }
 

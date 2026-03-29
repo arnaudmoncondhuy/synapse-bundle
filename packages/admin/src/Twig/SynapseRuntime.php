@@ -17,9 +17,9 @@ use Twig\Extension\RuntimeExtensionInterface;
 class SynapseRuntime implements RuntimeExtensionInterface
 {
     public function __construct(
-        private ChatService $chatService,
-        private Environment $twig,
-        private string $version = 'dev',
+        private readonly ChatService $chatService,
+        private readonly Environment $twig,
+        private readonly string $version = 'dev',
     ) {
     }
 

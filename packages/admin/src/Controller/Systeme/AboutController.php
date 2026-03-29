@@ -29,7 +29,7 @@ class AboutController extends AbstractController
     ];
 
     public function __construct(
-        private PermissionCheckerInterface $permissionChecker,
+        private readonly PermissionCheckerInterface $permissionChecker,
     ) {
     }
 

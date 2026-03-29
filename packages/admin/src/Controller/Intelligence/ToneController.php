@@ -27,11 +27,11 @@ class ToneController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapseToneRepository $toneRepo,
-        private EntityManagerInterface $em,
-        private PermissionCheckerInterface $permissionChecker,
-        private ToneInitializer $toneInitializer,
-        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
+        private readonly SynapseToneRepository $toneRepo,
+        private readonly EntityManagerInterface $em,
+        private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly ToneInitializer $toneInitializer,
+        private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
 

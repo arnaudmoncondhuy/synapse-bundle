@@ -16,8 +16,8 @@ class DebugDetailController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapseDebugLoggerInterface $debugLogger,
-        private PermissionCheckerInterface $permissionChecker,
+        private readonly SynapseDebugLoggerInterface $debugLogger,
+        private readonly PermissionCheckerInterface $permissionChecker,
     ) {
     }
 

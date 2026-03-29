@@ -25,8 +25,8 @@ class AuditController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapseDebugLogRepository $debugLogRepo,
-        private PermissionCheckerInterface $permissionChecker,
+        private readonly SynapseDebugLogRepository $debugLogRepo,
+        private readonly PermissionCheckerInterface $permissionChecker,
     ) {
     }
 

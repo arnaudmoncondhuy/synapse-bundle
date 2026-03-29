@@ -29,11 +29,11 @@ class GdprController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapseConfigRepository $configRepo,
-        private ConversationManager $conversationManager,
-        private PermissionCheckerInterface $permissionChecker,
-        private EntityManagerInterface $em,
-        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
+        private readonly SynapseConfigRepository $configRepo,
+        private readonly ConversationManager $conversationManager,
+        private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly EntityManagerInterface $em,
+        private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
 

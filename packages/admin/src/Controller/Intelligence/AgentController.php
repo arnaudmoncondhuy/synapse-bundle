@@ -37,17 +37,17 @@ class AgentController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private SynapseAgentRepository $agentRepo,
-        private SynapseModelPresetRepository $presetRepo,
-        private SynapseToneRepository $toneRepo,
-        private SynapseSpendingLimitRepository $spendingLimitRepo,
-        private EntityManagerInterface $em,
-        private PermissionCheckerInterface $permissionChecker,
-        private ToolRegistry $toolRegistry,
-        private RoleProvider $roleProvider,
-        private SynapseRagSourceRepository $ragSourceRepository,
-        private TranslatorInterface $translator,
-        private ?CsrfTokenManagerInterface $csrfTokenManager = null,
+        private readonly SynapseAgentRepository $agentRepo,
+        private readonly SynapseModelPresetRepository $presetRepo,
+        private readonly SynapseToneRepository $toneRepo,
+        private readonly SynapseSpendingLimitRepository $spendingLimitRepo,
+        private readonly EntityManagerInterface $em,
+        private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly ToolRegistry $toolRegistry,
+        private readonly RoleProvider $roleProvider,
+        private readonly SynapseRagSourceRepository $ragSourceRepository,
+        private readonly TranslatorInterface $translator,
+        private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
 

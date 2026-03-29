@@ -28,11 +28,11 @@ class HealthController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private EntityManagerInterface $em,
-        private SynapseProviderRepository $providerRepo,
-        private SynapseConfigRepository $configRepo,
-        private PermissionCheckerInterface $permissionChecker,
-        private TranslatorInterface $translator,
+        private readonly EntityManagerInterface $em,
+        private readonly SynapseProviderRepository $providerRepo,
+        private readonly SynapseConfigRepository $configRepo,
+        private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
