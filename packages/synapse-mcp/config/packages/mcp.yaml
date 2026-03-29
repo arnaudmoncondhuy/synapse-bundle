@@ -1,0 +1,15 @@
+when@dev|test:
+  mcp:
+    app: 'synapse-mcp'
+    version: '1.0.0'
+    description: 'Synapse Agent Testing & Validation Server'
+
+    client_transports:
+      stdio: true
+      http: true
+
+    http:
+      path: /_mcp
+      session:
+        store: file
+        ttl: 3600

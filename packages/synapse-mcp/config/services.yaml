@@ -1,0 +1,3 @@
+services:
+  ArnaudMoncondhuy\SynapseMcp\Tool\RunAgentTestTool:
+    public: true

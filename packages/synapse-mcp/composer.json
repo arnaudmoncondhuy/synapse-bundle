@@ -1,0 +1,15 @@
+{
+  "name": "arnaudmoncondhuy/synapse-mcp",
+  "type": "symfony-bundle",
+  "version": "dev-main",
+  "require": {
+    "php": "^8.2",
+    "symfony/mcp-bundle": "^0.6",
+    "arnaudmoncondhuy/synapse-core": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "ArnaudMoncondhuy\\SynapseMcp\\": "src/"
+    }
+  }
+}
