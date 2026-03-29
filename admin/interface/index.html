@@ -239,7 +239,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../deployment/DEPLOYMENT_GUIDE/" class="md-tabs__link">
+        <a href="../../deployment/DEPLOYMENT_GUIDE.md" class="md-tabs__link">
           
   
   
@@ -444,7 +444,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/DEPLOYMENT_GUIDE/" class="md-nav__link">
+      <a href="../../deployment/DEPLOYMENT_GUIDE.md" class="md-nav__link">
         
   
   
@@ -472,7 +472,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/DOCKER_DEPLOYMENT/" class="md-nav__link">
+      <a href="../../deployment/DOCKER_DEPLOYMENT.md" class="md-nav__link">
         
   
   
@@ -500,7 +500,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../deployment/PRODUCTION_DEPLOYMENT/" class="md-nav__link">
+      <a href="../../deployment/PRODUCTION_DEPLOYMENT.md" class="md-nav__link">
         
   
   
@@ -2485,6 +2485,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🤖 Agents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources-rag-retrieval-augmented-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Sources RAG (Retrieval-Augmented Generation)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alertes-de-depenses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚨 Alertes de Dépenses
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#gestion-des-outils-tools" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2704,6 +2737,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🤖 Agents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sources-rag-retrieval-augmented-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Sources RAG (Retrieval-Augmented Generation)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alertes-de-depenses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚨 Alertes de Dépenses
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#gestion-des-outils-tools" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2776,13 +2842,13 @@
 <h2 id="tableau-de-bord-dashboard">📊 Tableau de Bord (Dashboard)</h2>
 <p>Le Dashboard de l'<strong>Administration Synapse</strong> est le point central pour monitorer votre système :
 *   <strong>Analytics de Consommation</strong> : Vue d'ensemble des tokens utilisés et des coûts associés par jour/mois.
-*   <strong>Monitoring par Module</strong> : Suivi détaillé de l'usage (Chat, Missions, Tâches système).
+*   <strong>Monitoring par Module</strong> : Suivi détaillé de l'usage (Chat, Agents, Tâches système).
 *   <strong>État des Services</strong> : Liste des providers (Gemini, OpenAI, etc.) actuellement activés.</p>
 <hr />
 <h2 id="gestion-des-quotas-spending-limits">💰 Gestion des Quotas (Spending Limits)</h2>
 <p>Nouveauté majeure de la V2, cette page permet de définir des limites de dépense :
 *   <strong>Plafonds par utilisateur</strong> : Bridez la consommation de vos utilisateurs (ex: 5€ / mois).
-*   <strong>Plafonds par mission</strong> : Limitez le budget d'un agent spécifique.
+*   <strong>Plafonds par agent</strong> : Limitez le budget d'un agent spécifique.
 *   <strong>Périodes glissantes</strong> : Gestion intelligente des quotas sur 24h ou 30 jours via le cache.</p>
 <hr />
 <h2 id="parametres-globaux-settings">⚙️ Paramètres Globaux (Settings)</h2>
@@ -2791,6 +2857,70 @@
 *   <strong>Rétention RGPD</strong> : Nombre de jours avant la purge automatique des messages.
 *   <strong>Prompt Système Global</strong> : Instructions de base qui seront ajoutées à toutes les conversations.
 *   <strong>Mode Debug</strong> : Active ou désactive le logging technique approfondi.</p>
+<hr />
+<h2 id="agents">🤖 Agents</h2>
+<p>Configuration des agents IA spécialisés. Chaque agent combine :</p>
+<ul>
+<li><strong>System Prompt</strong> : Instructions de rôle et comportement</li>
+<li><strong>Preset LLM</strong> (optionnel) : Modèle, température, autres paramètres</li>
+<li><strong>Ton de réponse</strong> (optionnel) : Style de communication (zen, efficace, poétique, etc.)</li>
+<li><strong>Outils autorisés</strong> : Sélection des outils (<code>AiToolInterface</code>) accessibles par cet agent (NULL = tous)</li>
+<li><strong>Sources RAG autorisées</strong> : Sélection des sources de connaissance spécifiques</li>
+<li><strong>Contrôle d'accès</strong> : Rôles Symfony ou identifiants utilisateur autorisés (NULL = public)</li>
+</ul>
+<p><strong>Gestion</strong> :
+*   <strong>Liste</strong> : Affiche tous les agents (builtins + custom)
+*   <strong>Création/Édition</strong> : Formulaire complet de configuration
+*   <strong>Outils visibles</strong> : Badge affichant le nombre d'outils assignés
+*   <strong>Accès restreint</strong> : Indicateur "🔒" pour les agents avec contrôle d'accès</p>
+<blockquote>
+<p>[!NOTE]
+Reportez-vous à <a href="../../core/docs/agent-access-control.md">Contrôle d'accès aux agents</a> pour la configuration complète des permissions.</p>
+</blockquote>
+<hr />
+<h2 id="sources-rag-retrieval-augmented-generation">📚 Sources RAG (Retrieval-Augmented Generation)</h2>
+<p>Gestion des sources de documents indexés pour enrichir les réponses de l'IA.</p>
+<ul>
+<li><strong>Liste des sources</strong> : Affiche chaque source avec :<ul>
+<li>Nombre de documents indexés</li>
+<li>Date de la dernière réindexation</li>
+<li>Statut (<code>pending</code>, <code>indexing</code>, <code>done</code>, <code>failed</code>)</li>
+<li>Bouton de réindexation</li>
+</ul>
+</li>
+<li><strong>Création/Édition</strong> : Paramétrage du provider (Google Drive, Notion, fichiers locaux, etc.)</li>
+<li><strong>Visualisation des chunks</strong> : Tableau des documents indexés avec :<ul>
+<li>Contenu du chunk</li>
+<li>Métadonnées (fichier source, page, etc.)</li>
+<li>Score de pertinence (pour tests de requête)</li>
+</ul>
+</li>
+<li><strong>Réindexation</strong> : Lance <code>synapse:rag:reindex</code> asynchrone (Messenger)<ul>
+<li>Affiche la progression : fichiers traités / fichiers totaux</li>
+<li>Affiche les erreurs en cas d'échec</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>[!TIP]
+Utilisez <code>php bin/console synapse:rag:test "ma requête"</code> pour tester la pertinence des résultats RAG avant déploiement.</p>
+</blockquote>
+<hr />
+<h2 id="alertes-de-depenses">🚨 Alertes de Dépenses</h2>
+<p>Surveillance des dépassements de limite de dépense (<code>SynapseSpendingLimit</code>).</p>
+<ul>
+<li><strong>Tableau des dépassements récents</strong> : Historique des fois où un utilisateur/agent/preset a dépassé son plafond</li>
+<li><strong>Colonnes</strong> :<ul>
+<li>Utilisateur affecté</li>
+<li>Type de limite (par utilisateur / par agent / par preset)</li>
+<li>Période (jour calendaire / mois / jour glissant / mois glissant)</li>
+<li>Montant du plafond</li>
+<li>Dépassement (montant en trop)</li>
+<li>Date/heure du dépassement</li>
+</ul>
+</li>
+<li><strong>Actions</strong> : Voir le détail d'un dépassement, ajuster le plafond</li>
+</ul>
 <hr />
 <h2 id="gestion-des-outils-tools">🔧 Gestion des Outils (Tools)</h2>
 <p>Visualisez tous les outils (<code>AiToolInterface</code>) enregistrés dans votre application :

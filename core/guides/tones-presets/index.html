@@ -235,7 +235,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../deployment/DEPLOYMENT_GUIDE/" class="md-tabs__link">
+        <a href="../../../deployment/DEPLOYMENT_GUIDE.md" class="md-tabs__link">
           
   
   
@@ -438,7 +438,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../deployment/DEPLOYMENT_GUIDE/" class="md-nav__link">
+      <a href="../../../deployment/DEPLOYMENT_GUIDE.md" class="md-nav__link">
         
   
   
@@ -466,7 +466,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../deployment/DOCKER_DEPLOYMENT/" class="md-nav__link">
+      <a href="../../../deployment/DOCKER_DEPLOYMENT.md" class="md-nav__link">
         
   
   
@@ -494,7 +494,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../deployment/PRODUCTION_DEPLOYMENT/" class="md-nav__link">
+      <a href="../../../deployment/PRODUCTION_DEPLOYMENT.md" class="md-nav__link">
         
   
   
@@ -2588,15 +2588,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-les-missions-agents" class="md-nav__link">
+  <a href="#3-les-agents" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Les Missions (Agents)
+        3. Les Agents
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Les Missions (Agents)">
+    <nav class="md-nav" aria-label="3. Les Agents">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2689,18 +2689,19 @@ Il n'affecte pas la capacité de raisonnement, uniquement la façon dont les ré
 <li><strong>Paramètres</strong> : Température, Top-P, Max tokens, Streaming.</li>
 </ul>
 <p>Un seul preset peut être actif à la fois — il s'applique à l'ensemble du système.</p>
-<h2 id="3-les-missions-agents">3. Les Missions (Agents)</h2>
-<p>Une mission est une abstraction de haut niveau qui combine un <strong>prompt système</strong>, un <strong>preset</strong> (optionnel) et un <strong>ton</strong> (optionnel). C'est le moyen recommandé pour créer des agents spécialisés.</p>
+<h2 id="3-les-agents">3. Les Agents</h2>
+<p>Un agent est une configuration de haut niveau qui combine un <strong>prompt système</strong>, un <strong>preset</strong> (optionnel), un <strong>ton</strong> (optionnel) et des <strong>outils</strong> (optionnel). C'est le moyen recommandé pour créer des agents IA spécialisés.</p>
 <h3 id="utilisation">Utilisation</h3>
 <div class="highlight"><pre><span></span><code><span class="x">$chatService-&gt;ask(&quot;Analyse ce code&quot;, [</span>
-<span class="x">    &#39;mission&#39; =&gt; &#39;expert_symfony&#39;  // Clé de la mission</span>
+<span class="x">    &#39;agent&#39; =&gt; &#39;expert_symfony&#39;  // Clé de l&#39;agent</span>
 <span class="x">]);</span>
 </code></pre></div>
 <h3 id="avantages">Avantages</h3>
 <ul>
-<li><strong>Modularité</strong> : Changez le modèle ou le ton d'une mission sans toucher au code appelant.</li>
-<li><strong>Quotas</strong> : Vous pouvez définir des plafonds de dépense spécifiques à une mission.</li>
+<li><strong>Modularité</strong> : Changez le modèle, le ton ou les outils d'un agent sans toucher au code appelant.</li>
+<li><strong>Quotas</strong> : Vous pouvez définir des plafonds de dépense spécifiques à un agent.</li>
 <li><strong>Réutilisabilité</strong> : Partagez des configurations d'agents entre différents modules.</li>
+<li><strong>Contrôle d'accès</strong> : Restreignez l'accès d'un agent à certains rôles ou utilisateurs.</li>
 </ul>
 <h2 id="difference-cle">Différence clé</h2>
 <table>

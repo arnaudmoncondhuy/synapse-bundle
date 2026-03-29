@@ -13,28 +13,24 @@
       
       
       
-        <link rel="prev" href="../..">
-      
-      
-        <link rel="next" href="../DOCKER_DEPLOYMENT/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Guide de déploiement - Synapse</title>
+        <title>RagSourceProviderInterface & RagSourceProviderFactoryInterface - Synapse</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -53,7 +49,7 @@
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -78,7 +74,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#synapse-monorepo-production-deployment-guide" class="md-skip">
+        <a href="#ragsourceproviderinterface-ragsourceproviderfactoryinterface" class="md-skip">
           Aller au contenu
         </a>
       
@@ -92,7 +88,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="En-tête">
-    <a href="../.." title="Synapse" class="md-header__button md-logo" aria-label="Synapse" data-md-component="logo">
+    <a href="../../../.." title="Synapse" class="md-header__button md-logo" aria-label="Synapse" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -112,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Guide de déploiement
+              RagSourceProviderInterface &amp; RagSourceProviderFactoryInterface
             
           </span>
         </div>
@@ -218,7 +214,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../../.." class="md-tabs__link">
         
   
   
@@ -235,13 +231,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../../../deployment/DEPLOYMENT_GUIDE.md" class="md-tabs__link">
           
   
   
@@ -268,7 +262,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../core/getting-started/installation/" class="md-tabs__link">
+        <a href="../../../getting-started/installation/" class="md-tabs__link">
           
   
   
@@ -291,7 +285,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../admin/interface/" class="md-tabs__link">
+        <a href="../../../../admin/interface/" class="md-tabs__link">
           
   
   
@@ -311,7 +305,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../chat/utilisation/" class="md-tabs__link">
+        <a href="../../../../chat/utilisation/" class="md-tabs__link">
           
   
   
@@ -345,7 +339,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Synapse" class="md-nav__button md-logo" aria-label="Synapse" data-md-component="logo">
+    <a href="../../../.." title="Synapse" class="md-nav__button md-logo" aria-label="Synapse" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -363,7 +357,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../../.." class="md-nav__link">
         
   
   
@@ -387,31 +381,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
   
@@ -429,7 +420,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -444,37 +435,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Guide de déploiement
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../../deployment/DEPLOYMENT_GUIDE.md" class="md-nav__link">
         
   
   
@@ -490,269 +454,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table des matières
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prerequisites
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-1-clone-the-monorepo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Clone the Monorepo
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-2-install-dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Install Dependencies
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-3-verify-symlinks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Verify Symlinks
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-4-environment-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4: Environment Configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-5-database-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 5: Database Setup
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-6-clear-cache" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 6: Clear Cache
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-7-configure-nginx" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 7: Configure Nginx
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-8-set-permissions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 8: Set Permissions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-9-verify-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 9: Verify Installation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 9: Verify Installation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#test-bundle-loading" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Test Bundle Loading
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#test-routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Test Routes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#test-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Test Application
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#troubleshooting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Troubleshooting
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#500-error" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        500 Error
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#404-on-routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        404 on Routes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#database-connection-error" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Database Connection Error
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#production-checklist" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Production Checklist
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#performance-optimization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Performance Optimization
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#monitoring" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Monitoring
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#support" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Support
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -765,7 +466,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../DOCKER_DEPLOYMENT/" class="md-nav__link">
+      <a href="../../../../deployment/DOCKER_DEPLOYMENT.md" class="md-nav__link">
         
   
   
@@ -793,7 +494,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../PRODUCTION_DEPLOYMENT/" class="md-nav__link">
+      <a href="../../../../deployment/PRODUCTION_DEPLOYMENT.md" class="md-nav__link">
         
   
   
@@ -936,7 +637,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/getting-started/installation/" class="md-nav__link">
+      <a href="../../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -964,7 +665,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/getting-started/quickstart/" class="md-nav__link">
+      <a href="../../../getting-started/quickstart/" class="md-nav__link">
         
   
   
@@ -992,7 +693,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/getting-started/guide-integration-ia/" class="md-nav__link">
+      <a href="../../../getting-started/guide-integration-ia/" class="md-nav__link">
         
   
   
@@ -1082,7 +783,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/guides/configuration/" class="md-nav__link">
+      <a href="../../../guides/configuration/" class="md-nav__link">
         
   
   
@@ -1110,7 +811,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/guides/ai-tools/" class="md-nav__link">
+      <a href="../../../guides/ai-tools/" class="md-nav__link">
         
   
   
@@ -1138,7 +839,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/guides/personas-presets.md" class="md-nav__link">
+      <a href="../../../guides/personas-presets.md" class="md-nav__link">
         
   
   
@@ -1166,7 +867,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/guides/rle-management/" class="md-nav__link">
+      <a href="../../../guides/rle-management/" class="md-nav__link">
         
   
   
@@ -1194,7 +895,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/guides/rag-memory/" class="md-nav__link">
+      <a href="../../../guides/rag-memory/" class="md-nav__link">
         
   
   
@@ -1222,7 +923,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/guides/semantic-memory/" class="md-nav__link">
+      <a href="../../../guides/semantic-memory/" class="md-nav__link">
         
   
   
@@ -1366,7 +1067,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/chat-service/" class="md-nav__link">
+      <a href="../../chat-service/" class="md-nav__link">
         
   
   
@@ -1394,7 +1095,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/conversation-manager/" class="md-nav__link">
+      <a href="../../conversation-manager/" class="md-nav__link">
         
   
   
@@ -1484,7 +1185,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/overview/" class="md-nav__link">
+      <a href="../overview/" class="md-nav__link">
         
   
   
@@ -1512,7 +1213,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/agent-interface/" class="md-nav__link">
+      <a href="../agent-interface/" class="md-nav__link">
         
   
   
@@ -1540,7 +1241,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/ai-tool-interface/" class="md-nav__link">
+      <a href="../ai-tool-interface/" class="md-nav__link">
         
   
   
@@ -1568,7 +1269,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/config-provider-interface/" class="md-nav__link">
+      <a href="../config-provider-interface/" class="md-nav__link">
         
   
   
@@ -1596,7 +1297,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/context-provider-interface/" class="md-nav__link">
+      <a href="../context-provider-interface/" class="md-nav__link">
         
   
   
@@ -1624,7 +1325,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/conversation-owner-interface/" class="md-nav__link">
+      <a href="../conversation-owner-interface/" class="md-nav__link">
         
   
   
@@ -1652,7 +1353,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/embedding-client-interface/" class="md-nav__link">
+      <a href="../embedding-client-interface/" class="md-nav__link">
         
   
   
@@ -1680,7 +1381,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/encryption-service-interface/" class="md-nav__link">
+      <a href="../encryption-service-interface/" class="md-nav__link">
         
   
   
@@ -1708,7 +1409,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/llm-client-interface/" class="md-nav__link">
+      <a href="../llm-client-interface/" class="md-nav__link">
         
   
   
@@ -1736,7 +1437,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/message-formatter-interface/" class="md-nav__link">
+      <a href="../message-formatter-interface/" class="md-nav__link">
         
   
   
@@ -1764,7 +1465,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/permission-checker-interface/" class="md-nav__link">
+      <a href="../permission-checker-interface/" class="md-nav__link">
         
   
   
@@ -1792,7 +1493,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/retention-policy-interface/" class="md-nav__link">
+      <a href="../retention-policy-interface/" class="md-nav__link">
         
   
   
@@ -1820,7 +1521,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/text-splitter-interface/" class="md-nav__link">
+      <a href="../text-splitter-interface/" class="md-nav__link">
         
   
   
@@ -1848,7 +1549,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/synapse-debug-logger-interface/" class="md-nav__link">
+      <a href="../synapse-debug-logger-interface/" class="md-nav__link">
         
   
   
@@ -1876,7 +1577,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/contracts/vector-store-interface/" class="md-nav__link">
+      <a href="../vector-store-interface/" class="md-nav__link">
         
   
   
@@ -1966,7 +1667,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/events/overview/" class="md-nav__link">
+      <a href="../../events/overview/" class="md-nav__link">
         
   
   
@@ -1994,7 +1695,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/events/generation-started-event/" class="md-nav__link">
+      <a href="../../events/generation-started-event/" class="md-nav__link">
         
   
   
@@ -2022,7 +1723,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/events/pre-prompt-event/" class="md-nav__link">
+      <a href="../../events/pre-prompt-event/" class="md-nav__link">
         
   
   
@@ -2050,7 +1751,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/events/chunk-received-event/" class="md-nav__link">
+      <a href="../../events/chunk-received-event/" class="md-nav__link">
         
   
   
@@ -2078,7 +1779,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/events/tool-call-requested-event/" class="md-nav__link">
+      <a href="../../events/tool-call-requested-event/" class="md-nav__link">
         
   
   
@@ -2106,7 +1807,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/events/tool-call-completed-event/" class="md-nav__link">
+      <a href="../../events/tool-call-completed-event/" class="md-nav__link">
         
   
   
@@ -2134,7 +1835,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/events/generation-completed-event/" class="md-nav__link">
+      <a href="../../events/generation-completed-event/" class="md-nav__link">
         
   
   
@@ -2162,7 +1863,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/events/exchange-completed-event/" class="md-nav__link">
+      <a href="../../events/exchange-completed-event/" class="md-nav__link">
         
   
   
@@ -2252,7 +1953,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/shared/message-role/" class="md-nav__link">
+      <a href="../../shared/message-role/" class="md-nav__link">
         
   
   
@@ -2280,7 +1981,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/shared/conversation-status/" class="md-nav__link">
+      <a href="../../shared/conversation-status/" class="md-nav__link">
         
   
   
@@ -2308,7 +2009,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/shared/memory-scope/" class="md-nav__link">
+      <a href="../../shared/memory-scope/" class="md-nav__link">
         
   
   
@@ -2344,7 +2045,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/entities/" class="md-nav__link">
+      <a href="../../entities/" class="md-nav__link">
         
   
   
@@ -2372,7 +2073,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/cli/" class="md-nav__link">
+      <a href="../../cli/" class="md-nav__link">
         
   
   
@@ -2400,7 +2101,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/reference/implementation-guide/" class="md-nav__link">
+      <a href="../../implementation-guide/" class="md-nav__link">
         
   
   
@@ -2490,7 +2191,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/explanation/architecture/" class="md-nav__link">
+      <a href="../../../explanation/architecture/" class="md-nav__link">
         
   
   
@@ -2518,7 +2219,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/explanation/security/" class="md-nav__link">
+      <a href="../../../explanation/security/" class="md-nav__link">
         
   
   
@@ -2546,7 +2247,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/explanation/gemini-context/" class="md-nav__link">
+      <a href="../../../explanation/gemini-context/" class="md-nav__link">
         
   
   
@@ -2582,7 +2283,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../core/changelog/" class="md-nav__link">
+      <a href="../../../changelog/" class="md-nav__link">
         
   
   
@@ -2671,7 +2372,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../admin/interface/" class="md-nav__link">
+      <a href="../../../../admin/interface/" class="md-nav__link">
         
   
   
@@ -2760,7 +2461,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../chat/utilisation/" class="md-nav__link">
+      <a href="../../../../chat/utilisation/" class="md-nav__link">
         
   
   
@@ -2815,143 +2516,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
+  <a href="#ragsourceproviderinterface" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Prerequisites
+        RagSourceProviderInterface
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-1-clone-the-monorepo" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Clone the Monorepo
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-2-install-dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Install Dependencies
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-3-verify-symlinks" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Verify Symlinks
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-4-environment-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4: Environment Configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-5-database-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 5: Database Setup
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-6-clear-cache" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 6: Clear Cache
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-7-configure-nginx" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 7: Configure Nginx
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-8-set-permissions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 8: Set Permissions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-9-verify-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 9: Verify Installation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 9: Verify Installation">
+    <nav class="md-nav" aria-label="RagSourceProviderInterface">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#test-bundle-loading" class="md-nav__link">
+  <a href="#exemple-google-drive" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Test Bundle Loading
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#test-routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Test Routes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#test-application" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Test Application
+        Exemple : Google Drive
       
     </span>
   </a>
@@ -2964,44 +2544,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#troubleshooting" class="md-nav__link">
+  <a href="#ragsourceproviderfactoryinterface" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Troubleshooting
+        RagSourceProviderFactoryInterface
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Troubleshooting">
+    <nav class="md-nav" aria-label="RagSourceProviderFactoryInterface">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#500-error" class="md-nav__link">
+  <a href="#exemple-fabrique-multi-sources" class="md-nav__link">
     <span class="md-ellipsis">
       
-        500 Error
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#404-on-routes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        404 on Routes
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#database-connection-error" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Database Connection Error
+        Exemple : Fabrique multi-sources
       
     </span>
   </a>
@@ -3014,10 +2572,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#production-checklist" class="md-nav__link">
+  <a href="#enregistrement-dans-lapplication" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Production Checklist
+        Enregistrement dans l'Application
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Enregistrement dans l&#39;Application">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-implementer-la-fabrique" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Implémenter la fabrique
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-declarer-le-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Déclarer le service
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-activer-dans-la-config-synapse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Activer dans la config Synapse
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#utilisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Utilisation
       
     </span>
   </a>
@@ -3025,10 +2633,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#performance-optimization" class="md-nav__link">
+  <a href="#interface-documentinterface-helper" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Performance Optimization
+        Interface DocumentInterface (Helper)
       
     </span>
   </a>
@@ -3036,10 +2644,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#monitoring" class="md-nav__link">
+  <a href="#bonnes-pratiques" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Monitoring
+        Bonnes Pratiques
       
     </span>
   </a>
@@ -3047,10 +2655,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#support" class="md-nav__link">
+  <a href="#exemple-complet-source-notion" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Support
+        Exemple Complet : Source Notion
       
     </span>
   </a>
@@ -3074,213 +2682,295 @@
 
 
 
-<h1 id="synapse-monorepo-production-deployment-guide">🚀 Synapse Monorepo - Production Deployment Guide</h1>
-<h2 id="prerequisites">Prerequisites</h2>
-<div class="highlight"><pre><span></span><code>PHP<span class="w"> </span><span class="m">8</span>.2+
-Composer<span class="w"> </span><span class="m">2</span>.0+
-PostgreSQL<span class="w"> </span><span class="m">12</span>+<span class="w"> </span><span class="o">(</span>or<span class="w"> </span>MySQL<span class="w"> </span><span class="m">8</span>+<span class="o">)</span>
-Nginx<span class="w"> </span>or<span class="w"> </span>Apache
-</code></pre></div>
-<h2 id="step-1-clone-the-monorepo">Step 1: Clone the Monorepo</h2>
-<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>/var/www
-git<span class="w"> </span>clone<span class="w"> </span>&lt;your-repo-url&gt;<span class="w"> </span>synapse-app
-<span class="nb">cd</span><span class="w"> </span>synapse-app
-</code></pre></div>
-<h2 id="step-2-install-dependencies">Step 2: Install Dependencies</h2>
-<div class="highlight"><pre><span></span><code><span class="c1"># Install Composer dependencies</span>
-composer<span class="w"> </span>install<span class="w"> </span>--no-dev<span class="w"> </span>--optimize-autoloader
+<h1 id="ragsourceproviderinterface-ragsourceproviderfactoryinterface">RagSourceProviderInterface &amp; RagSourceProviderFactoryInterface</h1>
+<p>Interfaces pour déclarer des sources de documents RAG (Retrieval-Augmented Generation) personnalisées.</p>
+<hr />
+<h2 id="ragsourceproviderinterface"><code>RagSourceProviderInterface</code></h2>
+<p>Représente une source unique de documents indexables (Google Drive, Notion, fichiers locaux, base de données, API distante, etc.).</p>
+<div class="highlight"><pre><span></span><code><span class="x">interface RagSourceProviderInterface</span>
+<span class="x">{</span>
+<span class="x">    /**</span>
+<span class="x">     * Identifiant unique de la source (ex: &#39;lycee_intranet&#39;, &#39;notion-kb-123&#39;)</span>
+<span class="x">     * Utilisé en BDD et dans les commandes CLI.</span>
+<span class="x">     */</span>
+<span class="x">    public function getSlug(): string;</span>
 
-<span class="c1"># Verify monorepo structure</span>
-ls<span class="w"> </span>-la<span class="w"> </span>packages/*/
-<span class="c1"># Should show: core/  admin/  chat/</span>
-</code></pre></div>
-<h2 id="step-3-verify-symlinks">Step 3: Verify Symlinks</h2>
-<div class="highlight"><pre><span></span><code><span class="c1"># Check vendor symlinks were created correctly</span>
-ls<span class="w"> </span>-la<span class="w"> </span>vendor/arnaudmoncondhuy/
-<span class="c1"># Should show:</span>
-<span class="c1">#   synapse-core → ../../../synapse-bundle/packages/core</span>
-<span class="c1">#   synapse-admin → ../../../synapse-bundle/packages/admin</span>
-<span class="c1">#   synapse-chat → ../../../synapse-bundle/packages/chat</span>
-</code></pre></div>
-<h2 id="step-4-environment-configuration">Step 4: Environment Configuration</h2>
-<p>Create <code>.env.local</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="nv">APP_ENV</span><span class="o">=</span>prod
-<span class="nv">APP_SECRET</span><span class="o">=</span><span class="k">$(</span>php<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;echo bin2hex(random_bytes(16));&#39;</span><span class="k">)</span>
-<span class="nv">DATABASE_URL</span><span class="o">=</span><span class="s2">&quot;postgresql://user:password@localhost:5432/synapse_prod&quot;</span>
-<span class="nv">TRUSTED_PROXIES</span><span class="o">=</span><span class="m">127</span>.0.0.1,REMOTE_ADDR
-</code></pre></div>
-<h2 id="step-5-database-setup">Step 5: Database Setup</h2>
-<div class="highlight"><pre><span></span><code><span class="c1"># Create database</span>
-php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:database:create
+<span class="x">    /**</span>
+<span class="x">     * Nom d&#39;affichage dans l&#39;interface admin.</span>
+<span class="x">     */</span>
+<span class="x">    public function getName(): string;</span>
 
-<span class="c1"># Run migrations</span>
-php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>-n
+<span class="x">    /**</span>
+<span class="x">     * Description longue de la source.</span>
+<span class="x">     */</span>
+<span class="x">    public function getDescription(): string;</span>
 
-<span class="c1"># Load fixtures (optional)</span>
-php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:fixtures:load<span class="w"> </span>-n
-</code></pre></div>
-<h2 id="step-6-clear-cache">Step 6: Clear Cache</h2>
-<div class="highlight"><pre><span></span><code>rm<span class="w"> </span>-rf<span class="w"> </span>var/cache/*
-php<span class="w"> </span>bin/console<span class="w"> </span>cache:clear<span class="w"> </span>--env<span class="o">=</span>prod
-php<span class="w"> </span>bin/console<span class="w"> </span>cache:warmup<span class="w"> </span>--env<span class="o">=</span>prod
-</code></pre></div>
-<h2 id="step-7-configure-nginx">Step 7: Configure Nginx</h2>
-<div class="highlight"><pre><span></span><code><span class="k">server</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">80</span><span class="p">;</span>
-<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">basile.lab.bray-numerique.fr</span><span class="p">;</span>
+<span class="x">    /**</span>
+<span class="x">     * Récupère les documents depuis la source.</span>
+<span class="x">     *</span>
+<span class="x">     * Retourne : iterable&lt;DocumentInterface&gt;</span>
+<span class="x">     * Chaque document doit avoir :</span>
+<span class="x">     *   - getIdentifier(): string — ID unique dans la source (ex: Google Drive file ID)</span>
+<span class="x">     *   - getTitle(): string — Nom du fichier/document</span>
+<span class="x">     *   - getContent(): string — Contenu textuel (sera chunkifié)</span>
+<span class="x">     *   - getMetadata(): array — Données additionnelles (page, URL, type MIME, etc.)</span>
+<span class="x">     */</span>
+<span class="x">    public function fetchDocuments(): iterable;</span>
 
-<span class="w">    </span><span class="kn">root</span><span class="w"> </span><span class="s">/var/www/synapse-app/public</span><span class="p">;</span>
+<span class="x">    /**</span>
+<span class="x">     * Compte le nombre total de documents dans la source.</span>
+<span class="x">     * Optionnel pour l&#39;affichage du progrès lors de la réindexation.</span>
+<span class="x">     */</span>
+<span class="x">    public function countDocuments(): int;</span>
+<span class="x">}</span>
+</code></pre></div>
+<h3 id="exemple-google-drive">Exemple : Google Drive</h3>
+<div class="highlight"><pre><span></span><code><span class="x">use ArnaudMoncondhuy\SynapseCore\Contract\RagSourceProviderInterface;</span>
 
-<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kn">try_files</span><span class="w"> </span><span class="nv">$uri</span><span class="w"> </span><span class="s">/index.php</span><span class="nv">$is_args$args</span><span class="p">;</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="x">class GoogleDriveSourceProvider implements RagSourceProviderInterface</span>
+<span class="x">{</span>
+<span class="x">    private string $folderId;</span>
+<span class="x">    private \Google_Service_Drive $driveService;</span>
 
-<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="p">~</span><span class="w"> </span><span class="sr">^/index\.php(/|$)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kn">fastcgi_pass</span><span class="w"> </span><span class="s">unix:/var/run/php-fpm.sock</span><span class="p">;</span>
-<span class="w">        </span><span class="kn">fastcgi_split_path_info</span><span class="w"> </span><span class="s">^(.+\.php)(/.*)</span>$<span class="p">;</span>
-<span class="w">        </span><span class="kn">include</span><span class="w"> </span><span class="s">fastcgi_params</span><span class="p">;</span>
-<span class="w">        </span><span class="kn">fastcgi_param</span><span class="w"> </span><span class="s">SCRIPT_FILENAME</span><span class="w"> </span><span class="nv">$realpath_root$fastcgi_script_name</span><span class="p">;</span>
-<span class="w">        </span><span class="kn">fastcgi_param</span><span class="w"> </span><span class="s">DOCUMENT_ROOT</span><span class="w"> </span><span class="nv">$realpath_root</span><span class="p">;</span>
-<span class="w">        </span><span class="kn">internal</span><span class="p">;</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="x">    public function __construct(string $folderId, \Google_Service_Drive $driveService)</span>
+<span class="x">    {</span>
+<span class="x">        $this-&gt;folderId = $folderId;</span>
+<span class="x">        $this-&gt;driveService = $driveService;</span>
+<span class="x">    }</span>
 
-<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="p">~</span><span class="w"> </span><span class="sr">\.php$</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kn">return</span><span class="w"> </span><span class="mi">404</span><span class="p">;</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-<h2 id="step-8-set-permissions">Step 8: Set Permissions</h2>
-<div class="highlight"><pre><span></span><code><span class="c1"># Set ownership</span>
-chown<span class="w"> </span>-R<span class="w"> </span>www-data:www-data<span class="w"> </span>/var/www/synapse-app
+<span class="x">    public function getSlug(): string</span>
+<span class="x">    {</span>
+<span class="x">        return &#39;lycee_intranet&#39;;</span>
+<span class="x">    }</span>
 
-<span class="c1"># Set permissions</span>
-chmod<span class="w"> </span>-R<span class="w"> </span><span class="m">755</span><span class="w"> </span>/var/www/synapse-app
-chmod<span class="w"> </span>-R<span class="w"> </span><span class="m">775</span><span class="w"> </span>/var/www/synapse-app/var
-chmod<span class="w"> </span>-R<span class="w"> </span><span class="m">775</span><span class="w"> </span>/var/www/synapse-app/public
+<span class="x">    public function getName(): string</span>
+<span class="x">    {</span>
+<span class="x">        return &#39;Intranet du Lycée&#39;;</span>
+<span class="x">    }</span>
+
+<span class="x">    public function getDescription(): string</span>
+<span class="x">    {</span>
+<span class="x">        return &#39;Documents partagés sur Google Drive (supports pédagogiques, règlements, etc.)&#39;;</span>
+<span class="x">    }</span>
+
+<span class="x">    public function fetchDocuments(): iterable</span>
+<span class="x">    {</span>
+<span class="x">        $results = $this-&gt;driveService-&gt;files-&gt;listFiles([</span>
+<span class="x">            &#39;q&#39; =&gt; &quot;&#39;{$this-&gt;folderId}&#39; in parents&quot;,</span>
+<span class="x">            &#39;spaces&#39; =&gt; &#39;drive&#39;,</span>
+<span class="x">            &#39;pageSize&#39; =&gt; 100,</span>
+<span class="x">            &#39;fields&#39; =&gt; &#39;files(id, name, mimeType, webContentLink)&#39;,</span>
+<span class="x">        ]);</span>
+
+<span class="x">        foreach ($results-&gt;getFiles() as $file) {</span>
+<span class="x">            yield new class($file) implements DocumentInterface {</span>
+<span class="x">                public function __construct(private \Google_Service_Drive_DriveFile $file) {}</span>
+
+<span class="x">                public function getIdentifier(): string { return $this-&gt;file-&gt;getId(); }</span>
+<span class="x">                public function getTitle(): string { return $this-&gt;file-&gt;getName(); }</span>
+
+<span class="x">                public function getContent(): string</span>
+<span class="x">                {</span>
+<span class="x">                    // Télécharger et extraire le contenu</span>
+<span class="x">                    $link = $this-&gt;file-&gt;getWebContentLink();</span>
+<span class="x">                    // ... implémenter extraction texte ...</span>
+<span class="x">                    return $extractedText;</span>
+<span class="x">                }</span>
+
+<span class="x">                public function getMetadata(): array</span>
+<span class="x">                {</span>
+<span class="x">                    return [</span>
+<span class="x">                        &#39;mime_type&#39; =&gt; $this-&gt;file-&gt;getMimeType(),</span>
+<span class="x">                        &#39;drive_link&#39; =&gt; $this-&gt;file-&gt;getWebViewLink(),</span>
+<span class="x">                    ];</span>
+<span class="x">                }</span>
+<span class="x">            };</span>
+<span class="x">        }</span>
+<span class="x">    }</span>
+
+<span class="x">    public function countDocuments(): int</span>
+<span class="x">    {</span>
+<span class="x">        $results = $this-&gt;driveService-&gt;files-&gt;listFiles([</span>
+<span class="x">            &#39;q&#39; =&gt; &quot;&#39;{$this-&gt;folderId}&#39; in parents&quot;,</span>
+<span class="x">            &#39;spaces&#39; =&gt; &#39;drive&#39;,</span>
+<span class="x">            &#39;fields&#39; =&gt; &#39;files(id)&#39;,</span>
+<span class="x">        ]);</span>
+<span class="x">        return count($results-&gt;getFiles());</span>
+<span class="x">    }</span>
+<span class="x">}</span>
 </code></pre></div>
-<h2 id="step-9-verify-installation">Step 9: Verify Installation</h2>
-<h3 id="test-bundle-loading">Test Bundle Loading</h3>
-<div class="highlight"><pre><span></span><code>php<span class="w"> </span>bin/console<span class="w"> </span>debug:container<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>synapse
-<span class="c1"># Should show synapse services</span>
+<hr />
+<h2 id="ragsourceproviderfactoryinterface"><code>RagSourceProviderFactoryInterface</code></h2>
+<p>Fabrique qui enregistre toutes les sources RAG disponibles dans l'application.</p>
+<div class="highlight"><pre><span></span><code><span class="x">interface RagSourceProviderFactoryInterface</span>
+<span class="x">{</span>
+<span class="x">    /**</span>
+<span class="x">     * Retourne un itérable de tous les providers de source RAG disponibles.</span>
+<span class="x">     *</span>
+<span class="x">     * @return iterable&lt;RagSourceProviderInterface&gt;</span>
+<span class="x">     */</span>
+<span class="x">    public function createProviders(): iterable;</span>
+<span class="x">}</span>
 </code></pre></div>
-<h3 id="test-routes">Test Routes</h3>
-<div class="highlight"><pre><span></span><code>php<span class="w"> </span>bin/console<span class="w"> </span>debug:router<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>synapse
-<span class="c1"># Should show 20+ synapse routes</span>
+<h3 id="exemple-fabrique-multi-sources">Exemple : Fabrique multi-sources</h3>
+<div class="highlight"><pre><span></span><code><span class="x">class RagSourceProviderFactory implements RagSourceProviderFactoryInterface</span>
+<span class="x">{</span>
+<span class="x">    private \Google_Service_Drive $driveService;</span>
+<span class="x">    private NotionDatabase $notionDb;</span>
+
+<span class="x">    public function __construct(\Google_Service_Drive $driveService, NotionDatabase $notionDb)</span>
+<span class="x">    {</span>
+<span class="x">        $this-&gt;driveService = $driveService;</span>
+<span class="x">        $this-&gt;notionDb = $notionDb;</span>
+<span class="x">    }</span>
+
+<span class="x">    public function createProviders(): iterable</span>
+<span class="x">    {</span>
+<span class="x">        // Source 1 : Google Drive (dossier &quot;Lycée Ressources&quot;)</span>
+<span class="x">        yield new GoogleDriveSourceProvider(&#39;FOLDER_ID_HERE&#39;, $this-&gt;driveService);</span>
+
+<span class="x">        // Source 2 : Notion (base de connaissances)</span>
+<span class="x">        yield new NotionSourceProvider(&#39;NOTION_DB_ID&#39;, $this-&gt;notionDb);</span>
+
+<span class="x">        // Source 3 : Fichiers locaux (uploads utilisateurs)</span>
+<span class="x">        yield new LocalFilesSourceProvider(&#39;/var/synapse-uploads&#39;);</span>
+<span class="x">    }</span>
+<span class="x">}</span>
 </code></pre></div>
-<h3 id="test-application">Test Application</h3>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>https://basile.lab.bray-numerique.fr/synapse/admin
-<span class="c1"># Should return 403 (permission denied, not 500)</span>
+<hr />
+<h2 id="enregistrement-dans-lapplication">Enregistrement dans l'Application</h2>
+<h3 id="1-implementer-la-fabrique">1. Implémenter la fabrique</h3>
+<div class="highlight"><pre><span></span><code><span class="x">// src/Rag/RagSourceProviderFactory.php</span>
+<span class="x">namespace App\Rag;</span>
+
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Contract\RagSourceProviderFactoryInterface;</span>
+
+<span class="x">class RagSourceProviderFactory implements RagSourceProviderFactoryInterface</span>
+<span class="x">{</span>
+<span class="x">    // ... (voir exemple ci-dessus)</span>
+<span class="x">}</span>
 </code></pre></div>
-<h2 id="troubleshooting">Troubleshooting</h2>
-<h3 id="500-error">500 Error</h3>
+<h3 id="2-declarer-le-service">2. Déclarer le service</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># config/services.yaml</span>
+<span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">App\Rag\RagSourceProviderFactory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~</span>
+
+<span class="w">  </span><span class="nt">synapse.rag_source_provider_factory</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">App\Rag\RagSourceProviderFactory</span>
+<span class="w">    </span><span class="nt">public</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+<h3 id="3-activer-dans-la-config-synapse">3. Activer dans la config Synapse</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># config/packages/synapse.yaml</span>
+<span class="nt">synapse</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">rag</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">source_provider_factory</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;@synapse.rag_source_provider_factory&#39;</span>
+</code></pre></div>
+<hr />
+<h2 id="utilisation">Utilisation</h2>
+<p>Une fois enregistrées, les sources apparaissent dans :</p>
 <ol>
-<li>
-<p><strong>Check logs</strong>:
-<div class="highlight"><pre><span></span><code>tail<span class="w"> </span>-100<span class="w"> </span>var/log/prod.log
-tail<span class="w"> </span>-100<span class="w"> </span>/var/log/php-fpm.log
-tail<span class="w"> </span>-100<span class="w"> </span>/var/log/nginx/error.log
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Verify file permissions</strong>:
-<div class="highlight"><pre><span></span><code>ls<span class="w"> </span>-la<span class="w"> </span>var/cache/
-ls<span class="w"> </span>-la<span class="w"> </span>var/log/
-<span class="c1"># Should be writable by www-data</span>
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Check autoloader</strong>:
-<div class="highlight"><pre><span></span><code>php<span class="w"> </span>-r<span class="w"> </span><span class="s2">&quot;require &#39;vendor/autoload.php&#39;; echo &#39;Autoloader OK&#39;;&quot;</span>
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Verify namespaces</strong>:
-<div class="highlight"><pre><span></span><code>php<span class="w"> </span>-r<span class="w"> </span><span class="s2">&quot;require &#39;vendor/autoload.php&#39;; </span>
-<span class="s2">echo class_exists(&#39;ArnaudMoncondhuy\\SynapseCore\\SynapseCoreBundle&#39;) ? &#39;Core OK&#39; : &#39;Core FAIL&#39;;</span>
-<span class="s2">echo &#39; &#39;;</span>
-<span class="s2">echo class_exists(&#39;ArnaudMoncondhuy\\SynapseAdmin\\SynapseAdminBundle&#39;) ? &#39;Admin OK&#39; : &#39;Admin FAIL&#39;;</span>
-<span class="s2">echo &#39; &#39;;</span>
-<span class="s2">echo class_exists(&#39;ArnaudMoncondhuy\\SynapseChat\\SynapseChatBundle&#39;) ? &#39;Chat OK&#39; : &#39;Chat FAIL&#39;;&quot;</span>
-</code></pre></div></p>
-</li>
-</ol>
-<h3 id="404-on-routes">404 on Routes</h3>
-<ol>
-<li>
-<p><strong>Clear cache</strong>:
-<div class="highlight"><pre><span></span><code>rm<span class="w"> </span>-rf<span class="w"> </span>var/cache/*
-php<span class="w"> </span>bin/console<span class="w"> </span>cache:clear<span class="w"> </span>--env<span class="o">=</span>prod
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Verify routes</strong>:
-<div class="highlight"><pre><span></span><code>php<span class="w"> </span>bin/console<span class="w"> </span>debug:router<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>synapse
-</code></pre></div></p>
-</li>
-</ol>
-<h3 id="database-connection-error">Database Connection Error</h3>
-<ol>
-<li>
-<p><strong>Test connection</strong>:
-<div class="highlight"><pre><span></span><code>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:database:create<span class="w"> </span>--if-not-exists
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Run migrations</strong>:
-<div class="highlight"><pre><span></span><code>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>-n
-</code></pre></div></p>
-</li>
-</ol>
-<h2 id="production-checklist">Production Checklist</h2>
-<ul>
-<li>[ ] All packages installed via Composer</li>
-<li>[ ] Symlinks verified in vendor/arnaudmoncondhuy/</li>
-<li>[ ] Database migrations completed</li>
-<li>[ ] Cache cleared and warmed</li>
-<li>[ ] Permissions set correctly (www-data ownership)</li>
-<li>[ ] Nginx/Apache configured with correct root</li>
-<li>[ ] Environment variables configured in .env.local</li>
-<li>[ ] Logs are accessible for debugging</li>
-<li>[ ] Admin dashboard returns 403 (not 500/404)</li>
-<li>[ ] Routes discovered (20+ synapse routes)</li>
-</ul>
-<h2 id="performance-optimization">Performance Optimization</h2>
-<div class="highlight"><pre><span></span><code><span class="c1"># Clear APCu cache if enabled</span>
-php<span class="w"> </span>bin/console<span class="w"> </span>cache:pool:clear<span class="w"> </span>cache.global_clearer
+<li><strong>Interface Admin</strong> : <code>Mémoire › Sources RAG</code></li>
+<li><strong>Commandes CLI</strong> :
+   <div class="highlight"><pre><span></span><code><span class="c1"># Réindexer une source</span>
+php<span class="w"> </span>bin/console<span class="w"> </span>synapse:rag:reindex<span class="w"> </span>lycee_intranet
 
-<span class="c1"># Optimize autoloader</span>
-composer<span class="w"> </span>dump-autoload<span class="w"> </span>--optimize<span class="w"> </span>--no-dev
-
-<span class="c1"># Generate class map cache</span>
-php<span class="w"> </span>bin/console<span class="w"> </span>cache:clear<span class="w"> </span>--no-warmup
-php<span class="w"> </span>bin/console<span class="w"> </span>cache:warmup
-</code></pre></div>
-<h2 id="monitoring">Monitoring</h2>
-<p>Monitor these log files for issues:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># PHP errors</span>
-tail<span class="w"> </span>-f<span class="w"> </span>var/log/prod.log
-
-<span class="c1"># Webserver errors</span>
-tail<span class="w"> </span>-f<span class="w"> </span>/var/log/nginx/error.log<span class="w">  </span><span class="c1"># or apache2/error.log</span>
-
-<span class="c1"># PHP-FPM status</span>
-php-fpm<span class="w"> </span>-T<span class="w">  </span><span class="c1"># Test configuration</span>
-</code></pre></div>
-<h2 id="support">Support</h2>
-<p>If you encounter issues:</p>
-<ol>
-<li>Check the logs in <code>var/log/prod.log</code></li>
-<li>Run <code>php bin/console debug:router</code> to verify routes</li>
-<li>Verify the symlinks in <code>vendor/arnaudmoncondhuy/</code></li>
-<li>Check file permissions on <code>var/</code> and <code>public/</code></li>
+<span class="c1"># Tester une recherche</span>
+php<span class="w"> </span>bin/console<span class="w"> </span>synapse:rag:test<span class="w"> </span><span class="s2">&quot;ma requête&quot;</span><span class="w"> </span>--source<span class="o">=</span>lycee_intranet
+</code></pre></div></li>
+<li><strong>Code PHP</strong> : Via <code>RagSourceRegistry::getSources()</code> ou <code>getSource($slug)</code></li>
 </ol>
 <hr />
-<p><strong>The Synapse Monorepo is production-ready when:</strong>
-- ✅ All 3 packages symlinked in vendor
-- ✅ All routes discovered
-- ✅ Database connected
-- ✅ Cache warmed up
-- ✅ Permissions correct</p>
+<h2 id="interface-documentinterface-helper">Interface <code>DocumentInterface</code> (Helper)</h2>
+<p>Bien que non requise (iterable suffit), l'utilisation d'une interface commune facilite la typage :</p>
+<div class="highlight"><pre><span></span><code><span class="x">interface DocumentInterface</span>
+<span class="x">{</span>
+<span class="x">    public function getIdentifier(): string;       // ID unique dans la source</span>
+<span class="x">    public function getTitle(): string;            // Nom/titre</span>
+<span class="x">    public function getContent(): string;          // Texte à chunkifier</span>
+<span class="x">    public function getMetadata(): array;          // Données additionnelles</span>
+<span class="x">}</span>
+</code></pre></div>
+<hr />
+<h2 id="bonnes-pratiques">Bonnes Pratiques</h2>
+<ul>
+<li><strong>Caching</strong> : Mettez en cache les listes de documents si la source est lente</li>
+<li><strong>Gestion d'erreurs</strong> : Loggez les erreurs plutôt que de lever (permet la réindexation partielle)</li>
+<li><strong>Pagination</strong> : Pour les sources volumineuses (100+ docs), utilisez des générateurs</li>
+<li><strong>Contenu</strong> : Nettoyez le texte (trim, supprimer formatage, etc.) avant de retourner</li>
+<li><strong>Métadonnées</strong> : Incluez toujours une URL ou lien de retour vers le document original</li>
+</ul>
+<hr />
+<h2 id="exemple-complet-source-notion">Exemple Complet : Source Notion</h2>
+<div class="highlight"><pre><span></span><code><span class="x">namespace App\Rag;</span>
+
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Contract\RagSourceProviderInterface;</span>
+
+<span class="x">class NotionSourceProvider implements RagSourceProviderInterface</span>
+<span class="x">{</span>
+<span class="x">    private string $databaseId;</span>
+<span class="x">    private NotionClient $client;</span>
+
+<span class="x">    public function __construct(string $databaseId, NotionClient $client)</span>
+<span class="x">    {</span>
+<span class="x">        $this-&gt;databaseId = $databaseId;</span>
+<span class="x">        $this-&gt;client = $client;</span>
+<span class="x">    }</span>
+
+<span class="x">    public function getSlug(): string { return &#39;notion-kb&#39;; }</span>
+<span class="x">    public function getName(): string { return &#39;Base de Connaissances Notion&#39;; }</span>
+<span class="x">    public function getDescription(): string { return &#39;Articles et guides dans Notion&#39;; }</span>
+
+<span class="x">    public function fetchDocuments(): iterable</span>
+<span class="x">    {</span>
+<span class="x">        $pages = $this-&gt;client-&gt;database($this-&gt;databaseId)-&gt;query([</span>
+<span class="x">            &#39;filter&#39; =&gt; [&#39;property&#39; =&gt; &#39;Status&#39;, &#39;select&#39; =&gt; [&#39;equals&#39; =&gt; &#39;Published&#39;]],</span>
+<span class="x">        ]);</span>
+
+<span class="x">        foreach ($pages as $page) {</span>
+<span class="x">            // Convertir les blocs Notion en texte brut</span>
+<span class="x">            $content = $this-&gt;extractTextFromBlocks($page[&#39;id&#39;]);</span>
+
+<span class="x">            yield new class($page, $content) implements DocumentInterface {</span>
+<span class="x">                private array $page;</span>
+<span class="x">                private string $content;</span>
+
+<span class="x">                public function __construct(array $page, string $content)</span>
+<span class="x">                {</span>
+<span class="x">                    $this-&gt;page = $page;</span>
+<span class="x">                    $this-&gt;content = $content;</span>
+<span class="x">                }</span>
+
+<span class="x">                public function getIdentifier(): string { return $this-&gt;page[&#39;id&#39;]; }</span>
+<span class="x">                public function getTitle(): string { return $this-&gt;page[&#39;properties&#39;][&#39;Title&#39;][&#39;title&#39;][0][&#39;plain_text&#39;] ?? &#39;Untitled&#39;; }</span>
+<span class="x">                public function getContent(): string { return $this-&gt;content; }</span>
+<span class="x">                public function getMetadata(): array {</span>
+<span class="x">                    return [</span>
+<span class="x">                        &#39;notion_url&#39; =&gt; $this-&gt;page[&#39;public_url&#39;],</span>
+<span class="x">                        &#39;created_at&#39; =&gt; $this-&gt;page[&#39;created_time&#39;],</span>
+<span class="x">                    ];</span>
+<span class="x">                }</span>
+<span class="x">            };</span>
+<span class="x">        }</span>
+<span class="x">    }</span>
+
+<span class="x">    public function countDocuments(): int</span>
+<span class="x">    {</span>
+<span class="x">        return $this-&gt;client-&gt;database($this-&gt;databaseId)-&gt;query()-&gt;count();</span>
+<span class="x">    }</span>
+
+<span class="x">    private function extractTextFromBlocks(string $pageId): string</span>
+<span class="x">    {</span>
+<span class="x">        $blocks = $this-&gt;client-&gt;page($pageId)-&gt;blocks()-&gt;list();</span>
+<span class="x">        $text = [];</span>
+<span class="x">        foreach ($blocks as $block) {</span>
+<span class="x">            if (isset($block[&#39;paragraph&#39;])) {</span>
+<span class="x">                $text[] = $block[&#39;paragraph&#39;][&#39;rich_text&#39;][0][&#39;plain_text&#39;] ?? &#39;&#39;;</span>
+<span class="x">            }</span>
+<span class="x">        }</span>
+<span class="x">        return implode(&quot;\n&quot;, array_filter($text));</span>
+<span class="x">    }</span>
+<span class="x">}</span>
+</code></pre></div>
 
 
 
@@ -3336,10 +3026,10 @@ php-fpm<span class="w"> </span>-T<span class="w">  </span><span class="c1"># Tes
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.code.annotate"], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

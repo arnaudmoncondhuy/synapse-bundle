@@ -239,7 +239,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../deployment/DEPLOYMENT_GUIDE/" class="md-tabs__link">
+        <a href="../../../deployment/DEPLOYMENT_GUIDE.md" class="md-tabs__link">
           
   
   
@@ -446,7 +446,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../deployment/DEPLOYMENT_GUIDE/" class="md-nav__link">
+      <a href="../../../deployment/DEPLOYMENT_GUIDE.md" class="md-nav__link">
         
   
   
@@ -474,7 +474,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../deployment/DOCKER_DEPLOYMENT/" class="md-nav__link">
+      <a href="../../../deployment/DOCKER_DEPLOYMENT.md" class="md-nav__link">
         
   
   
@@ -502,7 +502,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../deployment/PRODUCTION_DEPLOYMENT/" class="md-nav__link">
+      <a href="../../../deployment/PRODUCTION_DEPLOYMENT.md" class="md-nav__link">
         
   
   
@@ -2274,10 +2274,104 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#flux-de-generation" class="md-nav__link">
+  <a href="#pipeline-prompt-5-phases" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Flux de génération
+        Pipeline Prompt (5 Phases)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Prompt (5 Phases)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-build-promptbuildevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 : BUILD (PromptBuildEvent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-enrich-promptenrichevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 : ENRICH (PromptEnrichEvent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-optimize-promptoptimizeevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3 : OPTIMIZE (PromptOptimizeEvent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-finalize-promptfinalizeevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4 : FINALIZE (PromptFinalizeEvent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-5-capture-promptcaptureevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5 : CAPTURE (PromptCaptureEvent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flux-multi-tour-avec-tool-calling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flux Multi-tour avec Tool Calling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#composants-cles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Composants Clés
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evenements-dispatche" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Événements Dispatché
       
     </span>
   </a>
@@ -2288,7 +2382,18 @@
   <a href="#schema-simplifie" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Schéma simplifié
+        Schéma Simplifié
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#format-messages-openai-canonical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format Messages OpenAI Canonical
       
     </span>
   </a>
@@ -2608,10 +2713,104 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#flux-de-generation" class="md-nav__link">
+  <a href="#pipeline-prompt-5-phases" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Flux de génération
+        Pipeline Prompt (5 Phases)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Prompt (5 Phases)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-build-promptbuildevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 : BUILD (PromptBuildEvent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-enrich-promptenrichevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 : ENRICH (PromptEnrichEvent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-optimize-promptoptimizeevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3 : OPTIMIZE (PromptOptimizeEvent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-finalize-promptfinalizeevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4 : FINALIZE (PromptFinalizeEvent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-5-capture-promptcaptureevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5 : CAPTURE (PromptCaptureEvent)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flux-multi-tour-avec-tool-calling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flux Multi-tour avec Tool Calling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#composants-cles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Composants Clés
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evenements-dispatche" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Événements Dispatché
       
     </span>
   </a>
@@ -2622,7 +2821,18 @@
   <a href="#schema-simplifie" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Schéma simplifié
+        Schéma Simplifié
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#format-messages-openai-canonical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format Messages OpenAI Canonical
       
     </span>
   </a>
@@ -2647,30 +2857,161 @@
 
 
 <h1 id="architecture-flux">Architecture &amp; Flux</h1>
-<p>Synapse Core repose sur un flux d'exécution séquentiel et évènementiel.</p>
-<h2 id="flux-de-generation">Flux de génération</h2>
-<ol>
-<li><strong>Réception du message</strong> via <code>ChatService</code>.</li>
-<li><strong>Construction du prompt</strong> via le <code>PromptBuilder</code>.</li>
-<li><strong>Événement <code>SynapsePrePromptEvent</code></strong> : Modification possible du prompt par l'application hôte.</li>
-<li><strong>Appel LLM</strong> via le client dédié (Gemini, OpenAI, etc.).</li>
-<li><strong>Streaming des chunks</strong> avec dispatch de <code>SynapseChunkReceivedEvent</code>.</li>
-<li><strong>Détection de Tool Call</strong> : Si le LLM demande un outil, Synapse l'exécute et relance une boucle de génération.</li>
-<li><strong>Finalisation</strong> : Enregistrement en base de données et dispatch de <code>SynapseGenerationCompletedEvent</code>.</li>
-</ol>
-<h2 id="schema-simplifie">Schéma simplifié</h2>
-<div class="highlight"><pre><span></span><code>graph TD
-    User([Message Utilisateur]) --&gt; ChatService
-    ChatService --&gt; PromptBuilder
-    PromptBuilder --&gt; EventPrePrompt{SynapsePrePromptEvent}
-    EventPrePrompt --&gt; LlmClient
-    LlmClient --&gt; Streaming[Streaming des Chunks]
-    Streaming --&gt; EventChunk{SynapseChunkReceivedEvent}
-    Streaming --&gt; ToolCheck{Tool Call ?}
-    ToolCheck -- Oui --&gt; ToolReg[ToolRegistry]
-    ToolReg --&gt; LlmClient
-    ToolCheck -- Non --&gt; End([Réponse finale])
+<p>Synapse Core repose sur un flux d'exécution séquentiel et hautement <strong>événementiel</strong>. Le pipeline de prompt est le cœur du système.</p>
+<h2 id="pipeline-prompt-5-phases">Pipeline Prompt (5 Phases)</h2>
+<p>Le système de prompt est structuré en <strong>5 phases événementielles</strong> orchestrées par <code>PromptPipeline</code> :</p>
+<h3 id="phase-1-build-promptbuildevent">Phase 1 : BUILD (<code>PromptBuildEvent</code>)</h3>
+<p>Construction initiale du prompt système avec :
+- System prompt de base (<code>SynapseConfig.systemPrompt</code>)
+- Tone injecté (<code>SynapseTone.systemPrompt</code> si agent a un ton)
+- Variables interpolées (<code>{user_name}</code>, <code>{context}</code>, etc.)</p>
+<h3 id="phase-2-enrich-promptenrichevent">Phase 2 : ENRICH (<code>PromptEnrichEvent</code>)</h3>
+<p>Enrichissement du contexte via subscribers :
+- <strong><code>RagContextSubscriber</code></strong> : Injecte les chunks RAG pertinents (si agent a des sources RAG)
+- <strong><code>MemoryContextSubscriber</code></strong> : Injecte les souvenirs vectoriels de l'utilisateur (score ≥ 0.7)
+- <strong><code>MasterPromptSubscriber</code></strong> : Ajoute le master prompt global
+- <strong><code>ContextBuilderSubscriber</code></strong> : Ajoute le contexte applicatif personnalisé</p>
+<h3 id="phase-3-optimize-promptoptimizeevent">Phase 3 : OPTIMIZE (<code>PromptOptimizeEvent</code>)</h3>
+<p>Optimisation et troncature :
+- <strong><code>ContextTruncationSubscriber</code></strong> : Tronque l'historique et le contexte si dépassement de <code>maxTokens</code>
+- Utilise une heuristique locale (règle simple : tokens ≈ chars/4)</p>
+<h3 id="phase-4-finalize-promptfinalizeevent">Phase 4 : FINALIZE (<code>PromptFinalizeEvent</code>)</h3>
+<p>Finalisation avant envoi au LLM (transformation dans le format du provider)</p>
+<h3 id="phase-5-capture-promptcaptureevent">Phase 5 : CAPTURE (<code>PromptCaptureEvent</code>)</h3>
+<p>Capture du prompt final pour le debug :
+- <strong><code>DebugLogSubscriber</code></strong> : Enregistre le payload complet en <code>SynapseDebugLog</code></p>
+<hr />
+<h2 id="flux-multi-tour-avec-tool-calling">Flux Multi-tour avec Tool Calling</h2>
+<p>Une fois le prompt construit, le système entre dans une <strong>boucle multi-tour</strong> (max <code>maxTurns = 5</code>) :</p>
+<div class="highlight"><pre><span></span><code>Tour 1:
+  ↓
+  ChatService::ask() → Config Load
+  ↓
+  PromptPipeline (5 phases) → Prompt final
+  ↓
+  LlmClient::streamGenerateContent() → Streaming SSE
+  ↓
+  ChunkProcessor (parse SSE) → NormalizedChunk
+  ↓
+  Dispatch SynapseChunkReceivedEvent (répété chaque token)
+  ↓
+  Tool Call détecté ?
+    NON → Fin (Dispatch SynapseGenerationCompletedEvent)
+    OUI → Exécution ci-dessous
+
+  ToolExecutor::execute(toolName, params) → Résultat
+  ↓
+  Dispatch SynapseToolCallCompletedEvent
+  ↓
+Tour 2+ : Retour au streaming avec résultat du tool en message assistant
 </code></pre></div>
+<hr />
+<h2 id="composants-cles">Composants Clés</h2>
+<table>
+<thead>
+<tr>
+<th>Composant</th>
+<th>Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ChatService</strong></td>
+<td>Point d'entrée principal (<code>ask()</code>, <code>resetConversation()</code>)</td>
+</tr>
+<tr>
+<td><strong>ConfigProviderInterface</strong></td>
+<td>Fournit la config runtime (via BDD)</td>
+</tr>
+<tr>
+<td><strong>PromptPipeline</strong></td>
+<td>Orchestre les 5 phases du prompt</td>
+</tr>
+<tr>
+<td><strong>PromptBuilder</strong></td>
+<td>Construit le prompt système initial</td>
+</tr>
+<tr>
+<td><strong>Subscribers</strong></td>
+<td>Enrichissent le prompt (RAG, mémoire, contexte app)</td>
+</tr>
+<tr>
+<td><strong>LlmClient</strong></td>
+<td>Envoie au provider (Gemini, OVH, etc.)</td>
+</tr>
+<tr>
+<td><strong>ChunkProcessor</strong></td>
+<td>Parse le streaming SSE en chunks normalisés</td>
+</tr>
+<tr>
+<td><strong>MultiTurnExecutor</strong></td>
+<td>Gère la boucle jusqu'à <code>maxTurns</code></td>
+</tr>
+<tr>
+<td><strong>ToolRegistry</strong></td>
+<td>Registre des outils disponibles</td>
+</tr>
+<tr>
+<td><strong>ToolExecutor</strong></td>
+<td>Exécute les tool calls</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="evenements-dispatche">Événements Dispatché</h2>
+<p><strong>Ordre de séquence</strong> :</p>
+<ol>
+<li><code>SynapseGenerationStartedEvent</code> — Début global</li>
+<li><em>Phases du PromptPipeline</em> : <code>PromptBuildEvent</code>, <code>PromptEnrichEvent</code>, <code>PromptOptimizeEvent</code>, <code>PromptFinalizeEvent</code>, <code>PromptCaptureEvent</code></li>
+<li><code>SynapseChunkReceivedEvent</code> — Répété pour chaque token (streaming)</li>
+<li><code>SynapseStatusChangedEvent</code> — Passage de thinking → generating (optionnel, si extended thinking)</li>
+<li><code>SynapseTokenStreamedEvent</code> — Chaque token individuel (granularité maximale)</li>
+<li><code>SynapseToolCallRequestedEvent</code> — Si outil demandé</li>
+<li><code>ToolExecutor</code> exécute → <code>SynapseToolCallCompletedEvent</code> — Résultat du tool</li>
+<li><em>(Retour étape 3 si plus de tool calls)</em></li>
+<li><code>SynapseGenerationCompletedEvent</code> — Fin de génération textuelle</li>
+<li><code>SynapseExchangeCompletedEvent</code> — Fin technique (logs, debug)</li>
+</ol>
+<p>Hors cycle : <code>SynapseEmbeddingCompletedEvent</code>, <code>SynapseSpendingLimitExceededEvent</code>, <code>SynapseFallbackActivatedEvent</code></p>
+<hr />
+<h2 id="schema-simplifie">Schéma Simplifié</h2>
+<div class="highlight"><pre><span></span><code>graph TD
+    User([Message Utilisateur]) --&gt; ChatService[ChatService::ask]
+    ChatService --&gt; ConfigLoad[Chargement Config]
+    ConfigLoad --&gt; Pipeline[&quot;PromptPipeline&lt;br/&gt;(5 phases)&quot;]
+
+    Pipeline --&gt; Build[&quot;BUILD&lt;br/&gt;PromptBuildEvent&quot;]
+    Build --&gt; Enrich[&quot;ENRICH&lt;br/&gt;PromptEnrichEvent&lt;br/&gt;(RAG, Mémoire, Master)&quot;]
+    Enrich --&gt; Optimize[&quot;OPTIMIZE&lt;br/&gt;PromptOptimizeEvent&lt;br/&gt;(Troncature)&quot;]
+    Optimize --&gt; Finalize[&quot;FINALIZE&lt;br/&gt;PromptFinalizeEvent&quot;]
+    Finalize --&gt; Capture[&quot;CAPTURE&lt;br/&gt;PromptCaptureEvent&lt;br/&gt;(Debug Log)&quot;]
+
+    Capture --&gt; LlmClient[LlmClient::streamGenerateContent]
+    LlmClient --&gt; Streaming[Streaming SSE]
+    Streaming --&gt; Processor[ChunkProcessor]
+    Processor --&gt; DispatchChunk[&quot;Dispatch&lt;br/&gt;SynapseChunkReceivedEvent&quot;]
+
+    DispatchChunk --&gt; Check{Tool Call ?}
+    Check -- NON --&gt; Complete[&quot;Dispatch&lt;br/&gt;SynapseGenerationCompletedEvent&quot;]
+    Check -- OUI --&gt; ToolExec[ToolExecutor::execute]
+    ToolExec --&gt; DispatchTool[&quot;Dispatch&lt;br/&gt;SynapseToolCallCompletedEvent&quot;]
+    DispatchTool --&gt; Streaming
+
+    Complete --&gt; ExchangeEvent[&quot;Dispatch&lt;br/&gt;SynapseExchangeCompletedEvent&quot;]
+    ExchangeEvent --&gt; DB[&quot;Persistance BDD&lt;br/&gt;(SynapseMessage, etc.)&quot;]
+    DB --&gt; UserResult([Réponse finale])
+</code></pre></div>
+<hr />
+<h2 id="format-messages-openai-canonical">Format Messages OpenAI Canonical</h2>
+<p>Internement, tous les messages sont dans le format OpenAI Chat Completions :</p>
+<div class="highlight"><pre><span></span><code><span class="x">$contents = [</span>
+<span class="x">    [&#39;role&#39; =&gt; &#39;system&#39;, &#39;content&#39; =&gt; &#39;...system prompt...&#39;],</span>
+<span class="x">    [&#39;role&#39; =&gt; &#39;user&#39;, &#39;content&#39; =&gt; &#39;...message utilisateur...&#39;],</span>
+<span class="x">    [&#39;role&#39; =&gt; &#39;assistant&#39;, &#39;content&#39; =&gt; &#39;...réponse modèle...&#39;, &#39;tool_calls&#39; =&gt; [...]],</span>
+<span class="x">    [&#39;role&#39; =&gt; &#39;tool&#39;, &#39;tool_call_id&#39; =&gt; &#39;...&#39;, &#39;content&#39; =&gt; &#39;...résultat outil...&#39;],</span>
+<span class="x">];</span>
+</code></pre></div>
+<p>Chaque <code>LlmClient</code> traduit de/vers ce format (ex: GeminiClient adapte Gemini→OpenAI, OvhAiClient passe directement).</p>
 
 
 
