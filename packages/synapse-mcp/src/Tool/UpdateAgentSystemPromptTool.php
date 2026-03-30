@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ArnaudMoncondhuy\SynapseMcp\Tool;
 
 use ArnaudMoncondhuy\SynapseCore\AgentRegistry;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Mcp\Capability\Attribute\McpTool;
 
@@ -15,10 +16,11 @@ class UpdateAgentSystemPromptTool
 {
     public function __construct(
         private readonly AgentRegistry $agentRegistry,
-        private readonly SynapseAgentRepository $agentRepository,
         private readonly EntityManagerInterface $em,
-    ) {}
+    ) {
+    }
 
+    /** @return array<string, mixed> */
     public function __invoke(
         string $agentId,
         string $systemPrompt,

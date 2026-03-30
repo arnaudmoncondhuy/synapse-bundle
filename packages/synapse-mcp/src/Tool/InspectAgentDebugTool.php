@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ArnaudMoncondhuy\SynapseMcp\Tool;
 
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository;
@@ -13,8 +15,10 @@ class InspectAgentDebugTool
 {
     public function __construct(
         private readonly SynapseDebugLogRepository $debugLogRepository,
-    ) {}
+    ) {
+    }
 
+    /** @return array<string, mixed> */
     public function __invoke(string $debugId): array
     {
         $log = $this->debugLogRepository->findByDebugId($debugId);
@@ -44,6 +48,7 @@ class InspectAgentDebugTool
         ];
     }
 
+    /** @param array<string, mixed> $data */
     private function extractSystemPrompt(array $data): ?string
     {
         $history = $data['history'] ?? [];

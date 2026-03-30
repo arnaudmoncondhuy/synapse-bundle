@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ArnaudMoncondhuy\SynapseMcp\Tool;
 
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
@@ -13,8 +15,10 @@ class RunAgentTestTool
 {
     public function __construct(
         private readonly ChatService $chatService,
-    ) {}
+    ) {
+    }
 
+    /** @return array<string, mixed> */
     public function __invoke(
         string $agentId,
         string $input,

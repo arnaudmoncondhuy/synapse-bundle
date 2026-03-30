@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ArnaudMoncondhuy\SynapseMcp\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
@@ -11,10 +13,10 @@ class SynapseMcpExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config'));
         $loader->load('services.yaml');
 
-        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../config/packages'));
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../../config/packages'));
         $loader->load('mcp.yaml');
     }
 }
