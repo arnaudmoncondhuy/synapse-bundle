@@ -24,4 +24,4 @@ parameters:
             path: ../packages/core/src/Command/SynapseDoctorCommand.php
         -
             identifier: attribute.notFound
-            path: ../packages/synapse-mcp/src/Tool/*
+            path: ../packages/mcp/src/Tool/*
