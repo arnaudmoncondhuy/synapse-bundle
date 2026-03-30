@@ -1,0 +1,27 @@
+includes:
+    - ../vendor/phpstan/phpstan-symfony/extension.neon
+    - ../vendor/phpstan/phpstan-symfony/rules.neon
+    - ../vendor/phpstan/phpstan-phpunit/extension.neon
+    - ../vendor/phpstan/phpstan-phpunit/rules.neon
+    - ../vendor/phpstan/phpstan-deprecation-rules/rules.neon
+
+parameters:
+    level: 8
+    paths:
+        - ../packages
+    excludePaths:
+        - ../packages/*/vendor/*
+        - ../packages/*/tests/*
+    reportUnmatchedIgnoredErrors: false
+    treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        - identifier: property.unusedType
+          path: ../packages/core/src/Storage/Entity/*
+        - identifier: trait.unused
+          path: ../packages/core/src/Security/AdminSecurityTrait.php
+        -
+            message: '#Call to deprecated method listTableNames\(\) of class Doctrine\\DBAL\\Schema\\AbstractSchemaManager#'
+            path: ../packages/core/src/Command/SynapseDoctorCommand.php
+        -
+            identifier: attribute.notFound
+            path: ../packages/synapse-mcp/src/Tool/*
