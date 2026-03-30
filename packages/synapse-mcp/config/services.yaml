@@ -1,3 +1,15 @@
 services:
   ArnaudMoncondhuy\SynapseMcp\Tool\RunAgentTestTool:
     public: true
+
+  ArnaudMoncondhuy\SynapseMcp\Tool\InspectAgentDebugTool:
+    public: true
+    arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository'
+
+  ArnaudMoncondhuy\SynapseMcp\Tool\UpdateAgentSystemPromptTool:
+    public: true
+    arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\AgentRegistry'
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository'
+      - '@doctrine.orm.entity_manager'
