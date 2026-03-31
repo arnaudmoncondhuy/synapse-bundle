@@ -1,15 +1,30 @@
 services:
+  ArnaudMoncondhuy\SynapseMcp\Tool\ListAgentsTool:
+    public: true
+    arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository'
+    tags:
+      - { name: mcp.tool }
+
   ArnaudMoncondhuy\SynapseMcp\Tool\RunAgentTestTool:
     public: true
+    arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\Engine\ChatService'
+      - '@ArnaudMoncondhuy\SynapseCore\AgentRegistry'
+    tags:
+      - { name: mcp.tool }
 
   ArnaudMoncondhuy\SynapseMcp\Tool\InspectAgentDebugTool:
     public: true
     arguments:
       - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository'
+    tags:
+      - { name: mcp.tool }
 
   ArnaudMoncondhuy\SynapseMcp\Tool\UpdateAgentSystemPromptTool:
     public: true
     arguments:
       - '@ArnaudMoncondhuy\SynapseCore\AgentRegistry'
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository'
       - '@doctrine.orm.entity_manager'
+    tags:
+      - { name: mcp.tool }
