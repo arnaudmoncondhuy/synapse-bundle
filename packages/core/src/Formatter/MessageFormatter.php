@@ -40,7 +40,7 @@ class MessageFormatter implements MessageFormatterInterface
     public function entitiesToApiFormat(iterable $entities): array
     {
         $messages = [];
-        /** @var list<array{type: string, image_url: array{url: string}}> $pendingGeneratedImages */
+        /** @var SynapseMessageAttachment[] $pendingGeneratedImages */
         $pendingGeneratedImages = [];
 
         foreach ($entities as $entity) {
@@ -66,7 +66,7 @@ class MessageFormatter implements MessageFormatterInterface
             }
 
             $role = $entity->getRole();
-            $content = $entity->getDecryptedContent() ?? $entity->getContent();
+            $content = $entity->getDecryptedContent();
             $mappedRole = $this->mapRoleToOpenAi($role);
 
             // Assistant image-only message: collect generated image attachment UUIDs for next user message

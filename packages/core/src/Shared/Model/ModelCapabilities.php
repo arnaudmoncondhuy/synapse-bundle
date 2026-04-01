@@ -14,6 +14,7 @@ class ModelCapabilities
 {
     /**
      * @param int[] $dimensions
+     * @param list<string> $vertexRegions
      */
     public function __construct(
         /** Identifiant exact du modèle (tel qu'envoyé à l'API) */

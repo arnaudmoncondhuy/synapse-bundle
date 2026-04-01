@@ -379,7 +379,7 @@ class ModelPresetController extends AbstractController
     }
 
     /**
-     * @return array<string, array{provider: string, type: string, dimensions: int[], supportsThinking: bool, supportsSafetySettings: bool, supportsTopK: bool, supportsFunctionCalling: bool, supportsStreaming: bool, supportsVision: bool, supportsParallelToolCalls: bool, supportsResponseSchema: bool, maxInputTokens: int|null, maxOutputTokens: int|null, deprecatedAt: string|null}>
+     * @return array<string, array{provider: string, dimensions: int[], supportsThinking: bool, supportsSafetySettings: bool, supportsTopK: bool, supportsFunctionCalling: bool, supportsStreaming: bool, supportsTextGeneration: bool, supportsEmbedding: bool, supportsImageGeneration: bool, supportsVision: bool, supportsParallelToolCalls: bool, supportsResponseSchema: bool, maxInputTokens: int|null, maxOutputTokens: int|null, deprecatedAt: string|null, vertexRegions: list<string>, rgpdRisk: string|null, pricingInput: float|null, pricingOutput: float|null, pricingOutputImage: float|null}>
      */
     private function getFullModelsCapabilities(): array
     {

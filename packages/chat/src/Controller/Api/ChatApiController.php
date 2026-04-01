@@ -336,7 +336,7 @@ class ChatApiController extends AbstractController
                         // Lier le message assistant à son appel LLM (callId)
                         /** @var list<array{mime_type: string, data: string}> $generatedImages */
                         $generatedImages = is_array($result['generated_images'] ?? null) ? $result['generated_images'] : [];
-                        $answerText = $result['answer'] ?: ($hasGeneratedImages ? '[image]' : '');
+                        $answerText = ('' !== $result['answer']) ? $result['answer'] : ($hasGeneratedImages ? '[image]' : '');
                         $modelMessage = $this->conversationManager->saveMessage($conversation, MessageRole::MODEL, $answerText, $metadata, $callId, $generatedImages);
 
                         // Inclure les UUIDs des images générées dans le résultat (pour affichage front)

@@ -71,7 +71,8 @@ class ChatService
      *     safety: array<int, array<string, mixed>>,
      *     model: string,
      *     preset_id: ?int,
-     *     agent_id: ?int
+     *     agent_id: ?int,
+     *     generated_images: list<array{mime_type: string, data: string}>
      * } Résultat normalisé de l'échange
      */
     public function ask(
@@ -88,6 +89,7 @@ class ChatService
                 'model' => 'unknown',
                 'preset_id' => null,
                 'agent_id' => null,
+                'generated_images' => [],
             ];
         }
 
@@ -317,6 +319,10 @@ class ChatService
         $this->dispatcher->dispatch(new SynapseStatusChangedEvent('Génération d\'image en cours...', 'thinking'));
 
         $caps = $this->capabilityRegistry->getCapabilities($config->model);
+        if (null === $this->imageGenerationService) {
+            throw new \LogicException('ImageGenerationService is required for image-only models.');
+        }
+
         $images = $this->imageGenerationService->generate($message, $caps->provider, [
             'model' => $config->model,
         ]);
