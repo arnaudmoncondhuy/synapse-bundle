@@ -11,6 +11,7 @@ use ArnaudMoncondhuy\SynapseCore\Service\EmbeddingService;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseConfigRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseRagDocumentRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseVectorMemoryRepository;
 use ArnaudMoncondhuy\SynapseCore\VectorStore\VectorStoreRegistry;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,6 +34,7 @@ class EmbeddingController extends AbstractController
         private readonly SynapseConfigRepository $configRepo,
         private readonly SynapseProviderRepository $providerRepo,
         private readonly SynapseRagDocumentRepository $ragDocumentRepo,
+        private readonly SynapseVectorMemoryRepository $vectorMemoryRepo,
         private readonly ModelCapabilityRegistry $modelRegistry,
         private readonly EmbeddingService $embeddingService,
         private readonly VectorStoreRegistry $vectorStoreRegistry,
@@ -61,7 +63,7 @@ class EmbeddingController extends AbstractController
             $models = [];
             foreach ($this->modelRegistry->getModelsForProvider($name) as $modelId) {
                 $caps = $this->modelRegistry->getCapabilities($modelId);
-                if ('embedding' === $caps->type) {
+                if ($caps->supportsEmbedding) {
                     $models[$modelId] = $caps;
                 }
             }
@@ -97,6 +99,18 @@ class EmbeddingController extends AbstractController
                 ));
 
                 return $this->redirectToRoute('synapse_admin_embeddings');
+            }
+
+            // Si le modèle d'embedding change, invalider tous les vecteurs mémoire.
+            // Ils seront recalculés à la volée au prochain recall() de chaque utilisateur.
+            $modelChanged = $embProvider !== $config->getEmbeddingProvider() || $embModel !== $config->getEmbeddingModel();
+            if ($modelChanged && $this->vectorMemoryRepo->countAll() > 0) {
+                $invalidated = $this->vectorMemoryRepo->clearAllEmbeddings();
+                $this->addFlash('warning', $this->translator->trans(
+                    'synapse.admin.memory.embeddings.flash.memory_invalidated',
+                    ['count' => $invalidated],
+                    'synapse_admin'
+                ));
             }
 
             $chunkSize = max(100, min(20000, (int) ($data['chunk_size'] ?? 1000)));
@@ -136,6 +150,7 @@ class EmbeddingController extends AbstractController
 
         // Compter les documents RAG existants
         $ragDocumentCount = $this->ragDocumentRepo->countAll();
+        $vectorMemoryCount = $this->vectorMemoryRepo->countAll();
 
         return $this->render('@Synapse/admin/memoire/embeddings.html.twig', [
             'config' => $config,
@@ -145,6 +160,7 @@ class EmbeddingController extends AbstractController
             'db_vector_ready' => $vectorExtensionEnabled,
             'available_vector_stores' => $this->vectorStoreRegistry->getAvailableAliases(),
             'rag_document_count' => $ragDocumentCount,
+            'vector_memory_count' => $vectorMemoryCount,
         ]);
     }
 

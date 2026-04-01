@@ -36,6 +36,23 @@
 		</div>
 	</div>
 
+	{# ── Alerte mémoire utilisateur ──────────────────────────────────────────── #}
+	{% if vector_memory_count > 0 %}
+		<div class="synapse-admin-card synapse-admin-card--warning synapse-admin-mb-xl">
+			<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-start">
+				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--warning" style="margin-top: 0.5rem;">
+					<i data-lucide="info"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-font-bold">{{ vector_memory_count }} souvenir(s) utilisateur indexés</div>
+					<p class="synapse-admin-text-sm synapse-admin-mt-sm synapse-admin-text-muted">
+						Si vous changez le modèle d'embedding, ces vecteurs seront invalidés et <strong>recalculés automatiquement</strong> lors de la prochaine connexion de chaque utilisateur. Aucune perte de données — les textes sont conservés.
+					</p>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+
 	{# ── Alerte RAG ───────────────────────────────────────────────────────────── #}
 	{% if rag_document_count > 0 %}
 		<div class="synapse-admin-card synapse-admin-card--danger synapse-admin-mb-xl">

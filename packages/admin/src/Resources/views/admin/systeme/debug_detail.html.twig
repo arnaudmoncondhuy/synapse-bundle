@@ -396,11 +396,17 @@
 								</div>
 
 								{% if msg.content is iterable %}
-									{# Parts array representation from Gemini / Vertex #}
-									<div style="font-size: 0.9rem; color: var(--synapse-admin-text); white-space: pre-wrap; line-height: 1.5;">
+									{# Parts array representation (OpenAI multipart or Gemini/Vertex) #}
+									<div style="font-size: 0.9rem; color: var(--synapse-admin-text); line-height: 1.5;">
 										{% for part in msg.content %}
-											{% if part.text is defined %}
-												{{ part.text }}
+											{% if part.type is defined and part.type == 'text' %}
+												<div style="white-space: pre-wrap;">{{ part.text }}</div>
+											{% elseif part.type is defined and part.type == 'image_url' %}
+												<div style="margin: 8px 0;">
+													<img src="{{ part.image_url.url }}" alt="Image envoyée au LLM" style="max-width: 300px; border-radius: 8px; border: 1px solid #bae6fd;" loading="lazy">
+												</div>
+											{% elseif part.text is defined %}
+												<div style="white-space: pre-wrap;">{{ part.text }}</div>
 											{% elseif part.functionCall is defined %}
 												<span class="synapse-admin-badge synapse-admin-badge--warning">Appel d'outil:
 													{{ part.functionCall.name }}</span>

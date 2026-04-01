@@ -9,6 +9,7 @@ use ArnaudMoncondhuy\SynapseCore\Engine\LlmClientRegistry;
 use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\PresetValidator;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseCore\Security\RgpdEvaluator;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseProvider;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelRepository;
@@ -42,6 +43,7 @@ class ConfigurationLlmController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly PermissionCheckerInterface $permissionChecker,
         private readonly PresetValidator $presetValidator,
+        private readonly RgpdEvaluator $rgpdEvaluator,
     ) {
     }
 
@@ -126,13 +128,13 @@ class ConfigurationLlmController extends AbstractController
             $models[] = [
                 'id' => $modelId,
                 'provider' => $caps->provider,
-                'type' => $caps->type,
                 'currency' => 'ovh' === $caps->provider ? '€' : '$',
                 'capabilities' => $caps,
                 'db_entity' => $dbModel,
                 'is_enabled' => $dbModel ? $dbModel->isEnabled() : true,
                 'pricing_input' => $dbModel?->getPricingInput() ?? $caps->pricingInput,
                 'pricing_output' => $dbModel?->getPricingOutput() ?? $caps->pricingOutput,
+                'pricing_output_image' => $dbModel?->getPricingOutputImage() ?? $caps->pricingOutputImage,
                 'label' => $dbModel?->getLabel() ?? $modelId,
             ];
         }
@@ -144,6 +146,7 @@ class ConfigurationLlmController extends AbstractController
                 'caps' => $this->capabilityRegistry->getCapabilities($p->getModel()),
                 'isValid' => $this->presetValidator->isValid($p),
                 'invalidReason' => $this->presetValidator->getInvalidReason($p),
+                'rgpd' => $this->rgpdEvaluator->evaluate($p),
             ],
             $allPresets
         );

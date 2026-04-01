@@ -66,6 +66,37 @@
 				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
 					<p class="synapse-admin-text-sm synapse-admin-text-muted synapse-admin-mb-md">{{ agent.description }}</p>
 
+					{% set agent_model = agent.modelPreset ? agent.modelPreset.model : default_preset_model %}
+					{% if agent_model %}
+						{% set caps = model_capabilities[agent_model] ?? null %}
+						{% if caps %}
+							<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center synapse-admin-mb-md">
+								<span class="synapse-admin-text-xs synapse-admin-text-tertiary">{{ 'synapse.admin.llm_config.model.table.head.capabilities'|trans(domain='synapse_admin') }}</span>
+								{% if caps.supportsTextGeneration %}
+									<i data-lucide="message-square-text" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.textgen'|trans(domain='synapse_admin') }}"></i>
+								{% endif %}
+								{% if caps.supportsEmbedding %}
+									<i data-lucide="database" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.embedding'|trans(domain='synapse_admin') }}"></i>
+								{% endif %}
+								{% if caps.supportsImageGeneration %}
+									<i data-lucide="image" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.imagegen'|trans(domain='synapse_admin') }}"></i>
+								{% endif %}
+								{% if caps.supportsThinking %}
+									<i data-lucide="brain" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.thinking'|trans(domain='synapse_admin') }}"></i>
+								{% endif %}
+								{% if caps.supportsFunctionCalling %}
+									<i data-lucide="wrench" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.tools'|trans(domain='synapse_admin') }}"></i>
+								{% endif %}
+								{% if caps.supportsStreaming %}
+									<i data-lucide="activity" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.streaming'|trans(domain='synapse_admin') }}"></i>
+								{% endif %}
+								{% if caps.supportsVision %}
+									<i data-lucide="eye" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.vision'|trans(domain='synapse_admin') }}"></i>
+								{% endif %}
+							</div>
+						{% endif %}
+					{% endif %}
+
 					<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm synapse-admin-text-xs synapse-admin-text-muted">
 						{% if agent.modelPreset %}
 							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">

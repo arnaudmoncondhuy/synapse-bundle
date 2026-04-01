@@ -58,6 +58,38 @@
     border: 1px solid hsl(205, 90%, 76%);
 }
 
+/* ── Badge RGPD (statut conformité) ─────────────────────────────────────── */
+
+.synapse-admin-badge--rgpd-compliant {
+    background: linear-gradient(135deg, hsl(152, 72%, 30%) 0%, hsl(152, 72%, 24%) 100%);
+    color: #fff;
+    border: 1px solid hsl(152, 72%, 20%);
+}
+
+.synapse-admin-badge--rgpd-tolerated {
+    background: linear-gradient(135deg, hsl(38, 92%, 44%) 0%, hsl(38, 92%, 36%) 100%);
+    color: #fff;
+    border: 1px solid hsl(38, 92%, 30%);
+}
+
+.synapse-admin-badge--rgpd-risk {
+    background: linear-gradient(135deg, hsl(22, 90%, 46%) 0%, hsl(22, 90%, 38%) 100%);
+    color: #fff;
+    border: 1px solid hsl(22, 90%, 32%);
+}
+
+.synapse-admin-badge--rgpd-danger {
+    background: linear-gradient(135deg, hsl(350, 82%, 44%) 0%, hsl(350, 82%, 36%) 100%);
+    color: #fff;
+    border: 1px solid hsl(350, 82%, 30%);
+}
+
+.synapse-admin-badge--rgpd-unknown {
+    background: var(--synapse-admin-border);
+    color: var(--synapse-admin-text-secondary);
+    border: 1px solid var(--synapse-admin-border);
+}
+
 /* ── Badge dot (statut simple) ────────────────────────────────────────────── */
 
 .synapse-admin-dot {

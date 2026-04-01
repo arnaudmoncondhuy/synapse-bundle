@@ -97,7 +97,7 @@ class ModelCapabilityRegistryTest extends TestCase
         $this->assertIsArray($geminiModels);
     }
 
-    public function testVertexRegionOnPreviewModels(): void
+    public function testVertexRegionsOnPreviewModels(): void
     {
         $registry = new ModelCapabilityRegistry();
 
@@ -106,11 +106,11 @@ class ModelCapabilityRegistryTest extends TestCase
                 continue;
             }
             $caps = $registry->getCapabilities($modelId);
-            $this->assertSame('global', $caps->vertexRegion, "Le modèle $modelId doit avoir vertex_region: global");
+            $this->assertSame(['global'], $caps->vertexRegions, "Le modèle $modelId doit avoir vertex_regions: [global]");
         }
     }
 
-    public function testVertexRegionNullOnStableModels(): void
+    public function testVertexRegionsOnStableModels(): void
     {
         $registry = new ModelCapabilityRegistry();
 
@@ -119,7 +119,33 @@ class ModelCapabilityRegistryTest extends TestCase
                 continue;
             }
             $caps = $registry->getCapabilities($modelId);
-            $this->assertNull($caps->vertexRegion, "Le modèle $modelId ne doit pas avoir de vertex_region forcée");
+            $this->assertNotEmpty($caps->vertexRegions, "Le modèle $modelId doit avoir des vertex_regions listées");
+            $this->assertContains('us-central1', $caps->vertexRegions, "Le modèle $modelId doit être disponible en us-central1");
+        }
+    }
+
+    public function testNewModelsRegistered(): void
+    {
+        $registry = new ModelCapabilityRegistry();
+
+        $newModels = [
+            'gemini-3.1-flash-image-preview',
+            'gemini-3-pro-image-preview',
+            'gemini-2.5-flash-image',
+            'gemini-embedding-2-preview',
+        ];
+
+        foreach ($newModels as $modelId) {
+            $this->assertTrue($registry->isKnownModel($modelId), "Le modèle $modelId doit être connu");
+        }
+    }
+
+    public function testDeprecatedModelsRemoved(): void
+    {
+        $registry = new ModelCapabilityRegistry();
+
+        foreach (['gemini-2.0-flash', 'gemini-2.0-flash-lite'] as $modelId) {
+            $this->assertFalse($registry->isKnownModel($modelId), "Le modèle déprécié $modelId ne doit plus être dans le YAML");
         }
     }
 }

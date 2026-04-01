@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
+use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Security\RoleProvider;
@@ -46,6 +47,7 @@ class AgentController extends AbstractController
         private readonly ToolRegistry $toolRegistry,
         private readonly RoleProvider $roleProvider,
         private readonly SynapseRagSourceRepository $ragSourceRepository,
+        private readonly ModelCapabilityRegistry $capabilityRegistry,
         private readonly TranslatorInterface $translator,
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
@@ -60,8 +62,12 @@ class AgentController extends AbstractController
 
         $agents = $this->agentRepo->findAllOrdered();
 
+        $activePreset = $this->presetRepo->findOneBy(['isActive' => true]);
+
         return $this->render('@Synapse/admin/intelligence/agents.html.twig', [
             'agents' => $agents,
+            'model_capabilities' => $this->getFullModelsCapabilities(),
+            'default_preset_model' => $activePreset?->getModel(),
         ]);
     }
 
@@ -102,6 +108,7 @@ class AgentController extends AbstractController
             'available_tools' => $availableTools,
             'available_rag_sources' => $availableRagSources,
             'available_roles' => $this->roleProvider->getAvailableRoles(),
+            'model_capabilities' => $this->getFullModelsCapabilities(),
         ]);
     }
 
@@ -141,6 +148,7 @@ class AgentController extends AbstractController
             'available_rag_sources' => $availableRagSources,
             'available_roles' => $this->roleProvider->getAvailableRoles(),
             'spending_limit' => $spendingLimit,
+            'model_capabilities' => $this->getFullModelsCapabilities(),
             'periods' => [
                 SpendingLimitPeriod::SLIDING_DAY->value => $this->translator->trans('synapse.admin.agent.limit.period.sliding_day', [], 'synapse_admin'),
                 SpendingLimitPeriod::SLIDING_MONTH->value => $this->translator->trans('synapse.admin.agent.limit.period.sliding_month', [], 'synapse_admin'),
@@ -347,5 +355,32 @@ class AgentController extends AbstractController
                 'userIdentifiers' => array_values($userIdentifiers),
             ]);
         }
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    private function getFullModelsCapabilities(): array
+    {
+        $result = [];
+        foreach ($this->capabilityRegistry->getKnownModels() as $modelId) {
+            $caps = $this->capabilityRegistry->getCapabilities($modelId);
+            $result[$modelId] = [
+                'provider' => $caps->provider,
+                'supportsTextGeneration' => $caps->supportsTextGeneration,
+                'supportsEmbedding' => $caps->supportsEmbedding,
+                'supportsImageGeneration' => $caps->supportsImageGeneration,
+                'supportsThinking' => $caps->supportsThinking,
+                'supportsSafetySettings' => $caps->supportsSafetySettings,
+                'supportsTopK' => $caps->supportsTopK,
+                'supportsFunctionCalling' => $caps->supportsFunctionCalling,
+                'supportsStreaming' => $caps->supportsStreaming,
+                'supportsVision' => $caps->supportsVision,
+                'supportsParallelToolCalls' => $caps->supportsParallelToolCalls,
+                'supportsResponseSchema' => $caps->supportsResponseSchema,
+            ];
+        }
+
+        return $result;
     }
 }

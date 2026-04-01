@@ -104,7 +104,7 @@
 				</div>
 			</div>
 			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-				<div class="synapse-admin-grid synapse-admin-grid--2">
+				<div class="synapse-admin-grid" style="grid-template-columns: 1fr 1fr 1fr;">
 					<div class="synapse-admin-form-group">
 						<label class="synapse-admin-label" for="provider-select">
 							Provider
@@ -125,7 +125,7 @@
 							Modèle
 							<span class="synapse-admin-required">*</span>
 						</label>
-						<select name="model" id="model-select" class="synapse-admin-select" onchange="updateFormVisibility()">
+						<select name="model" id="model-select" class="synapse-admin-select" onchange="updateFormVisibility(); updateModelPricing()">
 							{% for provider, models in models_by_provider %}
 								<optgroup label="{{ provider }}" data-provider="{{ provider }}">
 									{% for modelId in models %}
@@ -136,6 +136,10 @@
 								</optgroup>
 							{% endfor %}
 						</select>
+					</div>
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label">Tarif</label>
+						<div id="model-pricing" class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs" style="padding-top: 0.45rem;"></div>
 					</div>
 				</div>
 			</div>
@@ -253,7 +257,7 @@
 		const modelCapabilities = {{ model_capabilities|json_encode|raw }};
 
 const PROVIDER_SCHEMAS = {
-'gemini': {
+'google_vertex_ai': {
 fields: [
 {
 name: 'vertex_region',
@@ -262,16 +266,28 @@ label: 'Région Vertex AI',
 help: 'Région utilisée pour ce preset (override la région du provider)',
 options: [
 { value: '', label: '— Hériter du provider —' },
-{ value: 'global', label: 'Global (modèles preview & nouveaux)' },
-{ value: 'europe-west9', label: 'Europe West 9 (Paris)' },
-{ value: 'europe-west1', label: 'Europe West 1 (Belgique)' },
-{ value: 'europe-west4', label: 'Europe West 4 (Pays-Bas)' },
-{ value: 'europe-west3', label: 'Europe West 3 (Francfort)' },
-{ value: 'europe-west2', label: 'Europe West 2 (Londres)' },
+{ value: 'global', label: 'Global (endpoint universel preview)' },
 { value: 'us-central1', label: 'US Central 1 (Iowa)' },
 { value: 'us-east1', label: 'US East 1 (Caroline du Sud)' },
-{ value: 'asia-east1', label: 'Asia East 1 (Taiwan)' },
-{ value: 'asia-northeast1', label: 'Asia Northeast 1 (Tokyo)' }
+{ value: 'us-east4', label: 'US East 4 (Virginie du Nord)' },
+{ value: 'us-east5', label: 'US East 5 (Columbus)' },
+{ value: 'us-south1', label: 'US South 1 (Dallas)' },
+{ value: 'us-west1', label: 'US West 1 (Oregon)' },
+{ value: 'us-west4', label: 'US West 4 (Las Vegas)' },
+{ value: 'northamerica-northeast1', label: 'Canada Northeast 1 (Montréal)' },
+{ value: 'southamerica-east1', label: 'South America East 1 (São Paulo)' },
+{ value: 'europe-west1', label: 'Europe West 1 (Belgique)' },
+{ value: 'europe-west4', label: 'Europe West 4 (Pays-Bas)' },
+{ value: 'europe-west8', label: 'Europe West 8 (Milan)' },
+{ value: 'europe-west9', label: 'Europe West 9 (Paris)' },
+{ value: 'europe-central2', label: 'Europe Central 2 (Varsovie)' },
+{ value: 'europe-north1', label: 'Europe North 1 (Finlande)' },
+{ value: 'europe-southwest1', label: 'Europe Southwest 1 (Madrid)' },
+{ value: 'asia-northeast1', label: 'Asia Northeast 1 (Tokyo)' },
+{ value: 'asia-northeast3', label: 'Asia Northeast 3 (Séoul)' },
+{ value: 'asia-south1', label: 'Asia South 1 (Mumbai)' },
+{ value: 'asia-southeast1', label: 'Asia Southeast 1 (Singapour)' },
+{ value: 'australia-southeast1', label: 'Australia Southeast 1 (Sydney)' }
 ],
 defaultValue: ''
 },
@@ -306,8 +322,11 @@ label: 'Seuil de sécurité par défaut',
 help: 'Niveau de filtrage par défaut',
 options: [
 {
+value: 'OFF',
+label: 'Désactivé'
+}, {
 value: 'BLOCK_NONE',
-label: 'Aucun filtre'
+label: 'Aucun filtre (scores retournés)'
 }, {
 value: 'BLOCK_ONLY_HIGH',
 label: 'Bloquer haute probabilité'
@@ -330,6 +349,10 @@ options: [
 {
 value: '',
 label: 'Non défini'
+},
+{
+value: 'OFF',
+label: 'Désactivé'
 },
 {
 value: 'BLOCK_NONE',
@@ -359,6 +382,10 @@ value: '',
 label: 'Non défini'
 },
 {
+value: 'OFF',
+label: 'Désactivé'
+},
+{
 value: 'BLOCK_NONE',
 label: 'Aucun filtre'
 },
@@ -386,6 +413,10 @@ value: '',
 label: 'Non défini'
 },
 {
+value: 'OFF',
+label: 'Désactivé'
+},
+{
 value: 'BLOCK_NONE',
 label: 'Aucun filtre'
 },
@@ -411,6 +442,10 @@ options: [
 {
 value: '',
 label: 'Non défini'
+},
+{
+value: 'OFF',
+label: 'Désactivé'
 },
 {
 value: 'BLOCK_NONE',
@@ -508,20 +543,50 @@ return;
 
 const value = getNestedValue(currentData, fieldDef.name);
 const isChecked = value === true || value === 'true';
-// Pour vertex_region : si aucune valeur preset, utiliser le défaut YAML du modèle
-const yamlDefault = (fieldDef.name === 'vertex_region' && caps.vertexRegion) ? caps.vertexRegion : fieldDef.defaultValue;
-const fieldValue = value !== undefined ? value : yamlDefault;
+const fieldValue = value !== undefined ? value : fieldDef.defaultValue;
+// Pour vertex_region : filtrer les options selon les régions disponibles du modèle
+const resolvedFieldDef = (fieldDef.name === 'vertex_region' && caps.vertexRegions && caps.vertexRegions.length > 0)
+? { ...fieldDef, options: fieldDef.options.filter(o => o.value === '' || caps.vertexRegions.includes(o.value)) }
+: fieldDef;
 const fieldEl = document.createElement('div');
 fieldEl.className = 'synapse-admin-form-group';
 fieldEl.id = `field-${
 fieldDef.name.replace(/\./g, '-')
 }`;
-fieldEl.innerHTML = renderField(fieldDef, fieldValue, isChecked);
+fieldEl.innerHTML = renderField(resolvedFieldDef, fieldValue, isChecked);
 fieldEl.setAttribute('data-field-name', fieldDef.name);
 if (fieldDef.dependsOn) 
 fieldEl.setAttribute('data-depends-on', fieldDef.dependsOn);
 
 container.appendChild(fieldEl);
+// Badge RGPD pour le champ vertex_region
+if (fieldDef.name === 'vertex_region') {
+const badge = document.createElement('div');
+badge.id = 'rgpd-region-badge';
+badge.style.marginTop = '6px';
+fieldEl.appendChild(badge);
+const RGPD_LABELS = {
+compliant: { cls: 'rgpd-compliant', title: 'Conforme RGPD — hébergeur et données en UE' },
+tolerated: { cls: 'rgpd-tolerated', title: 'Toléré RGPD — données en UE, DPA disponible, pas d\'entraînement (CLOUD Act américain toujours présent)' },
+risk:      { cls: 'rgpd-risk',      title: 'Risque RGPD — pays tiers avec protection adéquate (hors UE)' },
+danger:    { cls: 'rgpd-danger',    title: 'Non conforme RGPD — données hors UE sans garanties suffisantes' },
+unknown:   { cls: 'rgpd-unknown',   title: 'Statut RGPD indéterminé — région non configurée' },
+};
+const updateRgpdBadge = (region) => {
+let status = 'unknown';
+if (region === '') status = 'unknown';
+else if (region.startsWith('europe-')) status = 'tolerated';
+else if (region === 'northamerica-northeast1') status = 'risk';
+else status = 'danger';
+const { cls, title } = RGPD_LABELS[status];
+badge.innerHTML = `<span class="synapse-admin-badge synapse-admin-badge--${cls}" title="${title}">RGPD</span>`;
+};
+const sel = fieldEl.querySelector('select');
+if (sel) {
+sel.addEventListener('change', () => updateRgpdBadge(sel.value));
+updateRgpdBadge(sel.value);
+}
+}
 const input = fieldEl.querySelector('input, select');
 if (input) {
 input.addEventListener('change', () => {
@@ -683,6 +748,24 @@ el.style.display = caps.supportsTopK ? '' : 'none';
 updateCapsBadges(modelId, caps);
 }
 
+function updateModelPricing() {
+const modelId = document.getElementById('model-select').value;
+const caps = modelCapabilities[modelId];
+const container = document.getElementById('model-pricing');
+if (!container) return;
+if (!caps || (caps.pricingInput == null && caps.pricingOutput == null)) {
+container.innerHTML = '<span class="synapse-admin-text-xs synapse-admin-text-tertiary">—</span>';
+return;
+}
+const c = caps.provider === 'ovh' ? '€' : '$';
+let lines = [];
+if (caps.pricingInput != null) lines.push(`<span class="synapse-admin-text-xs">Input <strong>${c}${caps.pricingInput}</strong>/M tok</span>`);
+if (caps.pricingOutput != null) lines.push(`<span class="synapse-admin-text-xs">Output <strong>${c}${caps.pricingOutput}</strong>/M tok</span>`);
+if (caps.pricingOutputImage != null && caps.pricingOutputImage > 0) lines.push(`<span class="synapse-admin-text-xs">Image <strong>${c}${caps.pricingOutputImage}</strong>/M tok</span>`);
+container.innerHTML = lines.join('');
+}
+updateModelPricing();
+
 function getDisabledCapabilities() {
 const ta = document.getElementById('provider-options-json');
 try { return JSON.parse(ta.value).disabled_capabilities || []; } catch(e) { return []; }
@@ -722,6 +805,27 @@ return;
 body.innerHTML = '';
 const capabilities = [
 {
+capsKey: 'supportsTextGeneration',
+disableKey: null,
+label: 'Text Generation',
+icon: 'message-square-text',
+desc: 'Génération de texte (chat / completion). Le modèle peut produire des réponses textuelles.',
+infoOnly: true
+}, {
+capsKey: 'supportsEmbedding',
+disableKey: null,
+label: 'Embedding',
+icon: 'database',
+desc: 'Génération d\'embeddings vectoriels. Utilisé pour la recherche sémantique et le RAG.',
+infoOnly: true
+}, {
+capsKey: 'supportsImageGeneration',
+disableKey: null,
+label: 'Image Generation',
+icon: 'image',
+desc: 'Génération d\'images (text-to-image). Le modèle peut produire des images à partir de descriptions textuelles.',
+infoOnly: true
+}, {
 capsKey: 'supportsThinking',
 disableKey: 'thinking',
 label: 'Thinking',

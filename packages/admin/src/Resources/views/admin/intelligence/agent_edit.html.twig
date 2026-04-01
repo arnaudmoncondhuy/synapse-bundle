@@ -216,6 +216,8 @@
 
 					</div>
 
+					<div id="agent-capabilities-container" class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center synapse-admin-mt-md" style="flex-wrap:wrap;"></div>
+
 				</div>
 			</div>
 
@@ -519,6 +521,64 @@
 				if (typeof lucide !== 'undefined') { lucide.createIcons(); }
 			});
 		});
+	})();
+
+	// ── Capacités dynamiques selon preset sélectionné ──
+	(function () {
+		const allCaps = {{ model_capabilities|json_encode|raw }};
+		const presetModels = {
+			{% for preset in presets %}
+			'{{ preset.id }}': '{{ preset.model }}',
+			{% endfor %}
+		};
+		// Preset actif par défaut (fallback quand l'agent n'a pas de preset)
+		const activePresetModel = '{{ presets|filter(p => p.isActive)|first.model ?? '' }}';
+
+		const capsDefs = [
+			{ key: 'supportsTextGeneration', label: 'Text Generation', icon: 'message-square-text', infoOnly: true },
+			{ key: 'supportsEmbedding', label: 'Embedding', icon: 'database', infoOnly: true },
+			{ key: 'supportsImageGeneration', label: 'Image Generation', icon: 'image', infoOnly: true },
+			{ key: 'supportsThinking', label: 'Thinking', icon: 'brain' },
+			{ key: 'supportsFunctionCalling', label: 'Tool Calls', icon: 'wrench' },
+			{ key: 'supportsSafetySettings', label: 'Safety', icon: 'shield' },
+			{ key: 'supportsStreaming', label: 'Streaming', icon: 'activity' },
+			{ key: 'supportsVision', label: 'Vision', icon: 'eye' },
+			{ key: 'supportsParallelToolCalls', label: 'Parallel Tools', icon: 'git-fork', infoOnly: true },
+			{ key: 'supportsResponseSchema', label: 'JSON Mode', icon: 'braces', infoOnly: true },
+		];
+
+		function renderCaps(modelId) {
+			const container = document.getElementById('agent-capabilities-container');
+			if (!container) return;
+			container.innerHTML = '';
+			const caps = allCaps[modelId];
+			if (!caps) {
+				container.innerHTML = '<span class="synapse-admin-text-xs synapse-admin-text-tertiary">Sélectionnez un preset pour voir les capacités du modèle.</span>';
+				return;
+			}
+			for (const {key, label, icon, infoOnly} of capsDefs) {
+				const supported = !!caps[key];
+				if (!supported) continue;
+				const pill = document.createElement('span');
+				pill.className = infoOnly ? 'synapse-admin-badge synapse-admin-badge--info' : 'synapse-admin-badge synapse-admin-badge--success';
+				pill.innerHTML = '<i data-lucide="' + icon + '"></i> ' + label;
+				container.appendChild(pill);
+			}
+			if (typeof lucide !== 'undefined') lucide.createIcons();
+		}
+
+		const select = document.getElementById('agent-model-preset');
+		if (select) {
+			select.addEventListener('change', function () {
+				const presetId = this.value;
+				const modelId = presetId ? presetModels[presetId] : activePresetModel;
+				renderCaps(modelId || '');
+			});
+			// Initial render
+			const initialPresetId = select.value;
+			const initialModel = initialPresetId ? presetModels[initialPresetId] : activePresetModel;
+			renderCaps(initialModel || '');
+		}
 	})();
 	</script>
 

@@ -25,6 +25,11 @@
     box-shadow: var(--synapse-admin-shadow-md), 0 0 0 3px var(--synapse-admin-primary-fade);
 }
 
+.synapse-admin-card--active.synapse-admin-card--success {
+    border-color: var(--synapse-admin-success-border);
+    box-shadow: var(--synapse-admin-shadow-md), 0 0 0 2px rgba(16, 185, 129, 0.25), inset 0 3px 0 0 rgba(16, 185, 129, 0.7);
+}
+
 /* ── Card header ────────────────────────────────────────────────────────────── */
 
 .synapse-admin-card__header {
@@ -112,7 +117,8 @@
 
 .synapse-admin-card--success {
     border-color: var(--synapse-admin-success-border);
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.04) 0%, var(--synapse-admin-glass-bg) 100%);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, var(--synapse-admin-glass-bg) 100%);
+    box-shadow: var(--synapse-admin-shadow-sm), inset 0 3px 0 0 rgba(16, 185, 129, 0.6);
 }
 
 .synapse-admin-card--warning {

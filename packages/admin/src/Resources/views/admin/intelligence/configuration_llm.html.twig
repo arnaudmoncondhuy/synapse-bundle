@@ -79,7 +79,7 @@
 					{% set label   = 'synapse.admin.llm_config.provider.status.unconfigured'|trans(domain='synapse_admin') %}
 				{% endif %}
 
-				{% set providerIcon = provider.name == 'gemini' ? 'zap' : (provider.name == 'ovh' ? 'cloud' : 'server') %}
+				{% set providerIcon = provider.name == 'google_vertex_ai' ? 'zap' : (provider.name == 'ovh' ? 'cloud' : 'server') %}
 
 				<div class="synapse-admin-card synapse-admin-card--hover {{ variant }}">
 
@@ -176,6 +176,10 @@
 
 		<div class="synapse-admin-page-header__actions synapse-admin-mb-md" id="filters-toolbar" style="justify-content: flex-start; flex-wrap: wrap; gap: 0.5rem;">
 			<span class="synapse-admin-text-xs synapse-admin-text-tertiary" style="align-self:center; margin-right: 4px;">{{ 'synapse.admin.llm_config.model.filter.label'|trans(domain='synapse_admin') }} :</span>
+			<button type="button" id="filter-textgen" onclick="toggleFilter('textgen', this)" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.filter.textgen_tooltip'|trans(domain='synapse_admin') }}">
+				<i data-lucide="message-square-text"></i>
+				{{ 'synapse.admin.llm_config.model.filter.textgen'|trans(domain='synapse_admin') }}
+			</button>
 			<button type="button" id="filter-thinking" onclick="toggleFilter('thinking', this)" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.filter.thinking_tooltip'|trans(domain='synapse_admin') }}">
 				<i data-lucide="brain"></i>
 				{{ 'synapse.admin.llm_config.model.filter.thinking'|trans(domain='synapse_admin') }}
@@ -199,6 +203,14 @@
 			<button type="button" id="filter-jsonmode" onclick="toggleFilter('jsonmode', this)" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.filter.jsonmode_tooltip'|trans(domain='synapse_admin') }}">
 				<i data-lucide="braces"></i>
 				{{ 'synapse.admin.llm_config.model.filter.jsonmode'|trans(domain='synapse_admin') }}
+			</button>
+			<button type="button" id="filter-embedding" onclick="toggleFilter('embedding', this)" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.filter.embedding_tooltip'|trans(domain='synapse_admin') }}">
+				<i data-lucide="database"></i>
+				{{ 'synapse.admin.llm_config.model.filter.embedding'|trans(domain='synapse_admin') }}
+			</button>
+			<button type="button" id="filter-imagegen" onclick="toggleFilter('imagegen', this)" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.filter.imagegen_tooltip'|trans(domain='synapse_admin') }}">
+				<i data-lucide="image"></i>
+				{{ 'synapse.admin.llm_config.model.filter.imagegen'|trans(domain='synapse_admin') }}
 			</button>
 			<span style="flex:1"></span>
 			<button type="button" onclick="resetFilters()" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
@@ -268,7 +280,7 @@
 						<tbody>
 							{% for model in models %}
 								{% set safeId = model.id|replace({'.': '-', ':': '-'}) %}
-								<tr class="model-row" data-thinking="{{ model.capabilities.supportsThinking ? '1' : '0' }}" data-tools="{{ model.capabilities.supportsFunctionCalling ? '1' : '0' }}" data-streaming="{{ model.capabilities.supportsStreaming ? '1' : '0' }}" data-safety="{{ model.capabilities.supportsSafetySettings ? '1' : '0' }}" data-vision="{{ model.capabilities.supportsVision ? '1' : '0' }}" data-jsonmode="{{ model.capabilities.supportsResponseSchema ? '1' : '0' }}" data-label="{{ model.label|lower }}" data-provider="{{ model.provider|lower }}" data-pricing="{{ model.pricing_input ?: '99999' }}">
+								<tr class="model-row" data-textgen="{{ model.capabilities.supportsTextGeneration ? '1' : '0' }}" data-thinking="{{ model.capabilities.supportsThinking ? '1' : '0' }}" data-tools="{{ model.capabilities.supportsFunctionCalling ? '1' : '0' }}" data-streaming="{{ model.capabilities.supportsStreaming ? '1' : '0' }}" data-safety="{{ model.capabilities.supportsSafetySettings ? '1' : '0' }}" data-vision="{{ model.capabilities.supportsVision ? '1' : '0' }}" data-jsonmode="{{ model.capabilities.supportsResponseSchema ? '1' : '0' }}" data-embedding="{{ model.capabilities.supportsEmbedding ? '1' : '0' }}" data-imagegen="{{ model.capabilities.supportsImageGeneration ? '1' : '0' }}" data-label="{{ model.label|lower }}" data-provider="{{ model.provider|lower }}" data-pricing="{{ model.pricing_input ?: '99999' }}">
 
 									<td>
 										<div class="synapse-admin-table-cell-label">
@@ -284,13 +296,16 @@
 
 									<td>
 										<span class="synapse-admin-badge synapse-admin-badge--neutral">
-											<i data-lucide="{{ model.provider == 'gemini' ? 'zap' : (model.provider == 'ovh' ? 'cloud' : 'server') }}"></i>
-											{{ model.provider|upper }}
+											<i data-lucide="{{ model.provider == 'google_vertex_ai' ? 'zap' : (model.provider == 'ovh' ? 'cloud' : 'server') }}"></i>
+											{{ {'google_vertex_ai': 'Google Vertex AI', 'ovh': 'OVH AI'}[model.provider] ?? model.provider|upper }}
 										</span>
 									</td>
 
 									<td>
 										<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center">
+											{% if model.capabilities.supportsTextGeneration %}
+												<i data-lucide="message-square-text" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.textgen'|trans(domain='synapse_admin') }}"></i>
+											{% endif %}
 											{% if model.capabilities.supportsThinking %}
 												<i data-lucide="brain" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.thinking'|trans(domain='synapse_admin') }}"></i>
 											{% endif %}
@@ -308,6 +323,12 @@
 											{% endif %}
 											{% if model.capabilities.supportsResponseSchema %}
 												<i data-lucide="braces" style="opacity:.35" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.jsonmode'|trans(domain='synapse_admin') }}"></i>
+											{% endif %}
+											{% if model.capabilities.supportsEmbedding %}
+												<i data-lucide="database" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.embedding'|trans(domain='synapse_admin') }}"></i>
+											{% endif %}
+											{% if model.capabilities.supportsImageGeneration %}
+												<i data-lucide="image" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.imagegen'|trans(domain='synapse_admin') }}"></i>
 											{% endif %}
 										</div>
 									</td>
@@ -329,6 +350,12 @@
 												<span class="synapse-admin-text-tertiary">—</span>
 											{% endif %}
 										</div>
+										{% if model.pricing_output_image %}
+										<div>
+											<span class="synapse-admin-text-tertiary synapse-admin-text-xs">Out. img</span>
+											{{ model.pricing_output_image|number_format(2) }}{{ model.currency }}
+										</div>
+										{% endif %}
 									</td>
 
 									<td>
@@ -381,6 +408,14 @@
 													</label>
 													<input type="number" name="pricing_output" step="0.0001" min="0" value="{{ model.pricing_output }}" class="synapse-admin-input synapse-admin-mt-sm" placeholder="Ex : 0.30">
 												</div>
+												{% if model.capabilities.supportsImageGeneration %}
+												<div>
+													<label class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">
+														Tarif Output Image ({{ model.currency }}/1M tokens)
+													</label>
+													<input type="number" name="pricing_output_image" step="0.01" min="0" value="{{ model.pricing_output_image }}" class="synapse-admin-input synapse-admin-mt-sm" placeholder="Ex : 30.00">
+												</div>
+												{% endif %}
 											</div>
 											<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-mt-md">
 												<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
@@ -413,22 +448,18 @@
 				{% set caps   = item.caps %}
 				{% set isValid = item['isValid'] %}
 				{% set invalidReason = item['invalidReason'] %}
+				{% set rgpd = item.rgpd %}
+				{% set rgpdStatusMap = {compliant: 'rgpd-compliant', tolerated: 'rgpd-tolerated', risk: 'rgpd-risk', danger: 'rgpd-danger', unknown: 'rgpd-unknown'} %}
 
 				<div class="synapse-admin-card synapse-admin-card--hover {{ preset.isActive ? 'synapse-admin-card--active synapse-admin-card--success' : '' }}">
 
-					<div class="synapse-admin-card__header">
-						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<div class="synapse-admin-card__header" style="align-items: flex-start;">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary" style="flex-shrink:0; margin-top:2px;">
 							<i data-lucide="sliders-horizontal"></i>
 						</div>
-						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs" style="min-width:0;">
 							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
 								<span class="synapse-admin-card__title">{{ preset.name }}</span>
-								{% if preset.isActive %}
-									<span class="synapse-admin-badge synapse-admin-badge--success">
-										<i data-lucide="check-circle-2"></i>
-										{{ 'synapse.admin.llm_config.provider.status.active'|trans(domain='synapse_admin') }}
-									</span>
-								{% endif %}
 								{% if not isValid %}
 									<span class="synapse-admin-badge synapse-admin-badge--warning" data-synapse-admin-tooltip="{{ invalidReason }}">
 										<i data-lucide="alert-triangle"></i>
@@ -436,28 +467,33 @@
 									</span>
 								{% endif %}
 							</div>
-							<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center synapse-admin-flex-wrap">
-								<span class="synapse-admin-badge synapse-admin-badge--info" title="Fournisseur">
-									<i data-lucide="{{ preset.providerName == 'gemini' ? 'zap' : 'cloud' }}"></i>
-									{{ preset.providerName|upper }}
-								</span>
-								<span class="synapse-admin-badge synapse-admin-badge--primary synapse-admin-truncate" title="Modèle" style="max-width: 180px;">
-									<i data-lucide="cpu"></i>
-									{{ preset.model }}
-								</span>
-								{% if preset.key %}
-									<span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-font-mono" title="Clé technique (slug)" style="opacity: 0.8;">
-										<i data-lucide="key"></i>
-										{{ preset.key }}
-									</span>
-								{% endif %}
+							{% if preset.key %}
+								<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-mono">{{ preset.key }}</div>
+							{% endif %}
+							<div class="synapse-admin-text-sm synapse-admin-text-muted">
+								{{ {'google_vertex_ai': 'Google Vertex AI', 'ovh': 'OVH AI'}[preset.providerName] ?? preset.providerName|upper }}
 							</div>
+							<div class="synapse-admin-text-sm synapse-admin-text-muted synapse-admin-font-mono">{{ preset.model }}</div>
+							{% if rgpd is not null %}
+								<div>
+									<span class="synapse-admin-badge synapse-admin-badge--{{ rgpdStatusMap[rgpd.status] ?? 'rgpd-unknown' }}" data-synapse-admin-tooltip="{{ rgpd.explanation }}">RGPD</span>
+								</div>
+							{% endif %}
 						</div>
 					</div>
 
 					<div class="synapse-admin-card__body synapse-admin-card__body--compact">
 						<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center synapse-admin-mb-md">
 							<span class="synapse-admin-text-xs synapse-admin-text-tertiary">{{ 'synapse.admin.llm_config.model.table.head.capabilities'|trans(domain='synapse_admin') }}</span>
+							{% if caps.supportsTextGeneration %}
+								<i data-lucide="message-square-text" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.textgen'|trans(domain='synapse_admin') }}"></i>
+							{% endif %}
+							{% if caps.supportsEmbedding %}
+								<i data-lucide="database" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.embedding'|trans(domain='synapse_admin') }}"></i>
+							{% endif %}
+							{% if caps.supportsImageGeneration %}
+								<i data-lucide="image" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.imagegen'|trans(domain='synapse_admin') }}"></i>
+							{% endif %}
 							{% if caps.supportsThinking %}
 								<i data-lucide="brain" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.thinking'|trans(domain='synapse_admin') }}"></i>
 							{% endif %}
@@ -478,53 +514,6 @@
 							{% endif %}
 						</div>
 
-						<details class="synapse-admin-collapsible">
-							<summary class="synapse-admin-collapsible__summary">
-								<div class="synapse-admin-collapsible__icon">
-									<i data-lucide="settings-2"></i>
-								</div>
-								<div class="synapse-admin-collapsible__title">
-									{{ 'synapse.admin.llm_config.preset.collapse.tech_params'|trans(domain='synapse_admin') }}
-									<div class="synapse-admin-collapsible__subtitle">
-										Temp.
-										{{ preset.generationTemperature }}
-										· Top-P
-										{{ preset.generationTopP }}
-										{% if preset.generationMaxOutputTokens %}
-											· Max
-											{{ preset.generationMaxOutputTokens }}
-											tokens
-										{% endif %}
-									</div>
-								</div>
-								<i data-lucide="chevron-down" class="synapse-admin-collapsible__chevron"></i>
-							</summary>
-							<div class="synapse-admin-collapsible__content">
-								<div class="synapse-admin-grid synapse-admin-grid--3">
-									<div>
-										<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">{{ 'synapse.admin.llm_config.preset.label.temperature'|trans(domain='synapse_admin') }}</div>
-										<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ preset.generationTemperature }}</div>
-									</div>
-									<div>
-										<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">{{ 'synapse.admin.llm_config.preset.label.top_p'|trans(domain='synapse_admin') }}</div>
-										<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ preset.generationTopP }}</div>
-									</div>
-									<div>
-										<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">{{ 'synapse.admin.llm_config.preset.label.max_tokens'|trans(domain='synapse_admin') }}</div>
-										<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ preset.generationMaxOutputTokens ?: '∞' }}</div>
-									</div>
-								</div>
-								{% set systemPrompt = preset.providerOptions.system_instruction
-                                    |default(preset.providerOptions.system_prompt|default(null)) %}
-								{% if systemPrompt %}
-									<hr class="synapse-admin-divider">
-									<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold synapse-admin-mb-sm">{{ 'synapse.admin.agent.list.label.system_prompt'|trans(domain='synapse_admin') }}</p>
-									<p class="synapse-admin-text-sm synapse-admin-text-muted">
-										{{ systemPrompt|length > 200 ? systemPrompt|slice(0, 200) ~ ' …' : systemPrompt }}
-									</p>
-								{% endif %}
-							</div>
-						</details>
 					</div>
 
 					<div class="synapse-admin-card__footer" style="overflow: visible;">

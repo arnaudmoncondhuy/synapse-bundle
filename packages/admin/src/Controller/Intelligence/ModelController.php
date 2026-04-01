@@ -86,6 +86,7 @@ class ModelController extends AbstractController
         $label = (string) $request->request->get('label', '');
         $inputRaw = (string) $request->request->get('pricing_input', '');
         $outputRaw = (string) $request->request->get('pricing_output', '');
+        $outputImageRaw = (string) $request->request->get('pricing_output_image', '');
 
         if ('' !== $label) {
             $model->setLabel($label);
@@ -93,6 +94,7 @@ class ModelController extends AbstractController
 
         $model->setPricingInput('' !== $inputRaw ? (float) $inputRaw : null);
         $model->setPricingOutput('' !== $outputRaw ? (float) $outputRaw : null);
+        $model->setPricingOutputImage('' !== $outputImageRaw ? (float) $outputImageRaw : null);
 
         $this->em->flush();
 

@@ -50,7 +50,7 @@
 				{% set label   = 'Désactivé' %}
 			{% endif %}
 
-			{% set providerIcon = provider.name == 'gemini' ? 'zap' : (provider.name == 'ovh' ? 'cloud' : 'server') %}
+			{% set providerIcon = provider.name == 'google_vertex_ai' ? 'zap' : (provider.name == 'ovh' ? 'cloud' : 'server') %}
 
 			<div
 				class="synapse-admin-card synapse-admin-card--hover {{ variant }}">
