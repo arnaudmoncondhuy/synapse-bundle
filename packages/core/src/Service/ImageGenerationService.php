@@ -66,7 +66,6 @@ class ImageGenerationService
         return array_keys($this->clientMap);
     }
 
-
     private function resolveClient(?string $provider): ImageGenerationClientInterface
     {
         if (null === $provider) {
@@ -79,11 +78,7 @@ class ImageGenerationService
         }
 
         if (!isset($this->clientMap[$provider])) {
-            throw new \RuntimeException(sprintf(
-                'Image generation provider "%s" not found. Available: %s',
-                $provider,
-                implode(', ', array_keys($this->clientMap))
-            ));
+            throw new \RuntimeException(sprintf('Image generation provider "%s" not found. Available: %s', $provider, implode(', ', array_keys($this->clientMap))));
         }
 
         return $this->clientMap[$provider];

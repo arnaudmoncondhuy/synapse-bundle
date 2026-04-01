@@ -57,13 +57,13 @@ class ModelCapabilityRegistryTest extends TestCase
         }
 
         $caps = $registry->getCapabilities('gemini-2.5-flash');
-        $this->assertSame('gemini', $caps->provider);
+        $this->assertSame('google_vertex_ai', $caps->provider);
         $this->assertTrue($caps->supportsVision);
         $this->assertTrue($caps->supportsParallelToolCalls);
         $this->assertTrue($caps->supportsResponseSchema);
         $this->assertTrue($caps->supportsThinking);
-        $this->assertSame(1000000, $caps->maxInputTokens);
-        $this->assertSame(65536, $caps->maxOutputTokens);
+        $this->assertSame(1048576, $caps->maxInputTokens);
+        $this->assertSame(65535, $caps->maxOutputTokens);
     }
 
     public function testGetEffectiveMaxInputTokensFallback(): void
@@ -93,7 +93,7 @@ class ModelCapabilityRegistryTest extends TestCase
     public function testGetModelsForProvider(): void
     {
         $registry = new ModelCapabilityRegistry();
-        $geminiModels = $registry->getModelsForProvider('gemini');
+        $geminiModels = $registry->getModelsForProvider('google_vertex_ai');
         $this->assertIsArray($geminiModels);
     }
 

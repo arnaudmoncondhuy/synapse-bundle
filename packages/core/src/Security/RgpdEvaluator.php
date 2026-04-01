@@ -53,6 +53,7 @@ final class RgpdEvaluator
      * Retourne uniquement les presets dont le statut RGPD n'est pas 'compliant'.
      *
      * @param SynapseModelPreset[] $presets
+     *
      * @return array<int, array{preset: SynapseModelPreset, rgpd: RgpdInfo}>
      */
     public function getWarnings(array $presets): array

@@ -249,7 +249,6 @@ class ChatService
      *
      * @param array<int, array<string, mixed>> $safetyRatings
      * @param array<string, mixed> $rawData
-     *
      * @param list<array{mime_type: string, data: string}> $generatedImages
      *
      * @return array{

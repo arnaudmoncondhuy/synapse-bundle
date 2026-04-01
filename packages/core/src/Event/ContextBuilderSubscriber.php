@@ -226,7 +226,7 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
                 // If model doesn't support vision, strip image parts from multipart content
                 if (!$supportsVision && is_array($content)) {
                     $textParts = array_values(array_filter($content, fn ($p) => is_array($p) && ($p['type'] ?? '') === 'text'));
-                    $content = count($textParts) === 1 ? ($textParts[0]['text'] ?? '') : (empty($textParts) ? '' : implode(' ', array_column($textParts, 'text')));
+                    $content = 1 === count($textParts) ? ($textParts[0]['text'] ?? '') : (empty($textParts) ? '' : implode(' ', array_column($textParts, 'text')));
                 }
 
                 // Skip user messages with neither string nor array content

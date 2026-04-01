@@ -13,6 +13,7 @@ use ArnaudMoncondhuy\SynapseCore\Engine\PromptPipeline;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\MultiTurnResult;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\SynapseRuntimeConfig;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\TokenUsage;
+use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\Timing\SynapseProfiler;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -45,6 +46,7 @@ class ChatServiceTest extends TestCase
             $this->profiler,
             $this->multiTurnExecutor,
             $this->promptPipeline,
+            $this->createMock(ModelCapabilityRegistry::class),
         );
 
         $this->llmRegistry->method('getClient')->willReturn($this->mockClient);

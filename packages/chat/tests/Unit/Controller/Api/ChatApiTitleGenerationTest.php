@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseChat\Tests\Unit\Controller\Api;
 
+use ArnaudMoncondhuy\SynapseChat\Controller\Api\ChatApiController;
 use ArnaudMoncondhuy\SynapseCore\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
@@ -11,9 +12,7 @@ use ArnaudMoncondhuy\SynapseCore\Manager\ConversationManager;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\MessageRole;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseConversation;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseMessage;
-use ArnaudMoncondhuy\SynapseChat\Controller\Api\ChatApiController;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\WithoutErrorHandler;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -249,9 +248,9 @@ class ChatApiTitleGenerationTest extends TestCase
 
         // --- Messages en DB ---
         $messages = [];
-        for ($i = 0; $i < $messageCount; $i++) {
+        for ($i = 0; $i < $messageCount; ++$i) {
             $msg = $this->createStub(SynapseMessage::class);
-            $msg->method('getRole')->willReturn($i % 2 === 0 ? MessageRole::USER : MessageRole::MODEL);
+            $msg->method('getRole')->willReturn(0 === $i % 2 ? MessageRole::USER : MessageRole::MODEL);
             $messages[] = $msg;
         }
         $this->conversationManager->method('getMessages')->willReturn($messages);
@@ -266,7 +265,7 @@ class ChatApiTitleGenerationTest extends TestCase
             $this->chatService
                 ->method('ask')
                 ->willReturnCallback(function (string $msg, array $options) use ($chatAnswer, $titleAnswer, &$callIndex) {
-                    $callIndex++;
+                    ++$callIndex;
                     if (1 === $callIndex) {
                         return [
                             'answer' => $chatAnswer,
@@ -338,6 +337,7 @@ class ChatApiTitleGenerationTest extends TestCase
         // Buffers sacrificiels avec callbacks qui capturent le contenu
         ob_start(function (string $chunk) use (&$captured): string {
             $captured .= $chunk;
+
             return '';
         });
         ob_start(); // Buffer superficiel que le contrôleur fermera en premier
@@ -403,14 +403,48 @@ class TestParameterBag implements \Symfony\Component\DependencyInjection\Paramet
         };
     }
 
-    public function has(string $name): bool { return true; }
-    public function all(): array { return []; }
-    public function add(array $parameters): void {}
-    public function set(string $name, mixed $value): void {}
-    public function resolve(): void {}
-    public function resolveValue(mixed $value): mixed { return $value; }
-    public function escapeValue(mixed $value): mixed { return $value; }
-    public function unescapeValue(mixed $value): mixed { return $value; }
-    public function clear(): void {}
-    public function remove(string $name): void {}
+    public function has(string $name): bool
+    {
+        return true;
+    }
+
+    public function all(): array
+    {
+        return [];
+    }
+
+    public function add(array $parameters): void
+    {
+    }
+
+    public function set(string $name, mixed $value): void
+    {
+    }
+
+    public function resolve(): void
+    {
+    }
+
+    public function resolveValue(mixed $value): mixed
+    {
+        return $value;
+    }
+
+    public function escapeValue(mixed $value): mixed
+    {
+        return $value;
+    }
+
+    public function unescapeValue(mixed $value): mixed
+    {
+        return $value;
+    }
+
+    public function clear(): void
+    {
+    }
+
+    public function remove(string $name): void
+    {
+    }
 }
