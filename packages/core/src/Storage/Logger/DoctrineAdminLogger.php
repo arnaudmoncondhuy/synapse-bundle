@@ -42,6 +42,15 @@ class DoctrineAdminLogger implements SynapseDebugLoggerInterface
             $debugLog->setConversationId(is_scalar($conversationId) ? (string) $conversationId : null);
         }
 
+        $debugLog->setModule(isset($rawPayload['module']) && is_string($rawPayload['module']) ? $rawPayload['module'] : null);
+        $debugLog->setModel(isset($rawPayload['model']) && is_string($rawPayload['model']) ? $rawPayload['model'] : null);
+
+        $usage = $rawPayload['usage'] ?? $rawPayload['token_usage'] ?? null;
+        if (is_array($usage)) {
+            $total = $usage['total_tokens'] ?? (($usage['prompt_tokens'] ?? 0) + ($usage['completion_tokens'] ?? 0));
+            $debugLog->setTotalTokens(is_int($total) ? $total : null);
+        }
+
         $debugLog->setCreatedAt(new \DateTimeImmutable());
 
         $this->em->persist($debugLog);

@@ -145,8 +145,7 @@
 								</td>
 								<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">{{ log.model ?? '—' }}</td>
 								<td class="synapse-admin-table__cell--mono">
-									{% set t = log.usage %}
-									{{ t ? (t.total_tokens ?? (t.prompt_tokens ?? 0) + (t.completion_tokens ?? 0)) : '—' }}
+									{{ log.totalTokens ?? '—' }}
 								</td>
 								<td class="synapse-admin-table__cell--muted">
 									{{ log.createdAt ? log.createdAt|date('d/m H:i:s') : '—' }}

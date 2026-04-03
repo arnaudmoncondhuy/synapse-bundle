@@ -27,31 +27,19 @@ class SynapseDebugLogRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère les métadonnées des logs récents pour la liste (sans le payload complet).
+     * Récupère les métadonnées des logs récents pour la liste (sans le payload JSON).
      *
-     * @return array<int, array{debugId: string, createdAt: \DateTimeImmutable, module: string|null, model: string|null, usage: array<string, mixed>|null}>
+     * @return array<int, array{debugId: string, createdAt: \DateTimeImmutable, module: string|null, model: string|null, totalTokens: int|null}>
      */
     public function findRecent(int $limit = 50): array
     {
-        /** @var array<int, array{debugId: string, createdAt: \DateTimeImmutable, data: array<string, mixed>}> $rows */
-        $rows = $this->createQueryBuilder('d')
-            ->select('d.debugId', 'd.createdAt', 'd.data')
+        /* @var array<int, array{debugId: string, createdAt: \DateTimeImmutable, module: string|null, model: string|null, totalTokens: int|null}> */
+        return $this->createQueryBuilder('d')
+            ->select('d.debugId', 'd.createdAt', 'd.module', 'd.model', 'd.totalTokens')
             ->orderBy('d.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
             ->getArrayResult();
-
-        return array_map(static function (array $row): array {
-            $data = $row['data'];
-
-            return [
-                'debugId' => $row['debugId'],
-                'createdAt' => $row['createdAt'],
-                'module' => $data['module'] ?? null,
-                'model' => $data['model'] ?? null,
-                'usage' => $data['usage'] ?? $data['token_usage'] ?? null,
-            ];
-        }, $rows);
     }
 
     /**

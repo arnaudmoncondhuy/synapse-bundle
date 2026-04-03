@@ -35,6 +35,24 @@ class SynapseDebugLog
     private ?string $conversationId = null;
 
     /**
+     * Module ayant déclenché l'appel (dénormalisé depuis data.module pour éviter le chargement du JSON en liste).
+     */
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    private ?string $module = null;
+
+    /**
+     * Modèle utilisé (dénormalisé depuis data.model).
+     */
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
+    private ?string $model = null;
+
+    /**
+     * Total de tokens consommés (dénormalisé depuis data.usage).
+     */
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $totalTokens = null;
+
+    /**
      * Timestamp de création.
      */
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
@@ -85,6 +103,42 @@ class SynapseDebugLog
     public function setConversationId(?string $conversationId): self
     {
         $this->conversationId = $conversationId;
+
+        return $this;
+    }
+
+    public function getModule(): ?string
+    {
+        return $this->module;
+    }
+
+    public function setModule(?string $module): self
+    {
+        $this->module = $module;
+
+        return $this;
+    }
+
+    public function getModel(): ?string
+    {
+        return $this->model;
+    }
+
+    public function setModel(?string $model): self
+    {
+        $this->model = $model;
+
+        return $this;
+    }
+
+    public function getTotalTokens(): ?int
+    {
+        return $this->totalTokens;
+    }
+
+    public function setTotalTokens(?int $totalTokens): self
+    {
+        $this->totalTokens = $totalTokens;
 
         return $this;
     }
