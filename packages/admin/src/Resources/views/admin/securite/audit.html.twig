@@ -138,19 +138,18 @@
 					</thead>
 					<tbody>
 						{% for log in logs %}
-							{% set data = log.data ?? {} %}
 							<tr>
 								<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">{{ log.debugId|slice(0, 8) }}…</td>
 								<td>
-									<span class="synapse-admin-badge synapse-admin-badge--neutral">{{ data.module ?? '—' }}</span>
+									<span class="synapse-admin-badge synapse-admin-badge--neutral">{{ log.module ?? '—' }}</span>
 								</td>
-								<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">{{ data.model ?? '—' }}</td>
+								<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">{{ log.model ?? '—' }}</td>
 								<td class="synapse-admin-table__cell--mono">
-									{% set t = data.usage ?? data.token_usage ?? null %}
+									{% set t = log.usage %}
 									{{ t ? (t.total_tokens ?? (t.prompt_tokens ?? 0) + (t.completion_tokens ?? 0)) : '—' }}
 								</td>
 								<td class="synapse-admin-table__cell--muted">
-									{{ log.createdAt is defined ? log.createdAt|date('d/m H:i:s') : '—' }}
+									{{ log.createdAt ? log.createdAt|date('d/m H:i:s') : '—' }}
 								</td>
 								<td class="synapse-admin-table__cell--actions">
 									<a href="{{ path('synapse_debug_show', {id: log.debugId}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon" target="_blank" data-synapse-admin-tooltip="Rapport détaillé">
