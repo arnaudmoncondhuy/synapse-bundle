@@ -46,7 +46,7 @@ class LlmClientRegistry
         $providerName = $config->provider ?: $this->defaultProvider;
 
         if ('' === $providerName) {
-            $providerName = array_key_first($this->clientMap) ?? throw new \RuntimeException('No LLM provider registered.');
+            $providerName = (string) (array_key_first($this->clientMap) ?? throw new \RuntimeException('No LLM provider registered.'));
         }
 
         return $this->getClientByProvider($providerName);

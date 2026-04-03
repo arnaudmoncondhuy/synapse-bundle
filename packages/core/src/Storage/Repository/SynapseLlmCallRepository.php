@@ -20,6 +20,7 @@ use Symfony\Component\DependencyInjection\Attribute\AsAlias;
  * synapse_message est réservé à l'affichage des messages, pas au comptage.
  *
  * @extends ServiceEntityRepository<SynapseLlmCall>
+ * @phpstan-ignore-next-line classConstant.deprecatedClass
  */
 #[AsAlias(id: SynapseTokenUsageRepository::class, public: true)]
 class SynapseLlmCallRepository extends ServiceEntityRepository

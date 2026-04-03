@@ -10,7 +10,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseVectorMemory;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseVectorMemoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
 /**
  * Implémentation Doctrine du VectorStore.
@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
  * Supporte nativement PostgreSQL + pgvector pour des performances optimales.
  * Offre un fallback PHP pour les autres bases (MySQL, SQLite) avec un avertissement de performance.
  */
-#[AsTaggedItem(tag: 'synapse.vector_store', index: 'doctrine')]
+#[Autoconfigure(tags: [['name' => 'synapse.vector_store', 'key' => 'doctrine']])]
 class DoctrineVectorStore implements VectorStoreInterface
 {
     private bool $isPostgres;

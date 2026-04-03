@@ -6,7 +6,7 @@ namespace ArnaudMoncondhuy\SynapseCore\Chunking;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\TextSplitterInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsAlias;
-use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
 /**
  * Découpeur de texte récursif.
@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
  * pour conserver le maximum de contexte sémantique dans chaque segment.
  */
 #[AsAlias(id: TextSplitterInterface::class)]
-#[AsTaggedItem(tag: 'synapse.text_splitter', index: 'recursive')]
+#[Autoconfigure(tags: [['name' => 'synapse.text_splitter', 'key' => 'recursive']])]
 class RecursiveTextSplitter implements TextSplitterInterface
 {
     /** @var string[] Liste des séparateurs par ordre de priorité décroissante */

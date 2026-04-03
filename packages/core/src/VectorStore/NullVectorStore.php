@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore\VectorStore;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\VectorStoreInterface;
-use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 
 /**
  * Implémentation par défaut qui ne fait rien (Null Pattern).
  * Permet au bundle de fonctionner sans configuration de stockage vectoriel.
  */
-#[AsTaggedItem(tag: 'synapse.vector_store', index: 'null')]
+#[Autoconfigure(tags: [['name' => 'synapse.vector_store', 'key' => 'null']])]
 class NullVectorStore implements VectorStoreInterface
 {
     public function saveMemory(array $vector, array $payload): void
