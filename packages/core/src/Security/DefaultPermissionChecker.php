@@ -6,6 +6,8 @@ namespace ArnaudMoncondhuy\SynapseCore\Security;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseConversation;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -19,11 +21,13 @@ use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
  * - Admin peut tout voir (configurable)
  * - Mode développement: accès total si pas de security
  */
+#[AsAlias(id: PermissionCheckerInterface::class)]
 class DefaultPermissionChecker implements PermissionCheckerInterface
 {
     public function __construct(
         private ?Security $security = null,
         private ?AuthorizationCheckerInterface $authChecker = null,
+        #[Autowire('%synapse.security.admin_role%')]
         private string $adminRole = 'ROLE_ADMIN',
     ) {
     }

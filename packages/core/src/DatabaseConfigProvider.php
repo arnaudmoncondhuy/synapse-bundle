@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\ConfigProviderInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseFallbackActivatedEvent;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\SynapseRuntimeConfig;
@@ -27,6 +28,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  *
  * Met en cache le résultat pour éviter les requêtes répétées.
  */
+#[AsAlias(id: ConfigProviderInterface::class)]
 class DatabaseConfigProvider implements ConfigProviderInterface
 {
     private const CACHE_KEY = 'synapse.config.active';
@@ -155,8 +157,8 @@ class DatabaseConfigProvider implements ConfigProviderInterface
     private function getDefaultConfig(): SynapseRuntimeConfig
     {
         $raw = [
-            'provider' => 'google_vertex_ai',
-            'model' => 'gemini-2.5-flash',
+            'provider' => '',
+            'model' => '',
             'provider_credentials' => [],
             'preset_id' => null,
         ];

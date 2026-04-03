@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore\VectorStore;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\VectorStoreInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
 /**
  * Implémentation en mémoire pour les tests unitaires ou le développement léger.
  * Les données sont perdues à la fin de la requête.
  */
+#[AsTaggedItem(tag: 'synapse.vector_store', index: 'in_memory')]
 class InMemoryVectorStore implements VectorStoreInterface
 {
     /** @var array<int, array{vector: array<int, float>, payload: array<string, mixed>}> */

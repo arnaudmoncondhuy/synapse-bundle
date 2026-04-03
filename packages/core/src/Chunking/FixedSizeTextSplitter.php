@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore\Chunking;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\TextSplitterInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
 /**
  * Découpeur de texte à taille fixe.
@@ -12,6 +13,7 @@ use ArnaudMoncondhuy\SynapseCore\Contract\TextSplitterInterface;
  * Découpe le texte brutalement tous les X caractères,
  * sans tenir compte de la ponctuation ou des mots.
  */
+#[AsTaggedItem(tag: 'synapse.text_splitter', index: 'fixed')]
 class FixedSizeTextSplitter implements TextSplitterInterface
 {
     public function splitText(string $text, int $chunkSize = 1000, int $chunkOverlap = 200): array

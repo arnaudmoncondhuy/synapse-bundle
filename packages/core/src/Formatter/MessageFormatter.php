@@ -6,6 +6,7 @@ namespace ArnaudMoncondhuy\SynapseCore\Formatter;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\MessageFormatterInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use ArnaudMoncondhuy\SynapseCore\Service\AttachmentStorageService;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\MessageRole;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseConversation;
@@ -18,6 +19,7 @@ use Doctrine\ORM\EntityManagerInterface;
  *
  * Convertit entre le format des entités Doctrine et le format OpenAI canonical.
  */
+#[AsAlias(id: MessageFormatterInterface::class)]
 class MessageFormatter implements MessageFormatterInterface
 {
     /** @var SynapseMessageAttachment[] Images générées non consommées (dernier assistant [image] sans user suivant) */

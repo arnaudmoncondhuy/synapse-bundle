@@ -7,6 +7,7 @@ namespace ArnaudMoncondhuy\SynapseCore\Storage\Repository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseLlmCall;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 
 /**
  * Repository pour l'entité SynapseLlmCall.
@@ -20,6 +21,7 @@ use Doctrine\Persistence\ManagerRegistry;
  *
  * @extends ServiceEntityRepository<SynapseLlmCall>
  */
+#[AsAlias(id: SynapseTokenUsageRepository::class, public: true)]
 class SynapseLlmCallRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

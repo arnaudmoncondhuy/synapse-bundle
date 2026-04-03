@@ -6,6 +6,7 @@ namespace ArnaudMoncondhuy\SynapseCore\VectorStore;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\VectorStoreInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseVectorMemory;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseVectorMemoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,6 +18,7 @@ use Psr\Log\LoggerInterface;
  * Supporte nativement PostgreSQL + pgvector pour des performances optimales.
  * Offre un fallback PHP pour les autres bases (MySQL, SQLite) avec un avertissement de performance.
  */
+#[AsTaggedItem(tag: 'synapse.vector_store', index: 'doctrine')]
 class DoctrineVectorStore implements VectorStoreInterface
 {
     private bool $isPostgres;

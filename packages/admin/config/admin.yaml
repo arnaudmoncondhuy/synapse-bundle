@@ -3,30 +3,15 @@ services:
         autowire: true
         autoconfigure: true
 
-    # ── Contrôleurs Administration (autoloading récursif) ─────────────────────
-    # Couvre tous les sous-dossiers : Intelligence/, Conversation/, Memoire/, Usage/, etc.
-    ArnaudMoncondhuy\SynapseAdmin\Controller\:
-        resource: '../src/Controller/'
-        tags: ['controller.service_arguments']
-
-    # ── Twig Integration ──────────────────────────────────────────────────────
-    ArnaudMoncondhuy\SynapseAdmin\Twig\SynapseRuntime:
-        tags: ['twig.runtime']
-
-    ArnaudMoncondhuy\SynapseAdmin\Twig\SynapseTwigExtension:
-        tags: ['twig.extension']
-
-    # ── Accounting (Admin feature) ────────────────────────────────────────────
-    ArnaudMoncondhuy\SynapseCore\Accounting\TokenAccountingService: ~
+    # ── Scan global src/ ──────────────────────────────────────────────────────
+    ArnaudMoncondhuy\SynapseAdmin\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Resources/'
 
     # ── Debug Logging (Admin override) ───────────────────────────────────────
     # Quand l'admin est activé, utilise DoctrineAdminLogger (stockage DB)
-    # au lieu de MonologDebugLogger (logs filesystem)
-    ArnaudMoncondhuy\SynapseCore\Storage\Logger\DoctrineAdminLogger:
-        arguments:
-            $em: '@doctrine.orm.entity_manager'
-            $repository: '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository'
-        public: false
-
+    # au lieu de MonologDebugLogger (logs filesystem) — override inter-package via YAML
     ArnaudMoncondhuy\SynapseCore\Contract\SynapseDebugLoggerInterface:
         alias: ArnaudMoncondhuy\SynapseCore\Storage\Logger\DoctrineAdminLogger
