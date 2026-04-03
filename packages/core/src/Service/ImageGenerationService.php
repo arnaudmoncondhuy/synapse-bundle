@@ -31,8 +31,7 @@ class ImageGenerationService
     public function __construct(
         #[AutowireIterator('synapse.image_generation_client')]
         iterable $clients,
-    )
-    {
+    ) {
         foreach ($clients as $client) {
             $this->clientMap[$client->getProviderName()] = $client;
         }

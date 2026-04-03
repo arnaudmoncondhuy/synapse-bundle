@@ -6,11 +6,11 @@ namespace ArnaudMoncondhuy\SynapseCore\VectorStore;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\VectorStoreInterface;
-use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseVectorMemory;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseVectorMemoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 
 /**
  * Implémentation Doctrine du VectorStore.

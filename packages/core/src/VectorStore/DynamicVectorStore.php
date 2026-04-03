@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore\VectorStore;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\VectorStoreInterface;
-use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseConfigRepository;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 
 /**
  * Décorateur de VectorStoreInterface qui résout l'implémentation réelle

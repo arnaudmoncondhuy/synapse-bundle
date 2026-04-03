@@ -21,8 +21,7 @@ class TextSplitterRegistry
     public function __construct(
         #[AutowireIterator(tag: 'synapse.text_splitter', indexAttribute: 'key')]
         iterable $splitters,
-    )
-    {
+    ) {
         foreach ($splitters as $alias => $splitter) {
             $this->splitters[$alias] = $splitter;
         }

@@ -21,8 +21,7 @@ class ToolRegistry
     public function __construct(
         #[AutowireIterator('synapse.tool')]
         iterable $tools,
-    )
-    {
+    ) {
         foreach ($tools as $tool) {
             $this->tools[$tool->getName()] = $tool;
         }

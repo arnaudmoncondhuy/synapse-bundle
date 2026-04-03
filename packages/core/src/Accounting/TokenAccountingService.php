@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore\Accounting;
 
 use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseUsageRecordedEvent;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\TokenUsage;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseLlmCall;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**

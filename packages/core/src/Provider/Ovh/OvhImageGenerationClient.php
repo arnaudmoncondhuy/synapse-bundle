@@ -11,8 +11,8 @@ use ArnaudMoncondhuy\SynapseCore\Shared\Exception\LlmRateLimitException;
 use ArnaudMoncondhuy\SynapseCore\Shared\Exception\LlmServiceUnavailableException;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\GeneratedImage;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
-use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**

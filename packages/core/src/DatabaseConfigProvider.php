@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\ConfigProviderInterface;
-use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseFallbackActivatedEvent;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\SynapseRuntimeConfig;
@@ -14,6 +13,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseConfigRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;

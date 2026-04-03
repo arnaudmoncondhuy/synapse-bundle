@@ -21,8 +21,7 @@ class VectorStoreRegistry
     public function __construct(
         #[AutowireIterator(tag: 'synapse.vector_store', indexAttribute: 'key')]
         iterable $vectorStores,
-    )
-    {
+    ) {
         foreach ($vectorStores as $alias => $vectorStore) {
             $this->vectorStores[$alias] = $vectorStore;
         }

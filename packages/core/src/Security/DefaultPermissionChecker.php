@@ -6,11 +6,11 @@ namespace ArnaudMoncondhuy\SynapseCore\Security;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
-use Symfony\Component\DependencyInjection\Attribute\AsAlias;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseConversation;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**

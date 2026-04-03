@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore\Provider\Ovh;
 
 use ArnaudMoncondhuy\SynapseCore\Client\AbstractLlmClient;
-
 use ArnaudMoncondhuy\SynapseCore\Contract\ConfigProviderInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\EmbeddingClientInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\RgpdAwareInterface;

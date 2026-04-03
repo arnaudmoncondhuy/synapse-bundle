@@ -7,12 +7,12 @@ namespace ArnaudMoncondhuy\SynapseCore\Client;
 use ArnaudMoncondhuy\SynapseCore\Contract\ConfigProviderInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\LlmClientInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
-use ArnaudMoncondhuy\SynapseCore\Shared\Model\ModelCapabilities;
 use ArnaudMoncondhuy\SynapseCore\Shared\Exception\LlmAuthenticationException;
 use ArnaudMoncondhuy\SynapseCore\Shared\Exception\LlmException;
 use ArnaudMoncondhuy\SynapseCore\Shared\Exception\LlmQuotaException;
 use ArnaudMoncondhuy\SynapseCore\Shared\Exception\LlmRateLimitException;
 use ArnaudMoncondhuy\SynapseCore\Shared\Exception\LlmServiceUnavailableException;
+use ArnaudMoncondhuy\SynapseCore\Shared\Model\ModelCapabilities;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 

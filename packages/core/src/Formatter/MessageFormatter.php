@@ -6,13 +6,13 @@ namespace ArnaudMoncondhuy\SynapseCore\Formatter;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\MessageFormatterInterface;
-use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use ArnaudMoncondhuy\SynapseCore\Service\AttachmentStorageService;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\MessageRole;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseConversation;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseMessage;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseMessageAttachment;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 
 /**
  * Formateur de messages pour le format OpenAI canonical.
