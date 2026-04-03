@@ -128,7 +128,7 @@ class ConfigurationLlmController extends AbstractController
             $models[] = [
                 'id' => $modelId,
                 'provider' => $caps->provider,
-                'currency' => 'ovh' === $caps->provider ? '€' : '$',
+                'currency' => 'EUR' === $caps->currency ? '€' : '$',
                 'capabilities' => $caps,
                 'db_entity' => $dbModel,
                 'is_enabled' => $dbModel ? $dbModel->isEnabled() : true,
@@ -158,6 +158,7 @@ class ConfigurationLlmController extends AbstractController
             'preset_count_by_provider' => $presetCountByProvider,
             'models' => $models,
             'presets' => $presetsWithCaps,
+            'provider_meta' => $this->clientRegistry->getProvidersMeta(),
         ]);
     }
 }

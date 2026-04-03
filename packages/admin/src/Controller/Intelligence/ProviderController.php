@@ -89,6 +89,7 @@ class ProviderController extends AbstractController
         return $this->render('@Synapse/admin/intelligence/providers.html.twig', [
             'providers' => $providers,
             'preset_count_by_provider' => $presetCountByProvider,
+            'provider_meta' => $this->clientRegistry->getProvidersMeta(),
         ]);
     }
 

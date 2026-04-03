@@ -76,7 +76,7 @@
 							Nom du Model Preset
 							<span class="synapse-admin-required">*</span>
 						</label>
-						<input type="text" id="preset-name" name="name" value="{{ preset.name }}" class="synapse-admin-input" required placeholder="Ex: Gemini Flash Créatif">
+						<input type="text" id="preset-name" name="name" value="{{ preset.name }}" class="synapse-admin-input" required placeholder="Ex: Mon Preset Créatif">
 					</div>
 					<div class="synapse-admin-form-group">
 						<label class="synapse-admin-label" for="preset-key">
@@ -84,7 +84,7 @@
 							<span class="synapse-admin-required">*</span>
 						</label>
 						<input type="text" id="preset-key" name="key" value="{{ preset.key }}" class="synapse-admin-input synapse-admin-font-mono"
-							required placeholder="ex: gemini_flash_creative"
+							required placeholder="ex: mon_preset_creatif"
 							pattern="[a-z0-9_]+" title="Lettres minuscules, chiffres et tirets bas uniquement">
 						<p class="synapse-admin-help-text">Utilisée dans ChatService::ask(['model_preset' => '{{ preset.key ?: 'mon_preset' }}'])</p>
 					</div>
@@ -256,248 +256,8 @@
 	<script>
 		const modelCapabilities = {{ model_capabilities|json_encode|raw }};
 
-const PROVIDER_SCHEMAS = {
-'google_vertex_ai': {
-fields: [
-{
-name: 'vertex_region',
-type: 'select',
-label: 'Région Vertex AI',
-help: 'Région utilisée pour ce preset (override la région du provider)',
-options: [
-{ value: '', label: '— Hériter du provider —' },
-{ value: 'global', label: 'Global (endpoint universel preview)' },
-{ value: 'us-central1', label: 'US Central 1 (Iowa)' },
-{ value: 'us-east1', label: 'US East 1 (Caroline du Sud)' },
-{ value: 'us-east4', label: 'US East 4 (Virginie du Nord)' },
-{ value: 'us-east5', label: 'US East 5 (Columbus)' },
-{ value: 'us-south1', label: 'US South 1 (Dallas)' },
-{ value: 'us-west1', label: 'US West 1 (Oregon)' },
-{ value: 'us-west4', label: 'US West 4 (Las Vegas)' },
-{ value: 'northamerica-northeast1', label: 'Canada Northeast 1 (Montréal)' },
-{ value: 'southamerica-east1', label: 'South America East 1 (São Paulo)' },
-{ value: 'europe-west1', label: 'Europe West 1 (Belgique)' },
-{ value: 'europe-west4', label: 'Europe West 4 (Pays-Bas)' },
-{ value: 'europe-west8', label: 'Europe West 8 (Milan)' },
-{ value: 'europe-west9', label: 'Europe West 9 (Paris)' },
-{ value: 'europe-central2', label: 'Europe Central 2 (Varsovie)' },
-{ value: 'europe-north1', label: 'Europe North 1 (Finlande)' },
-{ value: 'europe-southwest1', label: 'Europe Southwest 1 (Madrid)' },
-{ value: 'asia-northeast1', label: 'Asia Northeast 1 (Tokyo)' },
-{ value: 'asia-northeast3', label: 'Asia Northeast 3 (Séoul)' },
-{ value: 'asia-south1', label: 'Asia South 1 (Mumbai)' },
-{ value: 'asia-southeast1', label: 'Asia Southeast 1 (Singapour)' },
-{ value: 'australia-southeast1', label: 'Australia Southeast 1 (Sydney)' }
-],
-defaultValue: ''
-},
-{
-name: 'thinking.enabled',
-type: 'checkbox',
-label: 'Activer le thinking',
-help: 'Réflexion interne approfondie',
-capability: 'supportsThinking'
-},
-{
-name: 'thinking.budget',
-type: 'number',
-label: 'Budget de réflexion (tokens)',
-help: '128–24576 tokens alloués à la réflexion',
-min: 128,
-max: 24576,
-defaultValue: 1024,
-dependsOn: 'thinking.enabled'
-},
-{
-name: 'safety_settings.enabled',
-type: 'checkbox',
-label: 'Activer les filtres de sécurité',
-help: 'Active les filtres de contenu inapproprié',
-capability: 'supportsSafetySettings'
-},
-{
-name: 'safety_settings.default_threshold',
-type: 'select',
-label: 'Seuil de sécurité par défaut',
-help: 'Niveau de filtrage par défaut',
-options: [
-{
-value: 'OFF',
-label: 'Désactivé'
-}, {
-value: 'BLOCK_NONE',
-label: 'Aucun filtre (scores retournés)'
-}, {
-value: 'BLOCK_ONLY_HIGH',
-label: 'Bloquer haute probabilité'
-}, {
-value: 'BLOCK_MEDIUM_AND_ABOVE',
-label: 'Bloquer moyenne et haute'
-}, {
-value: 'BLOCK_LOW_AND_ABOVE',
-label: 'Bloquer toute probabilité'
-}
-],
-defaultValue: 'BLOCK_MEDIUM_AND_ABOVE',
-dependsOn: 'safety_settings.enabled'
-}, {
-name: 'safety_settings.thresholds.hate_speech',
-type: 'select',
-label: 'Discours haineux',
-help: 'Seuil spécifique',
-options: [
-{
-value: '',
-label: 'Non défini'
-},
-{
-value: 'OFF',
-label: 'Désactivé'
-},
-{
-value: 'BLOCK_NONE',
-label: 'Aucun filtre'
-},
-{
-value: 'BLOCK_ONLY_HIGH',
-label: 'Haute'
-},
-{
-value: 'BLOCK_MEDIUM_AND_ABOVE',
-label: 'Moyenne+'
-}, {
-value: 'BLOCK_LOW_AND_ABOVE',
-label: 'Toute'
-}
-],
-dependsOn: 'safety_settings.enabled'
-}, {
-name: 'safety_settings.thresholds.dangerous_content',
-type: 'select',
-label: 'Contenu dangereux',
-help: 'Seuil spécifique',
-options: [
-{
-value: '',
-label: 'Non défini'
-},
-{
-value: 'OFF',
-label: 'Désactivé'
-},
-{
-value: 'BLOCK_NONE',
-label: 'Aucun filtre'
-},
-{
-value: 'BLOCK_ONLY_HIGH',
-label: 'Haute'
-},
-{
-value: 'BLOCK_MEDIUM_AND_ABOVE',
-label: 'Moyenne+'
-}, {
-value: 'BLOCK_LOW_AND_ABOVE',
-label: 'Toute'
-}
-],
-dependsOn: 'safety_settings.enabled'
-}, {
-name: 'safety_settings.thresholds.harassment',
-type: 'select',
-label: 'Harcèlement',
-help: 'Seuil spécifique',
-options: [
-{
-value: '',
-label: 'Non défini'
-},
-{
-value: 'OFF',
-label: 'Désactivé'
-},
-{
-value: 'BLOCK_NONE',
-label: 'Aucun filtre'
-},
-{
-value: 'BLOCK_ONLY_HIGH',
-label: 'Haute'
-},
-{
-value: 'BLOCK_MEDIUM_AND_ABOVE',
-label: 'Moyenne+'
-}, {
-value: 'BLOCK_LOW_AND_ABOVE',
-label: 'Toute'
-}
-],
-dependsOn: 'safety_settings.enabled'
-}, {
-name: 'safety_settings.thresholds.sexually_explicit',
-type: 'select',
-label: 'Contenu explicite',
-help: 'Seuil spécifique',
-options: [
-{
-value: '',
-label: 'Non défini'
-},
-{
-value: 'OFF',
-label: 'Désactivé'
-},
-{
-value: 'BLOCK_NONE',
-label: 'Aucun filtre'
-},
-{
-value: 'BLOCK_ONLY_HIGH',
-label: 'Haute'
-},
-{
-value: 'BLOCK_MEDIUM_AND_ABOVE',
-label: 'Moyenne+'
-}, {
-value: 'BLOCK_LOW_AND_ABOVE',
-label: 'Toute'
-}
-],
-dependsOn: 'safety_settings.enabled'
-}
-]
-},
-'ovh': {
-fields: [
-{
-name: 'thinking.enabled',
-type: 'checkbox',
-label: 'Activer le thinking',
-help: 'Raisonnement approfondi',
-capability: 'supportsThinking'
-}, {
-name: 'thinking.reasoning_effort',
-type: 'select',
-label: "Niveau d'effort",
-help: 'Intensité du raisonnement',
-options: [
-{
-value: 'low',
-label: 'Faible'
-}, {
-value: 'medium',
-label: 'Moyen'
-}, {
-value: 'high',
-label: 'Élevé'
-}
-],
-defaultValue: 'high',
-dependsOn: 'thinking.enabled'
-}
-]
-}
-};
+const PROVIDER_SCHEMAS = {{ provider_schemas|json_encode|raw }};
+const providerMeta = {{ provider_meta|json_encode|raw }};
 
 function renderDynamicFields(providerName) {
 const container = document.getElementById('dynamic-provider-ui');
@@ -544,9 +304,9 @@ return;
 const value = getNestedValue(currentData, fieldDef.name);
 const isChecked = value === true || value === 'true';
 const fieldValue = value !== undefined ? value : fieldDef.defaultValue;
-// Pour vertex_region : filtrer les options selon les régions disponibles du modèle
-const resolvedFieldDef = (fieldDef.name === 'vertex_region' && caps.vertexRegions && caps.vertexRegions.length > 0)
-? { ...fieldDef, options: fieldDef.options.filter(o => o.value === '' || caps.vertexRegions.includes(o.value)) }
+// Pour provider_region : filtrer les options selon les régions disponibles du modèle
+const resolvedFieldDef = (fieldDef.name === 'provider_region' && caps.providerRegions && caps.providerRegions.length > 0)
+? { ...fieldDef, options: fieldDef.options.filter(o => o.value === '' || caps.providerRegions.includes(o.value)) }
 : fieldDef;
 const fieldEl = document.createElement('div');
 fieldEl.className = 'synapse-admin-form-group';
@@ -559,8 +319,8 @@ if (fieldDef.dependsOn)
 fieldEl.setAttribute('data-depends-on', fieldDef.dependsOn);
 
 container.appendChild(fieldEl);
-// Badge RGPD pour le champ vertex_region
-if (fieldDef.name === 'vertex_region') {
+// Badge RGPD pour le champ provider_region
+if (fieldDef.name === 'provider_region') {
 const badge = document.createElement('div');
 badge.id = 'rgpd-region-badge';
 badge.style.marginTop = '6px';
@@ -757,7 +517,7 @@ if (!caps || (caps.pricingInput == null && caps.pricingOutput == null)) {
 container.innerHTML = '<span class="synapse-admin-text-xs synapse-admin-text-tertiary">—</span>';
 return;
 }
-const c = caps.provider === 'ovh' ? '€' : '$';
+const c = (providerMeta[caps.provider]?.currency === 'EUR') ? '€' : '$';
 let lines = [];
 if (caps.pricingInput != null) lines.push(`<span class="synapse-admin-text-xs">Input <strong>${c}${caps.pricingInput}</strong>/M tok</span>`);
 if (caps.pricingOutput != null) lines.push(`<span class="synapse-admin-text-xs">Output <strong>${c}${caps.pricingOutput}</strong>/M tok</span>`);
@@ -842,7 +602,7 @@ capsKey: 'supportsSafetySettings',
 disableKey: 'safety_settings',
 label: 'Safety Filters',
 icon: 'shield',
-desc: 'Filtres de sécurité configurables (harcèlement, contenu explicite, etc.). Spécifique aux modèles Gemini/Vertex.'
+desc: 'Filtres de sécurité configurables (harcèlement, contenu explicite, etc.).'
 }, {
 capsKey: 'supportsStreaming',
 disableKey: 'streaming',

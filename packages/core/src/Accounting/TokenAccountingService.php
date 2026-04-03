@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore\Accounting;
 
 use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseUsageRecordedEvent;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\TokenUsage;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseLlmCall;
@@ -31,7 +32,9 @@ class TokenAccountingService
     public function __construct(
         private readonly \ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelRepository $modelRepo,
         private readonly EntityManagerInterface $em,
+        #[Autowire('%synapse.token_tracking.reference_currency%')]
         private readonly string $referenceCurrency = 'EUR',
+        #[Autowire('%synapse.token_tracking.currency_rates%')]
         private readonly array $currencyRates = [],
         private readonly ?CacheItemPoolInterface $cache = null,
         private readonly ?EventDispatcherInterface $dispatcher = null,
@@ -240,17 +243,10 @@ class TokenAccountingService
             try {
                 $capabilities = $this->capabilityRegistry->getCapabilities($model);
                 if (null !== $capabilities->pricingInput || null !== $capabilities->pricingOutput) {
-                    // Déduire la devise basée sur le provider
-                    $currency = match ($capabilities->provider) {
-                        'ovh' => 'EUR',
-                        'google_vertex_ai' => 'USD',
-                        default => 'USD',
-                    };
-
                     return [
                         'input' => $capabilities->pricingInput ?? 0.0,
                         'output' => $capabilities->pricingOutput ?? 0.0,
-                        'currency' => $currency,
+                        'currency' => $capabilities->currency,
                     ];
                 }
             } catch (\Throwable $e) {

@@ -79,7 +79,7 @@
 					{% set label   = 'synapse.admin.llm_config.provider.status.unconfigured'|trans(domain='synapse_admin') %}
 				{% endif %}
 
-				{% set providerIcon = provider.name == 'google_vertex_ai' ? 'zap' : (provider.name == 'ovh' ? 'cloud' : 'server') %}
+				{% set providerIcon = provider_meta[provider.name].icon|default('server') %}
 
 				<div class="synapse-admin-card synapse-admin-card--hover {{ variant }}">
 
@@ -296,8 +296,8 @@
 
 									<td>
 										<span class="synapse-admin-badge synapse-admin-badge--neutral">
-											<i data-lucide="{{ model.provider == 'google_vertex_ai' ? 'zap' : (model.provider == 'ovh' ? 'cloud' : 'server') }}"></i>
-											{{ {'google_vertex_ai': 'Google Vertex AI', 'ovh': 'OVH AI'}[model.provider] ?? model.provider|upper }}
+											<i data-lucide="{{ provider_meta[model.provider].icon|default('server') }}"></i>
+											{{ provider_meta[model.provider].label|default(model.provider|upper) }}
 										</span>
 									</td>
 
@@ -471,7 +471,7 @@
 								<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-mono">{{ preset.key }}</div>
 							{% endif %}
 							<div class="synapse-admin-text-sm synapse-admin-text-muted">
-								{{ {'google_vertex_ai': 'Google Vertex AI', 'ovh': 'OVH AI'}[preset.providerName] ?? preset.providerName|upper }}
+								{{ provider_meta[preset.providerName].label|default(preset.providerName|upper) }}
 							</div>
 							<div class="synapse-admin-text-sm synapse-admin-text-muted synapse-admin-font-mono">{{ preset.model }}</div>
 							{% if rgpd is not null %}

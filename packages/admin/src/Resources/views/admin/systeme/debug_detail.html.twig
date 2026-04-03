@@ -396,7 +396,7 @@
 								</div>
 
 								{% if msg.content is iterable %}
-									{# Parts array representation (OpenAI multipart or Gemini/Vertex) #}
+									{# Parts array representation (multipart format) #}
 									<div style="font-size: 0.9rem; color: var(--synapse-admin-text); line-height: 1.5;">
 										{% for part in msg.content %}
 											{% if part.type is defined and part.type == 'text' %}

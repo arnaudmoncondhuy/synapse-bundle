@@ -7,6 +7,7 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 use ArnaudMoncondhuy\SynapseCore\Agent\PresetValidator\PresetValidatorAgent;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\DatabaseConfigProvider;
+use ArnaudMoncondhuy\SynapseCore\Engine\LlmClientRegistry;
 use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\PresetValidator;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
@@ -39,6 +40,7 @@ class ModelPresetController extends AbstractController
         private readonly SynapseModelPresetRepository $presetRepo,
         private readonly SynapseProviderRepository $providerRepo,
         private readonly ModelCapabilityRegistry $capabilityRegistry,
+        private readonly LlmClientRegistry $llmRegistry,
         private readonly DatabaseConfigProvider $configProvider,
         private readonly EntityManagerInterface $em,
         private readonly PermissionCheckerInterface $permissionChecker,
@@ -72,18 +74,16 @@ class ModelPresetController extends AbstractController
 
         // Pré-remplir avec les valeurs de config active
         $activeConfig = $this->configProvider->getConfig();
-        $preset->setProviderName('' !== $activeConfig->provider ? $activeConfig->provider : 'google_vertex_ai');
-        $preset->setModel('' !== $activeConfig->model ? $activeConfig->model : 'gemini-2.5-flash');
+        $defaultProvider = '' !== $activeConfig->provider ? $activeConfig->provider : ($this->llmRegistry->getAvailableProviders()[0] ?? '');
+        $preset->setProviderName($defaultProvider);
+        $preset->setModel('' !== $activeConfig->model ? $activeConfig->model : $this->capabilityRegistry->getFirstModelForProvider($defaultProvider));
 
-        return $this->render('@Synapse/admin/intelligence/preset_edit.html.twig', [
+        return $this->render('@Synapse/admin/intelligence/preset_edit.html.twig', array_merge([
             'preset' => $preset,
             'is_new' => true,
-            'providers' => $this->providerRepo->findAllOrdered(),
-            'models_by_provider' => $this->getModelsByProvider(),
-            'model_capabilities' => $this->getFullModelsCapabilities(),
             'is_valid' => $this->presetValidator->isValid($preset),
             'invalid_reason' => $this->presetValidator->getInvalidReason($preset),
-        ]);
+        ], $this->getPresetEditTemplateData()));
     }
 
     // ─── Édition ───────────────────────────────────────────────────────────────
@@ -104,15 +104,12 @@ class ModelPresetController extends AbstractController
             return $this->redirectToRoute('synapse_admin_configuration_llm', ['tab' => 'presets']);
         }
 
-        return $this->render('@Synapse/admin/intelligence/preset_edit.html.twig', [
+        return $this->render('@Synapse/admin/intelligence/preset_edit.html.twig', array_merge([
             'preset' => $preset,
             'is_new' => false,
-            'providers' => $this->providerRepo->findAllOrdered(),
-            'models_by_provider' => $this->getModelsByProvider(),
-            'model_capabilities' => $this->getFullModelsCapabilities(),
             'is_valid' => $this->presetValidator->isValid($preset),
             'invalid_reason' => $this->presetValidator->getInvalidReason($preset),
-        ]);
+        ], $this->getPresetEditTemplateData()));
     }
 
     // ─── Activation ────────────────────────────────────────────────────────────
@@ -300,8 +297,8 @@ class ModelPresetController extends AbstractController
     private function applyFormData(SynapseModelPreset $preset, array $data): void
     {
         $activeConfig = $this->configProvider->getConfig();
-        $defaultProvider = '' !== $activeConfig->provider ? $activeConfig->provider : 'gemini';
-        $defaultModel = '' !== $activeConfig->model ? $activeConfig->model : 'gemini-2.5-flash';
+        $defaultProvider = '' !== $activeConfig->provider ? $activeConfig->provider : ($this->llmRegistry->getAvailableProviders()[0] ?? '');
+        $defaultModel = '' !== $activeConfig->model ? $activeConfig->model : $this->capabilityRegistry->getFirstModelForProvider($defaultProvider);
 
         $nameVal = $data['name'] ?? 'Model Preset';
         $preset->setName(is_string($nameVal) ? $nameVal : 'Model Preset');
@@ -363,6 +360,26 @@ class ModelPresetController extends AbstractController
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    private function getPresetEditTemplateData(): array
+    {
+        $providerSchemas = [];
+        foreach ($this->llmRegistry->getAvailableProviders() as $name) {
+            $client = $this->llmRegistry->getClientByProvider($name);
+            $providerSchemas[$name] = $client->getProviderOptionsSchema();
+        }
+
+        return [
+            'providers' => $this->providerRepo->findAllOrdered(),
+            'models_by_provider' => $this->getModelsByProvider(),
+            'model_capabilities' => $this->getFullModelsCapabilities(),
+            'provider_schemas' => $providerSchemas,
+            'provider_meta' => $this->llmRegistry->getProvidersMeta(),
+        ];
+    }
+
+    /**
      * @return array<string, array<int, string>>
      */
     private function getModelsByProvider(): array
@@ -379,7 +396,7 @@ class ModelPresetController extends AbstractController
     }
 
     /**
-     * @return array<string, array{provider: string, dimensions: int[], supportsThinking: bool, supportsSafetySettings: bool, supportsTopK: bool, supportsFunctionCalling: bool, supportsStreaming: bool, supportsTextGeneration: bool, supportsEmbedding: bool, supportsImageGeneration: bool, supportsVision: bool, supportsParallelToolCalls: bool, supportsResponseSchema: bool, maxInputTokens: int|null, maxOutputTokens: int|null, deprecatedAt: string|null, vertexRegions: list<string>, rgpdRisk: string|null, pricingInput: float|null, pricingOutput: float|null, pricingOutputImage: float|null}>
+     * @return array<string, array{provider: string, dimensions: int[], supportsThinking: bool, supportsSafetySettings: bool, supportsTopK: bool, supportsFunctionCalling: bool, supportsStreaming: bool, supportsTextGeneration: bool, supportsEmbedding: bool, supportsImageGeneration: bool, supportsVision: bool, supportsParallelToolCalls: bool, supportsResponseSchema: bool, maxInputTokens: int|null, maxOutputTokens: int|null, deprecatedAt: string|null, providerRegions: list<string>, rgpdRisk: string|null, pricingInput: float|null, pricingOutput: float|null, pricingOutputImage: float|null}>
      */
     private function getFullModelsCapabilities(): array
     {
@@ -404,7 +421,7 @@ class ModelPresetController extends AbstractController
                 'maxInputTokens' => $caps->maxInputTokens,
                 'maxOutputTokens' => $caps->maxOutputTokens,
                 'deprecatedAt' => $caps->deprecatedAt,
-                'vertexRegions' => $caps->vertexRegions,
+                'providerRegions' => $caps->providerRegions,
                 'rgpdRisk' => $caps->rgpdRisk,
                 'pricingInput' => $caps->pricingInput,
                 'pricingOutput' => $caps->pricingOutput,
@@ -422,50 +439,12 @@ class ModelPresetController extends AbstractController
      */
     private function validateProviderOptions(string $providerName, array $options, ModelCapabilities $caps): array
     {
-        $validBlockLevels = ['BLOCK_NONE', 'BLOCK_ONLY_HIGH', 'BLOCK_MEDIUM_AND_ABOVE', 'BLOCK_LOW_AND_ABOVE'];
-        $validReasoningEfforts = ['low', 'medium', 'high'];
+        try {
+            $client = $this->llmRegistry->getClientByProvider($providerName);
 
-        if (!$caps->supportsThinking) {
-            unset($options['thinking']);
+            return $client->validateProviderOptions($options, $caps);
+        } catch (\RuntimeException) {
+            return $options;
         }
-        if (!$caps->supportsSafetySettings) {
-            unset($options['safety_settings']);
-        }
-
-        if ('google_vertex_ai' === $providerName) {
-            if ($caps->supportsThinking && isset($options['thinking']) && is_array($options['thinking']) && !empty($options['thinking']['budget'])) {
-                $budget = is_numeric($options['thinking']['budget']) ? (int) $options['thinking']['budget'] : 0;
-                if ($budget < 128 || $budget > 32000) {
-                    $options['thinking']['budget'] = 1024;
-                }
-            }
-            if ($caps->supportsSafetySettings && isset($options['safety_settings']) && is_array($options['safety_settings']) && !empty($options['safety_settings']['default_threshold'])) {
-                $defaultThreshold = $options['safety_settings']['default_threshold'];
-                if (!is_string($defaultThreshold) || !in_array($defaultThreshold, $validBlockLevels, true)) {
-                    unset($options['safety_settings']['default_threshold']);
-                }
-            }
-            foreach (['hate_speech', 'dangerous_content', 'harassment', 'sexually_explicit'] as $filter) {
-                if (isset($options['safety_settings']) && is_array($options['safety_settings']) && isset($options['safety_settings']['thresholds']) && is_array($options['safety_settings']['thresholds']) && isset($options['safety_settings']['thresholds'][$filter])) {
-                    $value = $options['safety_settings']['thresholds'][$filter];
-                    if (is_string($value) && '' !== $value && !in_array($value, $validBlockLevels, true)) {
-                        unset($options['safety_settings']['thresholds'][$filter]);
-                    }
-                }
-            }
-        } elseif ('ovh' === $providerName) {
-            if ($caps->supportsThinking && isset($options['thinking']) && is_array($options['thinking']) && !empty($options['thinking']['reasoning_effort'])) {
-                $effort = $options['thinking']['reasoning_effort'];
-                if (!is_string($effort) || !in_array($effort, $validReasoningEfforts, true)) {
-                    unset($options['thinking']['reasoning_effort']);
-                }
-            }
-            if (isset($options['thinking']) && is_array($options['thinking'])) {
-                unset($options['thinking']['budget']);
-            }
-            unset($options['safety_settings']);
-        }
-
-        return $options;
     }
 }
