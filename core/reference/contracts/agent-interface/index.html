@@ -325,6 +325,26 @@
   
 
       
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../mcp/" class="md-tabs__link">
+          
+  
+  
+  Synapse MCP
+
+        </a>
+      </li>
+    
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -856,14 +876,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/personas-presets.md" class="md-nav__link">
+      <a href="../../../guides/tones-presets/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Personas & Presets
+    Tons & Presets & Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/custom-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Créer un agent en code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../agent-access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contrôle d'accès aux agents
   
 
     
@@ -1293,10 +1369,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#namespace" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Namespace
       
     </span>
   </a>
@@ -1304,10 +1380,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resume-du-contrat" class="md-nav__link">
+  <a href="#contrat-complet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Résumé du Contrat
+        Contrat complet
       
     </span>
   </a>
@@ -1315,10 +1391,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#exemple-agent-ange-gardien-de-securite" class="md-nav__link">
+  <a href="#methodes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Agent "Ange Gardien" de sécurité
+        Méthodes
       
     </span>
   </a>
@@ -1326,10 +1402,65 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conseils-dimplementation" class="md-nav__link">
+  <a href="#alignement-symfonyai-vocabulaire-uniquement-pas-de-migration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'implémentation
+        Alignement symfony/ai (vocabulaire uniquement, pas de migration)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cas-dusage-typiques" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cas d'usage typiques
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exemple-agent-danalyse-de-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemple : Agent d'analyse de document
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execution-programmatique-depuis-lapplication-hote" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exécution programmatique depuis l'application hôte
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enregistrement-automatique" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enregistrement automatique
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voir-aussi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voir aussi
       
     </span>
   </a>
@@ -1360,6 +1491,34 @@
     
   
     AiToolInterface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../status-aware-tool-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StatusAwareTool
   
 
     
@@ -1584,6 +1743,34 @@
     
   
     PermissionChecker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rag-source-provider-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RagSourceProvider
   
 
     
@@ -1841,7 +2028,7 @@
   <span class="md-ellipsis">
     
   
-    PrePrompt
+    Pipeline de Prompt
   
 
     
@@ -2603,6 +2790,381 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synapse MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Synapse MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vue d'ensemble
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Outils MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Outils MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-presets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_presets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-agent-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_agent_test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-agent-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_agent_debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-workflow-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_workflow_run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/update-agent-system-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    update_agent_system_prompt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/sandbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandbox (Phase 10)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -2630,10 +3192,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#namespace" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Namespace
       
     </span>
   </a>
@@ -2641,10 +3203,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resume-du-contrat" class="md-nav__link">
+  <a href="#contrat-complet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Résumé du Contrat
+        Contrat complet
       
     </span>
   </a>
@@ -2652,10 +3214,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#exemple-agent-ange-gardien-de-securite" class="md-nav__link">
+  <a href="#methodes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Agent "Ange Gardien" de sécurité
+        Méthodes
       
     </span>
   </a>
@@ -2663,10 +3225,65 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conseils-dimplementation" class="md-nav__link">
+  <a href="#alignement-symfonyai-vocabulaire-uniquement-pas-de-migration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'implémentation
+        Alignement symfony/ai (vocabulaire uniquement, pas de migration)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cas-dusage-typiques" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cas d'usage typiques
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exemple-agent-danalyse-de-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemple : Agent d'analyse de document
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#execution-programmatique-depuis-lapplication-hote" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exécution programmatique depuis l'application hôte
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enregistrement-automatique" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enregistrement automatique
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voir-aussi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voir aussi
       
     </span>
   </a>
@@ -2691,83 +3308,134 @@
 
 
 <h1 id="agentinterface">AgentInterface</h1>
-<p>L'interface <code>AgentInterface</code> définit des entités d'IA autonomes et spécialisées. Contrairement à un simple appel LLM, un Agent possède son propre "cerveau" (Prompt Système), ses propres outils et un mode de pensée spécifique.</p>
-<h2 id="pourquoi-lutiliser">🛠 Pourquoi l'utiliser ?</h2>
-<ul>
-<li><strong>Spécialisation</strong> : Créez un agent "Expert SQL", un agent "Traducteur" et un agent "Support Client" avec des comportements distincts.</li>
-<li><strong>Autonomie</strong> : Un agent peut décider lui-même d'appeler plusieurs outils à la suite pour résoudre un problème complexe.</li>
-<li><strong>Réutilisabilité</strong> : Encapsulez toute la logique complexe de prompt engineering dans une classe dédiée.</li>
-</ul>
-<hr />
-<h2 id="resume-du-contrat">📋 Résumé du Contrat</h2>
+<p>L'interface <code>AgentInterface</code> définit un agent IA capable d'accomplir des tâches complexes impliquant potentiellement plusieurs appels LLM, des boucles de raisonnement ou l'orchestration de sous-systèmes.</p>
+<p>À la différence d'un <code>AiToolInterface</code> (fonction simple appelée par le LLM), un agent est invoqué directement par l'application pour accomplir un objectif de haut niveau.</p>
+<h2 id="namespace">Namespace</h2>
+<div class="highlight"><pre><span></span><code>ArnaudMoncondhuy\SynapseCore\Contract\AgentInterface
+</code></pre></div>
+<h2 id="contrat-complet">Contrat complet</h2>
+<div class="highlight"><pre><span></span><code><span class="x">use ArnaudMoncondhuy\SynapseCore\Agent\Input;</span>
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Agent\Output;</span>
+
+<span class="x">interface AgentInterface</span>
+<span class="x">{</span>
+<span class="x">    public function getName(): string;</span>
+<span class="x">    public function getDescription(): string;</span>
+<span class="x">    public function call(Input $input, array $options = []): Output;</span>
+<span class="x">}</span>
+</code></pre></div>
+<h2 id="methodes">Méthodes</h2>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Méthode</th>
-<th style="text-align: left;">Rôle</th>
+<th>Méthode</th>
+<th>Rôle</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>getName()</code></td>
-<td style="text-align: left;">Nom affichable de l'agent.</td>
+<td><code>getName(): string</code></td>
+<td>Identifiant unique de l'agent (recommandé : snake_case, ex : <code>'preset_validator'</code>).</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>getSystemPrompt()</code></td>
-<td style="text-align: left;">La "personnalité" et les instructions de base de l'agent.</td>
+<td><code>getDescription(): string</code></td>
+<td>Description en langage naturel — utilisée dans l'admin et pour l'auto-documentation.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>getTools()</code></td>
-<td style="text-align: left;">Liste des instances <code>AiToolInterface</code> que cet agent peut utiliser.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>getLlmConfig()</code></td>
-<td style="text-align: left;">Paramètres spécifiques (température élevée pour la création, basse pour la précision).</td>
+<td><code>call(Input, array): Output</code></td>
+<td>Exécute la logique de l'agent. Retourne un <code>Output</code> structuré (réponse texte, données, usage, debugId, ...).</td>
 </tr>
 </tbody>
 </table>
+<h2 id="alignement-symfonyai-vocabulaire-uniquement-pas-de-migration">Alignement <code>symfony/ai</code> (vocabulaire uniquement, pas de migration)</h2>
+<p>Les noms <code>call()</code>, <code>Input</code> et <code>Output</code> sont volontairement alignés sur <code>Symfony\AI\Agent\AgentInterface</code> / <code>Symfony\AI\Agent\Input</code> / <code>Symfony\AI\Agent\Output</code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Pas de migration prévue</p>
+<p>C'est un alignement de <strong>vocabulaire</strong>, pas un chemin de migration. <code>symfony/ai</code> est encore en développement et aucune adoption n'est planifiée. L'intérêt est de ne pas construire une "deuxième réalité" qui serait douloureuse à rapprocher plus tard si le jour vient. Une réévaluation éventuelle n'est pas attendue avant au moins un an, et même à ce moment-là rien n'est décidé.</p>
+</div>
+<p>Écarts assumés :</p>
+<ul>
+<li><code>getDescription()</code> est un ajout Synapse (utile pour l'admin UI), absent de <code>symfony/ai</code>.</li>
+<li>Le contexte d'exécution (<code>AgentContext</code> : traçabilité, profondeur, budget) est transporté via <code>$options['context']</code>, pas en paramètre typé. Cela garde la signature <code>call()</code> <strong>call-compatible mot pour mot</strong> avec <code>symfony/ai</code>.</li>
+</ul>
+<div class="admonition info">
+<p class="admonition-title">AgentInterface vs SynapseAgent</p>
+<p><code>AgentInterface</code> est le contrat PHP pour les <strong>agents "code"</strong> (classes fournies par le bundle ou l'application hôte, découvertes par auto-configuration DI). <code>SynapseAgent</code> est l'entité Doctrine pour les <strong>agents "config"</strong> (système prompt, preset, ton, outils configurés depuis l'admin). Les deux mondes sont unifiés derrière le même contrat via <a href="../../../src/Agent/AgentResolver.php"><code>AgentResolver</code></a> et la classe d'adaptation <code>ConfiguredAgent</code>.</p>
+</div>
 <hr />
-<h2 id="exemple-agent-ange-gardien-de-securite">🚀 Exemple : Agent "Ange Gardien" de sécurité</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">GuardianAgent.php</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="x">namespace App\Synapse\Agent;</span>
+<h2 id="cas-dusage-typiques">Cas d'usage typiques</h2>
+<ul>
+<li>Analyse multi-documents complexe</li>
+<li>Validation d'un preset par simulation (<a href="../../../src/Agent/PresetValidator/PresetValidatorAgent.php"><code>PresetValidatorAgent</code></a>)</li>
+<li>Génération de rapports structurés après plusieurs étapes de réflexion</li>
+<li>Orchestration de sous-agents (via <code>AgentResolver</code> + <code>AgentContext::createChild()</code>, dans la limite de <code>synapse.agents.max_depth</code>)</li>
+</ul>
+<hr />
+<h2 id="exemple-agent-danalyse-de-document">Exemple : Agent d'analyse de document</h2>
+<div class="highlight"><pre><span></span><code><span class="x">namespace App\Agent;</span>
 
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Agent\Input;</span>
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Agent\Output;</span>
 <span class="x">use ArnaudMoncondhuy\SynapseCore\Contract\AgentInterface;</span>
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;</span>
 
-<span class="x">class GuardianAgent implements AgentInterface</span>
+<span class="x">final class DocumentAnalyzerAgent implements AgentInterface</span>
 <span class="x">{</span>
-<span class="x">    public function getName(): string { return &#39;Guardian&#39;; }</span>
+<span class="x">    public function __construct(private readonly ChatService $chatService) {}</span>
 
-<span class="x">    public function getSystemPrompt(): string</span>
+<span class="x">    public function getName(): string</span>
 <span class="x">    {</span>
-<span class="x">        return &quot;Tu es un expert en sécurité. Ton rôle est d&#39;analyser les messages pour détecter des contenus dangereux ou inappropriés.&quot;;</span>
+<span class="x">        return &#39;document_analyzer&#39;;</span>
 <span class="x">    }</span>
 
-<span class="x">    public function getTools(): array </span>
+<span class="x">    public function getDescription(): string</span>
 <span class="x">    {</span>
-<span class="x">        return []; // Un agent peut n&#39;avoir aucun outil</span>
+<span class="x">        return &#39;Analyse un document et en extrait les points clés, les risques et les actions suggérées.&#39;;</span>
 <span class="x">    }</span>
 
-<span class="x">    public function getLlmConfig(): array</span>
+<span class="x">    public function call(Input $input, array $options = []): Output</span>
 <span class="x">    {</span>
-<span class="x">        return [&#39;temperature&#39; =&gt; 0.1]; // Très précis, peu créatif</span>
+<span class="x">        $result = $this-&gt;chatService-&gt;ask(</span>
+<span class="x">            &quot;Analyse ce document et retourne : 1) les points clés 2) les risques 3) les actions suggérées.\n\n&quot;</span>
+<span class="x">                . $input-&gt;getMessage(),</span>
+<span class="x">            [&#39;stateless&#39; =&gt; true, &#39;debug&#39; =&gt; true],</span>
+<span class="x">            $input-&gt;getAttachments(),</span>
+<span class="x">        );</span>
+
+<span class="x">        return Output::fromChatServiceResult($result);</span>
 <span class="x">    }</span>
 <span class="x">}</span>
 </code></pre></div>
-</div>
-</div>
-</div>
+<h2 id="execution-programmatique-depuis-lapplication-hote">Exécution programmatique depuis l'application hôte</h2>
+<div class="highlight"><pre><span></span><code><span class="x">use ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver;</span>
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Agent\Input;</span>
+
+<span class="x">public function __construct(private readonly AgentResolver $agents) {}</span>
+
+<span class="x">public function analyze(string $document): array</span>
+<span class="x">{</span>
+<span class="x">    $context = $this-&gt;agents-&gt;createRootContext(userId: &#39;user-42&#39;, origin: &#39;direct&#39;);</span>
+<span class="x">    $agent = $this-&gt;agents-&gt;resolve(&#39;document_analyzer&#39;, $context);</span>
+
+<span class="x">    $output = $agent-&gt;call(</span>
+<span class="x">        Input::ofMessage($document),</span>
+<span class="x">        [&#39;context&#39; =&gt; $context],</span>
+<span class="x">    );</span>
+
+<span class="x">    return $output-&gt;getData();</span>
+<span class="x">}</span>
+</code></pre></div>
 <hr />
-<h2 id="conseils-dimplementation">💡 Conseils d'implémentation</h2>
-<blockquote>
-<p>[!TIP]
-<strong>Agents dynamiques</strong> : Vous pouvez implémenter cette interface sur une entité Doctrine pour permettre la création d'agents personnalisés directement depuis votre interface d'administration.</p>
-</blockquote>
+<h2 id="enregistrement-automatique">Enregistrement automatique</h2>
+<p>Rien à déclarer côté hôte : toute classe qui implémente <code>AgentInterface</code> et qui se trouve dans les services auto-découverts (<code>src/</code> par défaut sous <code>services.yaml</code>) est taggée automatiquement <code>synapse.agent</code> via <code>registerForAutoconfiguration()</code> du bundle. Le <code>CodeAgentRegistry</code> la prend en compte, et <code>AgentResolver::resolve($name)</code> sait la retourner.</p>
+<p>Voir le guide <a href="../../../guides/custom-agents/">Custom Agents</a> pour un exemple complet.</p>
+<hr />
+<h2 id="voir-aussi">Voir aussi</h2>
 <ul>
-<li><strong>Prompt Engineering</strong> : Le texte retourné par <code>getSystemPrompt</code> est injecté au sommet de chaque conversation. C'est ici que vous devez définir les limites et le ton de l'intelligence.</li>
+<li><a href="../../../guides/custom-agents/">Custom Agents (host-side)</a> — premier agent code en 20 lignes</li>
+<li><a href="../../../guides/tones-presets/#3-les-agents">Agents via l'admin</a> — agents configurés sans code</li>
+<li><a href="../../../agent-access-control/">Contrôle d'accès aux agents</a> — restreindre l'accès par rôle</li>
 </ul>
-<hr />
 
 
 

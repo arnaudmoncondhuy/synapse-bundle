@@ -325,6 +325,26 @@
   
 
       
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../mcp/" class="md-tabs__link">
+          
+  
+  
+  Synapse MCP
+
+        </a>
+      </li>
+    
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -856,14 +876,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/personas-presets.md" class="md-nav__link">
+      <a href="../../guides/tones-presets/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Personas & Presets
+    Tons & Presets & Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/custom-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Créer un agent en code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contrôle d'accès aux agents
   
 
     
@@ -1289,6 +1365,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../contracts/status-aware-tool-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StatusAwareTool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../contracts/config-provider-interface/" class="md-nav__link">
         
   
@@ -1493,6 +1597,34 @@
     
   
     PermissionChecker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contracts/rag-source-provider-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RagSourceProvider
   
 
     
@@ -1750,7 +1882,7 @@
   <span class="md-ellipsis">
     
   
-    PrePrompt
+    Pipeline de Prompt
   
 
     
@@ -2125,10 +2257,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#entites-principales" class="md-nav__link">
+  <a href="#entites-a-etendre-obligatoires-pour-la-persistance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Entités principales
+        Entités à étendre (obligatoires pour la persistance)
       
     </span>
   </a>
@@ -2147,13 +2279,141 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#entites-de-suivi-quotas" class="md-nav__link">
+  <a href="#entites-workflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Entités de suivi &amp; Quotas
+        Entités Workflow
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Entités Workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#synapseworkflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseWorkflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synapseworkflowrun" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseWorkflowRun
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pattern-sandbox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern Sandbox
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pattern Sandbox">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entites-concernees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entités concernées
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regles-de-filtrage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Règles de filtrage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methode-de-cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Méthode de cleanup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entites-de-suivi-comptabilite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entités de suivi &amp; comptabilité
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Entités de suivi &amp; comptabilité">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#synapsellmcall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseLlmCall
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synapsespendinglimit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseSpendingLimit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synapsespendinglimitlog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseSpendingLimitLog
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2167,18 +2427,6 @@
   </a>
   
     <nav class="md-nav" aria-label="Entités RAG &amp; Mémoire Sémantique">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#sources-rag" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Sources RAG
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Sources RAG">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2203,23 +2451,6 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pieces-jointes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pièces jointes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Pièces jointes">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
   <a href="#synapsemessageattachment" class="md-nav__link">
     <span class="md-ellipsis">
@@ -2230,23 +2461,6 @@
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#memoire-vectorielle" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Mémoire vectorielle
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Mémoire vectorielle">
-      <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#synapsevectormemory" class="md-nav__link">
@@ -2259,33 +2473,22 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#suivi-quotas-complements" class="md-nav__link">
+          <li class="md-nav__item">
+  <a href="#synapsedebuglog" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Suivi &amp; Quotas (Compléments)
+        SynapseDebugLog
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Suivi &amp; Quotas (Compléments)">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
-  <a href="#synapsespendinglimitlog" class="md-nav__link">
+  <a href="#requetes-racines-findroots" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SynapseSpendingLimitLog
+        Requêtes racines (findRoots)
       
     </span>
   </a>
@@ -2732,6 +2935,381 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synapse MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Synapse MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vue d'ensemble
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Outils MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Outils MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/list-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/list-presets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_presets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/run-agent-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_agent_test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/run-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/inspect-agent-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_agent_debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/inspect-workflow-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_workflow_run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/update-agent-system-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    update_agent_system_prompt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/sandbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandbox (Phase 10)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -2759,10 +3337,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#entites-principales" class="md-nav__link">
+  <a href="#entites-a-etendre-obligatoires-pour-la-persistance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Entités principales
+        Entités à étendre (obligatoires pour la persistance)
       
     </span>
   </a>
@@ -2781,13 +3359,141 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#entites-de-suivi-quotas" class="md-nav__link">
+  <a href="#entites-workflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Entités de suivi &amp; Quotas
+        Entités Workflow
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Entités Workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#synapseworkflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseWorkflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synapseworkflowrun" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseWorkflowRun
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pattern-sandbox" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pattern Sandbox
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pattern Sandbox">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entites-concernees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entités concernées
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regles-de-filtrage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Règles de filtrage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methode-de-cleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Méthode de cleanup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entites-de-suivi-comptabilite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entités de suivi &amp; comptabilité
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Entités de suivi &amp; comptabilité">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#synapsellmcall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseLlmCall
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synapsespendinglimit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseSpendingLimit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synapsespendinglimitlog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseSpendingLimitLog
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2801,18 +3507,6 @@
   </a>
   
     <nav class="md-nav" aria-label="Entités RAG &amp; Mémoire Sémantique">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#sources-rag" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Sources RAG
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Sources RAG">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2837,23 +3531,6 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pieces-jointes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pièces jointes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Pièces jointes">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
   <a href="#synapsemessageattachment" class="md-nav__link">
     <span class="md-ellipsis">
@@ -2864,23 +3541,6 @@
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#memoire-vectorielle" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Mémoire vectorielle
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Mémoire vectorielle">
-      <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#synapsevectormemory" class="md-nav__link">
@@ -2893,33 +3553,22 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#suivi-quotas-complements" class="md-nav__link">
+          <li class="md-nav__item">
+  <a href="#synapsedebuglog" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Suivi &amp; Quotas (Compléments)
+        SynapseDebugLog
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Suivi &amp; Quotas (Compléments)">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
-  <a href="#synapsespendinglimitlog" class="md-nav__link">
+  <a href="#requetes-racines-findroots" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SynapseSpendingLimitLog
+        Requêtes racines (findRoots)
       
     </span>
   </a>
@@ -2949,300 +3598,610 @@
 
 
 <h1 id="entites-doctrine">Entités Doctrine</h1>
-<p>Synapse Core utilise des <code>MappedSuperclass</code> que vous devez étendre dans votre application pour activer la persistance.</p>
-<h2 id="entites-principales">Entités principales</h2>
+<p>Synapse Core utilise des entités Doctrine <code>MappedSuperclass</code> que vous étendez dans votre application pour activer la persistance.</p>
+<h2 id="entites-a-etendre-obligatoires-pour-la-persistance">Entités à étendre (obligatoires pour la persistance)</h2>
 <ul>
-<li><strong>SynapseConversation</strong> : Stocke les métadonnées de la discussion (titre, propriétaire, date).</li>
-<li><strong>SynapseMessage</strong> : Stocke le contenu des échanges (rôle, contenu texte, calls outils).</li>
+<li><strong><code>SynapseConversation</code></strong> : Stocke les métadonnées de la discussion (titre, propriétaire, date, statut).</li>
+<li><strong><code>SynapseMessage</code></strong> : Stocke le contenu des échanges (rôle, contenu texte, calls outils).</li>
 </ul>
 <h2 id="entites-de-configuration">Entités de configuration</h2>
 <ul>
-<li><strong>SynapseModelPreset</strong> : Configuration technique d’un modèle (température, outils, etc.).</li>
-<li><strong>SynapseProvider</strong> : Credentials chiffrés pour les fournisseurs (Gemini, OpenAI).</li>
-<li><strong>SynapseModel</strong> : Métadonnées et tarification des modèles LLM.</li>
-<li><strong>SynapseAgent</strong> : Configuration d’agent (system prompt, preset, ton, outils autorisés, sources RAG, accès contrôlé).</li>
-<li><strong>SynapseTone</strong> : Styles de réponse (emoji, instructions de ton).</li>
-<li><strong>SynapseConfig</strong> : Paramètres globaux (Rétention, Langue, Chunking, Vector Store actif).</li>
+<li><strong><code>SynapseModelPreset</code></strong> : Configuration technique d'un modèle (température, streaming, max_tokens, options provider, etc.). Supporte le <a href="#pattern-sandbox">pattern sandbox</a>.</li>
+<li><strong><code>SynapseProvider</code></strong> : Credentials chiffrés pour les fournisseurs (Gemini, OpenAI, OVH, etc.).</li>
+<li><strong><code>SynapseModel</code></strong> : Métadonnées et tarification des modèles LLM.</li>
+<li><strong><code>SynapseAgent</code></strong> : Configuration d'agent (system prompt, preset, ton, outils autorisés, sources RAG, accès contrôlé). Supporte le <a href="#pattern-sandbox">pattern sandbox</a>.</li>
+<li><strong><code>SynapseTone</code></strong> : Styles de réponse (emoji, instructions de ton).</li>
+<li><strong><code>SynapseConfig</code></strong> : Paramètres globaux (rétention, langue, chunking, vector store actif).</li>
 </ul>
-<h2 id="entites-de-suivi-quotas">Entités de suivi &amp; Quotas</h2>
+<h2 id="entites-workflow">Entités Workflow</h2>
+<h3 id="synapseworkflow"><code>SynapseWorkflow</code></h3>
+<p>Définition d'un pipeline multi-agents. Supporte le <a href="#pattern-sandbox">pattern sandbox</a>.</p>
+<p>La définition JSON suit le format pivot :</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;steps&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;step1&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;agent_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mon_agent&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;input_mapping&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">      </span><span class="nt">&quot;output_key&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;resultat&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;outputs&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;final&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;$.steps.step1.output.answer&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Toute modification du champ <code>definition</code> incrémente automatiquement <code>version</code>, garantissant la traçabilité historique.</p>
+<h3 id="synapseworkflowrun"><code>SynapseWorkflowRun</code></h3>
+<p>Instance d'exécution d'un <code>SynapseWorkflow</code>. Un run est mutable pendant son exécution (statut, step courant, timings) et devient immuable une fois terminé.</p>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>workflowRunId</code></td>
+<td><code>string(36)</code></td>
+<td>UUID logique propagé dans <code>AgentContext</code> et référencé par les <code>SynapseDebugLog</code></td>
+</tr>
+<tr>
+<td><code>workflowKey</code></td>
+<td><code>string(100)</code></td>
+<td>Clé dénormalisée pour survivre à la suppression de la définition</td>
+</tr>
+<tr>
+<td><code>workflowVersion</code></td>
+<td><code>integer</code></td>
+<td>Version de la définition au moment du run</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>enum</code></td>
+<td><code>running</code>, <code>completed</code>, <code>failed</code></td>
+</tr>
+<tr>
+<td><code>currentStepIndex</code></td>
+<td><code>integer</code></td>
+<td>Index de la dernière étape exécutée</td>
+</tr>
+<tr>
+<td><code>stepsCount</code></td>
+<td><code>integer</code></td>
+<td>Nombre total d'étapes</td>
+</tr>
+<tr>
+<td><code>input</code></td>
+<td><code>json</code></td>
+<td>Données d'entrée</td>
+</tr>
+<tr>
+<td><code>output</code></td>
+<td><code>json</code></td>
+<td>Sorties produites</td>
+</tr>
+<tr>
+<td><code>errorMessage</code></td>
+<td><code>text</code></td>
+<td>Message d'erreur si <code>failed</code></td>
+</tr>
+<tr>
+<td><code>totalTokens</code></td>
+<td><code>integer</code></td>
+<td>Tokens totaux consommés</td>
+</tr>
+<tr>
+<td><code>durationSeconds</code></td>
+<td><code>float</code></td>
+<td>Durée en secondes</td>
+</tr>
+<tr>
+<td><code>startedAt</code></td>
+<td><code>datetime_immutable</code></td>
+<td>Début</td>
+</tr>
+<tr>
+<td><code>completedAt</code></td>
+<td><code>datetime_immutable</code></td>
+<td>Fin (nullable si encore en cours)</td>
+</tr>
+</tbody>
+</table>
+<p>La relation vers <code>SynapseWorkflow</code> est <code>nullable</code> avec <code>onDelete: SET NULL</code> : les runs historiques survivent à la suppression de la définition grâce au champ <code>workflowKey</code> dénormalisé.</p>
+<h2 id="pattern-sandbox">Pattern Sandbox</h2>
+<p>Le pattern sandbox est utilisé par les <a href="../../../mcp/docs/tools/sandbox.md">outils MCP</a> pour créer des entités temporaires de test.</p>
+<h3 id="entites-concernees">Entités concernées</h3>
 <ul>
-<li><strong>SynapseTokenUsage</strong> : Historique exhaustif de la consommation de jetons et des coûts.</li>
-<li><strong>SynapseSpendingLimit</strong> : Plafonds de dépense par utilisateur, mission ou preset.</li>
+<li><code>SynapseAgent</code> — champ <code>isSandbox boolean DEFAULT false</code></li>
+<li><code>SynapseWorkflow</code> — champ <code>isSandbox boolean DEFAULT false</code></li>
+<li><code>SynapseModelPreset</code> — champ <code>isSandbox boolean DEFAULT false</code></li>
 </ul>
-<h2 id="entites-rag-memoire-semantique">Entités RAG &amp; Mémoire Sémantique</h2>
-<h3 id="sources-rag">Sources RAG</h3>
-<h4 id="synapseragsource"><code>SynapseRagSource</code></h4>
-<p>Représente une source de documents indexés (Google Drive, Notion, fichiers locaux, etc.).</p>
+<h3 id="regles-de-filtrage">Règles de filtrage</h3>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Colonne</th>
-<th style="text-align: left;">Type</th>
-<th style="text-align: left;">Description</th>
+<th>Méthode</th>
+<th>Filtre sandbox</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>slug</code></td>
-<td style="text-align: left;"><code>string(255)</code></td>
-<td style="text-align: left;">Identifiant unique (ex: <code>lycee_intranet</code>)</td>
+<td><code>findAllActive()</code></td>
+<td><code>isSandbox = false</code> — exclut les sandbox</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>name</code></td>
-<td style="text-align: left;"><code>string(255)</code></td>
-<td style="text-align: left;">Nom d'affichage</td>
+<td><code>findAllOrdered()</code></td>
+<td><code>isSandbox = false</code> — exclut les sandbox</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>description</code></td>
-<td style="text-align: left;"><code>text</code></td>
-<td style="text-align: left;">Description longue</td>
+<td><code>findAllPresets()</code></td>
+<td><code>isSandbox = false</code> — exclut les sandbox</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>isActive</code></td>
-<td style="text-align: left;"><code>boolean</code></td>
-<td style="text-align: left;">Activé ou désactivé</td>
+<td><code>findByKey($key)</code></td>
+<td>Aucun filtre — inclut les sandbox</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>documentCount</code></td>
-<td style="text-align: left;"><code>integer</code></td>
-<td style="text-align: left;">Nombre total de documents indexés</td>
+<td><code>findActive()</code></td>
+<td>Aucun filtre — inclut les sandbox</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>lastIndexedAt</code></td>
-<td style="text-align: left;"><code>datetime_immutable</code></td>
-<td style="text-align: left;">Dernière réindexation complète</td>
+<td><code>findActiveByKey($key)</code></td>
+<td>Aucun filtre — inclut les sandbox</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>indexingStatus</code></td>
-<td style="text-align: left;"><code>string(50)</code></td>
-<td style="text-align: left;"><code>pending</code>, <code>indexing</code>, <code>done</code>, <code>failed</code></td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>lastError</code></td>
-<td style="text-align: left;"><code>text</code></td>
-<td style="text-align: left;">Message d'erreur si indexation échouée</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>totalFiles</code></td>
-<td style="text-align: left;"><code>integer</code></td>
-<td style="text-align: left;">Nombre total de fichiers traités</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>processedFiles</code></td>
-<td style="text-align: left;"><code>integer</code></td>
-<td style="text-align: left;">Nombre de fichiers avec succès (suivi progression)</td>
+<td><code>findSandbox()</code></td>
+<td><code>isSandbox = true</code> — retourne uniquement les sandbox</td>
 </tr>
 </tbody>
 </table>
-<h4 id="synapseragdocument"><code>SynapseRagDocument</code></h4>
-<p>Chunk vectorisé d'un document RAG.</p>
+<p>Les entités sandbox sont <strong>invisibles dans l'admin et le chat</strong> (les listings utilisent <code>findAllActive/Ordered/Presets</code>) mais <strong>résolvables pour l'exécution</strong> (le moteur utilise <code>findByKey</code> / <code>findActiveByKey</code>).</p>
+<h3 id="methode-de-cleanup">Méthode de cleanup</h3>
+<p><code>SynapseWorkflowRunRepository::deleteByWorkflowKeys(array $keys): int</code> supprime en lot les runs associés à une liste de workflow keys — utilisé par <code>cleanup_sandbox</code> avant de supprimer les workflows eux-mêmes.</p>
+<h2 id="entites-de-suivi-comptabilite">Entités de suivi &amp; comptabilité</h2>
+<h3 id="synapsellmcall"><code>SynapseLlmCall</code></h3>
+<p>Enregistrement atomique d'un appel LLM. Table centrale du token accounting.</p>
+<p>Chaque appel LLM — qu'il provienne du chat, d'une génération de titre, d'une tâche automatisée ou d'un agent — produit une ligne dans cette table. Les tables <code>synapse_conversation</code> et <code>synapse_message</code> référencent <code>synapse_llm_call</code> via <code>llm_call_id</code>.</p>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Colonne</th>
-<th style="text-align: left;">Type</th>
-<th style="text-align: left;">Description</th>
+<th>Colonne</th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>source</code></td>
-<td style="text-align: left;">FK</td>
-<td style="text-align: left;">Lien vers <code>SynapseRagSource</code> (CASCADE DELETE)</td>
+<td><code>callId</code></td>
+<td><code>string(36)</code></td>
+<td>UUID v4 unique de l'appel</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>content</code></td>
-<td style="text-align: left;"><code>text</code></td>
-<td style="text-align: left;">Contenu du chunk</td>
+<td><code>module</code></td>
+<td><code>string</code></td>
+<td>Module source (ex: <code>chat</code>, <code>title</code>, <code>rag</code>)</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>embedding</code></td>
-<td style="text-align: left;"><code>json</code></td>
-<td style="text-align: left;">Vecteur numérique d'embedding (float array)</td>
+<td><code>model</code></td>
+<td><code>string</code></td>
+<td>Identifiant du modèle utilisé</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>metadata</code></td>
-<td style="text-align: left;"><code>json</code></td>
-<td style="text-align: left;">Métadonnées : <code>source_name</code>, <code>file_path</code>, <code>page_number</code>, etc.</td>
+<td><code>provider</code></td>
+<td><code>string</code></td>
+<td>Provider utilisé (ex: <code>gemini</code>)</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>chunkIndex</code></td>
-<td style="text-align: left;"><code>integer</code></td>
-<td style="text-align: left;">Numéro du chunk dans le document original</td>
+<td><code>promptTokens</code></td>
+<td><code>integer</code></td>
+<td>Tokens en entrée</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>totalChunks</code></td>
-<td style="text-align: left;"><code>integer</code></td>
-<td style="text-align: left;">Nombre total de chunks du document</td>
+<td><code>completionTokens</code></td>
+<td><code>integer</code></td>
+<td>Tokens générés</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>sourceIdentifier</code></td>
-<td style="text-align: left;"><code>string(255)</code></td>
-<td style="text-align: left;">Identifiant unique dans la source (ex: Google Drive file ID)</td>
+<td><code>totalTokens</code></td>
+<td><code>integer</code></td>
+<td>Total tokens</td>
+</tr>
+<tr>
+<td><code>costModel</code></td>
+<td><code>float</code></td>
+<td>Coût calculé dans la devise du provider</td>
+</tr>
+<tr>
+<td><code>costReference</code></td>
+<td><code>float</code></td>
+<td>Coût converti en devise de référence</td>
+</tr>
+<tr>
+<td><code>presetId</code></td>
+<td><code>?integer</code></td>
+<td>ID du preset utilisé</td>
+</tr>
+<tr>
+<td><code>agentId</code></td>
+<td><code>?integer</code></td>
+<td>ID de l'agent utilisé</td>
+</tr>
+<tr>
+<td><code>userId</code></td>
+<td><code>?string</code></td>
+<td>Identifiant de l'utilisateur</td>
+</tr>
+<tr>
+<td><code>conversationId</code></td>
+<td><code>?string</code></td>
+<td>ULID de la conversation</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td><code>datetime_immutable</code></td>
+<td>Date de l'appel</td>
 </tr>
 </tbody>
 </table>
-<h3 id="pieces-jointes">Pièces jointes</h3>
-<h4 id="synapsemessageattachment"><code>SynapseMessageAttachment</code></h4>
-<p>Fichiers téléchargés attachés aux messages (images, documents, etc.).</p>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Colonne</th>
-<th style="text-align: left;">Type</th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><code>id</code></td>
-<td style="text-align: left;">UUID</td>
-<td style="text-align: left;">Clé primaire</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>message</code></td>
-<td style="text-align: left;">FK</td>
-<td style="text-align: left;">Lien vers <code>SynapseMessage</code></td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>mimeType</code></td>
-<td style="text-align: left;"><code>string(100)</code></td>
-<td style="text-align: left;">Type MIME (ex: <code>image/png</code>)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>filePath</code></td>
-<td style="text-align: left;"><code>string(500)</code></td>
-<td style="text-align: left;">Chemin disque (ex: <code>var/uploads/uuid.png</code>)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>createdAt</code></td>
-<td style="text-align: left;"><code>datetime_immutable</code></td>
-<td style="text-align: left;">Date du téléchargement</td>
-</tr>
-</tbody>
-</table>
-<h3 id="memoire-vectorielle">Mémoire vectorielle</h3>
-<h4 id="synapsevectormemory"><code>SynapseVectorMemory</code></h4>
-<p>Stocke les vecteurs d'embeddings et leurs contenus pour la recherche sémantique et la mémoire conversationnelle.</p>
-<table>
-<thead>
-<tr>
-<th style="text-align: left;">Colonne</th>
-<th style="text-align: left;">Type</th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: left;"><code>embedding</code></td>
-<td style="text-align: left;"><code>json</code></td>
-<td style="text-align: left;">Vecteur numérique généré par le modèle d'embedding</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>payload</code></td>
-<td style="text-align: left;"><code>json</code></td>
-<td style="text-align: left;">Métadonnées brutes (texte, source, ids)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>content</code></td>
-<td style="text-align: left;"><code>text</code></td>
-<td style="text-align: left;">Texte brut dénormalisé (pour affichage dans le Privacy Dashboard)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>user_id</code></td>
-<td style="text-align: left;"><code>string(255)</code></td>
-<td style="text-align: left;">Propriétaire du souvenir — compatible UUID et entier</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>scope</code></td>
-<td style="text-align: left;"><code>string(20)</code></td>
-<td style="text-align: left;"><code>user</code> (permanent) ou <code>conversation</code> (éphémère)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>conversation_id</code></td>
-<td style="text-align: left;"><code>string(255)</code></td>
-<td style="text-align: left;">Lien vers la conversation d'origine (optionnel)</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>source_type</code></td>
-<td style="text-align: left;"><code>string(20)</code></td>
-<td style="text-align: left;"><code>fact</code>, <code>document</code>, <code>manual</code> — prépare le support d'upload de fichiers</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>created_at</code></td>
-<td style="text-align: left;"><code>datetime_immutable</code></td>
-<td style="text-align: left;">Date de création du souvenir</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p>[!NOTE]
-Reportez-vous au guide <a href="../../guides/semantic-memory/">Mémoire Sémantique</a> pour l'utilisation et au guide <a href="../../guides/rle-management/">Persistance</a> pour les détails Doctrine.</p>
-</blockquote>
-<h2 id="suivi-quotas-complements">Suivi &amp; Quotas (Compléments)</h2>
+<h3 id="synapsespendinglimit"><code>SynapseSpendingLimit</code></h3>
+<p>Plafonds de dépense par utilisateur, agent ou preset.</p>
 <h3 id="synapsespendinglimitlog"><code>SynapseSpendingLimitLog</code></h3>
 <p>Historique des dépassements de limite de dépense.</p>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Colonne</th>
-<th style="text-align: left;">Type</th>
-<th style="text-align: left;">Description</th>
+<th>Colonne</th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>userId</code></td>
-<td style="text-align: left;"><code>string(255)</code></td>
-<td style="text-align: left;">Utilisateur qui a déclenché le dépassement</td>
+<td><code>userId</code></td>
+<td><code>string(255)</code></td>
+<td>Utilisateur qui a déclenché le dépassement</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>scope</code></td>
-<td style="text-align: left;"><code>enum</code></td>
-<td style="text-align: left;"><code>user</code>, <code>preset</code>, <code>agent</code> — le type de limite</td>
+<td><code>scope</code></td>
+<td><code>enum</code></td>
+<td><code>user</code>, <code>preset</code>, <code>agent</code></td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>scopeId</code></td>
-<td style="text-align: left;"><code>string(255)</code></td>
-<td style="text-align: left;">Identifiant de la ressource (user ID, preset ID, agent slug)</td>
+<td><code>scopeId</code></td>
+<td><code>string(255)</code></td>
+<td>Identifiant de la ressource</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>period</code></td>
-<td style="text-align: left;"><code>enum</code></td>
-<td style="text-align: left;"><code>calendar_day</code>, <code>calendar_month</code>, <code>sliding_day</code>, <code>sliding_month</code></td>
+<td><code>period</code></td>
+<td><code>enum</code></td>
+<td><code>calendar_day</code>, <code>calendar_month</code>, <code>sliding_day</code>, <code>sliding_month</code></td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>limitAmount</code></td>
-<td style="text-align: left;"><code>float</code></td>
-<td style="text-align: left;">Montant du plafond</td>
+<td><code>limitAmount</code></td>
+<td><code>float</code></td>
+<td>Montant du plafond</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>consumption</code></td>
-<td style="text-align: left;"><code>float</code></td>
-<td style="text-align: left;">Consommation avant l'appel dépassant</td>
+<td><code>consumption</code></td>
+<td><code>float</code></td>
+<td>Consommation avant l'appel dépassant</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>estimatedCost</code></td>
-<td style="text-align: left;"><code>float</code></td>
-<td style="text-align: left;">Coût estimé de l'appel qui a déclenché</td>
+<td><code>estimatedCost</code></td>
+<td><code>float</code></td>
+<td>Coût estimé de l'appel déclencheur</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>overrunAmount</code></td>
-<td style="text-align: left;"><code>float</code></td>
-<td style="text-align: left;">Montant du dépassement (<code>estimatedCost</code> - <code>(limitAmount - consumption)</code>)</td>
+<td><code>overrunAmount</code></td>
+<td><code>float</code></td>
+<td>Montant du dépassement</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>currency</code></td>
-<td style="text-align: left;"><code>string(3)</code></td>
-<td style="text-align: left;">Devise (EUR, USD, GBP, etc.)</td>
+<td><code>currency</code></td>
+<td><code>string(3)</code></td>
+<td>Devise (EUR, USD, etc.)</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>exceededAt</code></td>
-<td style="text-align: left;"><code>datetime_immutable</code></td>
-<td style="text-align: left;">Date/heure du dépassement</td>
+<td><code>exceededAt</code></td>
+<td><code>datetime_immutable</code></td>
+<td>Date/heure du dépassement</td>
 </tr>
 </tbody>
 </table>
+<h2 id="entites-rag-memoire-semantique">Entités RAG &amp; Mémoire Sémantique</h2>
+<h3 id="synapseragsource"><code>SynapseRagSource</code></h3>
+<p>Représente une source de documents indexés (Google Drive, Notion, fichiers locaux, etc.).</p>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>slug</code></td>
+<td><code>string(255)</code></td>
+<td>Identifiant unique (ex: <code>lycee_intranet</code>)</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>string(255)</code></td>
+<td>Nom d'affichage</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>text</code></td>
+<td>Description longue</td>
+</tr>
+<tr>
+<td><code>isActive</code></td>
+<td><code>boolean</code></td>
+<td>Activé ou désactivé</td>
+</tr>
+<tr>
+<td><code>documentCount</code></td>
+<td><code>integer</code></td>
+<td>Nombre total de documents indexés</td>
+</tr>
+<tr>
+<td><code>lastIndexedAt</code></td>
+<td><code>datetime_immutable</code></td>
+<td>Dernière réindexation complète</td>
+</tr>
+<tr>
+<td><code>indexingStatus</code></td>
+<td><code>string(50)</code></td>
+<td><code>pending</code>, <code>indexing</code>, <code>done</code>, <code>failed</code></td>
+</tr>
+<tr>
+<td><code>lastError</code></td>
+<td><code>text</code></td>
+<td>Message d'erreur si indexation échouée</td>
+</tr>
+<tr>
+<td><code>totalFiles</code></td>
+<td><code>integer</code></td>
+<td>Nombre total de fichiers traités</td>
+</tr>
+<tr>
+<td><code>processedFiles</code></td>
+<td><code>integer</code></td>
+<td>Fichiers traités avec succès (suivi progression)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="synapseragdocument"><code>SynapseRagDocument</code></h3>
+<p>Chunk vectorisé d'un document RAG.</p>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source</code></td>
+<td>FK</td>
+<td>Lien vers <code>SynapseRagSource</code> (CASCADE DELETE)</td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td><code>text</code></td>
+<td>Contenu du chunk</td>
+</tr>
+<tr>
+<td><code>embedding</code></td>
+<td><code>json</code></td>
+<td>Vecteur numérique d'embedding (float array)</td>
+</tr>
+<tr>
+<td><code>metadata</code></td>
+<td><code>json</code></td>
+<td>Métadonnées : <code>source_name</code>, <code>file_path</code>, <code>page_number</code>, etc.</td>
+</tr>
+<tr>
+<td><code>chunkIndex</code></td>
+<td><code>integer</code></td>
+<td>Numéro du chunk dans le document original</td>
+</tr>
+<tr>
+<td><code>totalChunks</code></td>
+<td><code>integer</code></td>
+<td>Nombre total de chunks du document</td>
+</tr>
+<tr>
+<td><code>sourceIdentifier</code></td>
+<td><code>string(255)</code></td>
+<td>Identifiant unique dans la source (ex: Google Drive file ID)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="synapsemessageattachment"><code>SynapseMessageAttachment</code></h3>
+<p>Fichiers téléchargés attachés aux messages (images, documents, etc.).</p>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>UUID</td>
+<td>Clé primaire</td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td>FK</td>
+<td>Lien vers <code>SynapseMessage</code></td>
+</tr>
+<tr>
+<td><code>mimeType</code></td>
+<td><code>string(100)</code></td>
+<td>Type MIME (ex: <code>image/png</code>)</td>
+</tr>
+<tr>
+<td><code>filePath</code></td>
+<td><code>string(500)</code></td>
+<td>Chemin disque (ex: <code>var/uploads/uuid.png</code>)</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td><code>datetime_immutable</code></td>
+<td>Date du téléchargement</td>
+</tr>
+</tbody>
+</table>
+<h3 id="synapsevectormemory"><code>SynapseVectorMemory</code></h3>
+<p>Stocke les vecteurs d'embeddings pour la recherche sémantique et la mémoire conversationnelle.</p>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>embedding</code></td>
+<td><code>json</code></td>
+<td>Vecteur numérique généré par le modèle d'embedding</td>
+</tr>
+<tr>
+<td><code>payload</code></td>
+<td><code>json</code></td>
+<td>Métadonnées brutes (texte, source, ids)</td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td><code>text</code></td>
+<td>Texte brut dénormalisé (affichage dans le Privacy Dashboard)</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td><code>string(255)</code></td>
+<td>Propriétaire du souvenir — compatible UUID et entier</td>
+</tr>
+<tr>
+<td><code>scope</code></td>
+<td><code>string(20)</code></td>
+<td><code>user</code> (permanent) ou <code>conversation</code> (éphémère)</td>
+</tr>
+<tr>
+<td><code>conversation_id</code></td>
+<td><code>string(255)</code></td>
+<td>Lien vers la conversation d'origine (optionnel)</td>
+</tr>
+<tr>
+<td><code>source_type</code></td>
+<td><code>string(20)</code></td>
+<td><code>fact</code>, <code>document</code>, <code>manual</code></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>datetime_immutable</code></td>
+<td>Date de création du souvenir</td>
+</tr>
+</tbody>
+</table>
+<h3 id="synapsedebuglog"><code>SynapseDebugLog</code></h3>
+<p>Enregistrement des échanges complets pour le mode debug. Stocke le payload brut des requêtes et réponses API, les timings, les métadonnées du modèle.</p>
+<table>
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>debugId</code></td>
+<td><code>string(50)</code></td>
+<td>Identifiant unique de cet appel LLM</td>
+</tr>
+<tr>
+<td><code>module</code></td>
+<td><code>string(100)</code></td>
+<td>Module source (ex: <code>chat</code>, <code>agent</code>, <code>rag</code>) — dénormalisé</td>
+</tr>
+<tr>
+<td><code>action</code></td>
+<td><code>string(100)</code></td>
+<td>Action précise (ex: <code>chat_turn</code>, <code>agent_call</code>) — dénormalisé</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td><code>string(100)</code></td>
+<td>Modèle utilisé — dénormalisé</td>
+</tr>
+<tr>
+<td><code>totalTokens</code></td>
+<td><code>integer</code></td>
+<td>Tokens totaux — dénormalisé</td>
+</tr>
+<tr>
+<td><code>parentRunId</code></td>
+<td><code>string(36)</code></td>
+<td><code>agentRunId</code> de l'exécution parente (null = appel racine)</td>
+</tr>
+<tr>
+<td><code>agentRunId</code></td>
+<td><code>string(36)</code></td>
+<td>UUID de l'exécution logique de l'agent (partagé si plusieurs appels LLM pour un même agent)</td>
+</tr>
+<tr>
+<td><code>depth</code></td>
+<td><code>smallint</code></td>
+<td>Profondeur d'imbrication (0 = racine)</td>
+</tr>
+<tr>
+<td><code>origin</code></td>
+<td><code>string(20)</code></td>
+<td><code>direct</code>, <code>code</code>, <code>config</code>, <code>ephemeral</code>, <code>workflow</code></td>
+</tr>
+<tr>
+<td><code>workflowRunId</code></td>
+<td><code>string(36)</code></td>
+<td>UUID du workflow englobant (null si hors workflow)</td>
+</tr>
+<tr>
+<td><code>data</code></td>
+<td><code>json</code></td>
+<td>Payload complet : <code>preset_config</code>, <code>history</code>, <code>usage</code>, <code>turns</code>, <code>safety_ratings</code>, <code>raw_request_body</code></td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td><code>datetime_immutable</code></td>
+<td>Date de l'appel</td>
+</tr>
+</tbody>
+</table>
+<h3 id="requetes-racines-findroots">Requêtes racines (<code>findRoots</code>)</h3>
+<p><code>SynapseDebugLogRepository::findRoots()</code> retourne les entrées de "premier niveau" visibles dans l'admin. Sont considérés comme racines :</p>
+<ul>
+<li>Appels sans parent (<code>parentRunId IS NULL</code>) — appels directs (chat, MCP, etc.)</li>
+<li>Appels <code>origin = 'workflow'</code> à <code>depth = 1</code> — étapes de workflow (elles ont un <code>parentRunId</code> mais restent des entrées de premier niveau dans la vue admin)</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Voir aussi</p>
+<ul>
+<li><a href="../../guides/semantic-memory/">Mémoire Sémantique</a> — utilisation de <code>SynapseVectorMemory</code></li>
+<li><a href="../../guides/rle-management/">Persistance</a> — détails Doctrine pour <code>SynapseConversation</code> / <code>SynapseMessage</code></li>
+<li><a href="../../guides/configuration/#suivi-de-tokens--coûts-token_tracking">Token Accounting</a> — configuration du suivi via <code>SynapseLlmCall</code></li>
+</ul>
+</div>
 
 
 

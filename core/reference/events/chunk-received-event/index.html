@@ -325,6 +325,26 @@
   
 
       
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../mcp/" class="md-tabs__link">
+          
+  
+  
+  Synapse MCP
+
+        </a>
+      </li>
+    
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -856,14 +876,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/personas-presets.md" class="md-nav__link">
+      <a href="../../../guides/tones-presets/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Personas & Presets
+    Tons & Presets & Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/custom-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Créer un agent en code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../agent-access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contrôle d'accès aux agents
   
 
     
@@ -1289,6 +1365,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../contracts/status-aware-tool-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StatusAwareTool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../contracts/config-provider-interface/" class="md-nav__link">
         
   
@@ -1493,6 +1597,34 @@
     
   
     PermissionChecker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/rag-source-provider-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RagSourceProvider
   
 
     
@@ -1750,7 +1882,7 @@
   <span class="md-ellipsis">
     
   
-    PrePrompt
+    Pipeline de Prompt
   
 
     
@@ -1831,10 +1963,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#namespace" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Namespace
       
     </span>
   </a>
@@ -1842,10 +1974,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methodes-principales" class="md-nav__link">
+  <a href="#constructeur" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Méthodes principales
+        Constructeur
       
     </span>
   </a>
@@ -1853,10 +1985,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#exemple-diffusion-vers-mercure-ou-websockets" class="md-nav__link">
+  <a href="#methodes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Diffusion vers Mercure ou WebSockets
+        Méthodes
       
     </span>
   </a>
@@ -1864,10 +1996,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conseils-dusage" class="md-nav__link">
+  <a href="#structure-du-chunk-normalise" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'usage
+        Structure du chunk normalisé
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exemple-diffuser-les-tokens-via-server-sent-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemple : Diffuser les tokens via Server-Sent Events
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voir-aussi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voir aussi
       
     </span>
   </a>
@@ -2603,6 +2757,381 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synapse MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Synapse MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vue d'ensemble
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Outils MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Outils MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-presets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_presets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-agent-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_agent_test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-agent-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_agent_debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-workflow-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_workflow_run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/update-agent-system-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    update_agent_system_prompt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/sandbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandbox (Phase 10)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -2630,10 +3159,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#namespace" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Namespace
       
     </span>
   </a>
@@ -2641,10 +3170,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methodes-principales" class="md-nav__link">
+  <a href="#constructeur" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Méthodes principales
+        Constructeur
       
     </span>
   </a>
@@ -2652,10 +3181,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#exemple-diffusion-vers-mercure-ou-websockets" class="md-nav__link">
+  <a href="#methodes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Diffusion vers Mercure ou WebSockets
+        Méthodes
       
     </span>
   </a>
@@ -2663,10 +3192,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conseils-dusage" class="md-nav__link">
+  <a href="#structure-du-chunk-normalise" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'usage
+        Structure du chunk normalisé
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exemple-diffuser-les-tokens-via-server-sent-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemple : Diffuser les tokens via Server-Sent Events
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voir-aussi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voir aussi
       
     </span>
   </a>
@@ -2691,68 +3242,118 @@
 
 
 <h1 id="synapsechunkreceivedevent">SynapseChunkReceivedEvent</h1>
-<p>L'événement <code>SynapseChunkReceivedEvent</code> est la clé pour créer des interfaces réactives. Il est déclenché à chaque fois qu'un nouveau morceau de texte (token) est reçu du fournisseur d'IA en mode streaming.</p>
-<h2 id="pourquoi-lutiliser">🛠 Pourquoi l'utiliser ?</h2>
-<ul>
-<li><strong>Expérience "ChatGPT"</strong> : Afficher la réponse en temps réel plutôt que d'attendre 20 secondes une réponse complète.</li>
-<li><strong>Consommation progressive</strong> : Traiter ou analyser le début de la réponse pendant que la fin est encore en cours de génération.</li>
-<li><strong>Monitoring</strong> : Suivre la vitesse de génération (tokens par seconde).</li>
-</ul>
-<hr />
-<h2 id="methodes-principales">📋 Méthodes principales</h2>
+<p>L'événement <code>SynapseChunkReceivedEvent</code> est déclenché à chaque chunk reçu du LLM. Il est essentiel pour créer des interfaces réactives en mode streaming.</p>
+<h2 id="namespace">Namespace</h2>
+<div class="highlight"><pre><span></span><code>ArnaudMoncondhuy\SynapseCore\Event\SynapseChunkReceivedEvent
+</code></pre></div>
+<h2 id="constructeur">Constructeur</h2>
+<div class="highlight"><pre><span></span><code><span class="x">public function __construct(</span>
+<span class="x">    array $chunk,    // Chunk normalisé (text, function_calls, usage, etc.)</span>
+<span class="x">    int $turn = 0,   // Index du tour de parole actuel</span>
+<span class="x">    ?array $rawChunk = null, // Payload brut du provider (debug avancé)</span>
+<span class="x">)</span>
+</code></pre></div>
+<h2 id="methodes">Méthodes</h2>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Méthode</th>
-<th style="text-align: left;">Rôle</th>
+<th>Méthode</th>
+<th>Rôle</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>getChunk()</code></td>
-<td style="text-align: left;">Retourne le fragment de texte venant d'arriver (ex: "Bonjour").</td>
+<td><code>getChunk(): array</code></td>
+<td>Retourne le chunk normalisé complet.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>getDebugId()</code></td>
-<td style="text-align: left;">Permet de relier ce morceau à une session spécifique.</td>
+<td><code>getText(): ?string</code></td>
+<td>Extrait uniquement le fragment de texte généré (ou <code>null</code> si aucun texte).</td>
+</tr>
+<tr>
+<td><code>getThinking(): ?string</code></td>
+<td>Retourne les pensées internes du modèle si supporté (extended thinking).</td>
+</tr>
+<tr>
+<td><code>getFunctionCalls(): array</code></td>
+<td>Liste les appels de fonctions demandés dans ce chunk.</td>
+</tr>
+<tr>
+<td><code>getUsage(): array</code></td>
+<td>Statistiques d'usage (uniquement dans le dernier chunk).</td>
+</tr>
+<tr>
+<td><code>isBlocked(): bool</code></td>
+<td>Indique si la génération a été bloquée pour des raisons de sécurité.</td>
+</tr>
+<tr>
+<td><code>getTurn(): int</code></td>
+<td>Index du tour de parole (multi-step tool calls).</td>
+</tr>
+<tr>
+<td><code>getRawChunk(): ?array</code></td>
+<td>Payload brut du provider (pour debug avancé).</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="exemple-diffusion-vers-mercure-ou-websockets">🚀 Exemple : Diffusion vers Mercure ou WebSockets</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">StreamingSubscriber.php</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
+<h2 id="structure-du-chunk-normalise">Structure du chunk normalisé</h2>
+<div class="highlight"><pre><span></span><code><span class="x">[</span>
+<span class="x">    &#39;text&#39;           =&gt; &#39;...&#39;,    // Fragment de texte (null si aucun)</span>
+<span class="x">    &#39;thinking&#39;       =&gt; &#39;...&#39;,    // Contenu de réflexion interne (null si non supporté)</span>
+<span class="x">    &#39;function_calls&#39; =&gt; [         // Appels d&#39;outils demandés</span>
+<span class="x">        [&#39;id&#39; =&gt; &#39;...&#39;, &#39;name&#39; =&gt; &#39;get_weather&#39;, &#39;args&#39; =&gt; [&#39;city&#39; =&gt; &#39;Paris&#39;]],</span>
+<span class="x">    ],</span>
+<span class="x">    &#39;usage&#39;          =&gt; [         // Présent uniquement dans le dernier chunk</span>
+<span class="x">        &#39;prompt_tokens&#39;     =&gt; 10,</span>
+<span class="x">        &#39;completion_tokens&#39; =&gt; 5,</span>
+<span class="x">        &#39;total_tokens&#39;      =&gt; 15,</span>
+<span class="x">    ],</span>
+<span class="x">    &#39;safety_ratings&#39; =&gt; [...],    // Évaluations de sécurité</span>
+<span class="x">    &#39;blocked&#39;        =&gt; false,    // true si bloqué</span>
+<span class="x">    &#39;blocked_reason&#39; =&gt; null,     // ex: &#39;discours haineux&#39;</span>
+<span class="x">]</span>
+</code></pre></div>
+<hr />
+<h2 id="exemple-diffuser-les-tokens-via-server-sent-events">Exemple : Diffuser les tokens via Server-Sent Events</h2>
 <div class="highlight"><pre><span></span><code><span class="x">namespace App\EventSubscriber;</span>
 
-<span class="x">use ArnaudMoncondhuy\SynapseCore\Core\Event\SynapseChunkReceivedEvent;</span>
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Event\SynapseChunkReceivedEvent;</span>
 <span class="x">use Symfony\Component\EventDispatcher\EventSubscriberInterface;</span>
 
 <span class="x">class StreamingSubscriber implements EventSubscriberInterface</span>
 <span class="x">{</span>
-<span class="x">    public function onChunk(SynapseChunkReceivedEvent $event): void</span>
-<span class="x">    {</span>
-<span class="x">        $text = $event-&gt;getChunk();</span>
-<span class="x">        // Envoyer le fragment au navigateur via WebSockets ou Server-Sent Events</span>
-<span class="x">        $this-&gt;webSocketSender-&gt;send(&#39;chat_topic&#39;, [&#39;content&#39; =&gt; $text]);</span>
-<span class="x">    }</span>
-
 <span class="x">    public static function getSubscribedEvents(): array</span>
 <span class="x">    {</span>
 <span class="x">        return [SynapseChunkReceivedEvent::class =&gt; &#39;onChunk&#39;];</span>
 <span class="x">    }</span>
+
+<span class="x">    public function onChunk(SynapseChunkReceivedEvent $event): void</span>
+<span class="x">    {</span>
+<span class="x">        $text = $event-&gt;getText();</span>
+<span class="x">        if ($text !== null) {</span>
+<span class="x">            // Envoyer le fragment au navigateur via SSE ou WebSocket</span>
+<span class="x">            $this-&gt;mercurePublisher-&gt;publish($text);</span>
+<span class="x">        }</span>
+
+<span class="x">        // Détecter un appel d&#39;outil en cours</span>
+<span class="x">        foreach ($event-&gt;getFunctionCalls() as $call) {</span>
+<span class="x">            // L&#39;outil sera exécuté par le système, mais on peut logger ici</span>
+<span class="x">            $this-&gt;logger-&gt;info(&quot;Outil demandé : {$call[&#39;name&#39;]}&quot;);</span>
+<span class="x">        }</span>
+<span class="x">    }</span>
 <span class="x">}</span>
 </code></pre></div>
-</div>
-</div>
+<div class="admonition tip">
+<p class="admonition-title">Activation du streaming</p>
+<p>Pour que cet événement soit déclenché pour chaque token, le streaming doit être activé (option <code>streaming: true</code> ou configuré dans le preset). Sans streaming, il est déclenché une seule fois avec le contenu complet.</p>
 </div>
 <hr />
-<h2 id="conseils-dusage">💡 Conseils d'usage</h2>
-<blockquote>
-<p>[!TIP]
-<strong>Activation</strong> : Pour que cet événement soit déclenché, vous devez impérativement passer l'option <code>stream: true</code> lors de votre appel à <code>ChatService::ask()</code>.</p>
-</blockquote>
-<hr />
+<h2 id="voir-aussi">Voir aussi</h2>
+<ul>
+<li><a href="../overview/">Cycle de vie des événements</a> — séquence complète</li>
+<li><a href="../overview/#synapsetokenstreamedevent">SynapseTokenStreamedEvent</a> — granularité par token individuel</li>
+</ul>
 
 
 

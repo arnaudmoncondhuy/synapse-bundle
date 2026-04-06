@@ -325,6 +325,26 @@
   
 
       
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../mcp/" class="md-tabs__link">
+          
+  
+  
+  Synapse MCP
+
+        </a>
+      </li>
+    
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -856,14 +876,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/personas-presets.md" class="md-nav__link">
+      <a href="../../../guides/tones-presets/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Personas & Presets
+    Tons & Presets & Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/custom-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Créer un agent en code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../agent-access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contrôle d'accès aux agents
   
 
     
@@ -1289,6 +1365,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../contracts/status-aware-tool-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StatusAwareTool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../contracts/config-provider-interface/" class="md-nav__link">
         
   
@@ -1493,6 +1597,34 @@
     
   
     PermissionChecker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/rag-source-provider-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RagSourceProvider
   
 
     
@@ -1750,7 +1882,7 @@
   <span class="md-ellipsis">
     
   
-    PrePrompt
+    Pipeline de Prompt
   
 
     
@@ -1915,10 +2047,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#namespace" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Namespace
       
     </span>
   </a>
@@ -1926,10 +2058,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methodes-principales" class="md-nav__link">
+  <a href="#constructeur" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Méthodes principales
+        Constructeur
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Méthodes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tokenusage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TokenUsage
       
     </span>
   </a>
@@ -1940,7 +2094,18 @@
   <a href="#exemple-calcul-de-cout-et-facturation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Calcul de coût et facturation
+        Exemple : Calcul de coût et facturation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voir-aussi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voir aussi
       
     </span>
   </a>
@@ -2592,6 +2757,381 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synapse MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Synapse MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vue d'ensemble
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Outils MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Outils MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-presets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_presets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-agent-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_agent_test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-agent-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_agent_debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-workflow-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_workflow_run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/update-agent-system-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    update_agent_system_prompt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/sandbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandbox (Phase 10)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -2619,10 +3159,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#namespace" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Namespace
       
     </span>
   </a>
@@ -2630,10 +3170,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methodes-principales" class="md-nav__link">
+  <a href="#constructeur" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Méthodes principales
+        Constructeur
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Méthodes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tokenusage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TokenUsage
       
     </span>
   </a>
@@ -2644,7 +3206,18 @@
   <a href="#exemple-calcul-de-cout-et-facturation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Calcul de coût et facturation
+        Exemple : Calcul de coût et facturation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voir-aussi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voir aussi
       
     </span>
   </a>
@@ -2669,54 +3242,81 @@
 
 
 <h1 id="synapsegenerationcompletedevent">SynapseGenerationCompletedEvent</h1>
-<p>L'événement <code>SynapseGenerationCompletedEvent</code> est le signal de fin. Il est émis une fois que le LLM a fini de générer sa réponse et que tous les outils ont été résolus.</p>
-<h2 id="pourquoi-lutiliser">🛠 Pourquoi l'utiliser ?</h2>
-<ul>
-<li><strong>Finalisation</strong> : Calculer le coût total de l'échange et débiter le compte de l'utilisateur.</li>
-<li><strong>Post-traitement</strong> : Analyser le sentiment de la réponse finale ou vérifier la présence de mots interdits.</li>
-<li><strong>Notifications</strong> : Envoyer une notification push si l'utilisateur n'est plus sur la page de chat.</li>
-</ul>
-<hr />
-<h2 id="methodes-principales">📋 Méthodes principales</h2>
+<p>L'événement <code>SynapseGenerationCompletedEvent</code> est le signal de fin. Il est émis une fois que le LLM a terminé de générer sa réponse et que tous les appels d'outils ont été résolus.</p>
+<h2 id="namespace">Namespace</h2>
+<div class="highlight"><pre><span></span><code>ArnaudMoncondhuy\SynapseCore\Event\SynapseGenerationCompletedEvent
+</code></pre></div>
+<h2 id="constructeur">Constructeur</h2>
+<div class="highlight"><pre><span></span><code><span class="x">public function __construct(</span>
+<span class="x">    string $fullResponse,</span>
+<span class="x">    TokenUsage $usage = new TokenUsage(),</span>
+<span class="x">    ?string $debugId = null,</span>
+<span class="x">)</span>
+</code></pre></div>
+<h2 id="methodes">Méthodes</h2>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Méthode</th>
-<th style="text-align: left;">Rôle</th>
+<th>Méthode</th>
+<th>Rôle</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>getFullResponse()</code></td>
-<td style="text-align: left;">Le texte complet et définitif généré par l'IA.</td>
+<td><code>getFullResponse(): string</code></td>
+<td>Le texte complet et définitif généré par l'IA.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>getUsage()</code></td>
-<td style="text-align: left;">Statistiques de consommation (tokens d'entrée et de sortie).</td>
+<td><code>getUsage(): TokenUsage</code></td>
+<td>Objet <code>TokenUsage</code> avec la consommation totale de tokens.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>getDebugId()</code></td>
-<td style="text-align: left;">ID unique de l'échange (si mode debug actif).</td>
+<td><code>getDebugId(): ?string</code></td>
+<td>ID unique de l'échange (non nul si mode debug activé).</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="exemple-calcul-de-cout-et-facturation">🚀 Exemple : Calcul de coût et facturation</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">BillingSubscriber.php</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="x">public function onGenerationCompleted(SynapseGenerationCompletedEvent $event): void</span>
-<span class="x">{</span>
-<span class="x">    $usage = $event-&gt;getUsage();</span>
-<span class="x">    $totalTokens = $usage[&#39;prompt_tokens&#39;] + $usage[&#39;completion_tokens&#39;];</span>
+<h2 id="tokenusage">TokenUsage</h2>
+<p>L'objet <code>TokenUsage</code> encapsule les statistiques de consommation :</p>
+<div class="highlight"><pre><span></span><code><span class="x">$usage = $event-&gt;getUsage();</span>
 
-<span class="x">    $this-&gt;billingService-&gt;recordUsage($totalTokens);</span>
+<span class="x">$usage-&gt;promptTokens;      // Tokens en entrée</span>
+<span class="x">$usage-&gt;completionTokens;  // Tokens générés</span>
+<span class="x">$usage-&gt;totalTokens;       // Total</span>
+<span class="x">$usage-&gt;toArray();         // Conversion en tableau [&#39;prompt_tokens&#39; =&gt; ..., ...]</span>
+</code></pre></div>
+<hr />
+<h2 id="exemple-calcul-de-cout-et-facturation">Exemple : Calcul de coût et facturation</h2>
+<div class="highlight"><pre><span></span><code><span class="x">namespace App\EventSubscriber;</span>
+
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Event\SynapseGenerationCompletedEvent;</span>
+<span class="x">use Symfony\Component\EventDispatcher\EventSubscriberInterface;</span>
+
+<span class="x">class BillingSubscriber implements EventSubscriberInterface</span>
+<span class="x">{</span>
+<span class="x">    public static function getSubscribedEvents(): array</span>
+<span class="x">    {</span>
+<span class="x">        return [SynapseGenerationCompletedEvent::class =&gt; &#39;onGenerationCompleted&#39;];</span>
+<span class="x">    }</span>
+
+<span class="x">    public function onGenerationCompleted(SynapseGenerationCompletedEvent $event): void</span>
+<span class="x">    {</span>
+<span class="x">        $usage = $event-&gt;getUsage();</span>
+
+<span class="x">        $this-&gt;billingService-&gt;recordUsage(</span>
+<span class="x">            totalTokens: $usage-&gt;totalTokens,</span>
+<span class="x">            debugId: $event-&gt;getDebugId(),</span>
+<span class="x">        );</span>
+<span class="x">    }</span>
 <span class="x">}</span>
 </code></pre></div>
-</div>
-</div>
-</div>
 <hr />
+<h2 id="voir-aussi">Voir aussi</h2>
+<ul>
+<li><a href="../exchange-completed-event/">SynapseExchangeCompletedEvent</a> — données techniques brutes (payload API)</li>
+<li><a href="../overview/">Cycle de vie des événements</a> — séquence complète</li>
+</ul>
 
 
 

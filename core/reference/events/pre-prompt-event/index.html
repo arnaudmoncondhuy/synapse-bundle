@@ -27,7 +27,7 @@
     
     
       
-        <title>PrePrompt - Synapse</title>
+        <title>Pipeline de Prompt - Synapse</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#synapseprepromptevent" class="md-skip">
+        <a href="#evenements-du-pipeline-de-prompt" class="md-skip">
           Aller au contenu
         </a>
       
@@ -112,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              PrePrompt
+              Pipeline de Prompt
             
           </span>
         </div>
@@ -318,6 +318,26 @@
   
   
   Synapse Chat
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../mcp/" class="md-tabs__link">
+          
+  
+  
+  Synapse MCP
 
         </a>
       </li>
@@ -856,14 +876,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/personas-presets.md" class="md-nav__link">
+      <a href="../../../guides/tones-presets/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Personas & Presets
+    Tons & Presets & Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/custom-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Créer un agent en code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../agent-access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contrôle d'accès aux agents
   
 
     
@@ -1289,6 +1365,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../contracts/status-aware-tool-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StatusAwareTool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../contracts/config-provider-interface/" class="md-nav__link">
         
   
@@ -1493,6 +1597,34 @@
     
   
     PermissionChecker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contracts/rag-source-provider-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RagSourceProvider
   
 
     
@@ -1759,7 +1891,7 @@
   <span class="md-ellipsis">
     
   
-    PrePrompt
+    Pipeline de Prompt
   
 
     
@@ -1777,7 +1909,7 @@
   <span class="md-ellipsis">
     
   
-    PrePrompt
+    Pipeline de Prompt
   
 
     
@@ -1803,10 +1935,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#nouveau-systeme-5-phases-explicites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Nouveau système : 5 phases explicites
       
     </span>
   </a>
@@ -1814,10 +1946,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methodes-principales" class="md-nav__link">
+  <a href="#migration-depuis-synapseprepromptevent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Méthodes principales
+        Migration depuis SynapsePrePromptEvent
       
     </span>
   </a>
@@ -1825,10 +1957,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#exemple-injecter-une-humeur-variable" class="md-nav__link">
+  <a href="#exemple-injecter-une-instruction-dynamique-en-phase-enrich" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Injecter une humeur variable
+        Exemple : Injecter une instruction dynamique en phase ENRICH
       
     </span>
   </a>
@@ -1836,10 +1968,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conseils-dusage" class="md-nav__link">
+  <a href="#synapseprepromptevent-deprecie" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'usage
+        SynapsePrePromptEvent (déprécié)
       
     </span>
   </a>
@@ -2603,6 +2735,381 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synapse MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Synapse MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vue d'ensemble
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Outils MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Outils MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-presets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_presets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-agent-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_agent_test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-agent-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_agent_debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-workflow-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_workflow_run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/update-agent-system-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    update_agent_system_prompt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/sandbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandbox (Phase 10)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -2630,10 +3137,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#nouveau-systeme-5-phases-explicites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Nouveau système : 5 phases explicites
       
     </span>
   </a>
@@ -2641,10 +3148,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methodes-principales" class="md-nav__link">
+  <a href="#migration-depuis-synapseprepromptevent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Méthodes principales
+        Migration depuis SynapsePrePromptEvent
       
     </span>
   </a>
@@ -2652,10 +3159,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#exemple-injecter-une-humeur-variable" class="md-nav__link">
+  <a href="#exemple-injecter-une-instruction-dynamique-en-phase-enrich" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Injecter une humeur variable
+        Exemple : Injecter une instruction dynamique en phase ENRICH
       
     </span>
   </a>
@@ -2663,10 +3170,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conseils-dusage" class="md-nav__link">
+  <a href="#synapseprepromptevent-deprecie" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'usage
+        SynapsePrePromptEvent (déprécié)
       
     </span>
   </a>
@@ -2690,78 +3197,155 @@
 
 
 
-<h1 id="synapseprepromptevent">SynapsePrePromptEvent</h1>
-<p>L'événement <code>SynapsePrePromptEvent</code> est l'un des plus importants pour la personnalisation. Il vous permet d'intervenir juste avant que la requête ne soit envoyée au LLM pour modifier le prompt système ou le contexte.</p>
-<h2 id="pourquoi-lutiliser">🛠 Pourquoi l'utiliser ?</h2>
-<ul>
-<li><strong>Personnalisation à la volée</strong> : Ajouter des instructions spécifiques selon l'utilisateur ("Aujourd'hui, l'utilisateur est de mauvaise humeur, sois plus bref").</li>
-<li><strong>Enrichissement dynamique</strong> : Injecter des données fraîches récupérées depuis une API tierce.</li>
-<li><strong>Contrôle final</strong> : S'assurer que certaines règles de sécurité sont bien présentes dans le prompt système final.</li>
-</ul>
+<h1 id="evenements-du-pipeline-de-prompt">Événements du Pipeline de Prompt</h1>
+<div class="admonition warning">
+<p class="admonition-title">SynapsePrePromptEvent est déprécié</p>
+<p>Depuis mars 2026, <code>SynapsePrePromptEvent</code> est <strong>déprécié</strong>. Il est remplacé par 5 events de phase explicites dans <code>ArnaudMoncondhuy\SynapseCore\Event\Prompt\</code>. Migrez dès que possible.</p>
+</div>
 <hr />
-<h2 id="methodes-principales">📋 Méthodes principales</h2>
+<h2 id="nouveau-systeme-5-phases-explicites">Nouveau système : 5 phases explicites</h2>
+<p>Le pipeline de prompt s'exécute en 5 phases séquentielles, chacune disposant de son propre event :</p>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Méthode</th>
-<th style="text-align: left;">Rôle</th>
+<th>Phase</th>
+<th>Event</th>
+<th>Subscribers actifs</th>
+<th>Rôle</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>getSystemPrompt()</code></td>
-<td style="text-align: left;">Récupère le texte actuel du prompt système.</td>
+<td>1. BUILD</td>
+<td><code>PromptBuildEvent</code></td>
+<td><code>ContextBuilderSubscriber</code></td>
+<td>Construction du prompt de base (system + history + tools)</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>setSystemPrompt(string)</code></td>
-<td style="text-align: left;">Écrase ou complète les instructions système.</td>
+<td>2. ENRICH</td>
+<td><code>PromptEnrichEvent</code></td>
+<td><code>MemoryContextSubscriber</code>, <code>RagContextSubscriber</code></td>
+<td>Enrichissement (mémoire vectorielle, RAG)</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>getMessages()</code></td>
-<td style="text-align: left;">Accède à l'historique complet des messages.</td>
+<td>3. OPTIMIZE</td>
+<td><code>PromptOptimizeEvent</code></td>
+<td><code>ContextTruncationSubscriber</code></td>
+<td>Troncature du contexte selon la context window</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>setMessages(array)</code></td>
-<td style="text-align: left;">Permet de filtrer ou modifier l'historique avant l'envoi.</td>
+<td>4. FINALIZE</td>
+<td><code>PromptFinalizeEvent</code></td>
+<td><code>MasterPromptSubscriber</code></td>
+<td>Injection du master prompt global</td>
+</tr>
+<tr>
+<td>5. CAPTURE</td>
+<td><code>PromptCaptureEvent</code></td>
+<td><code>DebugLogSubscriber</code></td>
+<td>Capture debug (lecture seule, ne modifie pas le prompt)</td>
 </tr>
 </tbody>
 </table>
+<p>Tous ces events étendent <code>AbstractPromptEvent</code> et partagent la même interface :</p>
+<div class="highlight"><pre><span></span><code><span class="x">// Méthodes disponibles sur tous les events de phase</span>
+<span class="x">$event-&gt;getMessage(): string          // Message brut de l&#39;utilisateur</span>
+<span class="x">$event-&gt;getOptions(): array           // Options passées à ChatService::ask()</span>
+<span class="x">$event-&gt;getPrompt(): array            // Prompt courant (mutable)</span>
+<span class="x">$event-&gt;setPrompt(array $prompt)      // Modifier le prompt</span>
+<span class="x">$event-&gt;getConfig(): ?SynapseRuntimeConfig  // Config runtime courante (mutable)</span>
+<span class="x">$event-&gt;setConfig(SynapseRuntimeConfig)     // Modifier la config</span>
+<span class="x">$event-&gt;getAttachments(): array       // Fichiers attachés</span>
+<span class="x">$event-&gt;setAttachments(array)         // Modifier les pièces jointes</span>
+</code></pre></div>
 <hr />
-<h2 id="exemple-injecter-une-humeur-variable">🚀 Exemple : Injecter une humeur variable</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">MoodSubscriber.php</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
+<h2 id="migration-depuis-synapseprepromptevent">Migration depuis SynapsePrePromptEvent</h2>
+<div class="highlight"><pre><span></span><code><span class="x">// AVANT (déprécié)</span>
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Event\SynapsePrePromptEvent;</span>
+
+<span class="x">#[AsEventListener(event: SynapsePrePromptEvent::class, priority: 40)]</span>
+<span class="x">public function onPrePrompt(SynapsePrePromptEvent $event): void</span>
+<span class="x">{</span>
+<span class="x">    $prompt = $event-&gt;getPrompt();</span>
+<span class="x">    // ... modifier le prompt</span>
+<span class="x">}</span>
+
+<span class="x">// APRÈS — choisir la phase correspondant à votre usage :</span>
+
+<span class="x">// Pour enrichir avec du contexte (priorité 40 ≈ ENRICH)</span>
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Event\Prompt\PromptEnrichEvent;</span>
+
+<span class="x">#[AsEventListener(event: PromptEnrichEvent::class)]</span>
+<span class="x">public function onEnrich(PromptEnrichEvent $event): void</span>
+<span class="x">{</span>
+<span class="x">    $prompt = $event-&gt;getPrompt();</span>
+<span class="x">    // Ajouter au prompt système (premiers éléments du tableau contents)</span>
+<span class="x">    $contents = $prompt[&#39;contents&#39;] ?? [];</span>
+<span class="x">    // ... enrichir $contents</span>
+<span class="x">    $event-&gt;setPrompt([&#39;contents&#39; =&gt; $contents]);</span>
+<span class="x">}</span>
+</code></pre></div>
+<hr />
+<h2 id="exemple-injecter-une-instruction-dynamique-en-phase-enrich">Exemple : Injecter une instruction dynamique en phase ENRICH</h2>
 <div class="highlight"><pre><span></span><code><span class="x">namespace App\EventSubscriber;</span>
 
-<span class="x">use ArnaudMoncondhuy\SynapseCore\Core\Event\SynapsePrePromptEvent;</span>
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Event\Prompt\PromptEnrichEvent;</span>
+<span class="x">use Symfony\Bundle\SecurityBundle\Security;</span>
 <span class="x">use Symfony\Component\EventDispatcher\EventSubscriberInterface;</span>
 
-<span class="x">class MoodSubscriber implements EventSubscriberInterface</span>
+<span class="x">class UserContextEnricher implements EventSubscriberInterface</span>
 <span class="x">{</span>
+<span class="x">    public function __construct(private Security $security) {}</span>
+
 <span class="x">    public static function getSubscribedEvents(): array</span>
 <span class="x">    {</span>
-<span class="x">        return [SynapsePrePromptEvent::class =&gt; &#39;onPrePrompt&#39;];</span>
+<span class="x">        return [PromptEnrichEvent::class =&gt; &#39;onEnrich&#39;];</span>
 <span class="x">    }</span>
 
-<span class="x">    public function onPrePrompt(SynapsePrePromptEvent $event): void</span>
+<span class="x">    public function onEnrich(PromptEnrichEvent $event): void</span>
 <span class="x">    {</span>
-<span class="x">        $prompt = $event-&gt;getSystemPrompt();</span>
-<span class="x">        $newPrompt = $prompt . &quot;\nIMPORTANT: Réponds comme si tu étais un pirate.&quot;;</span>
+<span class="x">        $user = $this-&gt;security-&gt;getUser();</span>
+<span class="x">        if ($user === null) {</span>
+<span class="x">            return;</span>
+<span class="x">        }</span>
 
-<span class="x">        $event-&gt;setSystemPrompt($newPrompt);</span>
+<span class="x">        $prompt = $event-&gt;getPrompt();</span>
+<span class="x">        $contents = $prompt[&#39;contents&#39;] ?? [];</span>
+
+<span class="x">        // Trouver le message système existant et l&#39;enrichir</span>
+<span class="x">        foreach ($contents as &amp;$message) {</span>
+<span class="x">            if ($message[&#39;role&#39;] === &#39;system&#39;) {</span>
+<span class="x">                $message[&#39;content&#39;] .= sprintf(</span>
+<span class="x">                    &quot;\n\nContexte utilisateur : %s&quot;,</span>
+<span class="x">                    $user-&gt;getUserIdentifier()</span>
+<span class="x">                );</span>
+<span class="x">                break;</span>
+<span class="x">            }</span>
+<span class="x">        }</span>
+<span class="x">        unset($message);</span>
+
+<span class="x">        $event-&gt;setPrompt(array_merge($prompt, [&#39;contents&#39; =&gt; $contents]));</span>
 <span class="x">    }</span>
 <span class="x">}</span>
 </code></pre></div>
-</div>
-</div>
-</div>
 <hr />
-<h2 id="conseils-dusage">💡 Conseils d'usage</h2>
-<blockquote>
-<p>[!WARNING]
-<strong>Attention à la longueur</strong> : Si vous ajoutez trop d'informations dans le prompt système via cet événement, vous risquez de dépasser la limite de tokens du modèle ou de diluer les instructions initiales.</p>
-</blockquote>
-<hr />
+<h2 id="synapseprepromptevent-deprecie">SynapsePrePromptEvent (déprécié)</h2>
+<p>Namespace : <code>ArnaudMoncondhuy\SynapseCore\Event\SynapsePrePromptEvent</code></p>
+<p>Cet event est conservé pour compatibilité ascendante mais ne sera plus dispatché dans une prochaine version majeure. Son API est identique à <code>AbstractPromptEvent</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="x">// API disponible (même interface que les nouveaux events)</span>
+<span class="x">$event-&gt;getMessage(): string</span>
+<span class="x">$event-&gt;getOptions(): array</span>
+<span class="x">$event-&gt;getPrompt(): array</span>
+<span class="x">$event-&gt;setPrompt(array $prompt)</span>
+<span class="x">$event-&gt;getConfig(): ?SynapseRuntimeConfig</span>
+<span class="x">$event-&gt;setConfig(SynapseRuntimeConfig $config)</span>
+<span class="x">$event-&gt;getAttachments(): array</span>
+<span class="x">$event-&gt;setAttachments(array $attachments)</span>
+</code></pre></div>
+<div class="admonition danger">
+<p class="admonition-title">Suppression future</p>
+<p><code>SynapsePrePromptEvent</code> sera supprimé dans une prochaine version majeure. Migrez vers les events de phase dès maintenant.</p>
+</div>
 
 
 

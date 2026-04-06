@@ -325,6 +325,26 @@
   
 
       
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../mcp/" class="md-tabs__link">
+          
+  
+  
+  Synapse MCP
+
+        </a>
+      </li>
+    
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -856,14 +876,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/personas-presets.md" class="md-nav__link">
+      <a href="../../../guides/tones-presets/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Personas & Presets
+    Tons & Presets & Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/custom-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Créer un agent en code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../agent-access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contrôle d'accès aux agents
   
 
     
@@ -1289,6 +1365,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../status-aware-tool-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StatusAwareTool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../config-provider-interface/" class="md-nav__link">
         
   
@@ -1489,10 +1593,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#namespace" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Namespace
       
     </span>
   </a>
@@ -1500,10 +1604,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resume-du-contrat" class="md-nav__link">
+  <a href="#contrat-complet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Résumé du Contrat
+        Contrat complet
       
     </span>
   </a>
@@ -1511,10 +1615,137 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#exemple-un-client-factice-pour-vos-tests" class="md-nav__link">
+  <a href="#methodes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Un client factice pour vos tests
+        Méthodes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Méthodes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#getprovidername-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getProviderName(): string
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streamgeneratecontentarray-contents-array-tools-string-model-array-debugout-generator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        streamGenerateContent(array $contents, array $tools, ?string $model, array &amp;$debugOut): \Generator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generatecontentarray-contents-array-tools-string-model-array-options-array-debugout-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        generateContent(array $contents, array $tools, ?string $model, array $options, array &amp;$debugOut): array
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getcredentialfields-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getCredentialFields(): array
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validatecredentialsarray-credentials-void" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validateCredentials(array $credentials): void
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getdefaultlabel-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getDefaultLabel(): string
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geticon-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getIcon(): string
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getdefaultcurrency-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getDefaultCurrency(): string
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getprovideroptionsschema-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getProviderOptionsSchema(): array
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validateprovideroptionsarray-options-modelcapabilities-caps-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validateProviderOptions(array $options, ModelCapabilities $caps): array
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#format-openai-canonical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format OpenAI Canonical
       
     </span>
   </a>
@@ -1522,10 +1753,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conseils-dimplementation" class="md-nav__link">
+  <a href="#format-du-chunk-normalise" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'implémentation
+        Format du chunk normalisé
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exemple-implementer-un-client-personnalise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemple : Implémenter un client personnalisé
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voir-aussi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voir aussi
       
     </span>
   </a>
@@ -1584,6 +1837,34 @@
     
   
     PermissionChecker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rag-source-provider-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RagSourceProvider
   
 
     
@@ -1841,7 +2122,7 @@
   <span class="md-ellipsis">
     
   
-    PrePrompt
+    Pipeline de Prompt
   
 
     
@@ -2603,6 +2884,381 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synapse MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Synapse MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vue d'ensemble
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Outils MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Outils MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-presets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_presets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-agent-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_agent_test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-agent-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_agent_debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-workflow-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_workflow_run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/update-agent-system-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    update_agent_system_prompt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/sandbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandbox (Phase 10)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -2630,10 +3286,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#namespace" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Namespace
       
     </span>
   </a>
@@ -2641,10 +3297,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resume-du-contrat" class="md-nav__link">
+  <a href="#contrat-complet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Résumé du Contrat
+        Contrat complet
       
     </span>
   </a>
@@ -2652,10 +3308,137 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#exemple-un-client-factice-pour-vos-tests" class="md-nav__link">
+  <a href="#methodes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Un client factice pour vos tests
+        Méthodes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Méthodes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#getprovidername-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getProviderName(): string
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streamgeneratecontentarray-contents-array-tools-string-model-array-debugout-generator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        streamGenerateContent(array $contents, array $tools, ?string $model, array &amp;$debugOut): \Generator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generatecontentarray-contents-array-tools-string-model-array-options-array-debugout-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        generateContent(array $contents, array $tools, ?string $model, array $options, array &amp;$debugOut): array
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getcredentialfields-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getCredentialFields(): array
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validatecredentialsarray-credentials-void" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validateCredentials(array $credentials): void
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getdefaultlabel-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getDefaultLabel(): string
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geticon-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getIcon(): string
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getdefaultcurrency-string" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getDefaultCurrency(): string
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getprovideroptionsschema-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getProviderOptionsSchema(): array
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validateprovideroptionsarray-options-modelcapabilities-caps-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        validateProviderOptions(array $options, ModelCapabilities $caps): array
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#format-openai-canonical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format OpenAI Canonical
       
     </span>
   </a>
@@ -2663,10 +3446,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conseils-dimplementation" class="md-nav__link">
+  <a href="#format-du-chunk-normalise" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'implémentation
+        Format du chunk normalisé
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exemple-implementer-un-client-personnalise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemple : Implémenter un client personnalisé
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#voir-aussi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Voir aussi
       
     </span>
   </a>
@@ -2691,106 +3496,236 @@
 
 
 <h1 id="llmclientinterface">LlmClientInterface</h1>
-<p>L'interface <code>LlmClientInterface</code> est le connecteur universel de Synapse Core. C'est elle qui permet de dialoguer avec les différents fournisseurs d'IA (OpenAI, Gemini, Mistral, Ollama, etc.) en utilisant un langage commun.</p>
-<h2 id="pourquoi-lutiliser">🛠 Pourquoi l'utiliser ?</h2>
-<ul>
-<li><strong>Indépendance du fournisseur</strong> : Changez de moteur d'IA en changeant une seule ligne de configuration sans toucher à votre code métier.</li>
-<li><strong>Support du Streaming</strong> : Permet de recevoir des réponses en temps réel "mot par mot".</li>
-<li><strong>Standardisation</strong> : Transforme les réponses disparates des API en objets <code>SynapseMessage</code> cohérents.</li>
-</ul>
-<hr />
-<h2 id="resume-du-contrat">📋 Résumé du Contrat</h2>
+<p>L'interface <code>LlmClientInterface</code> est le connecteur universel de Synapse Core. Elle permet de dialoguer avec n'importe quel fournisseur d'IA (OpenAI, Gemini, Mistral, Ollama, etc.) en utilisant un format unifié basé sur le standard OpenAI Chat Completions.</p>
+<h2 id="namespace">Namespace</h2>
+<div class="highlight"><pre><span></span><code>ArnaudMoncondhuy\SynapseCore\Contract\LlmClientInterface
+</code></pre></div>
+<h2 id="contrat-complet">Contrat complet</h2>
+<div class="highlight"><pre><span></span><code><span class="x">interface LlmClientInterface</span>
+<span class="x">{</span>
+<span class="x">    public function getProviderName(): string;</span>
+
+<span class="x">    public function streamGenerateContent(</span>
+<span class="x">        array $contents,</span>
+<span class="x">        array $tools = [],</span>
+<span class="x">        ?string $model = null,</span>
+<span class="x">        array &amp;$debugOut = [],</span>
+<span class="x">    ): \Generator;</span>
+
+<span class="x">    public function generateContent(</span>
+<span class="x">        array $contents,</span>
+<span class="x">        array $tools = [],</span>
+<span class="x">        ?string $model = null,</span>
+<span class="x">        array $options = [],</span>
+<span class="x">        array &amp;$debugOut = [],</span>
+<span class="x">    ): array;</span>
+
+<span class="x">    public function getCredentialFields(): array;</span>
+<span class="x">    public function validateCredentials(array $credentials): void;</span>
+<span class="x">    public function getDefaultLabel(): string;</span>
+<span class="x">    public function getIcon(): string;</span>
+<span class="x">    public function getDefaultCurrency(): string;</span>
+<span class="x">    public function getProviderOptionsSchema(): array;</span>
+<span class="x">    public function validateProviderOptions(array $options, ModelCapabilities $caps): array;</span>
+<span class="x">}</span>
+</code></pre></div>
+<h2 id="methodes">Méthodes</h2>
+<h3 id="getprovidername-string"><code>getProviderName(): string</code></h3>
+<p>Identifiant interne du fournisseur, en minuscule sans espace (ex : <code>'gemini'</code>, <code>'openai'</code>, <code>'my_provider'</code>). Utilisé dans la configuration YAML et en base de données.</p>
+<h3 id="streamgeneratecontentarray-contents-array-tools-string-model-array-debugout-generator"><code>streamGenerateContent(array $contents, array $tools, ?string $model, array &amp;$debugOut): \Generator</code></h3>
+<p>Génère du contenu en mode streaming (Server-Sent Events). Chaque yield produit un chunk normalisé.</p>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Méthode</th>
-<th style="text-align: left;">Entrée</th>
-<th style="text-align: left;">Sortie</th>
-<th style="text-align: left;">Rôle</th>
+<th>Paramètre</th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>supports(string $provider)</code></td>
-<td style="text-align: left;">Nom du provider</td>
-<td style="text-align: left;"><code>bool</code></td>
-<td style="text-align: left;">Détermine si ce client peut gérer la demande.</td>
+<td><code>$contents</code></td>
+<td><code>array</code></td>
+<td>Historique complet au format OpenAI canonical</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>generateResponse(...)</code></td>
-<td style="text-align: left;">Messages + Options</td>
-<td style="text-align: left;"><code>SynapseMessage</code></td>
-<td style="text-align: left;">Appel synchrone classique.</td>
+<td><code>$tools</code></td>
+<td><code>array</code></td>
+<td>Déclarations des outils disponibles (JSON Schema)</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>generateStream(...)</code></td>
-<td style="text-align: left;">Messages + Options</td>
-<td style="text-align: left;"><code>iterable</code></td>
-<td style="text-align: left;">Appel asynchrone pour streaming.</td>
+<td><code>$model</code></td>
+<td><code>?string</code></td>
+<td>Identifiant du modèle à utiliser</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>getCredentialFields()</code></td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;"><code>array</code></td>
-<td style="text-align: left;">Liste les clés API nécessaires (ex: <code>api_key</code>).</td>
+<td><code>$debugOut</code></td>
+<td><code>array&amp;</code></td>
+<td>Sortie de debug (passage par référence)</td>
 </tr>
 </tbody>
 </table>
+<h3 id="generatecontentarray-contents-array-tools-string-model-array-options-array-debugout-array"><code>generateContent(array $contents, array $tools, ?string $model, array $options, array &amp;$debugOut): array</code></h3>
+<p>Génère du contenu en mode synchrone (bloquant). Retourne le dernier chunk normalisé.</p>
+<h3 id="getcredentialfields-array"><code>getCredentialFields(): array</code></h3>
+<p>Retourne la définition des champs de configuration pour l'administration. Permet de générer dynamiquement le formulaire de saisie des credentials.</p>
+<div class="highlight"><pre><span></span><code><span class="x">// Exemple de retour</span>
+<span class="x">return [</span>
+<span class="x">    &#39;api_key&#39; =&gt; [</span>
+<span class="x">        &#39;label&#39; =&gt; &#39;Clé API&#39;,</span>
+<span class="x">        &#39;type&#39; =&gt; &#39;password&#39;,</span>
+<span class="x">        &#39;required&#39; =&gt; true,</span>
+<span class="x">    ],</span>
+<span class="x">    &#39;project_id&#39; =&gt; [</span>
+<span class="x">        &#39;label&#39; =&gt; &#39;ID du projet&#39;,</span>
+<span class="x">        &#39;type&#39; =&gt; &#39;text&#39;,</span>
+<span class="x">        &#39;required&#39; =&gt; false,</span>
+<span class="x">        &#39;help&#39; =&gt; &#39;Disponible dans la console Google Cloud&#39;,</span>
+<span class="x">    ],</span>
+<span class="x">];</span>
+</code></pre></div>
+<h3 id="validatecredentialsarray-credentials-void"><code>validateCredentials(array $credentials): void</code></h3>
+<p>Valide l'intégrité des credentials fournis. Lève une exception si les formats sont incorrects.</p>
+<h3 id="getdefaultlabel-string"><code>getDefaultLabel(): string</code></h3>
+<p>Nom d'affichage lisible du fournisseur dans l'interface admin (ex : <code>'Google Gemini'</code>).</p>
+<h3 id="geticon-string"><code>getIcon(): string</code></h3>
+<p>Icône Lucide du provider pour l'interface admin (ex : <code>'zap'</code>, <code>'cloud'</code>, <code>'server'</code>).</p>
+<h3 id="getdefaultcurrency-string"><code>getDefaultCurrency(): string</code></h3>
+<p>Devise par défaut des tarifs de ce provider (code ISO 4217, ex : <code>'USD'</code>, <code>'EUR'</code>).</p>
+<h3 id="getprovideroptionsschema-array"><code>getProviderOptionsSchema(): array</code></h3>
+<p>Schéma des options spécifiques au provider pour le formulaire de preset admin.</p>
+<h3 id="validateprovideroptionsarray-options-modelcapabilities-caps-array"><code>validateProviderOptions(array $options, ModelCapabilities $caps): array</code></h3>
+<p>Valide et nettoie les options spécifiques au provider d'un preset. Retourne les options nettoyées.</p>
 <hr />
-<h2 id="exemple-un-client-factice-pour-vos-tests">🚀 Exemple : Un client factice pour vos tests</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">FakeLlmClient.php</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="x">namespace App\Synapse\Client;</span>
+<h2 id="format-openai-canonical">Format OpenAI Canonical</h2>
+<p>L'argument <code>$contents</code> suit le format standard OpenAI Chat Completions :</p>
+<div class="highlight"><pre><span></span><code><span class="x">$contents = [</span>
+<span class="x">    [&#39;role&#39; =&gt; &#39;system&#39;,    &#39;content&#39; =&gt; &#39;Instructions du système...&#39;],</span>
+<span class="x">    [&#39;role&#39; =&gt; &#39;user&#39;,      &#39;content&#39; =&gt; &#39;Question utilisateur&#39;],</span>
+<span class="x">    [&#39;role&#39; =&gt; &#39;assistant&#39;, &#39;content&#39; =&gt; &#39;Réponse...&#39;, &#39;tool_calls&#39; =&gt; [...]],</span>
+<span class="x">    [&#39;role&#39; =&gt; &#39;tool&#39;,      &#39;tool_call_id&#39; =&gt; &#39;...&#39;, &#39;content&#39; =&gt; &#39;Résultat outil&#39;],</span>
+<span class="x">];</span>
+</code></pre></div>
+<p>Chaque <code>LlmClient</code> est responsable de traduire ce format vers le format natif de son API (ex : <code>GeminiClient</code> adapte OpenAI → Gemini, <code>OvhAiClient</code> passe directement).</p>
+<hr />
+<h2 id="format-du-chunk-normalise">Format du chunk normalisé</h2>
+<p>La méthode <code>generateContent()</code> et les yield de <code>streamGenerateContent()</code> retournent des chunks au format normalisé :</p>
+<div class="highlight"><pre><span></span><code><span class="x">[</span>
+<span class="x">    &#39;text&#39;           =&gt; &#39;...&#39;,         // Contenu texte généré (ou null)</span>
+<span class="x">    &#39;thinking&#39;       =&gt; &#39;...&#39;,         // Contenu de réflexion si supporté (ou null)</span>
+<span class="x">    &#39;function_calls&#39; =&gt; [...],         // Appels d&#39;outils demandés</span>
+<span class="x">    &#39;usage&#39;          =&gt; [</span>
+<span class="x">        &#39;prompt_tokens&#39;     =&gt; 10,</span>
+<span class="x">        &#39;completion_tokens&#39; =&gt; 20,</span>
+<span class="x">        &#39;total_tokens&#39;      =&gt; 30,</span>
+<span class="x">    ],</span>
+<span class="x">    &#39;safety_ratings&#39; =&gt; [...],         // Évaluations de sécurité du provider</span>
+<span class="x">    &#39;blocked&#39;        =&gt; false,         // true si la génération a été bloquée</span>
+<span class="x">    &#39;blocked_reason&#39; =&gt; null,          // ex: &#39;discours haineux&#39;, &#39;harcèlement&#39;</span>
+<span class="x">]</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">NormalizedChunk Value Object</p>
+<p>Le chunk peut aussi être représenté par le Value Object <code>NormalizedChunk</code> dans les traitements internes de <code>ChunkProcessor</code>.</p>
+</div>
+<hr />
+<h2 id="exemple-implementer-un-client-personnalise">Exemple : Implémenter un client personnalisé</h2>
+<div class="highlight"><pre><span></span><code><span class="x">namespace App\Llm;</span>
 
 <span class="x">use ArnaudMoncondhuy\SynapseCore\Contract\LlmClientInterface;</span>
-<span class="x">use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseMessage;</span>
-<span class="x">use ArnaudMoncondhuy\SynapseCore\Shared\Enum\MessageRole;</span>
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Shared\Model\ModelCapabilities;</span>
 
-<span class="x">class FakeLlmClient implements LlmClientInterface</span>
+<span class="x">class MyCustomClient implements LlmClientInterface</span>
 <span class="x">{</span>
-<span class="x">    public function supports(string $provider): bool</span>
+<span class="x">    public function getProviderName(): string</span>
 <span class="x">    {</span>
-<span class="x">        return $provider === &#39;fake&#39;;</span>
+<span class="x">        return &#39;my_provider&#39;;</span>
 <span class="x">    }</span>
 
-<span class="x">    public function generateResponse(array $messages, array $options = []): SynapseMessage</span>
+<span class="x">    public function getDefaultLabel(): string</span>
 <span class="x">    {</span>
-<span class="x">        $response = new SynapseMessage();</span>
-<span class="x">        $response-&gt;setRole(MessageRole::MODEL);</span>
-<span class="x">        $response-&gt;setContent(&quot;Ceci est une réponse simulée.&quot;);</span>
-
-<span class="x">        return $response;</span>
+<span class="x">        return &#39;Mon Provider IA&#39;;</span>
 <span class="x">    }</span>
 
-<span class="x">    public function generateStream(array $messages, array $options = []): iterable</span>
+<span class="x">    public function getIcon(): string</span>
 <span class="x">    {</span>
-<span class="x">        yield &quot;Ceci &quot;;</span>
-<span class="x">        yield &quot;est &quot;;</span>
-<span class="x">        yield &quot;un &quot;;</span>
-<span class="x">        yield &quot;flux.&quot;;</span>
+<span class="x">        return &#39;zap&#39;;</span>
+<span class="x">    }</span>
+
+<span class="x">    public function getDefaultCurrency(): string</span>
+<span class="x">    {</span>
+<span class="x">        return &#39;EUR&#39;;</span>
+<span class="x">    }</span>
+
+<span class="x">    public function streamGenerateContent(</span>
+<span class="x">        array $contents,</span>
+<span class="x">        array $tools = [],</span>
+<span class="x">        ?string $model = null,</span>
+<span class="x">        array &amp;$debugOut = [],</span>
+<span class="x">    ): \Generator {</span>
+<span class="x">        // 1. Extraire le message système si présent</span>
+<span class="x">        $system = &#39;&#39;;</span>
+<span class="x">        if (!empty($contents[0]) &amp;&amp; $contents[0][&#39;role&#39;] === &#39;system&#39;) {</span>
+<span class="x">            $system = $contents[0][&#39;content&#39;];</span>
+<span class="x">            $contents = array_slice($contents, 1);</span>
+<span class="x">        }</span>
+
+<span class="x">        // 2. Traduire vers votre format API</span>
+<span class="x">        // 3. Appeler votre API en streaming</span>
+<span class="x">        // 4. Yield des chunks normalisés</span>
+<span class="x">        yield [</span>
+<span class="x">            &#39;text&#39;    =&gt; &#39;Réponse simulée&#39;,</span>
+<span class="x">            &#39;usage&#39;   =&gt; [&#39;prompt_tokens&#39; =&gt; 10, &#39;completion_tokens&#39; =&gt; 5, &#39;total_tokens&#39; =&gt; 15],</span>
+<span class="x">            &#39;blocked&#39; =&gt; false,</span>
+<span class="x">        ];</span>
+<span class="x">    }</span>
+
+<span class="x">    public function generateContent(</span>
+<span class="x">        array $contents,</span>
+<span class="x">        array $tools = [],</span>
+<span class="x">        ?string $model = null,</span>
+<span class="x">        array $options = [],</span>
+<span class="x">        array &amp;$debugOut = [],</span>
+<span class="x">    ): array {</span>
+<span class="x">        // Implémentation synchrone</span>
+<span class="x">        return [</span>
+<span class="x">            &#39;text&#39;    =&gt; &#39;Réponse simulée&#39;,</span>
+<span class="x">            &#39;usage&#39;   =&gt; [&#39;prompt_tokens&#39; =&gt; 10, &#39;completion_tokens&#39; =&gt; 5, &#39;total_tokens&#39; =&gt; 15],</span>
+<span class="x">            &#39;blocked&#39; =&gt; false,</span>
+<span class="x">        ];</span>
 <span class="x">    }</span>
 
 <span class="x">    public function getCredentialFields(): array</span>
 <span class="x">    {</span>
-<span class="x">        return [&#39;api_key&#39;];</span>
+<span class="x">        return [</span>
+<span class="x">            &#39;api_key&#39; =&gt; [&#39;label&#39; =&gt; &#39;Clé API&#39;, &#39;type&#39; =&gt; &#39;password&#39;, &#39;required&#39; =&gt; true],</span>
+<span class="x">        ];</span>
+<span class="x">    }</span>
+
+<span class="x">    public function validateCredentials(array $credentials): void</span>
+<span class="x">    {</span>
+<span class="x">        if (empty($credentials[&#39;api_key&#39;])) {</span>
+<span class="x">            throw new \InvalidArgumentException(&#39;La clé API est requise.&#39;);</span>
+<span class="x">        }</span>
+<span class="x">    }</span>
+
+<span class="x">    public function getProviderOptionsSchema(): array</span>
+<span class="x">    {</span>
+<span class="x">        return [&#39;fields&#39; =&gt; []];</span>
+<span class="x">    }</span>
+
+<span class="x">    public function validateProviderOptions(array $options, ModelCapabilities $caps): array</span>
+<span class="x">    {</span>
+<span class="x">        return $options;</span>
 <span class="x">    }</span>
 <span class="x">}</span>
 </code></pre></div>
-</div>
-</div>
-</div>
 <hr />
-<h2 id="conseils-dimplementation">💡 Conseils d'implémentation</h2>
-<blockquote>
-<p>[!IMPORTANT]
-<strong>Format OpenAI Canonical</strong> : L'argument <code>$messages</code> reçu par ces méthodes est au format canonique OpenAI (<code>role</code> et <code>content</code>). Cela garantit une compatibilité maximale.</p>
-</blockquote>
+<h2 id="voir-aussi">Voir aussi</h2>
 <ul>
-<li><strong>Options LLM</strong> : Le tableau <code>$options</code> contient les paramètres techniques tels que <code>temperature</code>, <code>max_output_tokens</code> et les outils (<code>tools</code>). Veillez à les traduire fidèlement pour votre API cible.</li>
-<li><strong>Credential Fields</strong> : Les champs retournés par <code>getCredentialFields</code> apparaîtront automatiquement dans l'interface d'administration de Synapse Core.</li>
+<li><a href="../../implementation-guide/">Guide d'implémentation</a> — guide complet pour créer un provider</li>
+<li><a href="../../../explanation/architecture/">ModelCapabilityRegistry</a> — vérification des capacités avant envoi</li>
 </ul>
-<hr />
 
 
 

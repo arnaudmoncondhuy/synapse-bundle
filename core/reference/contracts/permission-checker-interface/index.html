@@ -16,7 +16,7 @@
         <link rel="prev" href="../message-formatter-interface/">
       
       
-        <link rel="next" href="../retention-policy-interface/">
+        <link rel="next" href="../rag-source-provider-interface/">
       
       
         
@@ -318,6 +318,26 @@
   
   
   Synapse Chat
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../mcp/" class="md-tabs__link">
+          
+  
+  
+  Synapse MCP
 
         </a>
       </li>
@@ -856,14 +876,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/personas-presets.md" class="md-nav__link">
+      <a href="../../../guides/tones-presets/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Personas & Presets
+    Tons & Presets & Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/custom-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Créer un agent en code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../agent-access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contrôle d'accès aux agents
   
 
     
@@ -1289,6 +1365,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../status-aware-tool-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StatusAwareTool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../config-provider-interface/" class="md-nav__link">
         
   
@@ -1545,10 +1649,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#namespace" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Namespace
       
     </span>
   </a>
@@ -1556,10 +1660,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resume-du-contrat" class="md-nav__link">
+  <a href="#contrat-complet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Résumé du Contrat
+        Contrat complet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Méthodes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pourquoi-lutiliser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pourquoi l'utiliser ?
       
     </span>
   </a>
@@ -1570,7 +1696,7 @@
   <a href="#exemple-implementation-via-symfony-security" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Implémentation via Symfony Security
+        Exemple : Implémentation via Symfony Security
       
     </span>
   </a>
@@ -1578,10 +1704,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conseils-dimplementation" class="md-nav__link">
+  <a href="#voir-aussi" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'implémentation
+        Voir aussi
       
     </span>
   </a>
@@ -1592,6 +1718,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rag-source-provider-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RagSourceProvider
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1841,7 +1995,7 @@
   <span class="md-ellipsis">
     
   
-    PrePrompt
+    Pipeline de Prompt
   
 
     
@@ -2603,6 +2757,381 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synapse MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Synapse MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vue d'ensemble
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Outils MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Outils MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-presets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_presets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-agent-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_agent_test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-agent-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_agent_debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-workflow-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_workflow_run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/update-agent-system-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    update_agent_system_prompt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/sandbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandbox (Phase 10)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -2630,10 +3159,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#namespace" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Namespace
       
     </span>
   </a>
@@ -2641,10 +3170,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resume-du-contrat" class="md-nav__link">
+  <a href="#contrat-complet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Résumé du Contrat
+        Contrat complet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Méthodes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pourquoi-lutiliser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pourquoi l'utiliser ?
       
     </span>
   </a>
@@ -2655,7 +3206,7 @@
   <a href="#exemple-implementation-via-symfony-security" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Exemple : Implémentation via Symfony Security
+        Exemple : Implémentation via Symfony Security
       
     </span>
   </a>
@@ -2663,10 +3214,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conseils-dimplementation" class="md-nav__link">
+  <a href="#voir-aussi" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'implémentation
+        Voir aussi
       
     </span>
   </a>
@@ -2691,78 +3242,92 @@
 
 
 <h1 id="permissioncheckerinterface">PermissionCheckerInterface</h1>
-<p>L'interface <code>PermissionCheckerInterface</code> permet de déléguer la logique de sécurité de Synapse Core à votre système de droits existant (Voters Symfony, ACL, etc.).</p>
-<h2 id="pourquoi-lutiliser">🛠 Pourquoi l'utiliser ?</h2>
-<ul>
-<li><strong>Intégration native</strong> : Utilisez vos rôles (<code>ROLE_ADMIN</code>, <code>ROLE_USER</code>) pour contrôler l'accès aux fils de discussion.</li>
-<li><strong>Isolation</strong> : Garantir qu'un utilisateur ne puisse ni voir ni modifier les conversations des autres.</li>
-<li><strong>Multi-niveaux</strong> : Distinguer le droit de lecture, d'édition et de suppression.</li>
-</ul>
-<hr />
-<h2 id="resume-du-contrat">📋 Résumé du Contrat</h2>
+<p>L'interface <code>PermissionCheckerInterface</code> délègue la gestion des droits d'accès au système de sécurité de votre application (Voters Symfony, ACL, etc.).</p>
+<h2 id="namespace">Namespace</h2>
+<div class="highlight"><pre><span></span><code>ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface
+</code></pre></div>
+<h2 id="contrat-complet">Contrat complet</h2>
+<div class="highlight"><pre><span></span><code><span class="x">interface PermissionCheckerInterface</span>
+<span class="x">{</span>
+<span class="x">    public function canView(SynapseConversation $conversation): bool;</span>
+<span class="x">    public function canEdit(SynapseConversation $conversation): bool;</span>
+<span class="x">    public function canDelete(SynapseConversation $conversation): bool;</span>
+<span class="x">    public function canAccessAdmin(): bool;</span>
+<span class="x">    public function canCreateConversation(): bool;</span>
+<span class="x">    public function canUseAgent(SynapseAgent $agent): bool;</span>
+<span class="x">}</span>
+</code></pre></div>
+<h2 id="methodes">Méthodes</h2>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Méthode</th>
-<th style="text-align: left;">Cible</th>
-<th style="text-align: left;">Rôle</th>
+<th>Méthode</th>
+<th>Rôle</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>canView($conversation)</code></td>
-<td style="text-align: left;">Conversation</td>
-<td style="text-align: left;">Autorise ou non la lecture.</td>
+<td><code>canView(SynapseConversation $conversation): bool</code></td>
+<td>Vérifie si l'utilisateur peut consulter le contenu d'une conversation.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>canEdit($conversation)</code></td>
-<td style="text-align: left;">Conversation</td>
-<td style="text-align: left;">Autorise ou non l'envoi de messages.</td>
+<td><code>canEdit(SynapseConversation $conversation): bool</code></td>
+<td>Vérifie si l'utilisateur peut envoyer un message dans cette conversation.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>canDelete($conversation)</code></td>
-<td style="text-align: left;">Conversation</td>
-<td style="text-align: left;">Autorise ou non la suppression/archivage.</td>
+<td><code>canDelete(SynapseConversation $conversation): bool</code></td>
+<td>Vérifie si l'utilisateur peut supprimer cette conversation.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>canAccessAdmin()</code></td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">Vérifie l'accès à <code>/synapse/admin</code>.</td>
+<td><code>canAccessAdmin(): bool</code></td>
+<td>Vérifie les droits d'accès à l'interface d'administration <code>/synapse/admin</code>.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>canCreateConversation()</code></td>
-<td style="text-align: left;">-</td>
-<td style="text-align: left;">Autorise la création d'un nouveau chat.</td>
+<td><code>canCreateConversation(): bool</code></td>
+<td>Vérifie si l'utilisateur peut créer une nouvelle conversation.</td>
+</tr>
+<tr>
+<td><code>canUseAgent(SynapseAgent $agent): bool</code></td>
+<td>Vérifie si l'utilisateur peut utiliser un agent spécifique.</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="exemple-implementation-via-symfony-security">🚀 Exemple : Implémentation via Symfony Security</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">SynapseVoterChecker.php</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="x">namespace App\Synapse\Security;</span>
+<h2 id="pourquoi-lutiliser">Pourquoi l'utiliser ?</h2>
+<ul>
+<li><strong>Intégration native</strong> : déléguer à vos Voters Symfony existants.</li>
+<li><strong>Isolation</strong> : garantir qu'un utilisateur ne puisse ni voir ni modifier les conversations des autres.</li>
+<li><strong>Contrôle d'accès aux agents</strong> : filtrer les agents disponibles selon les rôles et identifiants.</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Secure by Default</p>
+<p>Par défaut, sans implémentation personnalisée, l'accès à l'administration est bloqué. C'est la posture sécurisée par défaut.</p>
+</div>
+<hr />
+<h2 id="exemple-implementation-via-symfony-security">Exemple : Implémentation via Symfony Security</h2>
+<div class="highlight"><pre><span></span><code><span class="x">namespace App\Security;</span>
 
 <span class="x">use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;</span>
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;</span>
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseConversation;</span>
 <span class="x">use Symfony\Bundle\SecurityBundle\Security;</span>
 
-<span class="x">class SynapseVoterChecker implements PermissionCheckerInterface</span>
+<span class="x">class AppPermissionChecker implements PermissionCheckerInterface</span>
 <span class="x">{</span>
 <span class="x">    public function __construct(private Security $security) {}</span>
 
-<span class="x">    public function canView($conversation): bool</span>
+<span class="x">    public function canView(SynapseConversation $conversation): bool</span>
 <span class="x">    {</span>
 <span class="x">        return $this-&gt;security-&gt;isGranted(&#39;VIEW&#39;, $conversation);</span>
 <span class="x">    }</span>
 
-<span class="x">    public function canEdit($conversation): bool</span>
+<span class="x">    public function canEdit(SynapseConversation $conversation): bool</span>
 <span class="x">    {</span>
 <span class="x">        return $this-&gt;security-&gt;isGranted(&#39;EDIT&#39;, $conversation);</span>
 <span class="x">    }</span>
 
-<span class="x">    public function canDelete($conversation): bool</span>
+<span class="x">    public function canDelete(SynapseConversation $conversation): bool</span>
 <span class="x">    {</span>
-<span class="x">        // Seuls les admins peuvent supprimer</span>
 <span class="x">        return $this-&gt;security-&gt;isGranted(&#39;ROLE_ADMIN&#39;);</span>
 <span class="x">    }</span>
 
@@ -2773,21 +3338,46 @@
 
 <span class="x">    public function canCreateConversation(): bool</span>
 <span class="x">    {</span>
-<span class="x">        // Tout utilisateur connecté peut créer un chat</span>
 <span class="x">        return $this-&gt;security-&gt;getUser() !== null;</span>
+<span class="x">    }</span>
+
+<span class="x">    public function canUseAgent(SynapseAgent $agent): bool</span>
+<span class="x">    {</span>
+<span class="x">        $accessControl = $agent-&gt;getAccessControl();</span>
+<span class="x">        if ($accessControl === null) {</span>
+<span class="x">            return true; // Agent public</span>
+<span class="x">        }</span>
+
+<span class="x">        $user = $this-&gt;security-&gt;getUser();</span>
+<span class="x">        if ($user === null) {</span>
+<span class="x">            return false;</span>
+<span class="x">        }</span>
+
+<span class="x">        foreach ($accessControl[&#39;roles&#39;] ?? [] as $role) {</span>
+<span class="x">            if ($this-&gt;security-&gt;isGranted($role)) {</span>
+<span class="x">                return true;</span>
+<span class="x">            }</span>
+<span class="x">        }</span>
+
+<span class="x">        return in_array(</span>
+<span class="x">            $user-&gt;getUserIdentifier(),</span>
+<span class="x">            $accessControl[&#39;userIdentifiers&#39;] ?? [],</span>
+<span class="x">            true</span>
+<span class="x">        );</span>
 <span class="x">    }</span>
 <span class="x">}</span>
 </code></pre></div>
-</div>
-</div>
-</div>
+<p>Puis enregistrez dans <code>services.yaml</code> :</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">class</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">App\Security\AppPermissionChecker</span>
+</code></pre></div>
 <hr />
-<h2 id="conseils-dimplementation">💡 Conseils d'implémentation</h2>
+<h2 id="voir-aussi">Voir aussi</h2>
 <ul>
-<li><strong>Délégation</strong> : Si vous ne souhaitez pas gérer de permissions complexes, vous pouvez laisser le bundle utiliser <code>DefaultPermissionChecker</code>. Notez que par défaut, l'accès à l'administration est <strong>bloqué</strong> si aucun système de sécurité n'est configuré (posture "Secure by Default").</li>
-<li><strong>Performance</strong> : Ces méthodes sont appelées à chaque accès aux messages ou au dashboard. Veillez à ce qu'elles ne fassent pas de requêtes SQL lourdes.</li>
+<li><a href="../../../agent-access-control/">Contrôle d'accès aux agents</a> — configuration détaillée</li>
+<li><a href="../../conversation-manager/">ConversationManager</a> — utilise ce checker pour chaque accès</li>
 </ul>
-<hr />
 
 
 

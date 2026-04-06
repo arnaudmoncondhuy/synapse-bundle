@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../ai-tool-interface/">
+        <link rel="prev" href="../status-aware-tool-interface/">
       
       
         <link rel="next" href="../context-provider-interface/">
@@ -318,6 +318,26 @@
   
   
   Synapse Chat
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../../mcp/" class="md-tabs__link">
+          
+  
+  
+  Synapse MCP
 
         </a>
       </li>
@@ -856,14 +876,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../guides/personas-presets.md" class="md-nav__link">
+      <a href="../../../guides/tones-presets/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Personas & Presets
+    Tons & Presets & Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/custom-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Créer un agent en code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../agent-access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contrôle d'accès aux agents
   
 
     
@@ -1286,6 +1362,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../status-aware-tool-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StatusAwareTool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1349,10 +1453,65 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#namespace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Namespace
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contrat-complet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contrat complet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Méthodes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#synapseruntimeconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseRuntimeConfig
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#override-temporaire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Override temporaire
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#pourquoi-lutiliser" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Pourquoi l'utiliser ?
       
     </span>
   </a>
@@ -1360,32 +1519,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resume-du-contrat" class="md-nav__link">
+  <a href="#voir-aussi" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Résumé du Contrat
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exemple-configuration-basee-sur-le-role-utilisateur" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        🚀 Exemple : Configuration basée sur le rôle utilisateur
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#conseils-dimplementation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        💡 Conseils d'implémentation
+        Voir aussi
       
     </span>
   </a>
@@ -1584,6 +1721,34 @@
     
   
     PermissionChecker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rag-source-provider-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RagSourceProvider
   
 
     
@@ -1841,7 +2006,7 @@
   <span class="md-ellipsis">
     
   
-    PrePrompt
+    Pipeline de Prompt
   
 
     
@@ -2603,6 +2768,381 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synapse MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Synapse MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vue d'ensemble
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Outils MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Outils MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/list-presets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_presets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-agent-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_agent_test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/run-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-agent-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_agent_debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/inspect-workflow-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_workflow_run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/update-agent-system-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    update_agent_system_prompt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../mcp/tools/sandbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandbox (Phase 10)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -2630,10 +3170,65 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#namespace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Namespace
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contrat-complet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contrat complet
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Méthodes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#synapseruntimeconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SynapseRuntimeConfig
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#override-temporaire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Override temporaire
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#pourquoi-lutiliser" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Pourquoi l'utiliser ?
       
     </span>
   </a>
@@ -2641,32 +3236,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#resume-du-contrat" class="md-nav__link">
+  <a href="#voir-aussi" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Résumé du Contrat
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#exemple-configuration-basee-sur-le-role-utilisateur" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        🚀 Exemple : Configuration basée sur le rôle utilisateur
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#conseils-dimplementation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        💡 Conseils d'implémentation
+        Voir aussi
       
     </span>
   </a>
@@ -2691,63 +3264,86 @@
 
 
 <h1 id="configproviderinterface">ConfigProviderInterface</h1>
-<p>L'interface <code>ConfigProviderInterface</code> permet d'ajuster dynamiquement les paramètres techniques de l'IA (température, filtres de sécurité) en fonction du contexte de votre application.</p>
-<h2 id="pourquoi-lutiliser">🛠 Pourquoi l'utiliser ?</h2>
-<ul>
-<li><strong>Adaptabilité</strong> : Utiliser une température basse (précision) pour l'analyse de données et une température haute (créativité) pour la rédaction de mails.</li>
-<li><strong>Sécurité à géométrie variable</strong> : Activer des filtres de sécurité plus stricts selon le profil de l'utilisateur ou le salon de discussion.</li>
-<li><strong>A/B Testing</strong> : Comparer différents réglages de modèles sans modifier le code source.</li>
-</ul>
-<hr />
-<h2 id="resume-du-contrat">📋 Résumé du Contrat</h2>
+<p>L'interface <code>ConfigProviderInterface</code> permet d'obtenir et de surcharger dynamiquement la configuration runtime de l'IA (modèle, température, preset actif, etc.).</p>
+<h2 id="namespace">Namespace</h2>
+<div class="highlight"><pre><span></span><code>ArnaudMoncondhuy\SynapseCore\Contract\ConfigProviderInterface
+</code></pre></div>
+<h2 id="contrat-complet">Contrat complet</h2>
+<div class="highlight"><pre><span></span><code><span class="x">interface ConfigProviderInterface</span>
+<span class="x">{</span>
+<span class="x">    public function getConfig(): SynapseRuntimeConfig;</span>
+<span class="x">    public function setOverride(?SynapseRuntimeConfig $config): void;</span>
+<span class="x">    public function getConfigForPreset(SynapseModelPreset $preset): SynapseRuntimeConfig;</span>
+<span class="x">}</span>
+</code></pre></div>
+<h2 id="methodes">Méthodes</h2>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Méthode</th>
-<th style="text-align: left;">Rôle</th>
+<th>Méthode</th>
+<th>Rôle</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>getConfig()</code></td>
-<td style="text-align: left;">Retourne un tableau de paramètres techniques (ex: <code>temperature</code>, <code>top_p</code>).</td>
+<td><code>getConfig(): SynapseRuntimeConfig</code></td>
+<td>Retourne la configuration dynamique active sous forme typée.</td>
+</tr>
+<tr>
+<td><code>setOverride(?SynapseRuntimeConfig $config): void</code></td>
+<td>Configure un override temporaire en mémoire (réinitialisé après chaque échange).</td>
+</tr>
+<tr>
+<td><code>getConfigForPreset(SynapseModelPreset $preset): SynapseRuntimeConfig</code></td>
+<td>Retourne la configuration complète pour un preset Doctrine spécifique.</td>
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Objet typé, pas un tableau</p>
+<p>Contrairement à une configuration YAML statique, <code>getConfig()</code> retourne un objet <code>SynapseRuntimeConfig</code> qui encapsule tous les paramètres runtime : modèle, température, streaming, maxTurns, presetId, agentId, debugMode, etc.</p>
+</div>
 <hr />
-<h2 id="exemple-configuration-basee-sur-le-role-utilisateur">🚀 Exemple : Configuration basée sur le rôle utilisateur</h2>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">RoleConfigProvider.php</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><span class="x">namespace App\Synapse\Config;</span>
-
-<span class="x">use ArnaudMoncondhuy\SynapseCore\Contract\ConfigProviderInterface;</span>
-<span class="x">use Symfony\Bundle\SecurityBundle\Security;</span>
-
-<span class="x">class RoleConfigProvider implements ConfigProviderInterface</span>
+<h2 id="synapseruntimeconfig">SynapseRuntimeConfig</h2>
+<p>Le Value Object <code>SynapseRuntimeConfig</code> contient les propriétés suivantes (principales) :</p>
+<div class="highlight"><pre><span></span><code><span class="x">class SynapseRuntimeConfig</span>
 <span class="x">{</span>
-<span class="x">    public function __construct(private Security $security) {}</span>
-
-<span class="x">    public function getConfig(): array</span>
-<span class="x">    {</span>
-<span class="x">        if ($this-&gt;security-&gt;isGranted(&#39;ROLE_CREATIVE&#39;)) {</span>
-<span class="x">            return [&#39;temperature&#39; =&gt; 1.2];</span>
-<span class="x">        }</span>
-
-<span class="x">        return [&#39;temperature&#39; =&gt; 0.2, &#39;top_p&#39; =&gt; 0.1];</span>
-<span class="x">    }</span>
+<span class="x">    public ?string $model;</span>
+<span class="x">    public ?string $provider;</span>
+<span class="x">    public ?float $temperature;</span>
+<span class="x">    public ?int $maxOutputTokens;</span>
+<span class="x">    public bool $debugMode;</span>
+<span class="x">    public ?int $presetId;</span>
+<span class="x">    public ?int $agentId;</span>
+<span class="x">    public ?int $maxTurns;</span>
+<span class="x">    // ... et d&#39;autres paramètres techniques</span>
 <span class="x">}</span>
 </code></pre></div>
-</div>
-</div>
+<hr />
+<h2 id="override-temporaire">Override temporaire</h2>
+<p>Le <code>ChatService</code> utilise <code>setOverride()</code> pour appliquer temporairement la configuration d'un preset ou d'un agent. L'override est <strong>toujours réinitialisé</strong> (<code>null</code>) à la fin de l'échange (même en cas d'exception) via un bloc <code>finally</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="x">// Exemple interne dans ChatService::ask()</span>
+<span class="x">$this-&gt;configProvider-&gt;setOverride($config);</span>
+<span class="x">// ... traitement ...</span>
+<span class="x">$this-&gt;configProvider-&gt;setOverride(null); // dans le bloc finally</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Mode FrankenPHP Worker</p>
+<p>En mode worker (processus long), les services sont partagés entre requêtes. La réinitialisation de l'override dans <code>finally</code> est critique pour éviter qu'une config d'une requête ne contamine la suivante.</p>
 </div>
 <hr />
-<h2 id="conseils-dimplementation">💡 Conseils d'implémentation</h2>
+<h2 id="pourquoi-lutiliser">Pourquoi l'utiliser ?</h2>
 <ul>
-<li><strong>Fusion des options</strong> : Synapse Core fusionne intelligemment la configuration par défaut avec celle retournée par votre provider. Vous ne devez renvoyer que les clés que vous souhaitez surcharger.</li>
-<li><strong>Limites</strong> : Attention à ne pas renvoyer de valeurs hors limites (ex: température &gt; 2.0 pour certains modèles), car cela pourrait provoquer des erreurs de l'API LLM.</li>
+<li><strong>Adaptabilité</strong> : utiliser une température basse pour l'analyse de données, haute pour la créativité.</li>
+<li><strong>A/B Testing</strong> : comparer différents réglages de modèles sans modifier le code source.</li>
+<li><strong>Override par requête</strong> : passer un preset spécifique via l'option <code>preset</code> de <code>ChatService::ask()</code>.</li>
 </ul>
 <hr />
+<h2 id="voir-aussi">Voir aussi</h2>
+<ul>
+<li><a href="../../chat-service/">ChatService</a> — utilise <code>ConfigProviderInterface</code> pour chaque échange</li>
+<li><a href="../../../guides/tones-presets/#2-les-presets">Presets via l'admin</a> — presets gérés en BDD</li>
+</ul>
 
 
 

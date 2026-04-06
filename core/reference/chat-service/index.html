@@ -325,6 +325,26 @@
   
 
       
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../mcp/" class="md-tabs__link">
+          
+  
+  
+  Synapse MCP
+
+        </a>
+      </li>
+    
+  
+
+      
     </ul>
   </div>
 </nav>
@@ -856,14 +876,70 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guides/personas-presets.md" class="md-nav__link">
+      <a href="../../guides/tones-presets/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Personas & Presets
+    Tons & Presets & Agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/custom-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Créer un agent en code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../agent-access-control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contrôle d'accès aux agents
   
 
     
@@ -1147,10 +1223,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#namespace" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Namespace
       
     </span>
   </a>
@@ -1158,10 +1234,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methodes-principales" class="md-nav__link">
+  <a href="#methodes-publiques" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Méthodes principales
+        Méthodes publiques
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Méthodes publiques">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#askstring-message-array-options-array-attachments-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ask(string $message, array $options, array $attachments): array
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resetconversation-void" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        resetConversation(): void
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getconversationhistory-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getConversationHistory(): array
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flux-dexecution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flux d'exécution
       
     </span>
   </a>
@@ -1169,10 +1295,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#utilisation-classique" class="md-nav__link">
+  <a href="#exemple-dutilisation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Utilisation classique
+        Exemple d'utilisation
       
     </span>
   </a>
@@ -1180,10 +1306,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#options-disponibles" class="md-nav__link">
+  <a href="#modeles-image-only" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ⚙️ Options disponibles
+        Modèles image-only
       
     </span>
   </a>
@@ -1191,10 +1317,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conseils-dutilisation" class="md-nav__link">
+  <a href="#voir-aussi" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'utilisation
+        Voir aussi
       
     </span>
   </a>
@@ -1371,6 +1497,34 @@
     
   
     AiToolInterface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contracts/status-aware-tool-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    StatusAwareTool
   
 
     
@@ -1595,6 +1749,34 @@
     
   
     PermissionChecker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contracts/rag-source-provider-interface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RagSourceProvider
   
 
     
@@ -1852,7 +2034,7 @@
   <span class="md-ellipsis">
     
   
-    PrePrompt
+    Pipeline de Prompt
   
 
     
@@ -2614,6 +2796,381 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Synapse MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Synapse MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vue d'ensemble
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Outils MCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Outils MCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/list-agents/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_agents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/list-presets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    list_presets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/run-agent-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_agent_test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/run-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    run_workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/inspect-agent-debug/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_agent_debug
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/inspect-workflow-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    inspect_workflow_run
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/update-agent-system-prompt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    update_agent_system_prompt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../mcp/tools/sandbox/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sandbox (Phase 10)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -2641,10 +3198,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pourquoi-lutiliser" class="md-nav__link">
+  <a href="#namespace" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🛠 Pourquoi l'utiliser ?
+        Namespace
       
     </span>
   </a>
@@ -2652,10 +3209,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methodes-principales" class="md-nav__link">
+  <a href="#methodes-publiques" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📋 Méthodes principales
+        Méthodes publiques
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Méthodes publiques">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#askstring-message-array-options-array-attachments-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ask(string $message, array $options, array $attachments): array
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resetconversation-void" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        resetConversation(): void
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getconversationhistory-array" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getConversationHistory(): array
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flux-dexecution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flux d'exécution
       
     </span>
   </a>
@@ -2663,10 +3270,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#utilisation-classique" class="md-nav__link">
+  <a href="#exemple-dutilisation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🚀 Utilisation classique
+        Exemple d'utilisation
       
     </span>
   </a>
@@ -2674,10 +3281,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#options-disponibles" class="md-nav__link">
+  <a href="#modeles-image-only" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ⚙️ Options disponibles
+        Modèles image-only
       
     </span>
   </a>
@@ -2685,10 +3292,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#conseils-dutilisation" class="md-nav__link">
+  <a href="#voir-aussi" class="md-nav__link">
     <span class="md-ellipsis">
       
-        💡 Conseils d'utilisation
+        Voir aussi
       
     </span>
   </a>
@@ -2713,79 +3320,188 @@
 
 
 <h1 id="chatservice">ChatService</h1>
-<p>Le <code>ChatService</code> est le point d'entrée principal de Synapse Core. C'est l'orchestrateur qui gère la communication avec le LLM, la gestion du contexte, l'appel des outils et le streaming.</p>
-<h2 id="pourquoi-lutiliser">🛠 Pourquoi l'utiliser ?</h2>
-<ul>
-<li><strong>Simplicité</strong> : Envoyez un message et recevez une réponse IA avec une seule ligne de code.</li>
-<li><strong>Orchestration automatique</strong> : Il gère pour vous le cycle de vie des promps, les itérations d'outils et le stockage des messages.</li>
-<li><strong>Performance</strong> : Supporte nativement le streaming pour une expérience utilisateur fluide.</li>
-</ul>
-<hr />
-<h2 id="methodes-principales">📋 Méthodes principales</h2>
+<p>Le <code>ChatService</code> est le point d'entrée principal de Synapse Core. C'est l'orchestrateur qui coordonne la construction du contexte (via <code>PromptPipeline</code>), la sélection du client LLM, la boucle multi-tours et la finalisation des échanges.</p>
+<h2 id="namespace">Namespace</h2>
+<div class="highlight"><pre><span></span><code>ArnaudMoncondhuy\SynapseCore\Engine\ChatService
+</code></pre></div>
+<h2 id="methodes-publiques">Méthodes publiques</h2>
+<h3 id="askstring-message-array-options-array-attachments-array"><code>ask(string $message, array $options, array $attachments): array</code></h3>
+<p>Point d'entrée principal pour envoyer un message à l'IA.</p>
+<p><strong>Paramètres :</strong></p>
 <table>
 <thead>
 <tr>
-<th style="text-align: left;">Méthode</th>
-<th style="text-align: left;">Entrée</th>
-<th style="text-align: left;">Sortie</th>
-<th style="text-align: left;">Rôle</th>
+<th>Paramètre</th>
+<th>Type</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>ask(string $message, array $options)</code></td>
-<td style="text-align: left;">Message brut</td>
-<td style="text-align: left;"><code>string</code></td>
-<td style="text-align: left;">Déclenche un échange complet avec le LLM.</td>
+<td><code>$message</code></td>
+<td><code>string</code></td>
+<td>Texte envoyé par l'utilisateur</td>
+</tr>
+<tr>
+<td><code>$options</code></td>
+<td><code>array</code></td>
+<td>Options contrôlant le comportement de l'échange</td>
+</tr>
+<tr>
+<td><code>$attachments</code></td>
+<td><code>array</code></td>
+<td>Fichiers attachés (<code>[['mime_type' =&gt; '...', 'data' =&gt; '...']]</code>)</td>
 </tr>
 </tbody>
 </table>
+<p><strong>Options disponibles :</strong></p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tone</code></td>
+<td><code>string</code></td>
+<td>Clé du ton de réponse (ex : <code>'zen'</code>, <code>'efficace'</code>)</td>
+</tr>
+<tr>
+<td><code>history</code></td>
+<td><code>array</code></td>
+<td>Historique manuel au format OpenAI canonical</td>
+</tr>
+<tr>
+<td><code>stateless</code></td>
+<td><code>bool</code></td>
+<td>Si <code>true</code>, ne pas enregistrer en BDD</td>
+</tr>
+<tr>
+<td><code>debug</code></td>
+<td><code>bool</code></td>
+<td>Activer le logging détaillé de l'échange</td>
+</tr>
+<tr>
+<td><code>preset</code></td>
+<td><code>SynapseModelPreset</code></td>
+<td>Preset Doctrine à utiliser pour cet échange</td>
+</tr>
+<tr>
+<td><code>conversation_id</code></td>
+<td><code>string</code></td>
+<td>ULID de la conversation à reprendre</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td><code>string</code></td>
+<td>Identifiant de l'utilisateur (pour les spending limits)</td>
+</tr>
+<tr>
+<td><code>estimated_cost_reference</code></td>
+<td><code>float</code></td>
+<td>Coût estimé pour la vérification de plafond</td>
+</tr>
+<tr>
+<td><code>streaming</code></td>
+<td><code>bool</code></td>
+<td>Activer ou forcer le streaming (prioritaire sur la config)</td>
+</tr>
+<tr>
+<td><code>reset_conversation</code></td>
+<td><code>bool</code></td>
+<td>Réinitialiser la conversation avant l'envoi</td>
+</tr>
+<tr>
+<td><code>agent</code></td>
+<td><code>string</code></td>
+<td>Clé de l'agent à utiliser</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Retour :</strong></p>
+<div class="highlight"><pre><span></span><code><span class="x">[</span>
+<span class="x">    &#39;answer&#39;               =&gt; string,         // Réponse textuelle complète</span>
+<span class="x">    &#39;debug_id&#39;             =&gt; ?string,        // ID de debug (si mode debug activé)</span>
+<span class="x">    &#39;usage&#39;                =&gt; array,          // Tokens consommés</span>
+<span class="x">    &#39;safety&#39;               =&gt; array,          // Évaluations de sécurité du provider</span>
+<span class="x">    &#39;model&#39;                =&gt; string,         // Identifiant du modèle utilisé</span>
+<span class="x">    &#39;preset_id&#39;            =&gt; ?int,           // ID du preset Doctrine actif</span>
+<span class="x">    &#39;agent_id&#39;             =&gt; ?int,           // ID de l&#39;agent Doctrine actif</span>
+<span class="x">    &#39;generated_attachments&#39;=&gt; array,          // Images générées (modèles image-only)</span>
+<span class="x">]</span>
+</code></pre></div>
+<h3 id="resetconversation-void"><code>resetConversation(): void</code></h3>
+<p>Réinitialise l'historique de la conversation courante. Supprime la conversation en base de données si elle existe.</p>
+<h3 id="getconversationhistory-array"><code>getConversationHistory(): array</code></h3>
+<p>Retourne l'historique complet de la conversation courante au format OpenAI canonical.</p>
 <hr />
-<h2 id="utilisation-classique">🚀 Utilisation classique</h2>
-<p>Voici comment utiliser le service dans un contrôleur Symfony.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">ChatController.php</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
+<h2 id="flux-dexecution">Flux d'exécution</h2>
+<p>Lors d'un appel à <code>ask()</code>, le <code>ChatService</code> orchestre dans l'ordre :</p>
+<ol>
+<li>Dispatch de <code>SynapseGenerationStartedEvent</code></li>
+<li>Application du preset override (si fourni dans les options)</li>
+<li>Exécution du <code>PromptPipeline</code> (5 phases : BUILD → ENRICH → OPTIMIZE → FINALIZE → CAPTURE)</li>
+<li>Vérification des spending limits (<code>SpendingLimitChecker</code>)</li>
+<li>Sélection du client LLM via <code>LlmClientRegistry</code></li>
+<li>Boucle multi-tours via <code>MultiTurnExecutor</code> (max <code>config.maxTurns</code>)</li>
+<li>Dispatch de <code>SynapseGenerationCompletedEvent</code> et <code>SynapseExchangeCompletedEvent</code></li>
+<li>Réinitialisation de l'override (bloc <code>finally</code>)</li>
+</ol>
+<hr />
+<h2 id="exemple-dutilisation">Exemple d'utilisation</h2>
 <div class="highlight"><pre><span></span><code><span class="x">namespace App\Controller;</span>
 
-<span class="x">use ArnaudMoncondhuy\SynapseCore\Core\Chat\ChatService;</span>
+<span class="x">use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;</span>
 <span class="x">use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;</span>
-<span class="x">use Symfony\Component\HttpFoundation\Response;</span>
+<span class="x">use Symfony\Component\HttpFoundation\JsonResponse;</span>
+<span class="x">use Symfony\Component\Routing\Annotation\Route;</span>
 
 <span class="x">class ChatController extends AbstractController</span>
 <span class="x">{</span>
-<span class="x">    public function index(ChatService $chatService): Response</span>
+<span class="x">    #[Route(&#39;/ask&#39;, name: &#39;app_chat_ask&#39;, methods: [&#39;POST&#39;])]</span>
+<span class="x">    public function ask(ChatService $chatService): JsonResponse</span>
 <span class="x">    {</span>
-<span class="x">        $response = $chatService-&gt;ask(&quot;Bonjour, peux-tu m&#39;aider ?&quot;, [</span>
-<span class="x">            &#39;model&#39; =&gt; &#39;gemini-1.5-flash&#39;,</span>
-<span class="x">            &#39;temperature&#39; =&gt; 0.7,</span>
-<span class="x">            &#39;stream&#39; =&gt; false</span>
-<span class="x">        ]);</span>
+<span class="x">        $result = $chatService-&gt;ask(&quot;Bonjour, peux-tu m&#39;aider ?&quot;);</span>
 
-<span class="x">        return new Response($response);</span>
+<span class="x">        return $this-&gt;json([</span>
+<span class="x">            &#39;answer&#39;  =&gt; $result[&#39;answer&#39;],</span>
+<span class="x">            &#39;model&#39;   =&gt; $result[&#39;model&#39;],</span>
+<span class="x">            &#39;tokens&#39;  =&gt; $result[&#39;usage&#39;],</span>
+<span class="x">        ]);</span>
+<span class="x">    }</span>
+
+<span class="x">    #[Route(&#39;/ask-with-agent&#39;, name: &#39;app_chat_agent&#39;, methods: [&#39;POST&#39;])]</span>
+<span class="x">    public function askWithAgent(ChatService $chatService): JsonResponse</span>
+<span class="x">    {</span>
+<span class="x">        $result = $chatService-&gt;ask(</span>
+<span class="x">            &quot;Analyse ce code&quot;,</span>
+<span class="x">            [</span>
+<span class="x">                &#39;agent&#39;   =&gt; &#39;expert_symfony&#39;,</span>
+<span class="x">                &#39;tone&#39;    =&gt; &#39;efficace&#39;,</span>
+<span class="x">                &#39;debug&#39;   =&gt; true,</span>
+<span class="x">            ]</span>
+<span class="x">        );</span>
+
+<span class="x">        return $this-&gt;json([</span>
+<span class="x">            &#39;answer&#39;   =&gt; $result[&#39;answer&#39;],</span>
+<span class="x">            &#39;debug_id&#39; =&gt; $result[&#39;debug_id&#39;],</span>
+<span class="x">        ]);</span>
 <span class="x">    }</span>
 <span class="x">}</span>
 </code></pre></div>
-</div>
-</div>
-</div>
 <hr />
-<h2 id="options-disponibles">⚙️ Options disponibles</h2>
-<p>La méthode <code>ask()</code> accepte un tableau d'options pour personnaliser l'échange :</p>
+<h2 id="modeles-image-only">Modèles image-only</h2>
+<p>Si le modèle configuré supporte uniquement la génération d'image (pas de texte), <code>ChatService</code> route automatiquement vers <code>ImageGenerationService</code>. La réponse aura <code>answer = ''</code> et <code>generated_attachments</code> contiendra les images générées.</p>
+<hr />
+<h2 id="voir-aussi">Voir aussi</h2>
 <ul>
-<li><strong><code>model</code></strong> : Identifiant technique du modèle LLM à utiliser.</li>
-<li><strong><code>temperature</code></strong> : (float) Entre 0.0 et 1.0 (créativité).</li>
-<li><strong><code>stream</code></strong> : (bool) Si vrai, le service émettra des événements pour chaque token reçu.</li>
-<li><strong><code>max_output_tokens</code></strong> : Limite la longueur de la réponse.</li>
-<li><strong><code>debug</code></strong> : (bool) Active le logging détaillé de l'échange.</li>
+<li><a href="../../explanation/architecture/">Architecture &amp; Flux</a> — diagramme complet du pipeline</li>
+<li><a href="../events/overview/">Événements</a> — tous les events dispatché lors d'un <code>ask()</code></li>
+<li><a href="../../guides/rle-management/">Conversations &amp; Persistance</a> — gestion de l'historique</li>
 </ul>
-<hr />
-<h2 id="conseils-dutilisation">💡 Conseils d'utilisation</h2>
-<blockquote>
-<p>[!TIP]
-<strong>Streaming</strong> : Pour utiliser le streaming, passez <code>stream: true</code> et écoutez l'événement <code>SynapseChunkReceivedEvent</code>. Cela permet d'afficher la réponse au fur et à mesure qu'elle arrive, comme sur ChatGPT.</p>
-</blockquote>
-<hr />
 
 
 
