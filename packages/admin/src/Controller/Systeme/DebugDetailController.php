@@ -73,7 +73,7 @@ class DebugDetailController extends AbstractController
     {
         $createdAt = $debugLog->getCreatedAt();
         $model = $debugLog->getModel();
-        if (null === $createdAt || null === $model) {
+        if (null === $model) {
             return null;
         }
 

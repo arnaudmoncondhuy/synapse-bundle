@@ -766,9 +766,6 @@
 
 .synapse-chat-form {
     pointer-events: auto;
-}
-
-.synapse-chat-form {
     max-width: 900px;
     margin: 0 auto;
 }

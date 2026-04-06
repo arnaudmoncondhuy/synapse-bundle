@@ -14,7 +14,7 @@ final class PromptUtil
      *
      * @param array<int, array{role: string, content?: string}> $messages
      *
-     * @return array<int, array{role: string, content: string}>
+     * @return array<int, array{role: string, content?: string}>
      */
     public static function appendToSystemMessage(array $messages, string $block): array
     {
