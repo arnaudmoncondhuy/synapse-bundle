@@ -11,6 +11,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModel;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -56,6 +57,16 @@ class ModelController extends AbstractController
 
         $model->setIsEnabled(!$model->isEnabled());
         $this->em->flush();
+
+        if ($request->isXmlHttpRequest()) {
+            $newToken = $this->csrfTokenManager?->getToken('synapse_model_toggle_'.$modelId)->getValue();
+
+            return new JsonResponse([
+                'enabled' => $model->isEnabled(),
+                'modelId' => $modelId,
+                'token' => $newToken,
+            ]);
+        }
 
         $status = $model->isEnabled() ? 'activé' : 'désactivé';
         $this->addFlash('success', sprintf('Le modèle "%s" a été %s.', $modelId, $status));

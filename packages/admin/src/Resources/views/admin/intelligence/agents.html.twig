@@ -21,7 +21,7 @@
 			</h1>
 			<p class="synapse-admin-page-subtitle">
 				{{ 'synapse.admin.agent.list.subtitle'|trans(domain='synapse_admin') }}
-				{{ 'synapse.admin.agent.list.usage_tip'|trans(domain='synapse_admin')|raw }}
+				{{ 'synapse.admin.agent.list.usage_tip'|trans(domain='synapse_admin')|safe_html }}
 			</p>
 		</div>
 		<div class="synapse-admin-page-header__actions">
@@ -55,6 +55,20 @@
 									<i data-lucide="eye-off"></i>
 									{{ 'synapse.admin.agent.list.badge.disabled'|trans(domain='synapse_admin') }}
 								</span>
+							{% endif %}
+							{% if not agent.visibleInChat and agent.isActive %}
+								<span class="synapse-admin-badge synapse-admin-badge--info">
+									<i data-lucide="eye-off"></i>
+									{{ 'synapse.admin.agent.list.badge.workflow_only'|trans(domain='synapse_admin') }}
+								</span>
+							{% endif %}
+							{% if agent_workflow_map[agent.key] is defined %}
+								{% for wname in agent_workflow_map[agent.key] %}
+									<span class="synapse-admin-badge synapse-admin-badge--primary">
+										<i data-lucide="workflow"></i>
+										{{ wname }}
+									</span>
+								{% endfor %}
 							{% endif %}
 						</div>
 						<div class="synapse-admin-text-sm synapse-admin-text-muted">

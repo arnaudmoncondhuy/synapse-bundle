@@ -53,6 +53,13 @@
                 {{ 'synapse.admin.sidebar.agents'|trans(domain='synapse_admin') }}
             </a>
 
+            {# Workflows (Phase 7 — stockage/admin ; moteur Phase 8) #}
+            <a href="{{ path('synapse_admin_workflows') }}"
+               class="synapse-admin-nav__link {% if route starts with 'synapse_admin_workflows' %}is-active{% endif %}">
+                <span class="synapse-admin-nav__icon"><i data-lucide="workflow"></i></span>
+                {{ 'synapse.admin.sidebar.workflows'|trans(domain='synapse_admin') }}
+            </a>
+
             <a href="{{ path('synapse_admin_tools') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_tools' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="wrench"></i></span>

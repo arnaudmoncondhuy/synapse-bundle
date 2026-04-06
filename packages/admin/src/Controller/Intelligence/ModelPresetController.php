@@ -373,7 +373,7 @@ class ModelPresetController extends AbstractController
         return [
             'providers' => $this->providerRepo->findAllOrdered(),
             'models_by_provider' => $this->getModelsByProvider(),
-            'model_capabilities' => $this->getFullModelsCapabilities(),
+            'model_capabilities' => $this->capabilityRegistry->getAllCapabilitiesMap(),
             'provider_schemas' => $providerSchemas,
             'provider_meta' => $this->llmRegistry->getProvidersMeta(),
         ];
@@ -390,43 +390,6 @@ class ModelPresetController extends AbstractController
             if ($caps->supportsTextGeneration) {
                 $result[$caps->provider][] = $modelId;
             }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @return array<string, array{provider: string, dimensions: int[], supportsThinking: bool, supportsSafetySettings: bool, supportsTopK: bool, supportsFunctionCalling: bool, supportsStreaming: bool, supportsTextGeneration: bool, supportsEmbedding: bool, supportsImageGeneration: bool, supportsVision: bool, supportsParallelToolCalls: bool, supportsResponseSchema: bool, maxInputTokens: int|null, maxOutputTokens: int|null, deprecatedAt: string|null, providerRegions: list<string>, rgpdRisk: string|null, pricingInput: float|null, pricingOutput: float|null, pricingOutputImage: float|null}>
-     */
-    private function getFullModelsCapabilities(): array
-    {
-        $result = [];
-        foreach ($this->capabilityRegistry->getKnownModels() as $modelId) {
-            $caps = $this->capabilityRegistry->getCapabilities($modelId);
-            $result[$modelId] = [
-                'provider' => $caps->provider,
-                'dimensions' => $caps->dimensions,
-                'supportsThinking' => $caps->supportsThinking,
-                'supportsSafetySettings' => $caps->supportsSafetySettings,
-                'supportsTopK' => $caps->supportsTopK,
-                'supportsFunctionCalling' => $caps->supportsFunctionCalling,
-                'supportsStreaming' => $caps->supportsStreaming,
-                // Phase 1
-                'supportsTextGeneration' => $caps->supportsTextGeneration,
-                'supportsEmbedding' => $caps->supportsEmbedding,
-                'supportsImageGeneration' => $caps->supportsImageGeneration,
-                'supportsVision' => $caps->supportsVision,
-                'supportsParallelToolCalls' => $caps->supportsParallelToolCalls,
-                'supportsResponseSchema' => $caps->supportsResponseSchema,
-                'maxInputTokens' => $caps->maxInputTokens,
-                'maxOutputTokens' => $caps->maxOutputTokens,
-                'deprecatedAt' => $caps->deprecatedAt,
-                'providerRegions' => $caps->providerRegions,
-                'rgpdRisk' => $caps->rgpdRisk,
-                'pricingInput' => $caps->pricingInput,
-                'pricingOutput' => $caps->pricingOutput,
-                'pricingOutputImage' => $caps->pricingOutputImage,
-            ];
         }
 
         return $result;

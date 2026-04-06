@@ -25,6 +25,7 @@
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-symfony": "^2.0",
+        "roave/security-advisories": "dev-latest",
         "symfony/process": "^8.0",
         "symfony/test-pack": "^1.2",
         "symplify/monorepo-builder": "^12.0"
@@ -33,13 +34,15 @@
         "psr-4": {
             "ArnaudMoncondhuy\\SynapseCore\\": "packages/core/src/",
             "ArnaudMoncondhuy\\SynapseAdmin\\": "packages/admin/src/",
-            "ArnaudMoncondhuy\\SynapseChat\\": "packages/chat/src/"
+            "ArnaudMoncondhuy\\SynapseChat\\": "packages/chat/src/",
+            "ArnaudMoncondhuy\\SynapseMcp\\": "packages/mcp/src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
             "ArnaudMoncondhuy\\SynapseCore\\Tests\\": "packages/core/tests/",
-            "ArnaudMoncondhuy\\SynapseAdmin\\Tests\\": "packages/admin/tests/"
+            "ArnaudMoncondhuy\\SynapseAdmin\\Tests\\": "packages/admin/tests/",
+            "ArnaudMoncondhuy\\SynapseMcp\\Tests\\": "packages/mcp/tests/"
         }
     },
     "repositories": [
@@ -60,6 +63,13 @@
         {
             "type": "path",
             "url": "packages/chat",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "packages/mcp",
             "options": {
                 "symlink": true
             }

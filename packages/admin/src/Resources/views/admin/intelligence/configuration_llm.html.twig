@@ -359,31 +359,22 @@
 									</td>
 
 									<td>
-										{% if model.is_enabled %}
-											<span class="synapse-admin-badge synapse-admin-badge--success">
-												<i data-lucide="circle-check"></i>
-												{{ 'synapse.admin.llm_config.provider.status.active'|trans(domain='synapse_admin') }}
-											</span>
-										{% else %}
-											<span class="synapse-admin-badge synapse-admin-badge--neutral">
-												<i data-lucide="circle-slash"></i>
-												{{ 'synapse.admin.llm_config.provider.status.disabled'|trans(domain='synapse_admin') }}
-											</span>
-										{% endif %}
+										<span id="status-{{ safeId }}"
+											class="synapse-admin-badge {{ model.is_enabled ? 'synapse-admin-badge--success' : 'synapse-admin-badge--neutral' }}"
+											style="cursor: pointer;"
+											data-toggle-url="{{ path('synapse_admin_models_toggle', {modelId: model.id}) }}"
+											data-toggle-token="{{ csrf_token('synapse_model_toggle_' ~ model.id) }}"
+											data-toggle-model="{{ safeId }}"
+											data-toggle-enabled="{{ model.is_enabled ? '1' : '0' }}">
+											<i data-lucide="{{ model.is_enabled ? 'circle-check' : 'circle-slash' }}"></i>
+											<span class="status-label">{{ (model.is_enabled ? 'synapse.admin.llm_config.provider.status.active' : 'synapse.admin.llm_config.provider.status.disabled')|trans(domain='synapse_admin') }}</span>
+										</span>
 									</td>
 
 									<td>
-										<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center">
-											<form action="{{ path('synapse_admin_models_toggle', {modelId: model.id}) }}" method="POST">
-												<input type="hidden" name="_token" value="{{ csrf_token('synapse_model_toggle_' ~ model.id) }}">
-												<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon" data-synapse-admin-tooltip="{{ model.is_enabled ? 'synapse.admin.agent.list.tooltip.disable'|trans(domain='synapse_admin') : 'synapse.admin.agent.list.tooltip.enable'|trans(domain='synapse_admin') }}">
-													<i data-lucide="{{ model.is_enabled ? 'eye-off' : 'eye' }}"></i>
-												</button>
-											</form>
-											<button type="button" onclick="toggleSettings('{{ safeId }}')" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.action.config'|trans(domain='synapse_admin') }}">
-												<i data-lucide="settings"></i>
-											</button>
-										</div>
+										<button type="button" onclick="toggleSettings('{{ safeId }}')" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.action.config'|trans(domain='synapse_admin') }}">
+											<i data-lucide="settings"></i>
+										</button>
 									</td>
 								</tr>
 
@@ -693,10 +684,58 @@ tbody.appendChild(settings);
 
 function toggleSettings(safeId) {
 const row = document.getElementById('settings-' + safeId);
-if (row) 
+if (row)
 row.hidden = ! row.hidden;
 
 }
+
+async function toggleModelStatus(badge) {
+if (badge.dataset.toggling) return;
+badge.dataset.toggling = '1';
+badge.style.opacity = '0.5';
+
+const url = badge.dataset.toggleUrl;
+const token = badge.dataset.toggleToken;
+
+const formData = new FormData();
+formData.append('_token', token);
+
+try {
+const resp = await fetch(url, {
+method: 'POST',
+body: formData,
+headers: {'X-Requested-With': 'XMLHttpRequest'}
+});
+
+if (!resp.ok) throw new Error(resp.statusText);
+const data = await resp.json();
+const nowEnabled = data.enabled;
+
+badge.dataset.toggleEnabled = nowEnabled ? '1' : '0';
+if (data.token) badge.dataset.toggleToken = data.token;
+
+badge.className = 'synapse-admin-badge ' + (nowEnabled ? 'synapse-admin-badge--success' : 'synapse-admin-badge--neutral');
+badge.style.cursor = 'pointer';
+
+const icon = badge.querySelector('[data-lucide]');
+if (icon) icon.setAttribute('data-lucide', nowEnabled ? 'circle-check' : 'circle-slash');
+
+const label = badge.querySelector('.status-label');
+if (label) label.textContent = nowEnabled ? '{{ 'synapse.admin.llm_config.provider.status.active'|trans(domain='synapse_admin') }}' : '{{ 'synapse.admin.llm_config.provider.status.disabled'|trans(domain='synapse_admin') }}';
+
+if (typeof lucide !== 'undefined') lucide.createIcons();
+} catch (e) {
+console.error('Toggle failed:', e);
+window.location.reload();
+} finally {
+delete badge.dataset.toggling;
+badge.style.opacity = '';
+}
+}
+
+document.querySelectorAll('[data-toggle-url]').forEach(badge => {
+badge.addEventListener('click', () => toggleModelStatus(badge));
+});
 		</script>
 	{% endif %}
 

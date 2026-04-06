@@ -76,7 +76,7 @@ class RagSourceController extends AbstractController
             $this->em->persist($source);
             $this->em->flush();
 
-            $this->addFlash('success', $this->translator->trans('synapse.admin.rag.flash.created', ['%name%' => $source->getName()], 'synapse_admin'));
+            $this->addFlash('success', $this->translator->trans('synapse.admin.rag.flash.created', ['name' => $source->getName()], 'synapse_admin'));
 
             return $this->redirectToRoute('synapse_admin_rag_sources');
         }
@@ -100,7 +100,7 @@ class RagSourceController extends AbstractController
             $this->applyFormData($source, $request->request->all());
             $this->em->flush();
 
-            $this->addFlash('success', $this->translator->trans('synapse.admin.rag.flash.updated', ['%name%' => $source->getName()], 'synapse_admin'));
+            $this->addFlash('success', $this->translator->trans('synapse.admin.rag.flash.updated', ['name' => $source->getName()], 'synapse_admin'));
 
             return $this->redirectToRoute('synapse_admin_rag_sources');
         }
@@ -144,13 +144,13 @@ class RagSourceController extends AbstractController
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_rag_source_reindex_'.$source->getId());
 
         if (!$this->registry->has($source->getSlug())) {
-            $this->addFlash('error', $this->translator->trans('synapse.admin.rag.flash.no_provider', ['%slug%' => $source->getSlug()], 'synapse_admin'));
+            $this->addFlash('error', $this->translator->trans('synapse.admin.rag.flash.no_provider', ['slug' => $source->getSlug()], 'synapse_admin'));
 
             return $this->redirectToRoute('synapse_admin_rag_sources_edit', ['id' => $source->getId()]);
         }
 
         if ('indexing' === $source->getIndexingStatus()) {
-            $this->addFlash('warning', $this->translator->trans('synapse.admin.rag.flash.already_indexing', ['%name%' => $source->getName()], 'synapse_admin'));
+            $this->addFlash('warning', $this->translator->trans('synapse.admin.rag.flash.already_indexing', ['name' => $source->getName()], 'synapse_admin'));
 
             return $this->redirectToRoute('synapse_admin_rag_sources_edit', ['id' => $source->getId()]);
         }
@@ -161,7 +161,7 @@ class RagSourceController extends AbstractController
 
         $this->bus->dispatch(new ReindexRagSourceMessage($source->getId() ?? throw new \InvalidArgumentException('RAG source must be persisted')));
 
-        $this->addFlash('success', $this->translator->trans('synapse.admin.rag.flash.reindex_queued', ['%name%' => $source->getName()], 'synapse_admin'));
+        $this->addFlash('success', $this->translator->trans('synapse.admin.rag.flash.reindex_queued', ['name' => $source->getName()], 'synapse_admin'));
 
         return $this->redirectToRoute('synapse_admin_rag_sources_edit', ['id' => $source->getId()]);
     }
@@ -195,7 +195,7 @@ class RagSourceController extends AbstractController
         $this->em->flush();
 
         $stateKey = $source->isActive() ? 'synapse.admin.rag.flash.enabled' : 'synapse.admin.rag.flash.disabled';
-        $this->addFlash('success', $this->translator->trans($stateKey, ['%name%' => $source->getName()], 'synapse_admin'));
+        $this->addFlash('success', $this->translator->trans($stateKey, ['name' => $source->getName()], 'synapse_admin'));
 
         return $this->redirectToRoute('synapse_admin_rag_sources');
     }
@@ -212,7 +212,7 @@ class RagSourceController extends AbstractController
         $this->em->remove($source);
         $this->em->flush();
 
-        $this->addFlash('success', $this->translator->trans('synapse.admin.rag.flash.deleted', ['%name%' => $name], 'synapse_admin'));
+        $this->addFlash('success', $this->translator->trans('synapse.admin.rag.flash.deleted', ['name' => $name], 'synapse_admin'));
 
         return $this->redirectToRoute('synapse_admin_rag_sources');
     }
@@ -238,7 +238,7 @@ class RagSourceController extends AbstractController
         $source->setLastError(null);
         $this->em->flush();
 
-        $this->addFlash('success', $this->translator->trans('synapse.admin.rag.flash.index_purged', ['%name%' => $source->getName()], 'synapse_admin'));
+        $this->addFlash('success', $this->translator->trans('synapse.admin.rag.flash.index_purged', ['name' => $source->getName()], 'synapse_admin'));
 
         return $this->redirectToRoute('synapse_admin_rag_sources');
     }

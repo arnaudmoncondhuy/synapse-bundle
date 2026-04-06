@@ -1,0 +1,13 @@
+site_name: mcp
+
+nav:
+  - Vue d'ensemble: index.md
+  - Outils MCP:
+      - list_agents: tools/list-agents.md
+      - list_presets: tools/list-presets.md
+      - run_agent_test: tools/run-agent-test.md
+      - run_workflow: tools/run-workflow.md
+      - inspect_agent_debug: tools/inspect-agent-debug.md
+      - inspect_workflow_run: tools/inspect-workflow-run.md
+      - update_agent_system_prompt: tools/update-agent-system-prompt.md
+      - Sandbox (Phase 10): tools/sandbox.md

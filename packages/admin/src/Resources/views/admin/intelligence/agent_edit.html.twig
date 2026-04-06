@@ -31,6 +31,12 @@
 			</p>
 		</div>
 		<div class="synapse-admin-page-header__actions">
+			{% if not is_new %}
+				<a href="{{ path('synapse_admin_agent_test_cases', {agentId: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+					<i data-lucide="test-tubes"></i>
+					{{ 'synapse.admin.agent.edit.action.test_cases'|trans(domain='synapse_admin') }}
+				</a>
+			{% endif %}
 			<a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
 				<i data-lucide="x"></i>
 				{{ 'synapse.admin.common.cancel'|trans(domain='synapse_admin') }}
@@ -111,7 +117,7 @@
 							{{ agent.isBuiltin ? 'readonly' : '' }}
 							required placeholder="ex: support_client"
 							pattern="[a-z0-9_]+" title="{{ 'synapse.admin.agent.edit.pattern_title'|trans(domain='synapse_admin') }}">
-						<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.usage_tip'|trans({'key': agent.key ?: 'mon_agent'}, domain='synapse_admin')|raw }}</p>
+						<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.usage_tip'|trans({'key': agent.key|default('mon_agent')|e}, domain='synapse_admin')|safe_html }}</p>
 					</div>
 
 				</div>
@@ -160,6 +166,22 @@
 						<textarea id="agent-system-prompt" name="system_prompt" class="synapse-admin-input synapse-admin-textarea synapse-admin-font-mono" rows="10" required
 							placeholder="{{ 'synapse.admin.agent.edit.placeholder.prompt'|trans(domain='synapse_admin') }}">{{ agent.systemPrompt }}</textarea>
 					</div>
+
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label" for="agent-version-reason">{{ 'synapse.admin.agent.edit.label.version_reason'|trans(domain='synapse_admin') }}</label>
+						<input id="agent-version-reason" name="version_reason" type="text" class="synapse-admin-input"
+							placeholder="{{ 'synapse.admin.agent.edit.placeholder.version_reason'|trans(domain='synapse_admin') }}">
+						<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.version_reason'|trans(domain='synapse_admin') }}</p>
+					</div>
+
+					{% if not is_new %}
+						<div class="synapse-admin-form-group">
+							<a href="{{ path('synapse_admin_agents_prompt_history', {id: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+								<i data-lucide="history"></i>
+								{{ 'synapse.admin.agent.edit.action.view_prompt_history'|trans(domain='synapse_admin') }}
+							</a>
+						</div>
+					{% endif %}
 
 				</div>
 			</div>
@@ -215,6 +237,24 @@
 						</div>
 
 					</div>
+
+					{# ── Workflow délégué ────────────────────────────────────────────── #}
+					{% if workflows is defined and workflows is not empty %}
+					<div class="synapse-admin-form-group synapse-admin-mt-md">
+						<label class="synapse-admin-label" for="agent-workflow-key">
+							{{ 'synapse.admin.agent.edit.workflow_key.label'|trans(domain='synapse_admin') }}
+						</label>
+						<select id="agent-workflow-key" name="workflow_key" class="synapse-admin-input">
+							<option value="">— {{ 'synapse.admin.agent.edit.workflow_key.none'|trans(domain='synapse_admin') }} —</option>
+							{% for w in workflows %}
+								<option value="{{ w.workflowKey }}" {% if agent.workflowKey is defined and agent.workflowKey == w.workflowKey %}selected{% endif %}>
+									{{ w.name }} ({{ w.workflowKey }})
+								</option>
+							{% endfor %}
+						</select>
+						<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.workflow_key.help'|trans(domain='synapse_admin') }}</p>
+					</div>
+					{% endif %}
 
 					<div id="agent-capabilities-container" class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center synapse-admin-mt-md" style="flex-wrap:wrap;"></div>
 
@@ -344,7 +384,7 @@
 
 					<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
 						<i data-lucide="info"></i>
-						<span>{{ 'synapse.admin.agent.edit.alert.access_tip'|trans(domain='synapse_admin')|raw }}</span>
+						<span>{{ 'synapse.admin.agent.edit.alert.access_tip'|trans(domain='synapse_admin')|safe_html }}</span>
 					</div>
 
 					<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-md">
@@ -387,7 +427,7 @@
 					{% if agent.isPublic %}
 						<div class="synapse-admin-alert synapse-admin-alert--warning synapse-admin-mt-md">
 							<i data-lucide="alert-triangle"></i>
-							<span>{{ 'synapse.admin.agent.edit.alert.access_public'|trans(domain='synapse_admin')|raw }}</span>
+							<span>{{ 'synapse.admin.agent.edit.alert.access_public'|trans(domain='synapse_admin')|safe_html }}</span>
 						</div>
 					{% endif %}
 
@@ -423,6 +463,16 @@
 								<span class="synapse-admin-toggle__slider"></span>
 								<span class="synapse-admin-toggle__label">{{ 'synapse.admin.agent.edit.label.activate'|trans(domain='synapse_admin') }}</span>
 							</label>
+						</div>
+
+						<div class="synapse-admin-form-group">
+							<div class="synapse-admin-label">{{ 'synapse.admin.agent.edit.label.visibility'|trans(domain='synapse_admin') }}</div>
+							<label class="synapse-admin-toggle">
+								<input type="checkbox" name="visible_in_chat" id="agent-visible-in-chat" {{ agent.visibleInChat ? 'checked' : '' }}>
+								<span class="synapse-admin-toggle__slider"></span>
+								<span class="synapse-admin-toggle__label">{{ 'synapse.admin.agent.edit.label.visible_in_chat'|trans(domain='synapse_admin') }}</span>
+							</label>
+							<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.visible_in_chat'|trans(domain='synapse_admin') }}</p>
 						</div>
 
 					</div>

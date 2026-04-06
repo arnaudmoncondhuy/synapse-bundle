@@ -1,0 +1,103 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}
+	{{ is_new ? 'synapse.admin.test_case.edit.page_title.new'|trans(domain='synapse_admin') : 'synapse.admin.test_case.edit.page_title.edit'|trans({'name': test_case.name}, domain='synapse_admin') }}
+{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.intelligence'|trans(domain='synapse_admin') }}</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.agents'|trans(domain='synapse_admin') }}</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_agents_edit', {id: agent.id}) }}" class="synapse-admin-topbar__breadcrumb">{{ agent.name }}</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_agent_test_cases', {agentId: agent.id}) }}" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.test_case.list.breadcrumb'|trans(domain='synapse_admin') }}</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-current">{{ is_new ? 'synapse.admin.common.new'|trans(domain='synapse_admin') : test_case.name }}</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="test-tubes"></i>
+				</span>
+				{{ is_new ? 'synapse.admin.test_case.edit.title.new'|trans(domain='synapse_admin') : 'synapse.admin.test_case.edit.title.edit'|trans({'name': test_case.name}, domain='synapse_admin') }}
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				{{ 'synapse.admin.test_case.edit.subtitle'|trans({'agent': agent.name}, domain='synapse_admin') }}
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			<a href="{{ path('synapse_admin_agent_test_cases', {agentId: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+				<i data-lucide="x"></i>
+				{{ 'synapse.admin.common.cancel'|trans(domain='synapse_admin') }}
+			</a>
+			<button type="submit" form="test-case-form" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+				<i data-lucide="save"></i>
+				{{ is_new ? 'synapse.admin.test_case.edit.action.create'|trans(domain='synapse_admin') : 'synapse.admin.test_case.edit.action.save'|trans(domain='synapse_admin') }}
+			</button>
+		</div>
+	</div>
+
+	<form id="test-case-form" method="post"
+		  action="{{ is_new ? path('synapse_admin_agent_test_cases_new', {agentId: agent.id}) : path('synapse_admin_agent_test_cases_edit', {agentId: agent.id, id: test_case.id}) }}">
+		<input type="hidden" name="_token" value="{{ csrf_token('synapse_test_case_edit') }}">
+
+		<div class="synapse-admin-card synapse-admin-mb-md">
+			<div class="synapse-admin-card__body">
+
+				{# ── Nom ──────────────────────────────────────────────────── #}
+				<div class="synapse-admin-form-group {{ errors.name is defined ? 'synapse-admin-form-group--error' : '' }}">
+					<label for="tc-name" class="synapse-admin-label">{{ 'synapse.admin.test_case.field.name'|trans(domain='synapse_admin') }} *</label>
+					<input type="text" id="tc-name" name="name" value="{{ test_case.name }}" class="synapse-admin-input" required placeholder="{{ 'synapse.admin.test_case.field.name_placeholder'|trans(domain='synapse_admin') }}">
+					{% if errors.name is defined %}
+						<p class="synapse-admin-form-error">{{ errors.name }}</p>
+					{% endif %}
+				</div>
+
+				{# ── Message (input) ──────────────────────────────────────── #}
+				<div class="synapse-admin-form-group {{ errors.message is defined ? 'synapse-admin-form-group--error' : '' }}">
+					<label for="tc-message" class="synapse-admin-label">{{ 'synapse.admin.test_case.field.message'|trans(domain='synapse_admin') }} *</label>
+					<textarea id="tc-message" name="message" class="synapse-admin-textarea" rows="4" placeholder="{{ 'synapse.admin.test_case.field.message_placeholder'|trans(domain='synapse_admin') }}">{{ test_case.message }}</textarea>
+					{% if errors.message is defined %}
+						<p class="synapse-admin-form-error">{{ errors.message }}</p>
+					{% endif %}
+					<p class="synapse-admin-form-help">{{ 'synapse.admin.test_case.field.message_help'|trans(domain='synapse_admin') }}</p>
+				</div>
+
+				{# ── Assertions (JSON) ────────────────────────────────────── #}
+				<div class="synapse-admin-form-group {{ errors.assertions is defined ? 'synapse-admin-form-group--error' : '' }}">
+					<label for="tc-assertions" class="synapse-admin-label">{{ 'synapse.admin.test_case.field.assertions'|trans(domain='synapse_admin') }}</label>
+					<textarea id="tc-assertions" name="assertions" class="synapse-admin-textarea synapse-admin-textarea--monospace" rows="8" placeholder='{{ 'synapse.admin.test_case.field.assertions_placeholder'|trans(domain='synapse_admin') }}'>{{ test_case.assertions ? test_case.assertions|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) : '' }}</textarea>
+					{% if errors.assertions is defined %}
+						<p class="synapse-admin-form-error">{{ errors.assertions }}</p>
+					{% endif %}
+					<p class="synapse-admin-form-help">{{ 'synapse.admin.test_case.field.assertions_help'|trans(domain='synapse_admin') }}</p>
+				</div>
+
+				<div class="synapse-admin-form-row">
+					{# ── Ordre ────────────────────────────────────────────── #}
+					<div class="synapse-admin-form-group" style="max-width: 160px;">
+						<label for="tc-sort-order" class="synapse-admin-label">{{ 'synapse.admin.test_case.field.sort_order'|trans(domain='synapse_admin') }}</label>
+						<input type="number" id="tc-sort-order" name="sort_order" value="{{ test_case.sortOrder }}" class="synapse-admin-input" min="0">
+					</div>
+
+					{# ── Actif ────────────────────────────────────────────── #}
+					<div class="synapse-admin-form-group">
+						<label class="synapse-admin-label">&nbsp;</label>
+						<label class="synapse-admin-checkbox">
+							<input type="checkbox" name="is_active" value="1" {{ test_case.isActive ? 'checked' : '' }}>
+							<span>{{ 'synapse.admin.test_case.field.is_active'|trans(domain='synapse_admin') }}</span>
+						</label>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</form>
+
+{% endblock %}

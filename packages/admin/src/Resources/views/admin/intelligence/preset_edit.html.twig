@@ -627,12 +627,11 @@ capsKey: 'supportsResponseSchema',
 disableKey: 'response_schema',
 label: 'JSON Mode',
 icon: 'braces',
-desc: 'Sortie structurée en JSON (Structured Output). Force le modèle à répondre selon un schéma JSON défini.',
-notImplemented: true
+desc: 'Sortie structurée en JSON (Structured Output). Force le modèle à répondre selon un schéma JSON défini.'
 }
 ];
 const disabled = getDisabledCapabilities();
-for (const {capsKey: key, disableKey, label, icon, desc, notImplemented, infoOnly} of capabilities) {
+for (const {capsKey: key, disableKey, label, icon, desc, infoOnly} of capabilities) {
 const isSupported = !!caps[key];
 const isDisabled = disableKey && disabled.includes(disableKey);
 const pill = document.createElement('span');
@@ -642,11 +641,6 @@ pill.style.opacity = '0.65';
 pill.style.textDecoration = 'line-through';
 pill.setAttribute('data-synapse-admin-tooltip', `Non supporté par ce modèle. ${desc}`);
 pill.innerHTML = `<i data-lucide="${icon}"></i> ${label}`;
-} else if (notImplemented) {
-pill.className = 'synapse-admin-badge synapse-admin-badge--neutral';
-pill.style.opacity = '0.65';
-pill.setAttribute('data-synapse-admin-tooltip', `${desc} — Implémentation à venir.`);
-pill.innerHTML = `<i data-lucide="clock"></i> ${label}`;
 } else if (infoOnly) {
 pill.className = 'synapse-admin-badge synapse-admin-badge--info';
 pill.setAttribute('data-synapse-admin-tooltip', desc);

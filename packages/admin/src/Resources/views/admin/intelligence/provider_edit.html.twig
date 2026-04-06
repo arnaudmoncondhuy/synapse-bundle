@@ -133,7 +133,7 @@
 							{% endif %}
 
 							{% if config.help is defined %}
-								<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">{{ config.help|raw }}</p>
+								<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">{{ config.help|safe_html }}</p>
 							{% endif %}
 						</div>
 					{% endfor %}

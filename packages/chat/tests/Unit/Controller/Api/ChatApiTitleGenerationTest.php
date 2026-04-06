@@ -302,7 +302,6 @@ class ChatApiTitleGenerationTest extends TestCase
             null,
             null,
             null,
-            null,
             $this->translator,
         );
 

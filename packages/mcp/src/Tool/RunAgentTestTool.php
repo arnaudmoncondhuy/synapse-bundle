@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseMcp\Tool;
 
 use ArnaudMoncondhuy\SynapseCore\AgentRegistry;
+use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
 use Mcp\Capability\Attribute\McpTool;
 
@@ -17,6 +18,7 @@ class RunAgentTestTool
     public function __construct(
         private readonly ChatService $chatService,
         private readonly AgentRegistry $agentRegistry,
+        private readonly PermissionCheckerInterface $permissionChecker,
     ) {
     }
 
@@ -26,6 +28,13 @@ class RunAgentTestTool
         string $input,
         ?int $userId = null,
     ): array {
+        if (!$this->permissionChecker->canAccessAdmin()) {
+            return [
+                'status' => 'error',
+                'error' => 'Access denied. Admin role required.',
+                'timestamp' => (new \DateTime())->format('c'),
+            ];
+        }
         $agent = $this->agentRegistry->get($agentKey);
         if (null === $agent) {
             return [

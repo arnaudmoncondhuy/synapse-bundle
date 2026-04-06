@@ -44,6 +44,7 @@ class AnalyticsController extends AbstractController
         $dailyUsage = $this->fillMissingDays($this->tokenUsageRepo->getDailyUsage($start, $end), $start, $end);
         $usageByModule = $this->tokenUsageRepo->getUsageByModule($start, $end);
         $usageByModel = $this->tokenUsageRepo->getUsageByModel($start, $end);
+        $conversationStats = $this->tokenUsageRepo->getConversationStats($start, $end);
 
         // Extraire les coûts par devise
         $costs = $globalStats['costs'] ?? [];
@@ -65,7 +66,7 @@ class AnalyticsController extends AbstractController
             'daily_usage' => $dailyUsage,
             'usage_by_module' => $usageByModule,
             'usage_by_model' => $usageByModel,
-            'conversation_stats' => $usageByModule['chat'] ?? ['count' => 0, 'total_tokens' => 0],
+            'conversation_stats' => $conversationStats,
         ]);
     }
 

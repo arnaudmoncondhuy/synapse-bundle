@@ -73,7 +73,7 @@ class HealthController extends AbstractController
                 'status' => count($configured) > 0 ? 'ok' : 'warning',
                 'detail' => $this->translator->trans(
                     'synapse.admin.health.check.providers.detail',
-                    ['%enabled%' => count($enabled), '%configured%' => count($configured), '%total%' => count($providers)],
+                    ['enabled' => count($enabled), 'configured' => count($configured), 'total' => count($providers)],
                     'synapse_admin'
                 ),
                 'icon' => 'plug',
@@ -96,9 +96,9 @@ class HealthController extends AbstractController
                 'detail' => $this->translator->trans(
                     'synapse.admin.health.check.config.detail',
                     [
-                        '%lang%' => $config->getContextLanguage(),
-                        '%debug%' => $config->isDebugMode() ? 'ON' : 'OFF',
-                        '%days%' => $config->getRetentionDays(),
+                        'lang' => $config->getContextLanguage(),
+                        'debug' => $config->isDebugMode() ? 'ON' : 'OFF',
+                        'days' => $config->getRetentionDays(),
                     ],
                     'synapse_admin'
                 ),
@@ -111,7 +111,7 @@ class HealthController extends AbstractController
                 'detail' => $config->getEmbeddingModel()
                     ? $this->translator->trans(
                         'synapse.admin.health.check.embedding.detail',
-                        ['%model%' => $config->getEmbeddingModel(), '%provider%' => $config->getEmbeddingProvider()],
+                        ['model' => $config->getEmbeddingModel(), 'provider' => $config->getEmbeddingProvider()],
                         'synapse_admin'
                     )
                     : $this->translator->trans('synapse.admin.llm_config.provider.status.unconfigured', [], 'synapse_admin'),

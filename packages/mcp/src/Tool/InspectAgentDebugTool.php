@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseMcp\Tool;
 
+use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository;
 use Mcp\Capability\Attribute\McpTool;
 
@@ -15,12 +16,20 @@ class InspectAgentDebugTool
 {
     public function __construct(
         private readonly SynapseDebugLogRepository $debugLogRepository,
+        private readonly PermissionCheckerInterface $permissionChecker,
     ) {
     }
 
     /** @return array<string, mixed> */
     public function __invoke(string $debugId): array
     {
+        if (!$this->permissionChecker->canAccessAdmin()) {
+            return [
+                'status' => 'error',
+                'error' => 'Access denied. Admin role required.',
+                'timestamp' => (new \DateTime())->format('c'),
+            ];
+        }
         $log = $this->debugLogRepository->findByDebugId($debugId);
 
         if (null === $log) {

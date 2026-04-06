@@ -25,8 +25,15 @@
 			</p>
 		</div>
 		<div class="synapse-admin-page-header__actions">
+			<form action="{{ path('synapse_admin_debug_purge') }}" method="POST" style="display:inline;">
+				<input type="hidden" name="_token" value="{{ csrf_token('debug_purge') }}">
+				<button type="submit" class="synapse-admin-btn synapse-admin-btn--danger synapse-admin-btn--sm" onclick="return confirm('{{ 'synapse.admin.debug.action.purge_confirm'|trans(domain='synapse_admin')|escape('js') }}')">
+					<i data-lucide="flame"></i>
+					{{ 'synapse.admin.debug.action.purge'|trans(domain='synapse_admin') }}
+				</button>
+			</form>
 			{% if logs|length > 0 %}
-				<form action="{{ path('synapse_admin_debug_clear') }}" method="POST">
+				<form action="{{ path('synapse_admin_debug_clear') }}" method="POST" style="display:inline;">
 					<input type="hidden" name="token" value="{{ csrf_token('debug_clear') }}">
 					<button type="submit" class="synapse-admin-btn synapse-admin-btn--danger synapse-admin-btn--sm" onclick="return confirm('{{ 'synapse.admin.debug.action.clear_confirm'|trans({'total': total}, domain='synapse_admin')|escape('js') }}')">
 						<i data-lucide="trash-2"></i>
@@ -115,7 +122,7 @@
 				</div>
 				<div class="synapse-admin-empty__title">{{ 'synapse.admin.debug.empty.title'|trans(domain='synapse_admin') }}</div>
 				<p class="synapse-admin-empty__description">
-					{{ 'synapse.admin.debug.empty.subtitle'|trans(domain='synapse_admin')|raw }}
+					{{ 'synapse.admin.debug.empty.subtitle'|trans(domain='synapse_admin')|safe_html }}
 				</p>
 			</div>
 		</div>
@@ -129,6 +136,13 @@
 				<div>
 					<div class="synapse-admin-card__title">{{ 'synapse.admin.debug.list.title'|trans(domain='synapse_admin') }}</div>
 					<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.debug.list.subtitle'|trans(domain='synapse_admin') }}</div>
+				</div>
+				<div style="margin-left: auto;">
+					<a href="{{ path('synapse_admin_debug', include_children ? {} : {include_children: 1}) }}"
+					   class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+						<i data-lucide="{{ include_children ? 'eye-off' : 'eye' }}"></i>
+						{{ (include_children ? 'synapse.admin.debug.filter.hide_children' : 'synapse.admin.debug.filter.show_children')|trans(domain='synapse_admin') }}
+					</a>
 				</div>
 			</div>
 
@@ -146,26 +160,25 @@
 					</thead>
 					<tbody>
 						{% for log in logs %}
-							{% set data = log.data ?? {} %}
 							<tr>
 								<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">
 									{{ log.debugId|slice(0, 8) }}…
 								</td>
 								<td>
-									<span class="synapse-admin-badge synapse-admin-badge--neutral">
-										{{ data.module ?? '—' }}
-									</span>
+									{% if log.module %}
+										<span class="synapse-admin-badge synapse-admin-badge--neutral">{{ ('synapse.admin.analytics.module.' ~ log.module)|synapse_label(log.module) }}</span>
+										{% if log.action %}
+											<span class="synapse-admin-badge synapse-admin-badge--info" style="margin-left: 4px;">{{ ('synapse.admin.analytics.action.' ~ log.action)|synapse_label(log.action) }}</span>
+										{% endif %}
+									{% else %}
+										<span class="synapse-admin-text-muted">—</span>
+									{% endif %}
 								</td>
 								<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">
-									{{ data.model ?? '—' }}
+									{{ log.model ?? '—' }}
 								</td>
 								<td class="synapse-admin-table__cell--mono">
-									{% set tokens = data.usage ?? data.token_usage ?? null %}
-									{% if tokens %}
-										{{ (tokens.total_tokens ?? (tokens.prompt_tokens ?? 0) + (tokens.completion_tokens ?? 0)) }}
-									{% else %}
-										—
-									{% endif %}
+									{{ log.totalTokens ?? '—' }}
 								</td>
 								<td class="synapse-admin-table__cell--muted">
 									{{ log.createdAt is defined ? log.createdAt|date('d/m H:i:s') : '—' }}

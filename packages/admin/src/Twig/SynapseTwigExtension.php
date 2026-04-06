@@ -9,6 +9,7 @@ use ArnaudMoncondhuy\SynapseCore\Contract\ConfigProviderInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\ToneRegistry;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
@@ -27,19 +28,36 @@ class SynapseTwigExtension extends AbstractExtension
         private readonly ?\ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface $permissionChecker = null,
         private readonly ?ConfigProviderInterface $configProvider = null,
         private readonly ?ModelCapabilityRegistry $modelCapabilityRegistry = null,
+        private readonly ?TranslatorInterface $translator = null,
     ) {
     }
 
     /**
      * Enregistre les filtres Twig personnalisés du bundle.
      *
-     * @return array<TwigFilter> Filtres : {synapse_markdown}
+     * @return array<TwigFilter> Filtres : {synapse_markdown, safe_html}
      */
     public function getFilters(): array
     {
         return [
             new TwigFilter('synapse_markdown', [$this, 'parseMarkdown'], ['is_safe' => ['html']]),
+            new TwigFilter('safe_html', [$this, 'safeHtml'], ['is_safe' => ['html']]),
+            new TwigFilter('synapse_label', [$this, 'synapseLabel']),
         ];
+    }
+
+    /**
+     * Filtre HTML qui n'autorise qu'un sous-ensemble de balises sûres.
+     *
+     * Remplace |raw pour les traductions et textes d'aide contenant du HTML contrôlé.
+     */
+    public function safeHtml(?string $text): string
+    {
+        if (null === $text || '' === $text) {
+            return '';
+        }
+
+        return strip_tags($text, ['strong', 'em', 'code', 'a', 'br', 'span', 'ul', 'li', 'ol']);
     }
 
     /**
@@ -70,6 +88,9 @@ class SynapseTwigExtension extends AbstractExtension
 
             // Vérifie si le preset actif supporte une capacité donnée (ex: 'vision')
             new TwigFunction('synapse_active_model_supports', [$this, 'activeModelSupports']),
+
+            // Retourne les types MIME acceptés en pièce jointe par le modèle actif
+            new TwigFunction('synapse_active_model_accepted_mimes', [$this, 'activeModelAcceptedMimes']),
         ];
     }
 
@@ -173,6 +194,57 @@ class SynapseTwigExtension extends AbstractExtension
         } catch (\Throwable) {
             return false;
         }
+    }
+
+    /**
+     * Retourne les types MIME acceptés en pièce jointe par le modèle actif.
+     *
+     * @return list<string> ex: ['image/png', 'image/jpeg', 'application/pdf']
+     */
+    public function activeModelAcceptedMimes(): array
+    {
+        if (null === $this->configProvider || null === $this->modelCapabilityRegistry) {
+            return [];
+        }
+        try {
+            $config = $this->configProvider->getConfig();
+            $model = '' !== $config->model ? $config->model : null;
+            if (null === $model) {
+                return [];
+            }
+
+            return $this->modelCapabilityRegistry->getCapabilities($model)->getAcceptedMimeTypes();
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * Tente de traduire une clé de traduction et retourne un label lisible.
+     *
+     * Si la traduction existe, elle est retournée. Sinon, la valeur brute est humanisée :
+     * underscores → espaces, première lettre en majuscule. Utile pour les noms d'agents
+     * dynamiques (sandbox) qui n'ont pas de traduction prédéfinie.
+     */
+    public function synapseLabel(string $translationKey, string $fallbackRaw): string
+    {
+        if (null === $this->translator) {
+            return $this->humanize($fallbackRaw);
+        }
+
+        $translated = $this->translator->trans($translationKey, [], 'synapse_admin');
+
+        // Si la traduction retourne la clé elle-même, c'est qu'elle n'existe pas.
+        if ($translated === $translationKey) {
+            return $this->humanize($fallbackRaw);
+        }
+
+        return $translated;
+    }
+
+    private function humanize(string $value): string
+    {
+        return ucfirst(str_replace('_', ' ', $value));
     }
 
     /**

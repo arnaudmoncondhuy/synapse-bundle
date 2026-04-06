@@ -139,7 +139,7 @@
 	<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mt-xl">
 		<i data-lucide="sparkles"></i>
 		<div>
-			{{ 'synapse.admin.about.credit.text'|trans(domain='synapse_admin')|raw }}
+			{{ 'synapse.admin.about.credit.text'|trans(domain='synapse_admin')|safe_html }}
 			<a href="{{ path('synapse_admin_health') }}">{{ 'synapse.admin.sidebar.health'|trans(domain='synapse_admin') }}</a>.
 		</div>
 	</div>

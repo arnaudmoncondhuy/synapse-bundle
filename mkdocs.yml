@@ -54,3 +54,4 @@ nav:
   - Synapse Core: '!include packages/core/mkdocs.yml'
   - Synapse Admin: '!include packages/admin/mkdocs.yml'
   - Synapse Chat: '!include packages/chat/mkdocs.yml'
+  - Synapse MCP: '!include packages/mcp/mkdocs.yml'

@@ -78,6 +78,34 @@
 		{# TAB 1: RÉSUMÉ & PARAMÈTRES (SUMMARY) #}
 		<div
 			class="synapse-admin-tab-pane active" id="tab-summary">
+			{# ── Tokens & coûts : source unique SynapseLlmCall ── #}
+			{% if llm_call is defined and llm_call is not null %}
+				{% set lc_prompt = llm_call.promptTokens %}
+				{% set lc_completion = llm_call.completionTokens %}
+				{% set lc_thinking = llm_call.thinkingTokens %}
+				{% set lc_image = llm_call.imageCompletionTokens %}
+				{% set lc_total = llm_call.totalTokens %}
+				{% set lc_cost = llm_call.costModelCurrency %}
+				{% set lc_cost_ref = llm_call.costReference %}
+				{% set lc_pricing_in = llm_call.pricingInput %}
+				{% set lc_pricing_out = llm_call.pricingOutput %}
+				{% set lc_pricing_out_image = llm_call.pricingOutputImage %}
+				{% set lc_currency = llm_call.pricingCurrency ?? 'USD' %}
+			{% else %}
+				{% set usage = data.usage ?? {} %}
+				{% set lc_prompt = usage.prompt_tokens ?? 0 %}
+				{% set lc_completion = usage.completion_tokens ?? 0 %}
+				{% set lc_thinking = usage.thinking_tokens ?? 0 %}
+				{% set lc_image = usage.image_completion_tokens ?? 0 %}
+				{% set lc_total = usage.total_tokens ?? 0 %}
+				{% set lc_cost = data.estimated_cost ?? null %}
+				{% set lc_cost_ref = null %}
+				{% set lc_pricing_in = preset_config.pricing_input ?? null %}
+				{% set lc_pricing_out = preset_config.pricing_output ?? null %}
+				{% set lc_pricing_out_image = null %}
+				{% set lc_currency = 'USD' %}
+			{% endif %}
+
 			{# ── KPIs Global ── #}
 			<div class="synapse-admin-grid synapse-admin-grid--4 synapse-admin-mb-xl">
 				<div class="synapse-admin-card synapse-admin-card--hover">
@@ -87,11 +115,13 @@
 						</div>
 						<div class="synapse-admin-kpi__body">
 							<div class="synapse-admin-kpi__label">Modèle</div>
-							<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ data.model ?? preset_config.model ?? '—' }}</div>
-							<div class="synapse-admin-kpi__sub">
-							{{ data.provider ?? preset_config.provider ?? '—' }}
-							{% if preset_config.preset_name ?? false %} · <em>{{ preset_config.preset_name }}</em>{% endif %}
-						</div>
+							<div class="synapse-admin-kpi__value" style="font-size: 0.85rem; word-break: break-all;">{{ data.model ?? preset_config.model ?? '—' }}</div>
+							<div class="synapse-admin-kpi__sub" style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.25rem;">
+								<span class="synapse-admin-badge synapse-admin-badge--neutral" style="font-size: 0.65rem;">{{ data.provider ?? preset_config.provider ?? '—' }}</span>
+								{% if preset_config.preset_name ?? false %}
+									<span class="synapse-admin-badge synapse-admin-badge--info" style="font-size: 0.65rem;">{{ preset_config.preset_name }}</span>
+								{% endif %}
+							</div>
 						</div>
 					</div>
 				</div>
@@ -102,29 +132,30 @@
 							<i data-lucide="coins"></i>
 						</div>
 						<div class="synapse-admin-kpi__body">
-							<div class="synapse-admin-kpi__label">Tokens utiles</div>
-							{% set usage = data.usage ?? {} %}
-							<div class="synapse-admin-kpi__value">{{ (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0) }}</div>
-							<div class="synapse-admin-kpi__sub">Prompt:
-								{{ usage.prompt_tokens ?? 0 }}
-								| Complétion:
-								{{ usage.completion_tokens ?? 0 }}</div>
+							<div class="synapse-admin-kpi__label">Tokens</div>
+							<div class="synapse-admin-kpi__value">{{ lc_total|number_format(0, '', ' ') }}</div>
+							<div class="synapse-admin-kpi__sub">
+								Prompt: {{ lc_prompt|number_format(0, '', ' ') }}
+								| Texte: {{ lc_completion|number_format(0, '', ' ') }}
+								{% if lc_image > 0 %}
+									| Image: {{ lc_image|number_format(0, '', ' ') }}
+								{% endif %}
+							</div>
 						</div>
 					</div>
 				</div>
 
 				<div class="synapse-admin-card synapse-admin-card--hover">
 					<div class="synapse-admin-kpi">
-						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (usage.thinking_tokens ?? 0) > 0 ? 'info' : 'neutral' }}">
+						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ lc_thinking > 0 ? 'info' : 'neutral' }}">
 							<i data-lucide="brain"></i>
 						</div>
 						<div class="synapse-admin-kpi__body">
 							<div class="synapse-admin-kpi__label">Tokens de réflexion</div>
-							<div class="synapse-admin-kpi__value">{{ usage.thinking_tokens ?? 0 }}</div>
+							<div class="synapse-admin-kpi__value">{{ lc_thinking|number_format(0, '', ' ') }}</div>
 							<div class="synapse-admin-kpi__sub">
 								{% if preset_config.thinking_enabled ?? false %}
-									Activé (Budget:
-									{{ preset_config.thinking_budget ?? 'auto' }})
+									Activé (Budget: {{ preset_config.thinking_budget ?? 'auto' }})
 								{% else %}
 									Désactivé
 								{% endif %}
@@ -140,10 +171,8 @@
 						</div>
 						<div class="synapse-admin-kpi__body">
 							<div class="synapse-admin-kpi__label">Durée Totale</div>
-							<div class="synapse-admin-kpi__value">{{ data.timings.total_ms ?? 0 }}
-								ms</div>
-							<div class="synapse-admin-kpi__sub">{{ ( (data.timings.total_ms ?? 0) / 1000 )|number_format(2) }}
-								s</div>
+							<div class="synapse-admin-kpi__value">{{ data.timings.total_ms ?? 0 }} ms</div>
+							<div class="synapse-admin-kpi__sub">{{ ((data.timings.total_ms ?? 0) / 1000)|number_format(2) }} s</div>
 						</div>
 					</div>
 				</div>
@@ -159,8 +188,7 @@
 						<div class="synapse-admin-kpi__body">
 							<div class="synapse-admin-kpi__label">Agent</div>
 							{% if preset_config.agent_name ?? false %}
-								<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ preset_config.agent_emoji ?? '' }}
-									{{ preset_config.agent_name }}</div>
+								<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ preset_config.agent_emoji ?? '' }} {{ preset_config.agent_name }}</div>
 								<div class="synapse-admin-kpi__sub">ID #{{ preset_config.agent_id }}</div>
 							{% else %}
 								<div class="synapse-admin-kpi__value synapse-admin-text-sm synapse-admin-text-muted">Aucun</div>
@@ -183,14 +211,19 @@
 				</div>
 				<div class="synapse-admin-card synapse-admin-card--hover">
 					<div class="synapse-admin-kpi">
-						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (data.estimated_cost ?? false) ? 'warning' : 'neutral' }}">
+						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ lc_cost ? 'warning' : 'neutral' }}">
 							<i data-lucide="circle-dollar-sign"></i>
 						</div>
 						<div class="synapse-admin-kpi__body">
 							<div class="synapse-admin-kpi__label">Coût estimé</div>
-							{% if data.estimated_cost ?? false %}
-								<div class="synapse-admin-kpi__value synapse-admin-text-sm">${{ data.estimated_cost|number_format(6) }}</div>
-								<div class="synapse-admin-kpi__sub">In: ${{ preset_config.pricing_input ?? 0 }}/M · Out: ${{ preset_config.pricing_output ?? 0 }}/M</div>
+							{% if lc_cost %}
+								<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ lc_cost|number_format(6) }} {{ lc_currency }}</div>
+								<div class="synapse-admin-kpi__sub">
+									In: {{ lc_pricing_in ?? '?' }}/M · Out: {{ lc_pricing_out ?? '?' }}/M
+									{% if lc_pricing_out_image %}
+										· Img: {{ lc_pricing_out_image }}/M
+									{% endif %}
+								</div>
 							{% else %}
 								<div class="synapse-admin-kpi__value synapse-admin-text-sm synapse-admin-text-muted">—</div>
 								<div class="synapse-admin-kpi__sub">Pricing non configuré</div>
@@ -402,8 +435,14 @@
 											{% if part.type is defined and part.type == 'text' %}
 												<div style="white-space: pre-wrap;">{{ part.text }}</div>
 											{% elseif part.type is defined and part.type == 'image_url' %}
+												{% set _dataUri = part.image_url.url %}
+												{% set _mime = _dataUri starts with 'data:' ? (_dataUri|split(';')|first|slice(5)) : 'unknown' %}
 												<div style="margin: 8px 0;">
-													<img src="{{ part.image_url.url }}" alt="Image envoyée au LLM" style="max-width: 300px; border-radius: 8px; border: 1px solid #bae6fd;" loading="lazy">
+													{% include '@SynapseCore/components/_attachment_badge.html.twig' with {
+														mime_type: _mime,
+														url: _dataUri,
+														mode: 'inline'
+													} only %}
 												</div>
 											{% elseif part.text is defined %}
 												<div style="white-space: pre-wrap;">{{ part.text }}</div>
@@ -796,6 +835,53 @@
 		</div>
 
 	</div>
+
+	{# ── Arborescence agent (appels enfants déclenchés par ce log) ──────────── #}
+	{% if children is defined and children|length > 0 %}
+		<div class="synapse-admin-card synapse-admin-mt-lg">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
+					<i data-lucide="git-branch"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Appels enfants ({{ children|length }})</div>
+					<div class="synapse-admin-card__subtitle">Cet agent a invoqué d'autres agents pendant son exécution. Chaque ligne ci-dessous est un appel LLM descendant.</div>
+				</div>
+			</div>
+			<div class="synapse-admin-table-container">
+				<table class="synapse-admin-table">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Profondeur</th>
+							<th>Origine</th>
+							<th>Modèle</th>
+							<th>Tokens</th>
+							<th>Date</th>
+							<th class="synapse-admin-table__cell--actions">Détail</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for child in children %}
+							<tr>
+								<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">{{ child.debugId|slice(0, 8) }}…</td>
+								<td><span class="synapse-admin-badge synapse-admin-badge--neutral">{{ child.depth }}</span></td>
+								<td><span class="synapse-admin-badge synapse-admin-badge--info">{{ child.origin }}</span></td>
+								<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">{{ child.model ?? '—' }}</td>
+								<td class="synapse-admin-table__cell--mono">{{ child.totalTokens ?? '—' }}</td>
+								<td class="synapse-admin-table__cell--muted">{{ child.createdAt|date('d/m H:i:s') }}</td>
+								<td class="synapse-admin-table__cell--actions">
+									<a href="{{ path('synapse_debug_show', {id: child.debugId}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon">
+										<i data-lucide="external-link"></i>
+									</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	{% endif %}
 
 	{# Script JS pour naviguer entre les onglets #}
 	{# Script JS pour naviguer entre les onglets #}

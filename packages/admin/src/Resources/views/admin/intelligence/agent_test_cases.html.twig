@@ -1,0 +1,132 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}{{ 'synapse.admin.test_case.list.page_title'|trans({'name': agent.name}, domain='synapse_admin') }}{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.intelligence'|trans(domain='synapse_admin') }}</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.agents'|trans(domain='synapse_admin') }}</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_agents_edit', {id: agent.id}) }}" class="synapse-admin-topbar__breadcrumb">{{ agent.name }}</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-current">{{ 'synapse.admin.test_case.list.breadcrumb'|trans(domain='synapse_admin') }}</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="test-tubes"></i>
+				</span>
+				{{ 'synapse.admin.test_case.list.title'|trans({'name': agent.name}, domain='synapse_admin') }}
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				{{ 'synapse.admin.test_case.list.subtitle'|trans(domain='synapse_admin') }}
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			<a href="{{ path('synapse_admin_agents_edit', {id: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+				<i data-lucide="arrow-left"></i>
+				{{ 'synapse.admin.test_case.list.action.back_to_agent'|trans(domain='synapse_admin') }}
+			</a>
+			<a href="{{ path('synapse_admin_agent_test_cases_new', {agentId: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+				<i data-lucide="plus"></i>
+				{{ 'synapse.admin.test_case.list.action.new'|trans(domain='synapse_admin') }}
+			</a>
+		</div>
+	</div>
+
+	{% if test_cases is empty %}
+		{# ── Empty state ────────────────────────────────────────────────── #}
+		<div class="synapse-admin-empty-state">
+			<div class="synapse-admin-empty-state__icon">
+				<i data-lucide="test-tubes"></i>
+			</div>
+			<h2 class="synapse-admin-empty-state__title">{{ 'synapse.admin.test_case.list.empty.title'|trans(domain='synapse_admin') }}</h2>
+			<p class="synapse-admin-empty-state__text">{{ 'synapse.admin.test_case.list.empty.subtitle'|trans(domain='synapse_admin') }}</p>
+			<a href="{{ path('synapse_admin_agent_test_cases_new', {agentId: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--primary">
+				<i data-lucide="plus"></i>
+				{{ 'synapse.admin.test_case.list.action.new'|trans(domain='synapse_admin') }}
+			</a>
+		</div>
+	{% else %}
+		{# ── Table ──────────────────────────────────────────────────────── #}
+		<div class="synapse-admin-card">
+			<table class="synapse-admin-table">
+				<thead>
+					<tr>
+						<th>{{ 'synapse.admin.test_case.list.column.name'|trans(domain='synapse_admin') }}</th>
+						<th>{{ 'synapse.admin.test_case.list.column.message'|trans(domain='synapse_admin') }}</th>
+						<th>{{ 'synapse.admin.test_case.list.column.assertions'|trans(domain='synapse_admin') }}</th>
+						<th>{{ 'synapse.admin.test_case.list.column.status'|trans(domain='synapse_admin') }}</th>
+						<th>{{ 'synapse.admin.test_case.list.column.order'|trans(domain='synapse_admin') }}</th>
+						<th class="synapse-admin-table__actions-col">{{ 'synapse.admin.common.actions'|trans(domain='synapse_admin') }}</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for tc in test_cases %}
+						<tr>
+							<td>
+								<strong>{{ tc.name }}</strong>
+							</td>
+							<td>
+								<span class="synapse-admin-text--muted" title="{{ tc.message }}">
+									{{ tc.message|length > 80 ? tc.message|slice(0, 80) ~ '…' : tc.message }}
+								</span>
+							</td>
+							<td>
+								{% set assertion_count = tc.assertions|length %}
+								{% if assertion_count > 0 %}
+									<span class="synapse-admin-badge synapse-admin-badge--info">{{ assertion_count }} {{ 'synapse.admin.test_case.list.assertions_label'|trans(domain='synapse_admin') }}</span>
+								{% else %}
+									<span class="synapse-admin-text--muted">—</span>
+								{% endif %}
+							</td>
+							<td>
+								{% if tc.isActive %}
+									<span class="synapse-admin-badge synapse-admin-badge--success">{{ 'synapse.admin.common.active'|trans(domain='synapse_admin') }}</span>
+								{% else %}
+									<span class="synapse-admin-badge synapse-admin-badge--muted">{{ 'synapse.admin.common.inactive'|trans(domain='synapse_admin') }}</span>
+								{% endif %}
+							</td>
+							<td>{{ tc.sortOrder }}</td>
+							<td class="synapse-admin-table__actions-col">
+								<div class="synapse-admin-table__actions">
+									{# Run #}
+									<form method="post" action="{{ path('synapse_admin_agent_test_cases_run', {agentId: agent.id, id: tc.id}) }}" style="display:inline;">
+										<input type="hidden" name="_token" value="{{ csrf_token('synapse_test_case_run_' ~ tc.id) }}">
+										<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--xs" title="{{ 'synapse.admin.test_case.list.action.run'|trans(domain='synapse_admin') }}">
+											<i data-lucide="play"></i>
+										</button>
+									</form>
+									{# Edit #}
+									<a href="{{ path('synapse_admin_agent_test_cases_edit', {agentId: agent.id, id: tc.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--xs" title="{{ 'synapse.admin.common.edit'|trans(domain='synapse_admin') }}">
+										<i data-lucide="pencil"></i>
+									</a>
+									{# Toggle #}
+									<form method="post" action="{{ path('synapse_admin_agent_test_cases_toggle', {agentId: agent.id, id: tc.id}) }}" style="display:inline;">
+										<input type="hidden" name="_token" value="{{ csrf_token('synapse_test_case_toggle_' ~ tc.id) }}">
+										<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--xs" title="{{ tc.isActive ? 'synapse.admin.common.deactivate'|trans(domain='synapse_admin') : 'synapse.admin.common.activate'|trans(domain='synapse_admin') }}">
+											<i data-lucide="{{ tc.isActive ? 'eye-off' : 'eye' }}"></i>
+										</button>
+									</form>
+									{# Delete #}
+									<form method="post" action="{{ path('synapse_admin_agent_test_cases_delete', {agentId: agent.id, id: tc.id}) }}" style="display:inline;" onsubmit="return confirm('{{ 'synapse.admin.common.confirm_delete'|trans(domain='synapse_admin') }}')">
+										<input type="hidden" name="_token" value="{{ csrf_token('synapse_test_case_delete_' ~ tc.id) }}">
+										<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--xs synapse-admin-text--danger" title="{{ 'synapse.admin.common.delete'|trans(domain='synapse_admin') }}">
+											<i data-lucide="trash-2"></i>
+										</button>
+									</form>
+								</div>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	{% endif %}
+
+{% endblock %}

@@ -1,0 +1,129 @@
+/**
+ * Synapse Administration — Visual Step Builder (workflow editor)
+ */
+
+/* ── Step card ──────────────────────────────────────────────────────────── */
+
+.synapse-step-builder-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.synapse-step-builder-card {
+    border-left: 3px solid var(--synapse-admin-primary);
+}
+
+.synapse-step-builder-card__header {
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-sm);
+    padding: var(--synapse-admin-space-md) var(--synapse-admin-space-lg);
+}
+
+.synapse-step-builder-badge {
+    min-width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.synapse-step-builder-name-input {
+    flex: 1;
+    font-family: var(--synapse-admin-font-mono);
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: var(--synapse-admin-space-xs) var(--synapse-admin-space-sm);
+    border: 1px solid transparent;
+    border-radius: var(--synapse-admin-radius-sm);
+    background: transparent;
+    transition: border-color var(--synapse-admin-transition-fast), background var(--synapse-admin-transition-fast);
+}
+
+.synapse-step-builder-name-input:hover,
+.synapse-step-builder-name-input:focus {
+    border-color: var(--synapse-admin-primary-border);
+    background: var(--synapse-admin-glass-bg);
+    outline: none;
+}
+
+.synapse-step-builder-card__actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* ── Mapping rows ───────────────────────────────────────────────────────── */
+
+.synapse-step-builder-mapping {
+    border-top: 1px solid var(--synapse-admin-border-light);
+    padding-top: var(--synapse-admin-space-sm);
+}
+
+.synapse-step-builder-mapping-rows {
+    display: flex;
+    flex-direction: column;
+    gap: var(--synapse-admin-space-xs);
+}
+
+.synapse-step-builder-mapping-row {
+    display: flex;
+    align-items: center;
+    gap: var(--synapse-admin-space-sm);
+}
+
+.synapse-step-builder-mapping-key {
+    width: 140px;
+    flex-shrink: 0;
+    font-family: var(--synapse-admin-font-mono);
+    font-size: 0.82rem;
+}
+
+.synapse-step-builder-mapping-source {
+    flex: 1;
+    font-size: 0.82rem;
+}
+
+.synapse-step-builder-mapping-literal {
+    flex: 1;
+    font-size: 0.82rem;
+}
+
+/* ── Outputs section ────────────────────────────────────────────────────── */
+
+.synapse-step-builder-outputs {
+    border-top: 1px solid var(--synapse-admin-border-light);
+    padding-top: var(--synapse-admin-space-md);
+}
+
+/* ── Mode toggle ────────────────────────────────────────────────────────── */
+
+.synapse-step-builder-mode-toggle {
+    display: flex;
+    gap: 2px;
+    background: var(--synapse-admin-border-light);
+    border-radius: var(--synapse-admin-radius-md);
+    padding: 2px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+    .synapse-step-builder-mapping-row {
+        flex-wrap: wrap;
+    }
+
+    .synapse-step-builder-mapping-key {
+        width: 100%;
+    }
+
+    .synapse-step-builder-mapping-source,
+    .synapse-step-builder-mapping-literal {
+        width: 100%;
+    }
+}
