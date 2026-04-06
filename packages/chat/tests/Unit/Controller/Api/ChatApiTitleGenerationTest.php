@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseChat\Tests\Unit\Controller\Api;
 
 use ArnaudMoncondhuy\SynapseChat\Controller\Api\ChatApiController;
-use ArnaudMoncondhuy\SynapseCore\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver;
 use ArnaudMoncondhuy\SynapseCore\AgentRegistry;
+use ArnaudMoncondhuy\SynapseCore\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
 use ArnaudMoncondhuy\SynapseCore\Manager\ConversationManager;
