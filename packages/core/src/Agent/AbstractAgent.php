@@ -68,15 +68,7 @@ abstract class AbstractAgent implements AgentInterface
         $context = $options['context'] ?? null;
 
         if (!$context instanceof AgentContext) {
-            throw new \LogicException(sprintf(
-                'Agent "%s" appelé sans AgentContext. Passez toujours par AgentResolver :'."\n".
-                '  $ctx   = $resolver->createRootContext(userId: $user->getUserIdentifier());'."\n".
-                '  $agent = $resolver->resolve(\'%s\', $ctx);'."\n".
-                '  $out   = $agent->call($input, [\'context\' => $ctx]);'."\n".
-                'Injecter l\'agent directement et appeler call() sans contexte perd la traçabilité et les garde-fous.',
-                $this->getName(),
-                $this->getName(),
-            ));
+            throw new \LogicException(sprintf('Agent "%s" appelé sans AgentContext. Passez toujours par AgentResolver :'."\n".'  $ctx   = $resolver->createRootContext(userId: $user->getUserIdentifier());'."\n".'  $agent = $resolver->resolve(\'%s\', $ctx);'."\n".'  $out   = $agent->call($input, [\'context\' => $ctx]);'."\n".'Injecter l\'agent directement et appeler call() sans contexte perd la traçabilité et les garde-fous.', $this->getName(), $this->getName()));
         }
 
         return $this->execute($input, $context);
