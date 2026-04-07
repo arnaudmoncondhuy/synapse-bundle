@@ -76,14 +76,24 @@ class AgentController extends AbstractController
         // Agents code : on exclut ceux dont une entrée DB existe déjà (même clé)
         // car AgentResolver leur donne la priorité — ils sont déjà listés dans $agents.
         $dbAgentKeys = array_map(fn ($a) => $a->getKey(), $agents);
-        $codeAgents = array_filter(
-            $this->codeAgentRegistry->all(),
-            fn ($agent) => !in_array($agent->getName(), $dbAgentKeys, true),
-        );
+        $codeAgents = [];
+        foreach ($this->codeAgentRegistry->all() as $agent) {
+            if (in_array($agent->getName(), $dbAgentKeys, true)) {
+                continue;
+            }
+            $namespace = (new \ReflectionClass($agent))->getNamespaceName();
+            $codeAgents[] = [
+                'name' => $agent->getName(),
+                'label' => $agent->getLabel(),
+                'description' => $agent->getDescription(),
+                'source' => str_starts_with($namespace, 'ArnaudMoncondhuy\\') ? 'bundle' : 'host',
+                'class' => $agent::class,
+            ];
+        }
 
         return $this->render('@Synapse/admin/intelligence/agents.html.twig', [
             'agents' => $agents,
-            'code_agents' => array_values($codeAgents),
+            'code_agents' => $codeAgents,
             'model_capabilities' => $this->capabilityRegistry->getAllCapabilitiesMap(),
             'default_preset_model' => $activePreset?->getModel(),
             'agent_workflow_map' => $this->buildAgentWorkflowMap(),

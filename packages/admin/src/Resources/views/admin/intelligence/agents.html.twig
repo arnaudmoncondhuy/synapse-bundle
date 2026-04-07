@@ -220,11 +220,18 @@
 						</div>
 						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
 							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
-								<span class="synapse-admin-card__title">{{ agent.name }}</span>
-								<span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.list.code_agents.badge_tooltip'|trans(domain='synapse_admin') }}">
-									<i data-lucide="code-2"></i>
-									{{ 'synapse.admin.agent.list.code_agents.badge'|trans(domain='synapse_admin') }}
-								</span>
+								<span class="synapse-admin-card__title">{{ agent.label }}</span>
+								{% if agent.source == 'bundle' %}
+									<span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.list.code_agents.badge_bundle_tooltip'|trans(domain='synapse_admin') }}">
+										<i data-lucide="package"></i>
+										{{ 'synapse.admin.agent.list.code_agents.badge_bundle'|trans(domain='synapse_admin') }}
+									</span>
+								{% else %}
+									<span class="synapse-admin-badge synapse-admin-badge--primary" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.list.code_agents.badge_host_tooltip'|trans(domain='synapse_admin') }}">
+										<i data-lucide="code-2"></i>
+										{{ 'synapse.admin.agent.list.code_agents.badge_host'|trans(domain='synapse_admin') }}
+									</span>
+								{% endif %}
 							</div>
 							<div class="synapse-admin-text-sm synapse-admin-text-muted">
 								<code class="synapse-admin-font-mono" style="font-size: 0.75rem;">{{ agent.name }}</code>
