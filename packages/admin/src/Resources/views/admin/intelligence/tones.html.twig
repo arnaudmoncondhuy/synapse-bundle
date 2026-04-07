@@ -44,7 +44,7 @@
 			<div class="synapse-admin-card synapse-admin-card--hover {{ not tone.isActive ? 'synapse-admin-card--inactive' : '' }}">
 
 				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary" style="font-size: 1.5rem; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center;">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary" style="font-size: 1.5rem;">
 						{{ tone.emoji }}
 					</div>
 
@@ -92,8 +92,8 @@
 					</details>
 				</div>
 
-				<div class="synapse-admin-card__footer" style="overflow: visible;">
-					<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center" style="position: relative; z-index: 10;">
+				<div class="synapse-admin-card__footer">
+					<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center">
 
 						{# Modifier #}
 						<form action="{{ path('synapse_admin_tones_edit', {id: tone.id}) }}" method="GET" class="synapse-admin-form-inline">

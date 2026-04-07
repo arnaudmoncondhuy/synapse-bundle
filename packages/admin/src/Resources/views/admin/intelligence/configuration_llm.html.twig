@@ -444,11 +444,11 @@
 
 				<div class="synapse-admin-card synapse-admin-card--hover {{ preset.isActive ? 'synapse-admin-card--active synapse-admin-card--success' : '' }}">
 
-					<div class="synapse-admin-card__header" style="align-items: flex-start;">
-						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary" style="flex-shrink:0; margin-top:2px;">
+					<div class="synapse-admin-card__header">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
 							<i data-lucide="sliders-horizontal"></i>
 						</div>
-						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs" style="min-width:0;">
+						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs">
 							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
 								<span class="synapse-admin-card__title">{{ preset.name }}</span>
 								{% if not isValid %}
@@ -507,9 +507,8 @@
 
 					</div>
 
-					<div class="synapse-admin-card__footer" style="overflow: visible;">
-						<div
-							class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center synapse-admin-flex-wrap" style="position: relative; z-index: 10;">
+					<div class="synapse-admin-card__footer">
+						<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center">
 							{# Modifier #}
 							<form action="{{ path('synapse_admin_presets_edit', {id: preset.id}) }}" method="GET" class="synapse-admin-form-inline">
 								<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="{{ 'synapse.admin.common.edit'|trans(domain='synapse_admin') }}">

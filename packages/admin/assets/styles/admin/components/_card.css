@@ -55,11 +55,17 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    margin-top: 2px;
 }
 
 .synapse-admin-card__header-icon i {
     width: 20px;
     height: 20px;
+}
+
+/* Le contenu à droite de l'icône doit pouvoir tronquer sans déborder */
+.synapse-admin-card__header > :not(.synapse-admin-card__header-icon, .synapse-admin-card__header-actions) {
+    min-width: 0;
 }
 
 .synapse-admin-card__title {
@@ -107,6 +113,9 @@
     align-items: center;
     justify-content: flex-end;
     gap: var(--synapse-admin-space-sm);
+    overflow: visible;
+    position: relative;
+    z-index: 1;
 }
 
 /* Groupe d'actions (boutons) : peut rétrécir et passer à la ligne pour éviter le débordement */
