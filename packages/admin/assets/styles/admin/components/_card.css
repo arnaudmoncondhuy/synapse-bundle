@@ -13,6 +13,8 @@
     box-shadow: var(--synapse-admin-shadow-sm);
     overflow: hidden;
     transition: transform var(--synapse-admin-transition-base), box-shadow var(--synapse-admin-transition-base);
+    display: flex;
+    flex-direction: column;
 }
 
 .synapse-admin-card--hover:hover {
@@ -36,9 +38,13 @@
     padding: var(--synapse-admin-space-lg) var(--synapse-admin-space-xl);
     border-bottom: 1px solid var(--synapse-admin-border-light);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--synapse-admin-space-md);
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 100%);
+}
+
+.synapse-admin-card__header .synapse-admin-flex.synapse-admin-items-center {
+    flex-wrap: wrap;
 }
 
 .synapse-admin-card__header-icon {
@@ -79,6 +85,7 @@
 
 .synapse-admin-card__body {
     padding: var(--synapse-admin-space-xl);
+    flex: 1;
 }
 
 .synapse-admin-card__body--compact {
