@@ -64,7 +64,7 @@
 							{% endif %}
 							{% if agent_workflow_map[agent.key] is defined %}
 								{% for wname in agent_workflow_map[agent.key] %}
-									<span class="synapse-admin-badge synapse-admin-badge--primary">
+									<span class="synapse-admin-badge synapse-admin-badge--primary" data-synapse-admin-tooltip="{{ wname }}">
 										<i data-lucide="workflow"></i>
 										{{ wname }}
 									</span>
