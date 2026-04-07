@@ -37,6 +37,7 @@ class ToolsController extends AbstractController
 
         $toolsData = array_map(fn ($tool) => [
             'name' => $tool->getName(),
+            'label' => $tool->getLabel(),
             'description' => $tool->getDescription(),
             'class' => get_class($tool),
         ], $tools);
