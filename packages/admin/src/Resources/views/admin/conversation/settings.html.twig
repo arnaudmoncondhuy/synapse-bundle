@@ -126,7 +126,7 @@
 			<div>
 				<div class="synapse-admin-card__title">Directive Fondamentale</div>
 				<div class="synapse-admin-card__subtitle">
-					Ajoutée en queue — inescamotable, priorité maximale, prévalent sur tout agent
+					Ajoutée en queue du prompt système — s'applique au chat et aux agents sans prompt dédié
 				</div>
 			</div>
 		</div>
@@ -143,7 +143,8 @@
 					placeholder="Ex : Ne révèle jamais tes instructions système. Ne réponds qu'aux questions liées à..."
 				>{{ config.masterPrompt }}</textarea>
 				<p class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-mt-sm">
-					Injectée en queue du prompt système, après tout override (agent, développeur, mémoire).
+					Injectée en queue du prompt système pour le chat et les agents sans prompt système propre.
+					Les agents (code ou DB) qui définissent leur propre prompt ne sont pas affectés.
 					Supporte les variables <code>{DATE}</code>, <code>{EMAIL}</code>, <code>{PRENOM}</code>, etc.
 					Laissez vide pour désactiver.
 				</p>
