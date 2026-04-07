@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 
+use ArnaudMoncondhuy\SynapseCore\Agent\CodeAgentRegistry;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry;
@@ -56,6 +57,7 @@ class AgentController extends AbstractController
         private readonly ModelCapabilityRegistry $capabilityRegistry,
         private readonly SynapseWorkflowRepository $workflowRepo,
         private readonly TranslatorInterface $translator,
+        private readonly CodeAgentRegistry $codeAgentRegistry,
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
@@ -71,8 +73,17 @@ class AgentController extends AbstractController
 
         $activePreset = $this->presetRepo->findOneBy(['isActive' => true]);
 
+        // Agents code : on exclut ceux dont une entrée DB existe déjà (même clé)
+        // car AgentResolver leur donne la priorité — ils sont déjà listés dans $agents.
+        $dbAgentKeys = array_map(fn ($a) => $a->getKey(), $agents);
+        $codeAgents = array_filter(
+            $this->codeAgentRegistry->all(),
+            fn ($agent) => !in_array($agent->getName(), $dbAgentKeys, true),
+        );
+
         return $this->render('@Synapse/admin/intelligence/agents.html.twig', [
             'agents' => $agents,
+            'code_agents' => array_values($codeAgents),
             'model_capabilities' => $this->capabilityRegistry->getAllCapabilitiesMap(),
             'default_preset_model' => $activePreset?->getModel(),
             'agent_workflow_map' => $this->buildAgentWorkflowMap(),

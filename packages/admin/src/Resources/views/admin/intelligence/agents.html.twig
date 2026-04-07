@@ -200,4 +200,43 @@
 		{% endfor %}
 	</div>
 
+	{% if code_agents|length > 0 %}
+		<div class="synapse-admin-section-header" style="margin-top: 2.5rem; margin-bottom: 1rem;">
+			<h2 class="synapse-admin-section-title" style="font-size: 1rem; font-weight: 600; color: var(--synapse-admin-text-secondary, #6b7280);">
+				<i data-lucide="code-2" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.375rem;"></i>
+				{{ 'synapse.admin.agent.list.code_agents.section_title'|trans(domain='synapse_admin') }}
+			</h2>
+			<p class="synapse-admin-text-sm synapse-admin-text-muted" style="margin-top: 0.25rem;">
+				{{ 'synapse.admin.agent.list.code_agents.section_subtitle'|trans(domain='synapse_admin') }}
+			</p>
+		</div>
+
+		<div class="synapse-admin-grid synapse-admin-grid--2">
+			{% for agent in code_agents %}
+				<div class="synapse-admin-card" style="opacity: 0.85;">
+					<div class="synapse-admin-card__header">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral" style="font-size: 1.25rem; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center;">
+							<i data-lucide="code-2"></i>
+						</div>
+						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
+								<span class="synapse-admin-card__title">{{ agent.name }}</span>
+								<span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.list.code_agents.badge_tooltip'|trans(domain='synapse_admin') }}">
+									<i data-lucide="code-2"></i>
+									{{ 'synapse.admin.agent.list.code_agents.badge'|trans(domain='synapse_admin') }}
+								</span>
+							</div>
+							<div class="synapse-admin-text-sm synapse-admin-text-muted">
+								<code class="synapse-admin-font-mono" style="font-size: 0.75rem;">{{ agent.name }}</code>
+							</div>
+						</div>
+					</div>
+					<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+						<p class="synapse-admin-text-sm synapse-admin-text-muted">{{ agent.description }}</p>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+	{% endif %}
+
 {% endblock %}
