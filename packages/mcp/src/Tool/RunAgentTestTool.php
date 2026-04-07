@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseMcp\Tool;
 
+use ArnaudMoncondhuy\SynapseCore\Agent\CodeAgentRegistry;
 use ArnaudMoncondhuy\SynapseCore\AgentRegistry;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
@@ -11,13 +12,14 @@ use Mcp\Capability\Attribute\McpTool;
 
 #[McpTool(
     name: 'run_agent_test',
-    description: 'Execute any Synapse agent and return the response with metrics. Use list_agents to get available agent keys.'
+    description: 'Execute any Synapse agent (DB or code) and return the response with metrics. Use list_agents to get available agent keys.'
 )]
 class RunAgentTestTool
 {
     public function __construct(
         private readonly ChatService $chatService,
         private readonly AgentRegistry $agentRegistry,
+        private readonly CodeAgentRegistry $codeAgentRegistry,
         private readonly PermissionCheckerInterface $permissionChecker,
     ) {
     }
@@ -35,8 +37,12 @@ class RunAgentTestTool
                 'timestamp' => (new \DateTime())->format('c'),
             ];
         }
-        $agent = $this->agentRegistry->get($agentKey);
-        if (null === $agent) {
+
+        // Résolution unifiée : DB d'abord, puis code agent en fallback
+        $dbAgent = $this->agentRegistry->get($agentKey);
+        $codeAgent = $this->codeAgentRegistry->get($agentKey);
+
+        if (null === $dbAgent && null === $codeAgent) {
             return [
                 'status' => 'error',
                 'agentKey' => $agentKey,
@@ -45,10 +51,11 @@ class RunAgentTestTool
             ];
         }
 
+        $agentName = $dbAgent?->getName() ?? $codeAgent?->getLabel() ?? $agentKey;
+
         try {
             $options = [
                 'agent' => $agentKey,
-                'debug' => true,
                 'streaming' => false,
             ];
 
@@ -61,7 +68,8 @@ class RunAgentTestTool
             return [
                 'status' => 'success',
                 'agentKey' => $agentKey,
-                'agentName' => $agent->getName(),
+                'agentName' => $agentName,
+                'source' => null !== $dbAgent ? 'db' : 'code',
                 'input' => $input,
                 'answer' => $result['answer'] ?? '',
                 'model' => $result['model'] ?? 'unknown',
