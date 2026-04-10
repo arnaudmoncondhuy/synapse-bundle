@@ -221,12 +221,39 @@ final class MultiAgent implements AgentInterface
         }
         $answer = implode("\n\n---\n\n", $textParts);
 
-        // Agréger les generated_attachments de tous les steps (images, fichiers).
+        // Agréger les generated_attachments de tous les steps (images, fichiers),
+        // enrichis avec la provenance (step_name, step_index) et la taille décodée
+        // pour que `inspect_workflow_run` puisse exposer un summary sans base64.
         $allAttachments = [];
-        foreach ($state['steps'] as $stepData) {
+        $stepNameToIndex = [];
+        foreach ($steps as $idx => $stepDef) {
+            if (is_array($stepDef) && isset($stepDef['name']) && is_string($stepDef['name'])) {
+                $stepNameToIndex[$stepDef['name']] = $idx;
+            }
+        }
+        foreach ($state['steps'] as $currentStepName => $stepData) {
             /** @var array{output: array{text: string|null, data: array<string, mixed>, generated_attachments: array<int, array<string, mixed>>}} $stepData */
-            $stepAttachments = $stepData['output']['generated_attachments'];
-            array_push($allAttachments, ...$stepAttachments);
+            foreach ($stepData['output']['generated_attachments'] as $att) {
+                if (!is_array($att) || !isset($att['mime_type'], $att['data'])) {
+                    continue;
+                }
+                $rawData = is_string($att['data']) ? $att['data'] : '';
+                // Taille décodée approximative : base64 expand ratio = 4/3.
+                $sizeBytes = (int) \floor(strlen($rawData) * 3 / 4);
+                $allAttachments[] = [
+                    'step_name' => (string) $currentStepName,
+                    'step_index' => $stepNameToIndex[$currentStepName] ?? -1,
+                    'mime_type' => (string) $att['mime_type'],
+                    'data' => $rawData,
+                    'size_bytes' => $sizeBytes,
+                ];
+            }
+        }
+
+        // Persister sur le run pour que `inspect_workflow_run` et l'admin puissent
+        // les retrouver après la fin de l'exécution.
+        if ([] !== $allAttachments) {
+            $this->run->setGeneratedAttachments($allAttachments);
         }
 
         return new Output(

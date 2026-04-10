@@ -135,6 +135,28 @@ class SynapseWorkflowRun
     #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 6, nullable: true)]
     private ?string $totalCost = null;
 
+    /**
+     * Pièces jointes générées par les agents du run (images, fichiers).
+     * Chaque élément a la forme :
+     * ```
+     * {
+     *   step_name: string,     // nom du step qui a produit l'attachment
+     *   step_index: int,       // index 0-based du step dans le workflow
+     *   mime_type: string,     // ex: "image/png"
+     *   data: string,          // base64 (nullable/tronqué si gros — TBD Chantier H)
+     *   size_bytes: int        // taille du contenu décodé
+     * }
+     * ```
+     *
+     * Persisté en fin de run par {@see \ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\MultiAgent::call()}.
+     * Exposé en forme **summary** (sans `data`) par `inspect_workflow_run` MCP
+     * pour éviter la bloat des réponses.
+     *
+     * @var array<int, array{step_name: string, step_index: int, mime_type: string, data: string, size_bytes: int}>|null
+     */
+    #[ORM\Column(name: 'generated_attachments', type: Types::JSON, nullable: true)]
+    private ?array $generatedAttachments = null;
+
     public function __construct()
     {
         $this->workflowRunId = Uuid::v4()->toRfc4122();
@@ -334,6 +356,24 @@ class SynapseWorkflowRun
     public function setTotalCost(?float $totalCost): self
     {
         $this->totalCost = null !== $totalCost ? (string) $totalCost : null;
+
+        return $this;
+    }
+
+    /**
+     * @return array<int, array{step_name: string, step_index: int, mime_type: string, data: string, size_bytes: int}>|null
+     */
+    public function getGeneratedAttachments(): ?array
+    {
+        return $this->generatedAttachments;
+    }
+
+    /**
+     * @param array<int, array{step_name: string, step_index: int, mime_type: string, data: string, size_bytes: int}>|null $generatedAttachments
+     */
+    public function setGeneratedAttachments(?array $generatedAttachments): self
+    {
+        $this->generatedAttachments = $generatedAttachments;
 
         return $this;
     }
