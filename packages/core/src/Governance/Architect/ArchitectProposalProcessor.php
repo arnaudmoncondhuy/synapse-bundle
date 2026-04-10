@@ -9,6 +9,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Applique les propositions structurées de l'{@see ArchitectAgent} — Phase 11.
@@ -39,7 +40,17 @@ class ArchitectProposalProcessor
         private readonly EntityManagerInterface $entityManager,
         private readonly SynapseAgentRepository $agentRepository,
         private readonly PromptVersionRecorder $promptVersionRecorder,
+        #[Autowire('%synapse.ephemeral.retention_days%')]
+        private readonly int $retentionDays = 7,
     ) {
+    }
+
+    /**
+     * Calcule une date de rétention = maintenant + retention_days.
+     */
+    private function computeRetentionUntil(): \DateTimeImmutable
+    {
+        return (new \DateTimeImmutable())->modify(sprintf('+%d days', $this->retentionDays));
     }
 
     /**
@@ -92,8 +103,19 @@ class ArchitectProposalProcessor
         $agent->setSystemPrompt($systemPrompt);
         $agent->setIsBuiltin(false);
         $agent->setIsActive(false); // Inactif — attend approbation admin
+        // Marqué éphémère : visible dans la section « Propositions » de l'admin,
+        // promouvable via l'action dédiée, sinon GC au bout de retention_days.
+        $agent->setIsEphemeral(true);
+        $agent->setRetentionUntil($this->computeRetentionUntil());
 
         $this->entityManager->persist($agent);
+
+        // Flush immédiat pour que l'agent ait un ID avant que le recorder ne
+        // query des versions précédentes via cet agent. Sans ça, Doctrine lève
+        // "Binding entities to query parameters only allowed for entities that
+        // have an identifier". Le snapshot qui suit est dans la même
+        // transaction logique — pas de risque d'état incohérent.
+        $this->entityManager->flush();
 
         // Snapshot le prompt en pending (HITL) — déclenche le LLM-as-Judge
         $reason = is_string($proposal['reasoning'] ?? null) ? $proposal['reasoning'] : null;
@@ -102,11 +124,9 @@ class ArchitectProposalProcessor
             newPrompt: $systemPrompt,
             changedBy: $changedBy,
             reason: $reason,
-            flush: false,
+            flush: true,
             pending: true,
         );
-
-        $this->entityManager->flush();
 
         return [
             'type' => 'create_agent',
@@ -188,6 +208,10 @@ class ArchitectProposalProcessor
         $workflow->setDefinition($definition);
         $workflow->setIsBuiltin(false);
         $workflow->setIsActive(false); // Inactif — attend activation admin
+        // Proposition éphémère : visible dans la section « Workflows éphémères
+        // récents » de l'admin, promouvable, sinon GC au bout de retention_days.
+        $workflow->setIsEphemeral(true);
+        $workflow->setRetentionUntil($this->computeRetentionUntil());
 
         $this->entityManager->persist($workflow);
         $this->entityManager->flush();

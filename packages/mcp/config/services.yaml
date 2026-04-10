@@ -94,6 +94,15 @@ services:
     tags:
       - { name: mcp.tool }
 
+  ArnaudMoncondhuy\SynapseMcp\Tool\RunArchitectProposalTool:
+    public: true
+    arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\Governance\Architect\ArchitectAgent'
+      - '@ArnaudMoncondhuy\SynapseCore\Governance\Architect\ArchitectProposalProcessor'
+      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
+    tags:
+      - { name: mcp.tool }
+
   ArnaudMoncondhuy\SynapseMcp\Tool\CleanupSandboxTool:
     public: true
     arguments:

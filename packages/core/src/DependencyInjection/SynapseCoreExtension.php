@@ -150,6 +150,11 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
         // ── Ephemeral entities lifecycle ──────────────────────────────────────
         $container->setParameter('synapse.ephemeral.retention_days', $config['ephemeral']['retention_days'] ?? 7);
 
+        // Note: l'override des paramètres governance (architect_preset_key,
+        // judge_preset_key) est fait plus bas, APRÈS le load de core.yaml qui
+        // définit les valeurs par défaut (vides). Si on les settait ici, elles
+        // seraient immédiatement écrasées par le chargement des paramètres.
+
         // ── Context ───────────────────────────────────────────────────────────
         $container->setParameter('synapse.context.language', $config['context']['language'] ?? 'fr');
 
@@ -189,6 +194,16 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
 
         // Load core services (always loaded)
         $loader->load('core.yaml');
+
+        // ── Governance overrides (AFTER core.yaml to win against its defaults) ─
+        // core.yaml définit les params vides par défaut. Si l'hôte en fournit via
+        // synapse.governance.* dans son config, on écrase ici après le chargement.
+        if (isset($config['governance']['architect_preset_key']) && '' !== $config['governance']['architect_preset_key']) {
+            $container->setParameter('synapse.governance.architect_preset_key', $config['governance']['architect_preset_key']);
+        }
+        if (isset($config['governance']['judge_preset_key']) && '' !== $config['governance']['judge_preset_key']) {
+            $container->setParameter('synapse.governance.judge_preset_key', $config['governance']['judge_preset_key']);
+        }
 
         // Note: Admin services are loaded by SynapseAdminExtension (separate bundle)
 

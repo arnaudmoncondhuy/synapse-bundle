@@ -100,6 +100,22 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
 
+            // ── Governance (Architect, Judge, etc.) ───────────────────────────
+            ->arrayNode('governance')
+            ->addDefaultsIfNotSet()
+            ->info('Garde-fous LLM : architect (Phase 11), judge (Garde-fou #2), recorder, etc.')
+            ->children()
+            ->scalarNode('architect_preset_key')
+            ->defaultValue('')
+            ->info('Clé du preset utilisé par l\'ArchitectAgent. Doit pointer vers un modèle supportant les structured outputs (response_schema). Vide = architecte désactivé.')
+            ->end()
+            ->scalarNode('judge_preset_key')
+            ->defaultValue('')
+            ->info('Clé du preset utilisé par le LLM reviewer (Garde-fou #2 — PromptJudge). Vide = NullPromptJudge prend le relais.')
+            ->end()
+            ->end()
+            ->end()
+
             // ── Context ───────────────────────────────────────────────────────
             ->arrayNode('context')
             ->addDefaultsIfNotSet()

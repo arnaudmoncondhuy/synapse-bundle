@@ -20,11 +20,15 @@ final class ArchitectProposalProcessorTest extends TestCase
 {
     // ── create_agent ──────────────────────────────────────────────────────
 
-    public function testProcessCreateAgentCreatesInactiveAgent(): void
+    public function testProcessCreateAgentCreatesInactiveEphemeralAgent(): void
     {
         $agentRepo = $this->createStub(SynapseAgentRepository::class);
         $agentRepo->method('findByKey')->willReturn(null);
 
+        // Nouveau flow Chantier C :
+        // - persist + flush immédiat pour que l'agent ait un ID
+        // - puis snapshot avec flush: true (remplace l'ancien flush: false)
+        // - L'agent doit être marqué isEphemeral + retentionUntil renseigné
         $recorder = $this->createMock(PromptVersionRecorder::class);
         $recorder->expects($this->once())
             ->method('snapshot')
@@ -33,8 +37,8 @@ final class ArchitectProposalProcessorTest extends TestCase
                 'Tu es un agent de support.',
                 'agent:architect',
                 'Choix basé sur la description.',
-                false,
-                true,
+                true,  // flush: true (changé en Chantier C)
+                true,  // pending
             );
 
         $em = $this->createMock(EntityManagerInterface::class);
@@ -44,7 +48,11 @@ final class ArchitectProposalProcessorTest extends TestCase
                 && false === $a->isActive()
                 && false === $a->isBuiltin()
                 && '🔧' === $a->getEmoji()
+                && true === $a->isEphemeral()                  // Chantier C : ephemeral
+                && null !== $a->getRetentionUntil()            // Chantier C : retention set
+                && $a->getRetentionUntil() > new \DateTimeImmutable('+1 day') // fenêtre de 7j par défaut
             ));
+        // Un seul flush explicite côté processor (le 2e flush est porté par snapshot)
         $em->expects($this->once())->method('flush');
 
         $processor = new ArchitectProposalProcessor($em, $agentRepo, $recorder);
