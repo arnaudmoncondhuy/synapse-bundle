@@ -12,31 +12,18 @@ use Symfony\Component\Console\Tester\CommandTester;
 class UpdateVersionCommandTest extends TestCase
 {
     private string $versionFile;
-    private string $originalDir;
 
     protected function setUp(): void
     {
-        // The command computes: dirname(__DIR__, 3) from its location in src/Command/,
-        // which resolves to packages/ — so the VERSION file is written to packages/VERSION
-        // The command uses dirname(__DIR__, 3) where __DIR__ = .../packages/core/src/Command
-        // dirname(dir, 3) = .../packages — so VERSION ends up in packages/VERSION
-        $commandFile = (new \ReflectionClass(UpdateVersionCommand::class))->getFileName();
-        $commandDir = dirname((string) $commandFile);
-        $this->versionFile = dirname($commandDir, 3).'/VERSION';
-        // Back up existing file if present
-        if (file_exists($this->versionFile)) {
-            $this->originalDir = (string) file_get_contents($this->versionFile);
-        } else {
-            $this->originalDir = '';
-        }
+        // Utilise un tmpfile unique par test pour ne dépendre ni des permissions
+        // du filesystem partagé Docker, ni de l'état préalable de packages/VERSION.
+        // Le test passe le chemin via --file, la commande écrit où on lui dit.
+        $this->versionFile = sys_get_temp_dir().'/synapse_version_test_'.uniqid().'.txt';
     }
 
     protected function tearDown(): void
     {
-        // Restore original VERSION file
-        if ('' !== $this->originalDir) {
-            file_put_contents($this->versionFile, $this->originalDir);
-        } elseif (file_exists($this->versionFile)) {
+        if (file_exists($this->versionFile)) {
             unlink($this->versionFile);
         }
     }
@@ -45,7 +32,7 @@ class UpdateVersionCommandTest extends TestCase
     {
         $command = new UpdateVersionCommand();
         $tester = new CommandTester($command);
-        $tester->execute([]);
+        $tester->execute(['--file' => $this->versionFile]);
 
         $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
         $this->assertStringContainsString('Version updated to', $tester->getDisplay());
@@ -59,10 +46,21 @@ class UpdateVersionCommandTest extends TestCase
     {
         $command = new UpdateVersionCommand();
         $tester = new CommandTester($command);
-        $tester->execute([]);
+        $tester->execute(['--file' => $this->versionFile]);
 
         $expectedDate = (new \DateTime())->format('ymd');
         $content = trim((string) file_get_contents($this->versionFile));
         $this->assertSame("dev 0.{$expectedDate}", $content);
+    }
+
+    public function testFailsOnUnwritablePath(): void
+    {
+        $command = new UpdateVersionCommand();
+        $tester = new CommandTester($command);
+        // Chemin inexistant et non-créable → file_put_contents échoue.
+        $tester->execute(['--file' => '/nonexistent-dir-'.uniqid().'/VERSION']);
+
+        $this->assertSame(Command::FAILURE, $tester->getStatusCode());
+        $this->assertStringContainsString('Could not write', $tester->getDisplay());
     }
 }
