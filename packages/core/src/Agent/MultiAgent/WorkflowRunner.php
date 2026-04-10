@@ -8,6 +8,7 @@ use ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver;
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Exception\WorkflowExecutionException;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
+use ArnaudMoncondhuy\SynapseCore\Message\ExecuteWorkflowMessage;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\WorkflowRunStatus;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflowRun;
@@ -15,6 +16,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -59,6 +61,7 @@ class WorkflowRunner
         private readonly ?EventDispatcherInterface $eventDispatcher = null,
         ?LoggerInterface $logger = null,
         private readonly ?SynapseDebugLogRepository $debugLogRepository = null,
+        private readonly ?MessageBusInterface $messageBus = null,
     ) {
         $this->logger = $logger ?? new NullLogger();
     }
@@ -79,6 +82,78 @@ class WorkflowRunner
         $this->entityManager->persist($run);
         $this->entityManager->flush();
 
+        return $this->executeRun($workflow, $run, $input, $options);
+    }
+
+    /**
+     * Version asynchrone de {@see run()} — Chantier G.
+     *
+     * Crée un run en statut PENDING côté caller (sans l'exécuter), dispatch
+     * un {@see ExecuteWorkflowMessage} via Messenger, et retourne immédiatement
+     * le run pour que l'appelant ait un UUID à tracker (via
+     * `inspect_workflow_run` MCP ou admin UI).
+     *
+     * Le handler ({@see \ArnaudMoncondhuy\SynapseCore\MessageHandler\ExecuteWorkflowMessageHandler})
+     * reprendra l'exécution via {@see resumeRun()} quand un worker Messenger
+     * dépile le message.
+     *
+     * @param array{context?: \ArnaudMoncondhuy\SynapseCore\Agent\AgentContext, user_id?: string|null} $options
+     *
+     * @throws \RuntimeException Si le MessageBus n'est pas injecté (bundle mal configuré).
+     */
+    public function runAsync(SynapseWorkflow $workflow, Input $input, array $options = []): SynapseWorkflowRun
+    {
+        if (null === $this->messageBus) {
+            throw new \RuntimeException('WorkflowRunner::runAsync() requires a MessageBusInterface. Either inject one or use run() for synchronous execution.');
+        }
+
+        $run = $this->createRun($workflow, $options);
+        // Statut PENDING explicite (défaut déjà PENDING, on le set pour être clair).
+        $run->setStatus(WorkflowRunStatus::PENDING);
+
+        $this->entityManager->persist($run);
+        $this->entityManager->flush();
+
+        $structured = $input->getStructured();
+        $message = new ExecuteWorkflowMessage(
+            workflowKey: $workflow->getWorkflowKey(),
+            structuredInput: $structured,
+            userId: $run->getUserId(),
+            message: $input->getMessage(),
+            runId: $run->getWorkflowRunId(),
+        );
+        $this->messageBus->dispatch($message);
+
+        $this->logger->info('Workflow run {workflowRunId} dispatched async for workflow "{workflowKey}"', [
+            'workflowRunId' => $run->getWorkflowRunId(),
+            'workflowKey' => $run->getWorkflowKey(),
+        ]);
+
+        return $run;
+    }
+
+    /**
+     * Reprend l'exécution d'un `SynapseWorkflowRun` déjà persisté (typiquement
+     * créé par {@see runAsync()} et dépilé par le handler Messenger).
+     *
+     * Utilisé aussi pour les retries : si un run a échoué transitoirement,
+     * on peut le remettre en RUNNING et relancer.
+     *
+     * @param array{context?: \ArnaudMoncondhuy\SynapseCore\Agent\AgentContext, user_id?: string|null} $options
+     */
+    public function resumeRun(SynapseWorkflow $workflow, SynapseWorkflowRun $run, Input $input, array $options = []): Output
+    {
+        return $this->executeRun($workflow, $run, $input, $options);
+    }
+
+    /**
+     * Logique d'exécution commune à `run()` et `resumeRun()` : instancie un
+     * `MultiAgent`, le laisse muter le run, flush, agrège les coûts.
+     *
+     * @param array{context?: \ArnaudMoncondhuy\SynapseCore\Agent\AgentContext, user_id?: string|null} $options
+     */
+    private function executeRun(SynapseWorkflow $workflow, SynapseWorkflowRun $run, Input $input, array $options): Output
+    {
         $this->logger->info('Workflow run {workflowRunId} started for workflow "{workflowKey}" (version {version})', [
             'workflowRunId' => $run->getWorkflowRunId(),
             'workflowKey' => $run->getWorkflowKey(),

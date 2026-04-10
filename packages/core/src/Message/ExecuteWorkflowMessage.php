@@ -44,12 +44,14 @@ final class ExecuteWorkflowMessage
      * @param array<string, mixed> $structuredInput payload passé à {@see \ArnaudMoncondhuy\SynapseCore\Agent\Input::ofStructured()}
      * @param string|null $userId Utilisateur déclencheur (null = système / CLI / cron). Persiste dans `SynapseWorkflowRun::$userId`.
      * @param string $message message texte optionnel — ignoré si `$structuredInput` est non-vide (aligné sur `MultiAgent::buildInitialInputs()`)
+     * @param string|null $runId UUID d'un `SynapseWorkflowRun` déjà créé par le caller (Chantier G : mode `runAsync()`). Si null, le handler crée un nouveau run via `WorkflowRunner::run()` (legacy). Si renseigné, le handler charge le run existant et l'exécute via `resumeRun()` — permet au caller de retourner un UUID trackable immédiatement après dispatch.
      */
     public function __construct(
         private readonly string $workflowKey,
         private readonly array $structuredInput = [],
         private readonly ?string $userId = null,
         private readonly string $message = '',
+        private readonly ?string $runId = null,
     ) {
     }
 
@@ -74,5 +76,10 @@ final class ExecuteWorkflowMessage
     public function getMessage(): string
     {
         return $this->message;
+    }
+
+    public function getRunId(): ?string
+    {
+        return $this->runId;
     }
 }

@@ -14,7 +14,7 @@ use Mcp\Capability\Attribute\McpTool;
 
 #[McpTool(
     name: 'run_workflow',
-    description: 'Execute a workflow via WorkflowRunner. This triggers MultiAgent which calls AgentResolver for each step, enabling nested agent calls and full traceability. Returns the workflow run ID, outputs, and token usage.'
+    description: 'Execute a workflow via WorkflowRunner. Sync mode (default): waits for the run to complete and returns outputs + tokens + cost. Async mode (async=true): dispatches via Symfony Messenger, returns immediately with a runId in PENDING status — poll via inspect_workflow_run to follow progress. Use async for long-running workflows (>30s) that would block the MCP response.'
 )]
 class RunWorkflowTool
 {
@@ -31,6 +31,7 @@ class RunWorkflowTool
         string $workflowKey,
         ?string $inputs = null,
         ?string $message = null,
+        ?bool $async = false,
     ): array {
         if (!$this->permissionChecker->canAccessAdmin()) {
             return [
@@ -60,6 +61,32 @@ class RunWorkflowTool
         }
 
         $input = $this->buildInput($inputs, $message);
+
+        // Chantier G : mode async — dispatch via Messenger, retour immédiat.
+        if (true === $async) {
+            try {
+                $run = $this->workflowRunner->runAsync($workflow, $input, []);
+            } catch (\Throwable $e) {
+                return [
+                    'status' => 'error',
+                    'workflowKey' => $workflowKey,
+                    'error' => sprintf('Async dispatch failed: %s', $e->getMessage()),
+                    'timestamp' => (new \DateTime())->format('c'),
+                ];
+            }
+
+            return [
+                'status' => 'success',
+                'mode' => 'async',
+                'workflowKey' => $workflowKey,
+                'workflowRunId' => $run->getWorkflowRunId(),
+                'runStatus' => $run->getStatus()->value,
+                'hint' => 'Poll via inspect_workflow_run to follow progress. A worker must be running: `bin/console messenger:consume synapse_async`.',
+                'timestamp' => (new \DateTime())->format('c'),
+            ];
+        }
+
+        // Mode sync (défaut)
         $context = $this->agentResolver->createRootContext(origin: 'mcp');
 
         try {
@@ -82,6 +109,7 @@ class RunWorkflowTool
 
         return [
             'status' => 'success',
+            'mode' => 'sync',
             'workflowKey' => $workflowKey,
             'workflowRunId' => $output->getMetadata()['workflow_run_id'] ?? null,
             'stepsExecuted' => $output->getMetadata()['steps_executed'] ?? null,

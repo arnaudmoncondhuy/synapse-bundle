@@ -8,7 +8,9 @@ use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Exception\WorkflowExecutionException;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowRunner;
 use ArnaudMoncondhuy\SynapseCore\Message\ExecuteWorkflowMessage;
+use ArnaudMoncondhuy\SynapseCore\Shared\Enum\WorkflowRunStatus;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRunRepository;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -44,6 +46,7 @@ final class ExecuteWorkflowMessageHandler
     public function __construct(
         private readonly SynapseWorkflowRepository $workflowRepository,
         private readonly WorkflowRunner $workflowRunner,
+        private readonly ?SynapseWorkflowRunRepository $runRepository = null,
         ?LoggerInterface $logger = null,
     ) {
         $this->logger = $logger ?? new NullLogger();
@@ -71,7 +74,27 @@ final class ExecuteWorkflowMessageHandler
         }
 
         try {
-            $this->workflowRunner->run($workflow, $input, $options);
+            // Chantier G : si le caller a pré-créé un run via runAsync(),
+            // le message porte le runId et on reprend l'exécution via resumeRun().
+            // Sinon (legacy), on crée un nouveau run via run().
+            $runId = $message->getRunId();
+            if (null !== $runId && null !== $this->runRepository) {
+                $run = $this->runRepository->findByWorkflowRunId($runId);
+                if (null === $run) {
+                    $this->logger->warning('ExecuteWorkflowMessage references unknown runId "{runId}" — falling back to new run', [
+                        'runId' => $runId,
+                    ]);
+                    $this->workflowRunner->run($workflow, $input, $options);
+                } else {
+                    // Marquer PENDING → RUNNING pour que l'UI voit la transition
+                    if (WorkflowRunStatus::PENDING === $run->getStatus()) {
+                        $run->setStatus(WorkflowRunStatus::RUNNING);
+                    }
+                    $this->workflowRunner->resumeRun($workflow, $run, $input, $options);
+                }
+            } else {
+                $this->workflowRunner->run($workflow, $input, $options);
+            }
         } catch (WorkflowExecutionException $e) {
             // Le run est déjà persisté en FAILED par WorkflowRunner — pas de retry.
             $this->logger->error('Workflow "{key}" failed during async execution: {error}', [
