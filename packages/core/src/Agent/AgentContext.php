@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\Agent;
 
+use ArnaudMoncondhuy\SynapseCore\Shared\Model\BudgetLimit;
+use ArnaudMoncondhuy\SynapseCore\Shared\Model\Goal;
+
 /**
  * Contexte d'exécution transporté entre les appels d'agents.
  *
@@ -38,8 +41,11 @@ final class AgentContext
      * @param string|null $workflowRunId UUID du workflow englobant si on est dans un workflow
      * @param int $depth Profondeur courante (0 = appel racine)
      * @param int $maxDepth Profondeur maximale autorisée
-     * @param int|null $budgetTokensRemaining Budget tokens restant hérité, null si illimité
+     * @param int|null $budgetTokensRemaining (@deprecated) Budget tokens restant hérité — conservé pour BC mais remplacé par $budget (Chantier D).
      * @param string $origin Origine de l'appel : 'direct' | 'code' | 'config' | 'ephemeral' | 'workflow'
+     * @param BudgetLimit|null $budget Limites de budget (Chantier D). null = pas de budget explicite, l'ancien `budgetTokensRemaining` prend le relais s'il est renseigné.
+     * @param Goal|null $goal Objectif poursuivi par l'agent autonome (Chantier D). null pour les agents conversationnels/réactifs classiques. Porté pour que les sous-agents appelés dans une boucle planner puissent y accéder.
+     * @param \DateTimeImmutable|null $startedAt Timestamp de début de run, propagé pour calculer `elapsedSeconds` à chaque check budget. Défaut : now au moment du root context.
      */
     public function __construct(
         private readonly string $requestId,
@@ -50,6 +56,9 @@ final class AgentContext
         private readonly int $maxDepth = self::DEFAULT_MAX_DEPTH,
         private readonly ?int $budgetTokensRemaining = null,
         private readonly string $origin = 'direct',
+        private readonly ?BudgetLimit $budget = null,
+        private readonly ?Goal $goal = null,
+        private readonly ?\DateTimeImmutable $startedAt = null,
     ) {
     }
 
@@ -61,6 +70,8 @@ final class AgentContext
         int $maxDepth = self::DEFAULT_MAX_DEPTH,
         ?int $budgetTokensRemaining = null,
         string $origin = 'direct',
+        ?BudgetLimit $budget = null,
+        ?Goal $goal = null,
     ): self {
         return new self(
             requestId: self::generateRequestId(),
@@ -69,6 +80,9 @@ final class AgentContext
             maxDepth: $maxDepth,
             budgetTokensRemaining: $budgetTokensRemaining,
             origin: $origin,
+            budget: $budget,
+            goal: $goal,
+            startedAt: new \DateTimeImmutable(),
         );
     }
 
@@ -91,6 +105,9 @@ final class AgentContext
             maxDepth: $this->maxDepth,
             budgetTokensRemaining: $this->budgetTokensRemaining,
             origin: $childOrigin,
+            budget: $this->budget,
+            goal: $this->goal,
+            startedAt: $this->startedAt,
         );
     }
 
@@ -117,6 +134,52 @@ final class AgentContext
             maxDepth: $this->maxDepth,
             budgetTokensRemaining: $this->budgetTokensRemaining,
             origin: $this->origin,
+            budget: $this->budget,
+            goal: $this->goal,
+            startedAt: $this->startedAt,
+        );
+    }
+
+    /**
+     * Retourne une copie avec un `BudgetLimit` appliqué. Utilisé typiquement
+     * par un {@see \ArnaudMoncondhuy\SynapseCore\Agent\Autonomy\AbstractPlannerAgent}
+     * qui démarre un run autonome avec des limites explicites.
+     */
+    public function withBudget(BudgetLimit $budget): self
+    {
+        return new self(
+            requestId: $this->requestId,
+            userId: $this->userId,
+            parentRunId: $this->parentRunId,
+            workflowRunId: $this->workflowRunId,
+            depth: $this->depth,
+            maxDepth: $this->maxDepth,
+            budgetTokensRemaining: $this->budgetTokensRemaining,
+            origin: $this->origin,
+            budget: $budget,
+            goal: $this->goal,
+            startedAt: $this->startedAt,
+        );
+    }
+
+    /**
+     * Retourne une copie avec un `Goal` attaché. Utilisé par les planners
+     * pour que les sous-agents appelés connaissent l'objectif général du run.
+     */
+    public function withGoal(Goal $goal): self
+    {
+        return new self(
+            requestId: $this->requestId,
+            userId: $this->userId,
+            parentRunId: $this->parentRunId,
+            workflowRunId: $this->workflowRunId,
+            depth: $this->depth,
+            maxDepth: $this->maxDepth,
+            budgetTokensRemaining: $this->budgetTokensRemaining,
+            origin: $this->origin,
+            budget: $this->budget,
+            goal: $goal,
+            startedAt: $this->startedAt,
         );
     }
 
@@ -158,6 +221,34 @@ final class AgentContext
     public function getOrigin(): string
     {
         return $this->origin;
+    }
+
+    public function getBudget(): ?BudgetLimit
+    {
+        return $this->budget;
+    }
+
+    public function getGoal(): ?Goal
+    {
+        return $this->goal;
+    }
+
+    public function getStartedAt(): ?\DateTimeImmutable
+    {
+        return $this->startedAt;
+    }
+
+    /**
+     * Durée écoulée depuis le début du run racine (secondes). 0 si startedAt
+     * est null (contextes créés sans passer par `root()`).
+     */
+    public function getElapsedSeconds(): int
+    {
+        if (null === $this->startedAt) {
+            return 0;
+        }
+
+        return (new \DateTimeImmutable())->getTimestamp() - $this->startedAt->getTimestamp();
     }
 
     public function hasParent(): bool

@@ -52,6 +52,9 @@ services:
             - '../src/Agent/MultiAgent/JsonPathLite.php'
             # ArchitectResponseSchema : utilitaire statique, pas un service
             - '../src/Governance/Architect/ArchitectResponseSchema.php'
+            # CallAgentTool (Chantier D) : instancié par AgentAsToolRegistry avec
+            # un AgentInterface spécifique par instance, pas un service autowirable
+            - '../src/Agent/Autonomy/CallAgentTool.php'
 
     # UserAwareContextProvider : classe abstraite → $language injecté via YAML
     ArnaudMoncondhuy\SynapseCore\Context\UserAwareContextProvider:

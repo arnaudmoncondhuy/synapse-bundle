@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\Engine;
 
+use ArnaudMoncondhuy\SynapseCore\Agent\AgentContext;
+use ArnaudMoncondhuy\SynapseCore\Agent\Exception\BudgetExceededException;
 use ArnaudMoncondhuy\SynapseCore\Contract\LlmClientInterface;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseMultiTurnIterationEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseStatusChangedEvent;
 use ArnaudMoncondhuy\SynapseCore\Shared\Exception\StructuredOutputParseException;
+use ArnaudMoncondhuy\SynapseCore\Shared\Model\BudgetLimit;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\MultiTurnResult;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\TokenUsage;
 use ArnaudMoncondhuy\SynapseCore\Timing\SynapseProfiler;
@@ -46,6 +49,7 @@ class MultiTurnExecutor
         bool $streamingEnabled,
         int $maxTurns,
         array $llmOptions = [],
+        ?AgentContext $context = null,
     ): MultiTurnResult {
         $fullTextAccumulator = '';
         $cumulativeUsage = TokenUsage::empty();
@@ -54,6 +58,14 @@ class MultiTurnExecutor
         $allGeneratedAttachments = [];
 
         for ($turn = 0; $turn < $maxTurns; ++$turn) {
+            // Chantier D : enforcement BudgetLimit à chaque début de tour.
+            // Vérifie avant l'appel LLM pour éviter de facturer un tour de plus
+            // qui dépasserait la limite. Pas de check si le contexte n'a pas
+            // de budget explicite (agents conversationnels classiques, tests…).
+            if (null !== $context && null !== $context->getBudget()) {
+                $this->enforceBudgetBeforeTurn($context, $cumulativeUsage, $turn);
+            }
+
             if ($turn > 0) {
                 $this->dispatcher->dispatch(new SynapseStatusChangedEvent('Réflexion supplémentaire...', 'thinking', $turn));
             }
@@ -229,5 +241,39 @@ class MultiTurnExecutor
             $allGeneratedAttachments,
             $structuredData,
         );
+    }
+
+    /**
+     * Chantier D : vérifie les hard-limits `BudgetLimit` du contexte avant
+     * chaque tour. Lève {@see BudgetExceededException} si une limite est
+     * atteinte ou dépassée. Sans effet si le contexte n'a pas de budget.
+     *
+     * Le `currentCostEur` n'est pas vérifié ici car le coût n'est calculé
+     * qu'après l'appel LLM par `DebugLogSubscriber`. Pour un enforcement de
+     * coût strict (Chantier D phase 2), il faudra estimer le coût du prochain
+     * tour à partir du pricing du modèle et du prompt courant.
+     */
+    private function enforceBudgetBeforeTurn(
+        AgentContext $context,
+        TokenUsage $cumulativeUsage,
+        int $turn,
+    ): void {
+        $budget = $context->getBudget() ?? BudgetLimit::unlimited();
+
+        $violation = $budget->firstViolation(
+            currentTokens: $cumulativeUsage->promptTokens + $cumulativeUsage->completionTokens,
+            currentDepth: $context->getDepth(),
+            elapsedSeconds: $context->getElapsedSeconds(),
+        );
+
+        if (null !== $violation) {
+            throw new BudgetExceededException(
+                violationDetail: sprintf('before turn #%d — %s', $turn, $violation),
+                budget: $budget,
+                currentTokens: $cumulativeUsage->promptTokens + $cumulativeUsage->completionTokens,
+                currentDepth: $context->getDepth(),
+                elapsedSeconds: $context->getElapsedSeconds(),
+            );
+        }
     }
 }

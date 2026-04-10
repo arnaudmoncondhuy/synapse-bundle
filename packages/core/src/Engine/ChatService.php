@@ -210,6 +210,7 @@ class ChatService
                 $streamingEnabled,
                 $maxTurns,
                 $llmOptions,
+                $agentContext, // Chantier D : propage le context pour enforcement BudgetLimit
             );
 
             // ── FINALIZE ──

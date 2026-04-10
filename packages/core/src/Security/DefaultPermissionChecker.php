@@ -106,7 +106,8 @@ class DefaultPermissionChecker implements PermissionCheckerInterface
 
     /**
      * Détecte si la requête courante cible l'endpoint MCP.
-     * Hors contexte HTTP (CLI, messenger…) : false, pour rester strict par défaut.
+     * Hors contexte HTTP (CLI, messenger…) : false, mais ce check n'est atteint
+     * que dans un contexte HTTP car `canAccessAdmin()` retourne true avant.
      */
     private function isMcpRequest(): bool
     {
