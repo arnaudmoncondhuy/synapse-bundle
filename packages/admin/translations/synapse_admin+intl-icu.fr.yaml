@@ -610,9 +610,6 @@ synapse.admin.workflow.list.empty.title: "Aucun workflow"
 synapse.admin.workflow.list.empty.subtitle: "Créez votre premier workflow multi-agents pour orchestrer des séquences d'étapes."
 synapse.admin.workflow.list.empty.action: "Créer un workflow"
 
-synapse.admin.workflow.phase7_notice.title: "Phase 7 — Stockage et administration uniquement"
-synapse.admin.workflow.phase7_notice.body: "Cette version fournit les entités, la validation du format pivot et l'admin CRUD. Le moteur d'exécution arrivera en Phase 8 — aucun workflow ne peut encore tourner."
-
 synapse.admin.workflow.edit.page_title.new: "Nouveau workflow | Intelligence | Synapse Administration"
 synapse.admin.workflow.edit.page_title.edit: "{name} | Workflows | Intelligence | Synapse Administration"
 synapse.admin.workflow.edit.title.new: "Nouveau workflow"

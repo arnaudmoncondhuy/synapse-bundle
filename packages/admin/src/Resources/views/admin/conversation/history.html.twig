@@ -180,10 +180,10 @@
 							{# ── Actions ─────────────────────────────────────── #}
 							<td
 								class="synapse-admin-table__cell--actions">
-								{# Lien vers la vue détaillée V1 (Break-Glass) #}
-								<a href="{{ path('synapse_admin_conversation_view', {id: conversation.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon" data-synapse-admin-tooltip="Voir la conversation">
-									<i data-lucide="eye"></i>
-								</a>
+								{# La route synapse_admin_conversation_view a été retirée — vue détaillée à refondre dans le Chantier H (dashboard live). Placeholder désactivé pour ne pas casser le Twig. #}
+								<span class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon" data-synapse-admin-tooltip="Vue détaillée en refonte (Chantier H)" style="opacity: 0.4; cursor: not-allowed;">
+									<i data-lucide="eye-off"></i>
+								</span>
 							</td>
 
 						</tr>

@@ -143,7 +143,7 @@ final class MultiAgent implements AgentInterface
             }
 
             try {
-                $stepInput = $this->resolveStepInput($step, $state);
+                $stepInput = $this->resolveStepInput($step, $state, $stepName);
                 $childContext = $parentContext->createChild(
                     parentRunId: $parentContext->getRequestId(),
                     childOrigin: 'workflow',
@@ -338,7 +338,7 @@ final class MultiAgent implements AgentInterface
      *
      * @return array<string, mixed>
      */
-    private function resolveStepInput(array $step, array $state): array
+    private function resolveStepInput(array $step, array $state, string $stepName): array
     {
         $mapping = $step['input_mapping'] ?? null;
         if (!is_array($mapping)) {
@@ -351,7 +351,22 @@ final class MultiAgent implements AgentInterface
                 continue;
             }
             if (is_string($expression) && JsonPathLite::isExpression($expression)) {
-                $resolved[$key] = JsonPathLite::evaluate($state, $expression);
+                $value = JsonPathLite::evaluate($state, $expression);
+                $resolved[$key] = $value;
+                if (null === $value) {
+                    // Remontée : un JSONPath résolu à null est souvent le signe d'un
+                    // typo dans la definition (ex: $.steps.X.output.answer au lieu
+                    // de $.steps.X.output.text) — ça produit un run qui "réussit"
+                    // mais avec des inputs vides passés au step suivant. On warn
+                    // bruyamment avec le contexte nécessaire au diagnostic.
+                    $this->logger->warning('Workflow step "{step}" input_mapping "{key}" → "{path}" résout à null. Typo dans le chemin ?', [
+                        'step' => $stepName,
+                        'key' => $key,
+                        'path' => $expression,
+                        'workflow_run_id' => $this->run->getWorkflowRunId(),
+                        'workflow_key' => $this->workflow->getWorkflowKey(),
+                    ]);
+                }
             } else {
                 // Valeur littérale (string/int/bool/array/null)
                 $resolved[$key] = $expression;
@@ -380,7 +395,20 @@ final class MultiAgent implements AgentInterface
                 continue;
             }
             if (is_string($expression) && JsonPathLite::isExpression($expression)) {
-                $resolved[$key] = JsonPathLite::evaluate($state, $expression);
+                $value = JsonPathLite::evaluate($state, $expression);
+                $resolved[$key] = $value;
+                if (null === $value) {
+                    // Même logique que resolveStepInput : un outputs JSONPath à null
+                    // est quasi toujours un bug de définition. On warn pour ne pas
+                    // laisser le workflow "réussir" silencieusement avec des outputs
+                    // vides que l'appelant consommera sans comprendre.
+                    $this->logger->warning('Workflow outputs "{key}" → "{path}" résout à null. Typo dans le chemin ?', [
+                        'key' => $key,
+                        'path' => $expression,
+                        'workflow_run_id' => $this->run->getWorkflowRunId(),
+                        'workflow_key' => $this->workflow->getWorkflowKey(),
+                    ]);
+                }
             } else {
                 $resolved[$key] = $expression;
             }

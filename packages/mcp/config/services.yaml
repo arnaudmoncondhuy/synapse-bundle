@@ -4,6 +4,7 @@ services:
     arguments:
       - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository'
       - '@ArnaudMoncondhuy\SynapseCore\Agent\CodeAgentRegistry'
+      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
     tags:
       - { name: mcp.tool }
 

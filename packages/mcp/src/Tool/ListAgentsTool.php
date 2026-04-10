@@ -6,6 +6,7 @@ namespace ArnaudMoncondhuy\SynapseMcp\Tool;
 
 use ArnaudMoncondhuy\SynapseCore\Agent\AbstractAgent;
 use ArnaudMoncondhuy\SynapseCore\Agent\CodeAgentRegistry;
+use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use Mcp\Capability\Attribute\McpTool;
 
@@ -18,6 +19,7 @@ class ListAgentsTool
     public function __construct(
         private readonly SynapseAgentRepository $agentRepository,
         private readonly CodeAgentRegistry $codeAgentRegistry,
+        private readonly PermissionCheckerInterface $permissionChecker,
     ) {
     }
 
@@ -25,6 +27,14 @@ class ListAgentsTool
     public function __invoke(
         ?bool $includeSandbox = false,
     ): array {
+        if (!$this->permissionChecker->canAccessAdmin()) {
+            return [
+                'status' => 'error',
+                'error' => 'Access denied. Admin role required.',
+                'timestamp' => (new \DateTime())->format('c'),
+            ];
+        }
+
         $dbAgents = $includeSandbox
             ? $this->agentRepository->findAll()
             : $this->agentRepository->findAllOrdered();

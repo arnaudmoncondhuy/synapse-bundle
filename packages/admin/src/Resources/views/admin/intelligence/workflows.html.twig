@@ -31,14 +31,6 @@
 		</div>
 	</div>
 
-	<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-lg">
-		<i data-lucide="info"></i>
-		<div>
-			<strong>{{ 'synapse.admin.workflow.phase7_notice.title'|trans(domain='synapse_admin') }}</strong>
-			<p>{{ 'synapse.admin.workflow.phase7_notice.body'|trans(domain='synapse_admin') }}</p>
-		</div>
-	</div>
-
 	<div class="synapse-admin-grid synapse-admin-grid--2">
 		{% for workflow in workflows %}
 			{% set counts = runs_counts[workflow.id] ?? {} %}

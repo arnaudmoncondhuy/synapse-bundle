@@ -19,7 +19,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Routing\RouterInterface;
 
 #[AsCommand(
     name: 'synapse:doctor',
@@ -34,6 +36,7 @@ class SynapseDoctorCommand extends Command
     public function __construct(
         private readonly KernelInterface $kernel,
         private readonly ParameterBagInterface $parameterBag,
+        private readonly ?RouterInterface $router = null,
         ?Filesystem $filesystem = null,
     ) {
         parent::__construct();
@@ -84,6 +87,7 @@ class SynapseDoctorCommand extends Command
 
         $checks['Database connection'] = $this->checkDatabase($io);
         $checks['Database tables'] = $this->checkDatabaseTables($io);
+        $checks['Twig route references'] = $this->checkTwigRoutes($projectDir, $io);
 
         if ($this->hasChat) {
             $checks['Conversation owner (User entity)'] = $this->checkConversationOwner($io);
@@ -510,6 +514,104 @@ class SynapseDoctorCommand extends Command
         $io->writeln('  <info>[OK]</info> Stimulus Bootstrap');
 
         return true;
+    }
+
+    /**
+     * Vérifie que tous les `path(...)` et `url(...)` des templates Twig Synapse
+     * pointent vers des routes qui existent bien dans le RouterInterface.
+     *
+     * Motivation : un refacto qui renomme une route sans mettre à jour les
+     * templates casse silencieusement au runtime. Symfony ne détecte pas ce
+     * type de dérive à la compilation. Ce check grep les templates, extrait
+     * les noms de routes référencés, et vérifie chaque nom via le router.
+     *
+     * Scope : scanne les templates du monorepo synapse-bundle (vendor/arnaudmoncondhuy)
+     * + éventuellement les templates de l'app hôte. Ignore les routes générées
+     * dynamiquement (variables PHP passées en 1er arg de `path()`).
+     */
+    private function checkTwigRoutes(string $projectDir, SymfonyStyle $io): bool
+    {
+        if (null === $this->router) {
+            $io->writeln('  <comment>[SKIP]</comment> Twig routes — router non injecté (CLI hors kernel web ?)');
+
+            return true;
+        }
+
+        $scanPaths = [];
+        $vendorSynapse = $projectDir.'/vendor/arnaudmoncondhuy';
+        if (is_dir($vendorSynapse)) {
+            $scanPaths[] = $vendorSynapse;
+        }
+        $appTemplates = $projectDir.'/templates';
+        if (is_dir($appTemplates)) {
+            $scanPaths[] = $appTemplates;
+        }
+
+        if ([] === $scanPaths) {
+            $io->writeln('  <comment>[SKIP]</comment> Twig routes — aucun répertoire de templates trouvé');
+
+            return true;
+        }
+
+        try {
+            $finder = (new Finder())
+                ->files()
+                ->name('*.twig')
+                ->followLinks() // vendor/arnaudmoncondhuy/* est souvent un symlink en dev
+                ->in($scanPaths);
+        } catch (\InvalidArgumentException $e) {
+            $io->writeln(sprintf('  <comment>[SKIP]</comment> Twig routes — %s', $e->getMessage()));
+
+            return true;
+        }
+
+        $knownRoutes = array_keys($this->router->getRouteCollection()->all());
+        $knownRoutesSet = array_flip($knownRoutes);
+
+        // Matche `path('route_name'`, `path("route_name"`, idem pour url().
+        // Ne matche pas les appels avec variable (path(myRoute)) : trop risqué
+        // de faux positifs, et c'est la responsabilité du dev de savoir.
+        $pattern = '/\b(?:path|url)\(\s*[\'"]([a-zA-Z0-9_]+)[\'"]/';
+
+        $orphans = []; // routeName => [fichier:ligne, ...]
+        $fileCount = 0;
+
+        foreach ($finder as $file) {
+            ++$fileCount;
+            $lines = @file($file->getRealPath(), FILE_IGNORE_NEW_LINES);
+            if (!is_array($lines)) {
+                continue;
+            }
+            foreach ($lines as $lineNumber => $line) {
+                if (!preg_match_all($pattern, $line, $matches)) {
+                    continue;
+                }
+                foreach ($matches[1] as $routeName) {
+                    if (isset($knownRoutesSet[$routeName])) {
+                        continue;
+                    }
+                    $relPath = str_replace($projectDir.'/', '', $file->getRealPath());
+                    $orphans[$routeName][] = sprintf('%s:%d', $relPath, $lineNumber + 1);
+                }
+            }
+        }
+
+        if ([] === $orphans) {
+            $io->writeln(sprintf('  <info>[OK]</info> Twig routes (%d templates scannés, toutes les routes référencées existent)', $fileCount));
+
+            return true;
+        }
+
+        $io->error(sprintf('[Twig] %d route(s) référencée(s) dans les templates mais inexistante(s) dans le router :', count($orphans)));
+        foreach ($orphans as $routeName => $locations) {
+            $io->writeln(sprintf('    <error>%s</error>', $routeName));
+            foreach ($locations as $loc) {
+                $io->writeln(sprintf('      %s', $loc));
+            }
+        }
+        $io->writeln('    <comment>Ces path()/url() crasheront au runtime. Renommer les références ou recréer les routes.</comment>');
+
+        return false;
     }
 
     private function checkDatabase(SymfonyStyle $io): bool
