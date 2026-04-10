@@ -67,3 +67,32 @@ Tous les outils MCP vérifient `PermissionCheckerInterface::canAccessAdmin()` av
 ```
 
 Voir [PermissionCheckerInterface](../../core/docs/reference/contracts/permission-checker-interface.md).
+
+### Le piège du transport MCP public
+
+Par construction, le transport HTTP MCP (`/_mcp`) est généralement déclaré `PUBLIC_ACCESS` dans la config Symfony de l'application hôte — la raison : un client MCP n'a pas de cookie de session HTTP, et injecter une auth custom par header dépasse le scope du protocole. Conséquence piégeuse : **sans utilisateur HTTP authentifié, `canAccessAdmin()` retourne `false` et tous les outils MCP sauf `list_agents` refusent l'exécution**, ce qui rend la majorité du package inutilisable dans sa configuration par défaut.
+
+Pour débloquer ce scénario, `synapse-core` expose depuis 2026-04 le flag :
+
+```yaml
+# config/packages/synapse.yaml
+synapse:
+    security:
+        mcp_trusted: true
+```
+
+**Ce que fait le flag :** quand il est actif, `DefaultPermissionChecker::canAccessAdmin()` retourne `true` si et seulement si la requête courante cible la route `/_mcp` (détection via `RequestStack`). Le bypass est **strictement scopé à la route MCP** : les routes admin HTTP et autres surfaces qui appelleraient `canAccessAdmin()` restent intactes.
+
+**Prérequis de sécurité :** le transport MCP lui-même doit être protégé. En pratique cela signifie :
+
+- exposer `/_mcp` uniquement sur localhost ou sur un réseau interne (Docker network, VPN…)
+- ne **jamais** activer ce flag si `/_mcp` est accessible depuis l'internet public sans couche d'authentification additionnelle
+- une alerte `E_USER_NOTICE` est émise au boot si le flag est activé, pour signaler le comportement
+
+**Pourquoi un flag plutôt qu'une auth MCP canonique ?** Le protocole MCP ne définit pas encore de couche d'authentification portable (token bearer, mTLS…). Le flag est une solution pragmatique pour les bacs à sable mono-utilisateur et les environnements de dev. Pour un déploiement multi-tenant avec LLMs tiers qui consomment un MCP partagé, il faudra introduire soit un système de tokens signés au niveau transport, soit une impersonation de `SystemUser` dédié.
+
+**Debug rapide si le flag ne prend pas :**
+
+1. `rm -rf var/cache/dev/*` puis `bin/console cache:warmup` (le DI Symfony met en cache les définitions de services)
+2. Vérifier que `synapse.security.mcp_trusted` est bien à `true` dans `bin/console debug:container --parameter=synapse.security.mcp_trusted`
+3. Vérifier que le chemin détecté est bien `/_mcp` (si la route MCP est customisée via `mcp.http.path`, adapter la détection dans `DefaultPermissionChecker::isMcpRequest()`)

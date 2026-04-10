@@ -52,6 +52,7 @@ class WorkflowController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
         $workflows = $this->workflowRepo->findAllOrdered();
+        $sandboxWorkflows = $this->workflowRepo->findSandbox();
 
         $runsCounts = [];
         foreach ($workflows as $workflow) {
@@ -60,8 +61,31 @@ class WorkflowController extends AbstractController
 
         return $this->render('@Synapse/admin/intelligence/workflows.html.twig', [
             'workflows' => $workflows,
+            'sandbox_workflows' => $sandboxWorkflows,
             'runs_counts' => $runsCounts,
         ]);
+    }
+
+    // ─── Promotion sandbox → persistant ────────────────────────────────────────
+
+    #[Route('/{id}/promouvoir', name: 'workflows_promote', methods: ['POST'])]
+    public function promote(SynapseWorkflow $workflow, Request $request): Response
+    {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_workflow_promote_'.$workflow->getId());
+
+        if (!$workflow->isSandbox()) {
+            $this->addFlash('error', 'Ce workflow est déjà persistant.');
+
+            return $this->redirectToRoute('synapse_admin_workflows');
+        }
+
+        $workflow->setIsSandbox(false);
+        $this->em->flush();
+
+        $this->addFlash('success', sprintf('Workflow « %s » promu en persistant. Tu peux maintenant l\'éditer librement.', $workflow->getName()));
+
+        return $this->redirectToRoute('synapse_admin_workflows_edit', ['id' => $workflow->getId()]);
     }
 
     // ─── Nouveau ───────────────────────────────────────────────────────────────

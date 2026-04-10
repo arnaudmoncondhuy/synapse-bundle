@@ -105,7 +105,7 @@
 								<td>{{ run.totalTokens ?? '—' }}</td>
 								<td>{{ run.startedAt ? run.startedAt|date('d/m/Y H:i:s') : '—' }}</td>
 								<td>
-									<a href="{{ path('synapse_admin_systeme_debug') }}?workflow_run_id={{ run.workflowRunId }}"
+									<a href="{{ path('synapse_admin_debug') }}?workflow_run_id={{ run.workflowRunId }}"
 									   class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
 									   data-synapse-admin-tooltip="{{ 'synapse.admin.workflow.runs.action.view_logs'|trans(domain='synapse_admin') }}">
 										<i data-lucide="file-search"></i>

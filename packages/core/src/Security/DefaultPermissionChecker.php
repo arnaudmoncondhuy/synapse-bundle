@@ -11,6 +11,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseConversation;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
@@ -29,6 +30,9 @@ class DefaultPermissionChecker implements PermissionCheckerInterface
         private ?AuthorizationCheckerInterface $authChecker = null,
         #[Autowire('%synapse.security.admin_role%')]
         private string $adminRole = 'ROLE_ADMIN',
+        #[Autowire('%synapse.security.mcp_trusted%')]
+        private bool $mcpTrusted = false,
+        private ?RequestStack $requestStack = null,
     ) {
     }
 
@@ -86,11 +90,32 @@ class DefaultPermissionChecker implements PermissionCheckerInterface
 
     public function canAccessAdmin(): bool
     {
+        // Bypass MCP : si le flag est activé ET qu'on traite une requête /_mcp,
+        // on considère l'appelant comme admin. Le bypass est strictement scopé à la
+        // route MCP pour ne pas ouvrir les autres surfaces (routes admin, API).
+        if ($this->mcpTrusted && $this->isMcpRequest()) {
+            return true;
+        }
+
         if (null === $this->authChecker) {
             return false; // Strict par défaut : pas d'admin sans sécurité configurée
         }
 
         return $this->authChecker->isGranted($this->adminRole);
+    }
+
+    /**
+     * Détecte si la requête courante cible l'endpoint MCP.
+     * Hors contexte HTTP (CLI, messenger…) : false, pour rester strict par défaut.
+     */
+    private function isMcpRequest(): bool
+    {
+        $request = $this->requestStack?->getCurrentRequest();
+        if (null === $request) {
+            return false;
+        }
+
+        return str_starts_with($request->getPathInfo(), '/_mcp');
     }
 
     public function canCreateConversation(): bool

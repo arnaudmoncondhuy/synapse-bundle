@@ -80,6 +80,10 @@ class Configuration implements ConfigurationInterface
             ->defaultTrue()
             ->info('Activer la vérification CSRF sur les endpoints /synapse/api/*. Mettre à false en dernier recours si le token ne peut pas être fourni.')
             ->end()
+            ->booleanNode('mcp_trusted')
+            ->defaultFalse()
+            ->info('Traiter les appels MCP comme admin sans authentification HTTP. À n\'activer que si le transport MCP est lui-même protégé (localhost, réseau interne). Résout le blocage "Admin role required" sur les tools MCP quand /_mcp est en PUBLIC_ACCESS.')
+            ->end()
             ->end()
             ->end()
 

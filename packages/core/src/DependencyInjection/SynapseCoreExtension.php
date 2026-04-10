@@ -140,6 +140,13 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
             @trigger_error('Synapse: CSRF protection is disabled on API endpoints. This exposes chat endpoints to cross-site request forgery attacks.', \E_USER_WARNING);
         }
 
+        $mcpTrusted = $config['security']['mcp_trusted'] ?? false;
+        $container->setParameter('synapse.security.mcp_trusted', $mcpTrusted);
+
+        if ($mcpTrusted) {
+            @trigger_error('Synapse: mcp_trusted is enabled — MCP tools bypass ROLE_ADMIN checks. Ensure the /_mcp transport is protected (localhost/internal network only).', \E_USER_NOTICE);
+        }
+
         // ── Context ───────────────────────────────────────────────────────────
         $container->setParameter('synapse.context.language', $config['context']['language'] ?? 'fr');
 

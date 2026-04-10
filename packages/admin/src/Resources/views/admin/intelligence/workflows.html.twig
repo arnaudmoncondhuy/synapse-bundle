@@ -144,4 +144,85 @@
 		{% endfor %}
 	</div>
 
+	{# ─── Workflows éphémères (sandbox) — créés par les outils MCP / LLM ─── #}
+	{% if sandbox_workflows is defined and sandbox_workflows|length > 0 %}
+		<div class="synapse-admin-page-header synapse-admin-mt-xl">
+			<div class="synapse-admin-page-header__info">
+				<h2 class="synapse-admin-page-title" style="font-size: 1.25rem;">
+					<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--warning">
+						<i data-lucide="sparkles"></i>
+					</span>
+					Workflows éphémères récents
+				</h2>
+				<p class="synapse-admin-page-subtitle">
+					Workflows créés à la volée par un LLM via MCP (ou par une conversation Synapse). Ils ne sont pas listés dans les workflows principaux. Promeus ceux qui méritent d'être conservés — ils deviendront éditables et planifiables comme un workflow normal.
+				</p>
+			</div>
+		</div>
+
+		<div class="synapse-admin-grid synapse-admin-grid--2">
+			{% for workflow in sandbox_workflows %}
+				<div class="synapse-admin-card synapse-admin-card--hover" style="border-left: 3px solid var(--synapse-admin-color-warning, #f59e0b);">
+					<div class="synapse-admin-card__header">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
+							<i data-lucide="sparkles"></i>
+						</div>
+						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
+								<span class="synapse-admin-card__title">{{ workflow.name }}</span>
+								<span class="synapse-admin-badge synapse-admin-badge--warning" data-synapse-admin-tooltip="Créé à la volée par un outil MCP ou un LLM. Non visible dans la liste principale tant qu'il n'est pas promu.">
+									<i data-lucide="sparkles"></i>
+									éphémère
+								</span>
+								<span class="synapse-admin-badge synapse-admin-badge--info">
+									v{{ workflow.version }}
+								</span>
+							</div>
+							<div class="synapse-admin-text-sm synapse-admin-text-muted">
+								<code class="synapse-admin-font-mono" style="font-size: 0.75rem;">{{ workflow.workflowKey }}</code>
+							</div>
+						</div>
+					</div>
+
+					<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+						{% if workflow.description %}
+							<p class="synapse-admin-text-sm synapse-admin-text-muted synapse-admin-mb-md">{{ workflow.description }}</p>
+						{% endif %}
+						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm synapse-admin-text-xs synapse-admin-text-muted">
+							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
+								<i data-lucide="list-ordered" style="width: 1rem; height: 1rem;"></i>
+								<span><strong>Étapes :</strong> {{ workflow.stepsCount }}</span>
+							</div>
+							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
+								<i data-lucide="clock" style="width: 1rem; height: 1rem;"></i>
+								<span><strong>Créé :</strong> {{ workflow.createdAt|date('d/m/Y H:i') }}</span>
+							</div>
+						</div>
+					</div>
+
+					<div class="synapse-admin-card__footer">
+						<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center">
+							<a href="{{ path('synapse_admin_workflows_edit', {id: workflow.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="Consulter la structure (steps, JSON, agents)">
+								<i data-lucide="eye"></i>
+							</a>
+
+							<a href="{{ path('synapse_admin_workflows_runs', {id: workflow.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="Voir les runs">
+								<i data-lucide="activity"></i>
+							</a>
+
+							<form action="{{ path('synapse_admin_workflows_promote', {id: workflow.id}) }}" method="POST" class="synapse-admin-form-inline"
+								onsubmit="return confirm('Promouvoir « {{ workflow.name|escape('js') }} » en workflow persistant ? Il apparaîtra dans la liste principale et deviendra éditable.')">
+								<input type="hidden" name="_token" value="{{ csrf_token('synapse_workflow_promote_' ~ workflow.id) }}">
+								<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+									<i data-lucide="arrow-up-circle"></i>
+									Promouvoir
+								</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+	{% endif %}
+
 {% endblock %}
