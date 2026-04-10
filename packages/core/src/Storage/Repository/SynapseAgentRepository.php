@@ -19,7 +19,8 @@ class SynapseAgentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve toutes les agents actives, triées par ordre d'affichage.
+     * Trouve tous les agents persistants actifs triés par ordre d'affichage.
+     * Exclut les éphémères (créés via MCP ou ArchitectAgent).
      *
      * @return array<int, SynapseAgent>
      */
@@ -29,7 +30,7 @@ class SynapseAgentRepository extends ServiceEntityRepository
         $result = $this->createQueryBuilder('m')
             ->andWhere('m.isActive = true')
             ->andWhere('m.visibleInChat = true')
-            ->andWhere('m.isSandbox = false')
+            ->andWhere('m.isEphemeral = false')
             ->orderBy('m.sortOrder', 'ASC')
             ->addOrderBy('m.name', 'ASC')
             ->getQuery()
@@ -39,8 +40,9 @@ class SynapseAgentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve toutes les agents triées (builtin d'abord, puis par ordre d'affichage).
-     * Utilisé pour l'affichage admin. Exclut les agents sandbox.
+     * Trouve tous les agents persistants triés (builtin d'abord, puis sortOrder).
+     * Utilisé pour l'affichage admin. Exclut les éphémères — ceux-ci sont
+     * exposés séparément via {@see findEphemeral()}.
      *
      * @return array<int, SynapseAgent>
      */
@@ -48,7 +50,7 @@ class SynapseAgentRepository extends ServiceEntityRepository
     {
         /** @var array<int, SynapseAgent> $result */
         $result = $this->createQueryBuilder('m')
-            ->andWhere('m.isSandbox = false')
+            ->andWhere('m.isEphemeral = false')
             ->orderBy('m.isBuiltin', 'DESC')
             ->addOrderBy('m.sortOrder', 'ASC')
             ->addOrderBy('m.name', 'ASC')
@@ -59,7 +61,8 @@ class SynapseAgentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve un agent par sa clé unique (inclut les sandbox — nécessaire pour la résolution).
+     * Trouve un agent par sa clé unique (inclut les éphémères — nécessaire
+     * pour la résolution par AgentResolver).
      */
     public function findByKey(string $key): ?SynapseAgent
     {
@@ -67,12 +70,50 @@ class SynapseAgentRepository extends ServiceEntityRepository
     }
 
     /**
-     * Retourne tous les agents sandbox (pour le cleanup MCP).
+     * Retourne tous les agents éphémères, triés du plus récent au plus ancien.
+     *
+     * @return array<int, SynapseAgent>
+     */
+    public function findEphemeral(): array
+    {
+        /** @var array<int, SynapseAgent> $result */
+        $result = $this->createQueryBuilder('m')
+            ->andWhere('m.isEphemeral = true')
+            ->orderBy('m.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
+     * Retourne tous les agents éphémères dont la rétention est expirée —
+     * cible du GC et du cleanup MCP.
+     *
+     * @return array<int, SynapseAgent>
+     */
+    public function findExpiredEphemeral(?\DateTimeImmutable $now = null): array
+    {
+        $now ??= new \DateTimeImmutable();
+
+        /** @var array<int, SynapseAgent> $result */
+        $result = $this->createQueryBuilder('m')
+            ->andWhere('m.isEphemeral = true')
+            ->andWhere('m.retentionUntil IS NULL OR m.retentionUntil < :now')
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
+     * @deprecated Utiliser {@see findEphemeral()}.
      *
      * @return array<int, SynapseAgent>
      */
     public function findSandbox(): array
     {
-        return $this->findBy(['isSandbox' => true]);
+        return $this->findEphemeral();
     }
 }

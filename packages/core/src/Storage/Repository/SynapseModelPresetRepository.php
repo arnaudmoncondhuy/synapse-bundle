@@ -80,7 +80,8 @@ class SynapseModelPresetRepository extends ServiceEntityRepository
     }
 
     /**
-     * Tous les presets non-sandbox, triés par id. Utilisé pour l'admin.
+     * Tous les presets persistants, triés par id. Utilisé pour l'admin.
+     * Exclut les éphémères.
      *
      * @return SynapseModelPreset[]
      */
@@ -88,7 +89,7 @@ class SynapseModelPresetRepository extends ServiceEntityRepository
     {
         /** @var SynapseModelPreset[] $result */
         $result = $this->createQueryBuilder('p')
-            ->andWhere('p.isSandbox = false')
+            ->andWhere('p.isEphemeral = false')
             ->orderBy('p.id', 'ASC')
             ->getQuery()
             ->getResult();
@@ -97,13 +98,50 @@ class SynapseModelPresetRepository extends ServiceEntityRepository
     }
 
     /**
-     * Retourne tous les presets sandbox (pour le cleanup MCP).
+     * Retourne tous les presets éphémères, triés du plus récent au plus ancien.
+     *
+     * @return SynapseModelPreset[]
+     */
+    public function findEphemeral(): array
+    {
+        /** @var SynapseModelPreset[] $result */
+        $result = $this->createQueryBuilder('p')
+            ->andWhere('p.isEphemeral = true')
+            ->orderBy('p.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
+     * Retourne tous les presets éphémères dont la rétention est expirée.
+     *
+     * @return SynapseModelPreset[]
+     */
+    public function findExpiredEphemeral(?\DateTimeImmutable $now = null): array
+    {
+        $now ??= new \DateTimeImmutable();
+
+        /** @var SynapseModelPreset[] $result */
+        $result = $this->createQueryBuilder('p')
+            ->andWhere('p.isEphemeral = true')
+            ->andWhere('p.retentionUntil IS NULL OR p.retentionUntil < :now')
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
+     * @deprecated Utiliser {@see findEphemeral()}.
      *
      * @return SynapseModelPreset[]
      */
     public function findSandbox(): array
     {
-        return $this->findBy(['isSandbox' => true]);
+        return $this->findEphemeral();
     }
 
     /**

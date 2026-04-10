@@ -10,6 +10,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Mcp\Capability\Attribute\McpTool;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[McpTool(
     name: 'create_sandbox_preset',
@@ -22,6 +23,8 @@ class CreateSandboxPresetTool
         private readonly SynapseModelPresetRepository $presetRepository,
         private readonly ModelCapabilityRegistry $capabilityRegistry,
         private readonly PermissionCheckerInterface $permissionChecker,
+        #[Autowire('%synapse.ephemeral.retention_days%')]
+        private readonly int $retentionDays = 7,
     ) {
     }
 
@@ -84,7 +87,10 @@ class CreateSandboxPresetTool
         $preset->setGenerationTopP($topP ?? 0.95);
         $preset->setGenerationMaxOutputTokens($maxOutputTokens);
         $preset->setStreamingEnabled($streamingEnabled ?? false);
-        $preset->setIsSandbox(true);
+        $preset->setIsEphemeral(true);
+        $preset->setRetentionUntil(
+            (new \DateTimeImmutable())->modify(sprintf('+%d days', $this->retentionDays))
+        );
         $preset->setIsActive(false);
 
         $this->entityManager->persist($preset);

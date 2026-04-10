@@ -95,10 +95,36 @@ class SynapseWorkflow
     private bool $isBuiltin = false;
 
     /**
-     * Entité temporaire créée via MCP pour des tests autonomes (sandbox).
+     * @deprecated Utiliser {@see $isEphemeral}. Conservé uniquement comme alias
+     *             lecture pour la compatibilité. Sera supprimé une fois toutes
+     *             les références migrées.
      */
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $isSandbox = false;
+
+    /**
+     * Workflow éphémère : créé typiquement par un LLM via MCP ou un flow HITL.
+     * Les éphémères ont un cycle de vie limité ({@see $retentionUntil}) et sont
+     * affichés séparément dans l'admin (section « Workflows éphémères récents »).
+     *
+     * Ils peuvent être « promus » en persistant via {@see WorkflowController::promote()}.
+     * Remplace la sémantique de l'ancien {@see $isSandbox} qui mélangeait
+     * « temporaire » et « invisible » sur un seul flag.
+     */
+    #[ORM\Column(name: 'is_ephemeral', type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $isEphemeral = false;
+
+    /**
+     * Date au-delà de laquelle un workflow éphémère est éligible à la suppression
+     * automatique par {@see \ArnaudMoncondhuy\SynapseCore\Command\EphemeralGcCommand}
+     * ou {@see \ArnaudMoncondhuy\SynapseMcp\Tool\CleanupSandboxTool}.
+     *
+     * `null` = expire immédiatement (sémantique legacy de `isSandbox`) pour que
+     * le cleanup continue de fonctionner sur les entités créées avant cette
+     * colonne.
+     */
+    #[ORM\Column(name: 'retention_until', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $retentionUntil = null;
 
     /**
      * Ordre d'affichage dans les listes (plus petit = affiché en premier).
@@ -244,16 +270,68 @@ class SynapseWorkflow
         return $this->updatedAt;
     }
 
+    /**
+     * @deprecated Utiliser {@see isEphemeral()}.
+     */
     public function isSandbox(): bool
     {
-        return $this->isSandbox;
+        return $this->isEphemeral || $this->isSandbox;
     }
 
+    /**
+     * @deprecated Utiliser {@see setIsEphemeral()}. Ce setter bascule les deux
+     *             flags en parallèle pour la compatibilité pendant la migration.
+     */
     public function setIsSandbox(bool $isSandbox): self
     {
         $this->isSandbox = $isSandbox;
+        $this->isEphemeral = $isSandbox;
 
         return $this;
+    }
+
+    public function isEphemeral(): bool
+    {
+        return $this->isEphemeral;
+    }
+
+    public function setIsEphemeral(bool $isEphemeral): self
+    {
+        $this->isEphemeral = $isEphemeral;
+        // Écrit aussi sur le legacy pour les consumers non encore migrés.
+        $this->isSandbox = $isEphemeral;
+
+        return $this;
+    }
+
+    public function getRetentionUntil(): ?\DateTimeImmutable
+    {
+        return $this->retentionUntil;
+    }
+
+    public function setRetentionUntil(?\DateTimeImmutable $retentionUntil): self
+    {
+        $this->retentionUntil = $retentionUntil;
+
+        return $this;
+    }
+
+    /**
+     * Un éphémère est éligible à la suppression automatique quand sa fenêtre
+     * de rétention est dépassée. Un retention null = expire immédiatement
+     * (sémantique legacy).
+     */
+    public function isRetentionExpired(?\DateTimeImmutable $now = null): bool
+    {
+        if (!$this->isEphemeral) {
+            return false;
+        }
+        $now ??= new \DateTimeImmutable();
+        if (null === $this->retentionUntil) {
+            return true;
+        }
+
+        return $this->retentionUntil < $now;
     }
 
     /**

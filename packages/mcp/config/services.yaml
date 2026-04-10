@@ -50,6 +50,7 @@ services:
       - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository'
       - '@ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry'
       - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
+      - '%synapse.ephemeral.retention_days%'
     tags:
       - { name: mcp.tool }
 
@@ -60,6 +61,7 @@ services:
       - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository'
       - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository'
       - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
+      - '%synapse.ephemeral.retention_days%'
     tags:
       - { name: mcp.tool }
 
@@ -70,6 +72,7 @@ services:
       - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository'
       - '@ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver'
       - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
+      - '%synapse.ephemeral.retention_days%'
     tags:
       - { name: mcp.tool }
 

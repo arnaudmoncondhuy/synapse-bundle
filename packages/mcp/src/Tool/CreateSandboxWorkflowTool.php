@@ -10,6 +10,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Mcp\Capability\Attribute\McpTool;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[McpTool(
     name: 'create_sandbox_workflow',
@@ -22,6 +23,8 @@ class CreateSandboxWorkflowTool
         private readonly SynapseWorkflowRepository $workflowRepository,
         private readonly AgentResolver $agentResolver,
         private readonly PermissionCheckerInterface $permissionChecker,
+        #[Autowire('%synapse.ephemeral.retention_days%')]
+        private readonly int $retentionDays = 7,
     ) {
     }
 
@@ -79,7 +82,10 @@ class CreateSandboxWorkflowTool
         $workflow->setName($name);
         $workflow->setDescription($description);
         $workflow->setDefinition($parsed);
-        $workflow->setIsSandbox(true);
+        $workflow->setIsEphemeral(true);
+        $workflow->setRetentionUntil(
+            (new \DateTimeImmutable())->modify(sprintf('+%d days', $this->retentionDays))
+        );
         $workflow->setIsBuiltin(false);
         $workflow->setIsActive(true);
 

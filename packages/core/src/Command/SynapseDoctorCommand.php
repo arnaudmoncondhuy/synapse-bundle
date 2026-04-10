@@ -36,8 +36,8 @@ class SynapseDoctorCommand extends Command
     public function __construct(
         private readonly KernelInterface $kernel,
         private readonly ParameterBagInterface $parameterBag,
-        private readonly ?RouterInterface $router = null,
         ?Filesystem $filesystem = null,
+        private readonly ?RouterInterface $router = null,
     ) {
         parent::__construct();
         $this->filesystem = $filesystem ?? new Filesystem();

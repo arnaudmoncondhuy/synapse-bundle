@@ -19,7 +19,8 @@ class SynapseWorkflowRepository extends ServiceEntityRepository
     }
 
     /**
-     * Tous les workflows triés pour l'admin (builtin d'abord, puis sortOrder, puis nom).
+     * Tous les workflows persistants triés pour l'admin (builtin d'abord, puis sortOrder, puis nom).
+     * Exclut les éphémères — ceux-ci sont exposés séparément via {@see findEphemeral()}.
      *
      * @return array<int, SynapseWorkflow>
      */
@@ -27,7 +28,7 @@ class SynapseWorkflowRepository extends ServiceEntityRepository
     {
         /** @var array<int, SynapseWorkflow> $result */
         $result = $this->createQueryBuilder('w')
-            ->andWhere('w.isSandbox = false')
+            ->andWhere('w.isEphemeral = false')
             ->orderBy('w.isBuiltin', 'DESC')
             ->addOrderBy('w.sortOrder', 'ASC')
             ->addOrderBy('w.name', 'ASC')
@@ -38,8 +39,8 @@ class SynapseWorkflowRepository extends ServiceEntityRepository
     }
 
     /**
-     * Recherche un workflow actif par sa clé unique (appelable par le moteur Phase 8).
-     * Inclut les sandbox — nécessaire pour l'exécution via MCP.
+     * Recherche un workflow actif par sa clé unique (appelable par le moteur d'exécution).
+     * Inclut les éphémères — nécessaire pour l'exécution via MCP.
      */
     public function findActiveByKey(string $workflowKey): ?SynapseWorkflow
     {
@@ -47,7 +48,7 @@ class SynapseWorkflowRepository extends ServiceEntityRepository
     }
 
     /**
-     * Recherche par clé sans filtre (inclut sandbox — pour admin edit et MCP).
+     * Recherche par clé sans filtre (inclut éphémères — pour admin edit et MCP).
      */
     public function findByKey(string $workflowKey): ?SynapseWorkflow
     {
@@ -55,12 +56,53 @@ class SynapseWorkflowRepository extends ServiceEntityRepository
     }
 
     /**
-     * Retourne tous les workflows sandbox (pour le cleanup MCP).
+     * Retourne tous les workflows éphémères (pour l'admin section dédiée et le GC).
+     * Trié du plus récent au plus ancien.
+     *
+     * @return array<int, SynapseWorkflow>
+     */
+    public function findEphemeral(): array
+    {
+        /** @var array<int, SynapseWorkflow> $result */
+        $result = $this->createQueryBuilder('w')
+            ->andWhere('w.isEphemeral = true')
+            ->orderBy('w.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
+     * Retourne tous les éphémères dont la fenêtre de rétention est dépassée —
+     * cible du `synapse:ephemeral:gc` et du `cleanup_sandbox` MCP.
+     * Inclut les éphémères avec `retention_until IS NULL` (sémantique legacy :
+     * expire immédiatement).
+     *
+     * @return array<int, SynapseWorkflow>
+     */
+    public function findExpiredEphemeral(?\DateTimeImmutable $now = null): array
+    {
+        $now ??= new \DateTimeImmutable();
+
+        /** @var array<int, SynapseWorkflow> $result */
+        $result = $this->createQueryBuilder('w')
+            ->andWhere('w.isEphemeral = true')
+            ->andWhere('w.retentionUntil IS NULL OR w.retentionUntil < :now')
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getResult();
+
+        return $result;
+    }
+
+    /**
+     * @deprecated Utiliser {@see findEphemeral()}. Conservé comme alias.
      *
      * @return array<int, SynapseWorkflow>
      */
     public function findSandbox(): array
     {
-        return $this->findBy(['isSandbox' => true]);
+        return $this->findEphemeral();
     }
 }

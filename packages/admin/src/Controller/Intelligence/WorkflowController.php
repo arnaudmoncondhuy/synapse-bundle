@@ -52,7 +52,7 @@ class WorkflowController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
         $workflows = $this->workflowRepo->findAllOrdered();
-        $sandboxWorkflows = $this->workflowRepo->findSandbox();
+        $ephemeralWorkflows = $this->workflowRepo->findEphemeral();
 
         $runsCounts = [];
         foreach ($workflows as $workflow) {
@@ -61,12 +61,12 @@ class WorkflowController extends AbstractController
 
         return $this->render('@Synapse/admin/intelligence/workflows.html.twig', [
             'workflows' => $workflows,
-            'sandbox_workflows' => $sandboxWorkflows,
+            'sandbox_workflows' => $ephemeralWorkflows, // clé conservée pour le template existant
             'runs_counts' => $runsCounts,
         ]);
     }
 
-    // ─── Promotion sandbox → persistant ────────────────────────────────────────
+    // ─── Promotion éphémère → persistant ───────────────────────────────────────
 
     #[Route('/{id}/promouvoir', name: 'workflows_promote', methods: ['POST'])]
     public function promote(SynapseWorkflow $workflow, Request $request): Response
@@ -74,13 +74,14 @@ class WorkflowController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_workflow_promote_'.$workflow->getId());
 
-        if (!$workflow->isSandbox()) {
+        if (!$workflow->isEphemeral()) {
             $this->addFlash('error', 'Ce workflow est déjà persistant.');
 
             return $this->redirectToRoute('synapse_admin_workflows');
         }
 
-        $workflow->setIsSandbox(false);
+        $workflow->setIsEphemeral(false);
+        $workflow->setRetentionUntil(null);
         $this->em->flush();
 
         $this->addFlash('success', sprintf('Workflow « %s » promu en persistant. Tu peux maintenant l\'éditer librement.', $workflow->getName()));

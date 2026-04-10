@@ -10,6 +10,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Mcp\Capability\Attribute\McpTool;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 #[McpTool(
     name: 'create_sandbox_agent',
@@ -22,6 +23,8 @@ class CreateSandboxAgentTool
         private readonly SynapseAgentRepository $agentRepository,
         private readonly SynapseModelPresetRepository $presetRepository,
         private readonly PermissionCheckerInterface $permissionChecker,
+        #[Autowire('%synapse.ephemeral.retention_days%')]
+        private readonly int $retentionDays = 7,
     ) {
     }
 
@@ -79,7 +82,10 @@ class CreateSandboxAgentTool
         $agent->setAllowedToolNames(null !== $allowedToolNames && '' !== $allowedToolNames
             ? array_map('trim', explode(',', $allowedToolNames))
             : []);
-        $agent->setIsSandbox(true);
+        $agent->setIsEphemeral(true);
+        $agent->setRetentionUntil(
+            (new \DateTimeImmutable())->modify(sprintf('+%d days', $this->retentionDays))
+        );
         $agent->setIsBuiltin(false);
         $agent->setIsActive(true);
 

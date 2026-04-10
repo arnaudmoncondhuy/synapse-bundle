@@ -87,6 +87,19 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
 
+            // ── Ephemeral entities lifecycle ──────────────────────────────────
+            ->arrayNode('ephemeral')
+            ->addDefaultsIfNotSet()
+            ->info('Cycle de vie des entités éphémères (workflows, agents, presets créés à la volée par un LLM via MCP ou ArchitectAgent).')
+            ->children()
+            ->integerNode('retention_days')
+            ->defaultValue(7)
+            ->min(0)
+            ->info('Nombre de jours pendant lesquels une entité éphémère est conservée avant d\'être éligible à la suppression automatique par synapse:ephemeral:gc ou cleanup_sandbox. 0 = expire immédiatement (équivalent à l\'ancien isSandbox).')
+            ->end()
+            ->end()
+            ->end()
+
             // ── Context ───────────────────────────────────────────────────────
             ->arrayNode('context')
             ->addDefaultsIfNotSet()

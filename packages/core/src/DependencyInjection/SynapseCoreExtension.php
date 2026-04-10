@@ -147,6 +147,9 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
             @trigger_error('Synapse: mcp_trusted is enabled — MCP tools bypass ROLE_ADMIN checks. Ensure the /_mcp transport is protected (localhost/internal network only).', \E_USER_NOTICE);
         }
 
+        // ── Ephemeral entities lifecycle ──────────────────────────────────────
+        $container->setParameter('synapse.ephemeral.retention_days', $config['ephemeral']['retention_days'] ?? 7);
+
         // ── Context ───────────────────────────────────────────────────────────
         $container->setParameter('synapse.context.language', $config['context']['language'] ?? 'fr');
 

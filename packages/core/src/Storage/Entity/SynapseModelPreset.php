@@ -108,10 +108,24 @@ class SynapseModelPreset
     private bool $streamingEnabled = true;
 
     /**
-     * Preset temporaire créé via MCP pour des tests autonomes (sandbox).
+     * @deprecated Utiliser {@see $isEphemeral}. Conservé comme alias lecture.
      */
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $isSandbox = false;
+
+    /**
+     * Preset éphémère : créé typiquement par un LLM via MCP pour tester un
+     * modèle/provider avant adoption. Cycle de vie limité par retentionUntil.
+     */
+    #[ORM\Column(name: 'is_ephemeral', type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $isEphemeral = false;
+
+    /**
+     * Date au-delà de laquelle le preset éphémère est éligible à la suppression.
+     * `null` = expire immédiatement (sémantique legacy).
+     */
+    #[ORM\Column(name: 'retention_until', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $retentionUntil = null;
 
     /**
      * Date de dernière mise à jour.
@@ -287,16 +301,61 @@ class SynapseModelPreset
         return $this;
     }
 
+    /**
+     * @deprecated Utiliser {@see isEphemeral()}.
+     */
     public function isSandbox(): bool
     {
-        return $this->isSandbox;
+        return $this->isEphemeral || $this->isSandbox;
     }
 
+    /**
+     * @deprecated Utiliser {@see setIsEphemeral()}. Dual-write pendant migration.
+     */
     public function setIsSandbox(bool $isSandbox): self
     {
         $this->isSandbox = $isSandbox;
+        $this->isEphemeral = $isSandbox;
 
         return $this;
+    }
+
+    public function isEphemeral(): bool
+    {
+        return $this->isEphemeral;
+    }
+
+    public function setIsEphemeral(bool $isEphemeral): self
+    {
+        $this->isEphemeral = $isEphemeral;
+        $this->isSandbox = $isEphemeral;
+
+        return $this;
+    }
+
+    public function getRetentionUntil(): ?\DateTimeImmutable
+    {
+        return $this->retentionUntil;
+    }
+
+    public function setRetentionUntil(?\DateTimeImmutable $retentionUntil): self
+    {
+        $this->retentionUntil = $retentionUntil;
+
+        return $this;
+    }
+
+    public function isRetentionExpired(?\DateTimeImmutable $now = null): bool
+    {
+        if (!$this->isEphemeral) {
+            return false;
+        }
+        $now ??= new \DateTimeImmutable();
+        if (null === $this->retentionUntil) {
+            return true;
+        }
+
+        return $this->retentionUntil < $now;
     }
 
     public function getUpdatedAt(): \DateTimeImmutable

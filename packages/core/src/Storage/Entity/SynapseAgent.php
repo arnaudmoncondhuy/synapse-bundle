@@ -157,12 +157,26 @@ class SynapseAgent
     private ?array $accessControl = null;
 
     /**
-     * Entité temporaire créée via MCP pour des tests autonomes (sandbox).
-     * Les entités sandbox sont exclues des listings admin/chat mais restent
-     * résolvables par {@see \ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver}.
+     * @deprecated Utiliser {@see $isEphemeral}. Conservé comme alias lecture
+     *             pour la migration Chantier A.
      */
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
     private bool $isSandbox = false;
+
+    /**
+     * Agent éphémère : créé typiquement par un LLM via MCP ou par l'ArchitectAgent.
+     * Exclus des listings admin/chat classiques mais résolvable par AgentResolver.
+     * Cycle de vie limité par {@see $retentionUntil}.
+     */
+    #[ORM\Column(name: 'is_ephemeral', type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $isEphemeral = false;
+
+    /**
+     * Date au-delà de laquelle l'agent éphémère est éligible à la suppression
+     * automatique. `null` = expire immédiatement (sémantique legacy).
+     */
+    #[ORM\Column(name: 'retention_until', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $retentionUntil = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $createdAt;
@@ -429,16 +443,66 @@ class SynapseAgent
             || (empty($this->accessControl['roles']) && empty($this->accessControl['userIdentifiers']));
     }
 
+    /**
+     * @deprecated Utiliser {@see isEphemeral()}.
+     */
     public function isSandbox(): bool
     {
-        return $this->isSandbox;
+        return $this->isEphemeral || $this->isSandbox;
     }
 
+    /**
+     * @deprecated Utiliser {@see setIsEphemeral()}. Propagation dual-write
+     *             le temps que tous les consumers soient migrés.
+     */
     public function setIsSandbox(bool $isSandbox): self
     {
         $this->isSandbox = $isSandbox;
+        $this->isEphemeral = $isSandbox;
 
         return $this;
+    }
+
+    public function isEphemeral(): bool
+    {
+        return $this->isEphemeral;
+    }
+
+    public function setIsEphemeral(bool $isEphemeral): self
+    {
+        $this->isEphemeral = $isEphemeral;
+        $this->isSandbox = $isEphemeral;
+
+        return $this;
+    }
+
+    public function getRetentionUntil(): ?\DateTimeImmutable
+    {
+        return $this->retentionUntil;
+    }
+
+    public function setRetentionUntil(?\DateTimeImmutable $retentionUntil): self
+    {
+        $this->retentionUntil = $retentionUntil;
+
+        return $this;
+    }
+
+    /**
+     * Un éphémère est éligible à la suppression quand sa fenêtre de rétention
+     * est dépassée. `retentionUntil` null = expire immédiatement (legacy).
+     */
+    public function isRetentionExpired(?\DateTimeImmutable $now = null): bool
+    {
+        if (!$this->isEphemeral) {
+            return false;
+        }
+        $now ??= new \DateTimeImmutable();
+        if (null === $this->retentionUntil) {
+            return true;
+        }
+
+        return $this->retentionUntil < $now;
     }
 
     /**
@@ -465,7 +529,9 @@ class SynapseAgent
             'isActive' => $this->isActive,
             'visibleInChat' => $this->visibleInChat,
             'isPublic' => $this->isPublic(),
-            'isSandbox' => $this->isSandbox,
+            'isSandbox' => $this->isSandbox, // @deprecated — conservé pour les templates Twig pas encore migrés
+            'isEphemeral' => $this->isEphemeral,
+            'retentionUntil' => $this->retentionUntil?->format(\DateTimeInterface::ATOM),
             'workflowKey' => $this->workflowKey,
         ];
     }

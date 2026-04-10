@@ -14,7 +14,7 @@ use Mcp\Capability\Attribute\McpTool;
 
 #[McpTool(
     name: 'cleanup_sandbox',
-    description: 'Delete all sandbox (temporary) entities: workflow runs, workflows, agents, and presets. Safe to call multiple times (idempotent). Debug logs are preserved.'
+    description: 'Delete ephemeral (temporary) entities whose retention window has expired: workflow runs, workflows, agents, and presets. Respects the retention_until date set at creation — ephemerals within their window survive. Use force=true to delete ALL ephemerals regardless of retention (legacy behavior, useful for explicit cleanup). Debug logs are always preserved.'
 )]
 class CleanupSandboxTool
 {
@@ -29,7 +29,7 @@ class CleanupSandboxTool
     }
 
     /** @return array<string, mixed> */
-    public function __invoke(): array
+    public function __invoke(?bool $force = false): array
     {
         if (!$this->permissionChecker->canAccessAdmin()) {
             return [
@@ -39,25 +39,36 @@ class CleanupSandboxTool
             ];
         }
 
-        // 1. Delete workflow runs for sandbox workflows
-        $sandboxWorkflows = $this->workflowRepository->findSandbox();
-        $keys = array_map(static fn ($w) => $w->getWorkflowKey(), $sandboxWorkflows);
+        // Respecte la retention window par défaut — seuls les éphémères expirés
+        // sont supprimés. `force: true` purge tous les éphémères (legacy behavior).
+        $workflows = $force
+            ? $this->workflowRepository->findEphemeral()
+            : $this->workflowRepository->findExpiredEphemeral();
+
+        $agents = $force
+            ? $this->agentRepository->findEphemeral()
+            : $this->agentRepository->findExpiredEphemeral();
+
+        $presets = $force
+            ? $this->presetRepository->findEphemeral()
+            : $this->presetRepository->findExpiredEphemeral();
+
+        // 1. Delete workflow runs for targeted workflows
+        $keys = array_map(static fn ($w) => $w->getWorkflowKey(), $workflows);
         $runsDeleted = $this->runRepository->deleteByWorkflowKeys($keys);
 
-        // 2. Delete sandbox workflows
-        foreach ($sandboxWorkflows as $workflow) {
+        // 2. Delete workflows
+        foreach ($workflows as $workflow) {
             $this->entityManager->remove($workflow);
         }
 
-        // 3. Delete sandbox agents (before presets — agents reference presets via ManyToOne)
-        $sandboxAgents = $this->agentRepository->findSandbox();
-        foreach ($sandboxAgents as $agent) {
+        // 3. Delete agents (before presets — agents reference presets via ManyToOne)
+        foreach ($agents as $agent) {
             $this->entityManager->remove($agent);
         }
 
-        // 4. Delete sandbox presets (after agents that reference them)
-        $sandboxPresets = $this->presetRepository->findSandbox();
-        foreach ($sandboxPresets as $preset) {
+        // 4. Delete presets (after agents that reference them)
+        foreach ($presets as $preset) {
             $this->entityManager->remove($preset);
         }
 
@@ -65,10 +76,11 @@ class CleanupSandboxTool
 
         return [
             'status' => 'success',
+            'mode' => $force ? 'force' : 'retention-aware',
             'workflowRunsDeleted' => $runsDeleted,
-            'workflowsDeleted' => count($sandboxWorkflows),
-            'agentsDeleted' => count($sandboxAgents),
-            'presetsDeleted' => count($sandboxPresets),
+            'workflowsDeleted' => count($workflows),
+            'agentsDeleted' => count($agents),
+            'presetsDeleted' => count($presets),
             'timestamp' => (new \DateTime())->format('c'),
         ];
     }
