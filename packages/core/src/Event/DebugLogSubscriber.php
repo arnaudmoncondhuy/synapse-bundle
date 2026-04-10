@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\Event;
 
+use ArnaudMoncondhuy\SynapseCore\Accounting\TokenAccountingService;
 use ArnaudMoncondhuy\SynapseCore\Contract\SynapseDebugLoggerInterface;
 use ArnaudMoncondhuy\SynapseCore\Event\Prompt\PromptCaptureEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -27,6 +28,7 @@ class DebugLogSubscriber implements EventSubscriberInterface
     public function __construct(
         private SynapseDebugLoggerInterface $debugLogger,
         private CacheInterface $cache,
+        private ?TokenAccountingService $accountingService = null,
     ) {
     }
 
@@ -229,14 +231,33 @@ class DebugLogSubscriber implements EventSubscriberInterface
         $this->debugAccumulator['timings'] = $event->getTimings();
         $this->debugAccumulator['created_at'] = new \DateTimeImmutable();
 
-        // Calcul du coût estimé à partir du pricing et des tokens
-        $presetCfg = $this->debugAccumulator['preset_config'] ?? [];
-        $pricingIn = is_numeric($presetCfg['pricing_input'] ?? null) ? (float) $presetCfg['pricing_input'] : null;
-        $pricingOut = is_numeric($presetCfg['pricing_output'] ?? null) ? (float) $presetCfg['pricing_output'] : null;
-        if (null !== $pricingIn && null !== $pricingOut) {
-            $cost = ($usage->promptTokens / 1_000_000) * $pricingIn + ($usage->completionTokens / 1_000_000) * $pricingOut;
-            $this->debugAccumulator['estimated_cost'] = round($cost, 6);
-            $this->debugAccumulator['estimated_cost_currency'] = 'USD';
+        // Calcul du coût à partir du pricing officiel du modèle (Chantier B).
+        // On passe par TokenAccountingService::getPricingForModel() qui consulte
+        // successivement la BDD (synapse_model), le registry YAML (models.yaml)
+        // et un fallback 0.0 USD — plus robuste que l'ancienne lecture directe
+        // de preset_config qui ne propageait pas toujours les pricings.
+        $costModelCurrency = null;
+        if (null !== $this->accountingService && null !== $event->getModel()) {
+            $pricing = $this->accountingService->getPricingForModel($event->getModel());
+            $costModelCurrency = $this->accountingService->calculateCostFromVO($usage, $pricing);
+            $currency = $pricing['currency'] ?? 'USD';
+            $costReference = $this->accountingService->convertToReferenceCurrency($costModelCurrency, $currency);
+
+            $this->debugAccumulator['estimated_cost'] = round($costModelCurrency, 6);
+            $this->debugAccumulator['estimated_cost_currency'] = $currency;
+            $this->debugAccumulator['cost_reference'] = round($costReference, 8);
+        } else {
+            // Fallback legacy : lecture directe de preset_config si l'accounting
+            // service n'est pas injecté (tests unitaires, mode dégradé).
+            $presetCfg = $this->debugAccumulator['preset_config'] ?? [];
+            $pricingIn = is_numeric($presetCfg['pricing_input'] ?? null) ? (float) $presetCfg['pricing_input'] : null;
+            $pricingOut = is_numeric($presetCfg['pricing_output'] ?? null) ? (float) $presetCfg['pricing_output'] : null;
+            if (null !== $pricingIn && null !== $pricingOut) {
+                $costModelCurrency = ($usage->promptTokens / 1_000_000) * $pricingIn + ($usage->completionTokens / 1_000_000) * $pricingOut;
+                $this->debugAccumulator['estimated_cost'] = round($costModelCurrency, 6);
+                $this->debugAccumulator['estimated_cost_currency'] = 'USD';
+                $this->debugAccumulator['cost_reference'] = round($costModelCurrency, 8);
+            }
         }
 
         // Module & action : propagés par ChatService depuis les options d'appel ($askOptions).

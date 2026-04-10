@@ -55,6 +55,14 @@ class DoctrineAdminLogger implements SynapseDebugLoggerInterface
             $debugLog->setTotalTokens(is_int($total) ? $total : null);
         }
 
+        // Chantier B : coût en devise de référence (calculé par DebugLogSubscriber
+        // via TokenAccountingService::convertToReferenceCurrency). NULL si le
+        // pricing est inconnu pour ce modèle.
+        $costRef = $rawPayload['cost_reference'] ?? null;
+        if (is_numeric($costRef)) {
+            $debugLog->setCost((float) $costRef);
+        }
+
         $debugLog->setCreatedAt(new \DateTimeImmutable());
 
         // Agent traceability (populated if the call came from AgentResolver + AgentContext).

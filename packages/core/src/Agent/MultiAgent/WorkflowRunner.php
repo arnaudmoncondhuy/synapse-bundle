@@ -11,6 +11,7 @@ use ArnaudMoncondhuy\SynapseCore\Agent\Output;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\WorkflowRunStatus;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflowRun;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -57,6 +58,7 @@ class WorkflowRunner
         private readonly AgentResolver $resolver,
         private readonly ?EventDispatcherInterface $eventDispatcher = null,
         ?LoggerInterface $logger = null,
+        private readonly ?SynapseDebugLogRepository $debugLogRepository = null,
     ) {
         $this->logger = $logger ?? new NullLogger();
     }
@@ -103,12 +105,24 @@ class WorkflowRunner
             throw $e;
         }
 
+        // Chantier B : agrège les coûts de tous les debug logs produits pendant
+        // le run et les dénormalise sur SynapseWorkflowRun::$totalCost. Permet
+        // aux UIs admin et aux hard limits (BudgetLimit) de raisonner en O(1)
+        // sans requery des debug logs à chaque lecture.
+        if (null !== $this->debugLogRepository) {
+            $totalCost = $this->debugLogRepository->sumCostByWorkflowRunId($run->getWorkflowRunId());
+            if (null !== $totalCost) {
+                $run->setTotalCost($totalCost);
+            }
+        }
+
         $this->entityManager->flush();
 
-        $this->logger->info('Workflow run {workflowRunId} completed in {duration}s with status {status}', [
+        $this->logger->info('Workflow run {workflowRunId} completed in {duration}s with status {status} — cost {cost} EUR', [
             'workflowRunId' => $run->getWorkflowRunId(),
             'duration' => $run->getDurationSeconds(),
             'status' => $run->getStatus()->value,
+            'cost' => $run->getTotalCost() ?? 0,
         ]);
 
         return $output;

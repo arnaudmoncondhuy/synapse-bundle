@@ -65,6 +65,21 @@ class SynapseDebugLog
     private ?int $totalTokens = null;
 
     /**
+     * Coût estimé de l'appel dans la devise de référence Synapse
+     * (cf. `synapse.token_tracking.reference_currency`).
+     *
+     * Calculé par {@see \ArnaudMoncondhuy\SynapseCore\Accounting\TokenCostEstimator}
+     * au moment où le log est persisté par le DebugLogSubscriber. Stocké en
+     * DECIMAL(12,8) pour une précision micro-euros (les coûts LLM par call
+     * sont typiquement dans les 0.0001-0.01 EUR).
+     *
+     * NULL = coût non calculable (pricing inconnu pour ce modèle/devise, ou
+     * appel sans usage). Chantier B.
+     */
+    #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 8, nullable: true)]
+    private ?string $cost = null;
+
+    /**
      * Timestamp de création.
      */
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
@@ -212,6 +227,22 @@ class SynapseDebugLog
     public function setTotalTokens(?int $totalTokens): self
     {
         $this->totalTokens = $totalTokens;
+
+        return $this;
+    }
+
+    /**
+     * Coût en devise de référence. Retourne un float pour simplifier les
+     * agrégations et comparaisons côté applicatif.
+     */
+    public function getCost(): ?float
+    {
+        return null !== $this->cost ? (float) $this->cost : null;
+    }
+
+    public function setCost(?float $cost): self
+    {
+        $this->cost = null !== $cost ? (string) $cost : null;
 
         return $this;
     }

@@ -241,7 +241,7 @@ class TokenAccountingService
      *
      * @return array{input: float, output: float, output_image: float|null, currency: string}
      */
-    private function getPricingForModel(string $model): array
+    public function getPricingForModel(string $model): array
     {
         // 1. Chercher dans synapse_model (BDD)
         $pricingMap = $this->modelRepo->findAllPricingMap();

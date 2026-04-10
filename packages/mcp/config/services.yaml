@@ -13,6 +13,7 @@ services:
     arguments:
       - '@ArnaudMoncondhuy\SynapseCore\Engine\ChatService'
       - '@ArnaudMoncondhuy\SynapseCore\AgentRegistry'
+      - '@ArnaudMoncondhuy\SynapseCore\Agent\CodeAgentRegistry'
       - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
     tags:
       - { name: mcp.tool }

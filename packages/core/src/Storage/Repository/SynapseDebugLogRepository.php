@@ -92,4 +92,26 @@ class SynapseDebugLogRepository extends ServiceEntityRepository
 
         return is_int($result) ? $result : 0;
     }
+
+    /**
+     * Somme les coûts en devise de référence de tous les logs rattachés à un
+     * workflow run. Utilisé par {@see \ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowRunner}
+     * pour dénormaliser `SynapseWorkflowRun::$totalCost` (Chantier B).
+     *
+     * Retourne NULL si aucun log n'a de cost persisté (pricing inconnu) ou si
+     * aucun log ne correspond au workflow_run_id.
+     */
+    public function sumCostByWorkflowRunId(string $workflowRunId): ?float
+    {
+        /** @var string|null $result */
+        $result = $this->createQueryBuilder('d')
+            ->select('SUM(d.cost) AS totalCost')
+            ->where('d.workflowRunId = :wrid')
+            ->andWhere('d.cost IS NOT NULL')
+            ->setParameter('wrid', $workflowRunId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return null !== $result ? (float) $result : null;
+    }
 }
