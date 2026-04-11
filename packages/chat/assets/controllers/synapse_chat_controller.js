@@ -495,6 +495,8 @@ export default class extends Controller {
             'planner_plan':          () => this.renderPlannerPlan(p),
             'architect_proposal':    () => this.renderArchitectProposal(p),
             'code_executed':         () => this.renderCodeExecution(p),
+            'goal_reached':          () => this.renderGoalStatus(p, 'reached'),
+            'goal_failed':           () => this.renderGoalStatus(p, 'failed'),
             'tool_executed':         () => this._onToolExecuted(p),
         };
         return handlers[evt.type]?.();
@@ -1257,6 +1259,7 @@ export default class extends Controller {
                 <div class="synapse-transparency-body">
                     <div class="synapse-transparency-section" data-section="rag" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="memory" style="display:none"></div>
+                    <div class="synapse-transparency-section" data-section="goals" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="plan" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="proposals" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="workflow" style="display:none"></div>
@@ -1417,12 +1420,26 @@ export default class extends Controller {
         const toolEl = document.createElement('div');
         toolEl.className = 'synapse-tool-call synapse-tool-call--active';
         toolEl.setAttribute('data-tool-call-id', payload.toolCallId);
-        const displayName = payload.toolLabel || payload.toolName;
+        // Chantier D + Principe 8 : indentation visuelle pour les sous-agents
+        // délégués via le pattern `call_agent__<key>` issu de AgentAsToolRegistry.
+        // Le LLM voit ces tools comme des tools ordinaires, mais sémantiquement
+        // ce sont des appels imbriqués — on les affiche en retrait pour faire
+        // ressortir la hiérarchie.
+        const toolName = payload.toolName || '';
+        const isSubAgent = toolName.startsWith('call_agent__');
+        if (isSubAgent) {
+            toolEl.classList.add('synapse-tool-call--subagent');
+        }
+        const displayName = isSubAgent
+            // On enlève le préfixe technique et on le remplace par une flèche
+            // visuelle qui exprime la délégation.
+            ? '↳ ' + (payload.toolLabel || toolName.substring('call_agent__'.length))
+            : (payload.toolLabel || toolName);
         toolEl.innerHTML = `
             <span class="synapse-workflow-step__spinner"></span>
             <span class="synapse-tool-call__name">${escapeHtml(displayName)}</span>
         `;
-        toolEl.title = payload.toolName;
+        toolEl.title = toolName;
         section.appendChild(toolEl);
 
         this.asideTarget.scrollTop = this.asideTarget.scrollHeight;
@@ -1886,6 +1903,90 @@ export default class extends Controller {
         section.appendChild(card);
 
         requestAnimationFrame(() => card.classList.add('synapse-code-execution--visible'));
+        this.asideTarget.scrollTop = this.asideTarget.scrollHeight;
+    }
+
+    // ── Chantier D + Principe 8 : Goal lifecycle widget ─────────────────────
+    //
+    // Reçoit `goal_reached` ou `goal_failed` dispatchés par AbstractPlannerAgent
+    // aux sorties de sa boucle observe-plan-replan. Affiche une carte dans la
+    // section `goals` avec :
+    //   - le goal (description + success_criteria)
+    //   - le planner name
+    //   - le statut final (atteint / échoué) avec icône colorée
+    //   - le nombre d'itérations nécessaires
+    //   - la raison en cas d'échec (max_iterations, budget_exceeded, empty_plan, execution_failed)
+    //   - l'usage total cumulé
+    //
+    // Un seul goal à la fois est affiché par planner — si un deuxième `goal_*`
+    // arrive avec le même `planner_name`, on remplace la carte existante plutôt
+    // que d'en ajouter une.
+
+    renderGoalStatus(payload, status) {
+        const section = this._getSection('goals');
+        if (!section) return;
+
+        if (!section.querySelector('.synapse-transparency-section__title')) {
+            section.innerHTML = '<div class="synapse-transparency-section__title">🎯 Objectifs</div>';
+        }
+
+        const plannerName = payload.planner_name || 'planner';
+        const goal = payload.goal || {};
+        const iterations = payload.iterations || 0;
+        const reason = payload.reason || null;
+        const errorMsg = payload.error_message || null;
+        const totalUsage = payload.total_usage || {};
+
+        // Supprime une carte existante pour ce planner (si replay)
+        const existing = section.querySelector(`[data-planner="${CSS.escape(plannerName)}"]`);
+        if (existing) {
+            existing.remove();
+        }
+
+        const card = document.createElement('div');
+        card.className = `synapse-goal synapse-goal--${status} synapse-goal--appear`;
+        card.setAttribute('data-planner', plannerName);
+
+        const icon = status === 'reached' ? '✓' : '✗';
+        const statusLabel = status === 'reached' ? 'Objectif atteint' : 'Objectif échoué';
+
+        const criteria = Array.isArray(goal.success_criteria) ? goal.success_criteria : [];
+        const criteriaHtml = criteria.length > 0
+            ? `<ul class="synapse-goal__criteria">${
+                criteria.map((c) => `<li>${escapeHtml(c)}</li>`).join('')
+            }</ul>`
+            : '';
+
+        const reasonLabels = {
+            max_iterations: 'Max itérations atteint',
+            budget_exceeded: 'Budget dépassé',
+            empty_plan: 'Plan vide — rien à exécuter',
+            execution_failed: 'Exécution échouée',
+        };
+        const reasonHtml = (status === 'failed' && reason)
+            ? `<div class="synapse-goal__reason"><strong>${escapeHtml(reasonLabels[reason] || reason)}</strong>${errorMsg ? `<div class="synapse-goal__error">${escapeHtml(errorMsg)}</div>` : ''}</div>`
+            : '';
+
+        const totalTokens = totalUsage.total_tokens || 0;
+
+        card.innerHTML = `
+            <div class="synapse-goal__header">
+                <span class="synapse-goal__status-icon">${icon}</span>
+                <span class="synapse-goal__status-label">${escapeHtml(statusLabel)}</span>
+                <span class="synapse-goal__planner">${escapeHtml(plannerName)}</span>
+            </div>
+            <div class="synapse-goal__description">${escapeHtml(goal.description || '')}</div>
+            ${criteriaHtml}
+            ${reasonHtml}
+            <div class="synapse-goal__meta">
+                <span>${iterations} itération${iterations > 1 ? 's' : ''}</span>
+                ${totalTokens > 0 ? `<span>· ${totalTokens} tokens</span>` : ''}
+            </div>
+        `;
+
+        section.appendChild(card);
+
+        requestAnimationFrame(() => card.classList.add('synapse-goal--visible'));
         this.asideTarget.scrollTop = this.asideTarget.scrollHeight;
     }
 

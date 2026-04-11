@@ -11,6 +11,8 @@ use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowRunner;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
+use ArnaudMoncondhuy\SynapseCore\Event\SynapseGoalFailedEvent;
+use ArnaudMoncondhuy\SynapseCore\Event\SynapseGoalReachedEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapsePlannerPlanProducedEvent;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\BudgetLimit;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\Goal;
@@ -229,6 +231,9 @@ PROMPT;
         $lastEphemeralKey = null;
         $lastPlanDebugId = null;
         $allEphemeralKeys = [];
+        // Chantier D + Principe 8 : tracker l'issue pour n'émettre GoalFailed
+        // que dans les cas où GoalReached n'a PAS déjà été dispatché plus haut.
+        $goalReached = false;
 
         while ($iteration < $maxIterations) {
             $this->enforceBudget($context, sprintf('before_plan_iteration_%d', $iteration));
@@ -307,6 +312,16 @@ PROMPT;
                 // ── 5. Évaluer si le goal est atteint ──
                 if (!$this->shouldReplan($goal, $plan, $runOutput, $iteration, $maxIterations)) {
                     // Goal atteint ou raisons internes de ne pas replanifier : sortie.
+                    // Chantier D + Principe 8 : dispatch SynapseGoalReachedEvent
+                    // pour que la sidebar bascule le goal en état « atteint ».
+                    $goalReached = true;
+                    $this->eventDispatcher?->dispatch(new SynapseGoalReachedEvent(
+                        plannerName: $this->getName(),
+                        goal: $goal,
+                        iterations: $iteration + 1,
+                        totalUsage: $cumulativeUsage,
+                    ));
+
                     break;
                 }
 
@@ -319,6 +334,17 @@ PROMPT;
             } catch (BudgetExceededException $e) {
                 // Budget dépassé : remonte l'exception pour que le caller voie
                 // clairement que l'agent s'est arrêté sur un hard limit.
+                // Chantier D + Principe 8 : signaler l'échec à la sidebar avant
+                // de rethrow pour que le goal courant bascule en rouge.
+                $this->eventDispatcher?->dispatch(new SynapseGoalFailedEvent(
+                    plannerName: $this->getName(),
+                    goal: $goal,
+                    iterations: $iteration + 1,
+                    reason: 'budget_exceeded',
+                    errorMessage: $e->getMessage(),
+                    totalUsage: $cumulativeUsage,
+                ));
+
                 throw $e;
             } catch (\Throwable $e) {
                 // Exécution échouée → au lieu de sortir, on capture l'erreur et
@@ -340,6 +366,18 @@ PROMPT;
                 // Si c'est la dernière iteration autorisée, on remonte l'erreur
                 // comme answer sans retenter.
                 if ($iteration + 1 >= $maxIterations) {
+                    // Chantier D + Principe 8 : GoalFailedEvent avec
+                    // reason=execution_failed avant de retourner le Output
+                    // d'échec — la sidebar bascule le goal en rouge.
+                    $this->eventDispatcher?->dispatch(new SynapseGoalFailedEvent(
+                        plannerName: $this->getName(),
+                        goal: $goal,
+                        iterations: $iteration + 1,
+                        reason: 'execution_failed',
+                        errorMessage: $e->getMessage(),
+                        totalUsage: $cumulativeUsage,
+                    ));
+
                     return new Output(
                         answer: sprintf(
                             "Plan échoué après %d itération(s) : %s\n\nDernier plan :\n%s",
@@ -379,6 +417,19 @@ PROMPT;
         }
 
         if (0 === $lastPlan->stepsCount()) {
+            // Principe 8 : plan vide final = goal non atteint (le planner a
+            // renoncé sciemment). Signaler à la sidebar.
+            if (!$goalReached) {
+                $this->eventDispatcher?->dispatch(new SynapseGoalFailedEvent(
+                    plannerName: $this->getName(),
+                    goal: $goal,
+                    iterations: $iteration + 1,
+                    reason: 'empty_plan',
+                    errorMessage: $lastPlan->reasoning,
+                    totalUsage: $cumulativeUsage,
+                ));
+            }
+
             return new Output(
                 answer: sprintf(
                     "Le planner n'a rien à exécuter : %s",
@@ -393,6 +444,20 @@ PROMPT;
                 usage: $cumulativeUsage,
                 debugId: $lastPlanDebugId,
             );
+        }
+
+        // Principe 8 : le while a atteint maxIterations sans break → échec
+        // par épuisement du budget d'itérations. Si GoalReached a déjà été
+        // dispatché, on skip (évite un double event contradictoire).
+        if (!$goalReached && $iteration >= $maxIterations) {
+            $this->eventDispatcher?->dispatch(new SynapseGoalFailedEvent(
+                plannerName: $this->getName(),
+                goal: $goal,
+                iterations: $iteration,
+                reason: 'max_iterations',
+                errorMessage: sprintf('Goal non atteint après %d itérations', $maxIterations),
+                totalUsage: $cumulativeUsage,
+            ));
         }
 
         $this->logger->info('Planner {name} completed: {iters} iteration(s), {tokens} total tokens', [

@@ -15,6 +15,8 @@ use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseArchitectProposalEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseChunkReceivedEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseCodeExecutedEvent;
+use ArnaudMoncondhuy\SynapseCore\Event\SynapseGoalFailedEvent;
+use ArnaudMoncondhuy\SynapseCore\Event\SynapseGoalReachedEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseMemoryResultsEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseMultiTurnIterationEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseRagResultsEvent;
@@ -354,6 +356,15 @@ class ChatApiController extends AbstractController
                 $codeExecutedListener = function (SynapseCodeExecutedEvent $e) use ($sendEvent): void {
                     $sendEvent('code_executed', $e->toArray());
                 };
+                // Chantier D finition + Principe 8 : events de cycle de vie
+                // du goal d'un PlannerAgent. Permettent à la sidebar d'afficher
+                // le goal courant + son issue (atteint / échoué) avec raison.
+                $goalReachedListener = function (SynapseGoalReachedEvent $e) use ($sendEvent): void {
+                    $sendEvent('goal_reached', $e->toArray());
+                };
+                $goalFailedListener = function (SynapseGoalFailedEvent $e) use ($sendEvent): void {
+                    $sendEvent('goal_failed', $e->toArray());
+                };
                 $this->dispatcher->addListener(SynapseStatusChangedEvent::class, $statusListener);
                 $this->dispatcher->addListener(SynapseTokenStreamedEvent::class, $tokenListener);
                 $this->dispatcher->addListener(SynapseToolCallCompletedEvent::class, $toolListener);
@@ -368,6 +379,8 @@ class ChatApiController extends AbstractController
                 $this->dispatcher->addListener(SynapsePlannerPlanProducedEvent::class, $plannerPlanListener);
                 $this->dispatcher->addListener(SynapseArchitectProposalEvent::class, $architectProposalListener);
                 $this->dispatcher->addListener(SynapseCodeExecutedEvent::class, $codeExecutedListener);
+                $this->dispatcher->addListener(SynapseGoalReachedEvent::class, $goalReachedListener);
+                $this->dispatcher->addListener(SynapseGoalFailedEvent::class, $goalFailedListener);
 
                 // Pass user_id for spending limit checks
                 $user = $this->getUser();
@@ -621,6 +634,8 @@ class ChatApiController extends AbstractController
                     $this->dispatcher->removeListener(SynapsePlannerPlanProducedEvent::class, $plannerPlanListener);
                     $this->dispatcher->removeListener(SynapseArchitectProposalEvent::class, $architectProposalListener);
                     $this->dispatcher->removeListener(SynapseCodeExecutedEvent::class, $codeExecutedListener);
+                    $this->dispatcher->removeListener(SynapseGoalReachedEvent::class, $goalReachedListener);
+                    $this->dispatcher->removeListener(SynapseGoalFailedEvent::class, $goalFailedListener);
                 }
 
                 // Save BOTH user message and assistant response to database after processing

@@ -2448,3 +2448,137 @@
     color: #ef4444;
     font-family: monospace;
 }
+
+/* ── Chantier D finition : widget goal status (principe 8) ────────────── */
+
+.synapse-goal {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.synapse-goal--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.synapse-goal--reached {
+    border-left: 3px solid #22c55e;
+}
+
+.synapse-goal--failed {
+    border-left: 3px solid #ef4444;
+}
+
+.synapse-goal__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.synapse-goal__status-icon {
+    font-size: 1rem;
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+}
+
+.synapse-goal--reached .synapse-goal__status-icon {
+    background: #22c55e;
+}
+
+.synapse-goal--failed .synapse-goal__status-icon {
+    background: #ef4444;
+}
+
+.synapse-goal__status-label {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: #1e293b;
+}
+
+.synapse-goal__planner {
+    margin-left: auto;
+    font-size: 0.7rem;
+    color: #64748b;
+    font-family: monospace;
+    background: #f1f5f9;
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+.synapse-goal__description {
+    font-size: 0.82rem;
+    color: #334155;
+    margin-bottom: 0.4rem;
+    font-style: italic;
+}
+
+.synapse-goal__criteria {
+    margin: 0.3rem 0 0.5rem 0;
+    padding-left: 1.2rem;
+    font-size: 0.74rem;
+    color: #475569;
+}
+
+.synapse-goal__criteria li {
+    margin-bottom: 0.15rem;
+}
+
+.synapse-goal__reason {
+    margin: 0.4rem 0;
+    padding: 6px 10px;
+    background: rgba(239, 68, 68, 0.08);
+    border-left: 2px solid #ef4444;
+    border-radius: 0 5px 5px 0;
+    font-size: 0.74rem;
+    color: #7f1d1d;
+}
+
+.synapse-goal__reason strong {
+    display: block;
+    color: #dc2626;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.synapse-goal__error {
+    font-family: monospace;
+    font-size: 0.68rem;
+    color: #7f1d1d;
+    margin-top: 2px;
+    word-break: break-word;
+}
+
+.synapse-goal__meta {
+    display: flex;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 0.4rem;
+}
+
+/* ── Chantier D finition : indent visuel pour les sous-agents ─────────── */
+
+.synapse-tool-call--subagent {
+    margin-left: 1.2rem;
+    padding-left: 0.6rem;
+    border-left: 2px solid #cbd5e1;
+    background: rgba(99, 102, 241, 0.04);
+}
+
+.synapse-tool-call--subagent .synapse-tool-call__name {
+    color: #6366f1;
+    font-weight: 500;
+}
