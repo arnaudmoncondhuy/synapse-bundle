@@ -2154,3 +2154,164 @@
         box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
     }
 }
+
+/* ── Chantier I phase 2 : widget HITL proposition architecte ───────────── */
+
+.synapse-architect-proposal {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid #8b5cf6; /* violet — distinct du planner (ambre) */
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.synapse-architect-proposal--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.synapse-architect-proposal--done {
+    opacity: 0.6;
+    background: #f8fafc;
+}
+
+.synapse-architect-proposal__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.35rem;
+}
+
+.synapse-architect-proposal__badge {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: white;
+}
+
+.synapse-architect-proposal__badge--agent {
+    background: #8b5cf6;
+}
+
+.synapse-architect-proposal__badge--workflow {
+    background: #6366f1;
+}
+
+.synapse-architect-proposal__name {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 0.9rem;
+}
+
+.synapse-architect-proposal__key {
+    font-family: monospace;
+    font-size: 0.72rem;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+.synapse-architect-proposal__description {
+    color: #475569;
+    font-size: 0.82rem;
+    margin: 0.4rem 0;
+}
+
+.synapse-architect-proposal__preview {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px;
+    margin: 0.5rem 0;
+    font-size: 0.72rem;
+    font-family: monospace;
+    max-height: 180px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #1e293b;
+}
+
+.synapse-architect-proposal__reasoning {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-style: italic;
+    margin: 0.4rem 0;
+    padding-left: 0.5rem;
+    border-left: 2px solid #cbd5e1;
+}
+
+.synapse-architect-proposal__actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.6rem;
+}
+
+.synapse-architect-proposal__btn {
+    padding: 5px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: white;
+    color: #1e293b;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.synapse-architect-proposal__btn:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+}
+
+.synapse-architect-proposal__btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.synapse-architect-proposal__btn--primary {
+    background: #8b5cf6;
+    color: white;
+    border-color: #8b5cf6;
+}
+
+.synapse-architect-proposal__btn--primary:hover:not(:disabled) {
+    background: #7c3aed;
+    border-color: #7c3aed;
+}
+
+.synapse-architect-proposal__btn--danger {
+    border-color: #fca5a5;
+    color: #dc2626;
+}
+
+.synapse-architect-proposal__btn--danger:hover:not(:disabled) {
+    background: #fef2f2;
+    border-color: #f87171;
+}
+
+.synapse-architect-proposal__btn--secondary {
+    /* Styles par défaut suffisent — bordure grise neutre. */
+}
+
+.synapse-architect-proposal__status {
+    margin-top: 0.5rem;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    background: #f1f5f9;
+    color: #1e293b;
+}

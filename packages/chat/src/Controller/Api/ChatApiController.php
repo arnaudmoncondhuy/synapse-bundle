@@ -8,9 +8,11 @@ use ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver;
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\WorkflowDelegatingAgent;
 use ArnaudMoncondhuy\SynapseCore\AgentRegistry;
+use ArnaudMoncondhuy\SynapseCore\Chat\ChatIntentRouter;
 use ArnaudMoncondhuy\SynapseCore\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
+use ArnaudMoncondhuy\SynapseCore\Event\SynapseArchitectProposalEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseChunkReceivedEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseMemoryResultsEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseMultiTurnIterationEvent;
@@ -37,6 +39,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Profiler\Profiler;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -61,6 +64,12 @@ class ChatApiController extends AbstractController
         private readonly ?\ArnaudMoncondhuy\SynapseCore\Accounting\TokenCostEstimator $tokenCostEstimator = null,
         private readonly ?TranslatorInterface $translator = null,
         private readonly ?\ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry $toolRegistry = null,
+        // Chantier I phase 2 : branchement architecte. Tous optionnels pour
+        // ne pas casser les setups qui n'ont pas le preset architecte configuré.
+        private readonly ?ChatIntentRouter $chatIntentRouter = null,
+        private readonly ?\ArnaudMoncondhuy\SynapseCore\Governance\Architect\ArchitectAgent $architectAgent = null,
+        private readonly ?\ArnaudMoncondhuy\SynapseCore\Governance\Architect\ArchitectProposalProcessor $architectProposalProcessor = null,
+        private readonly ?UrlGeneratorInterface $urlGenerator = null,
     ) {
     }
 
@@ -330,6 +339,13 @@ class ChatApiController extends AbstractController
                 $plannerPlanListener = function (SynapsePlannerPlanProducedEvent $e) use ($sendEvent): void {
                     $sendEvent('planner_plan', $e->toArray());
                 };
+                // Chantier I phase 2 + Principe 8 : quand l'ArchitectAgent
+                // produit une proposition (agent ou workflow éphémère), la
+                // push au front pour afficher la section `proposals` avec
+                // les 3 boutons HITL (Inspecter / Promouvoir / Rejeter).
+                $architectProposalListener = function (SynapseArchitectProposalEvent $e) use ($sendEvent): void {
+                    $sendEvent('architect_proposal', $e->toArray());
+                };
                 $this->dispatcher->addListener(SynapseStatusChangedEvent::class, $statusListener);
                 $this->dispatcher->addListener(SynapseTokenStreamedEvent::class, $tokenListener);
                 $this->dispatcher->addListener(SynapseToolCallCompletedEvent::class, $toolListener);
@@ -342,6 +358,7 @@ class ChatApiController extends AbstractController
                 $this->dispatcher->addListener(SynapseWorkflowStepStartedEvent::class, $workflowStepStartedListener);
                 $this->dispatcher->addListener(SynapseWorkflowStepCompletedEvent::class, $workflowStepListener);
                 $this->dispatcher->addListener(SynapsePlannerPlanProducedEvent::class, $plannerPlanListener);
+                $this->dispatcher->addListener(SynapseArchitectProposalEvent::class, $architectProposalListener);
 
                 // Pass user_id for spending limit checks
                 $user = $this->getUser();
@@ -409,12 +426,141 @@ class ChatApiController extends AbstractController
                     $typedOptions['_trailing_generated_attachments'] = $options['_trailing_generated_attachments'];
                 }
 
+                // ── Chantier I phase 2 : Architect intent routing ──
+                // Si le message est une demande de création d'agent/workflow
+                // (détectée par regex via ChatIntentRouter), on court-circuite
+                // ChatService pour appeler l'ArchitectAgent. La proposition
+                // devient une entité éphémère via ArchitectProposalProcessor
+                // et est poussée au front via SynapseArchitectProposalEvent
+                // pour affichage dans la sidebar. Le chat renvoie un message
+                // court confirmant la création — le vrai UX est dans la sidebar.
+                $architectHandled = false;
+                $architectResult = null;
+                if (
+                    null !== $this->chatIntentRouter
+                    && null !== $this->architectAgent
+                    && null !== $this->architectProposalProcessor
+                    && null !== $this->urlGenerator
+                    && '' !== $message
+                ) {
+                    $intent = $this->chatIntentRouter->route($message);
+                    if (null !== $intent) {
+                        try {
+                            $sendEvent('status', ['message' => 'L\'architecte conçoit ta proposition…', 'step' => 'architect']);
+
+                            $architectOutput = $this->architectAgent->call(Input::ofStructured([
+                                'action' => $intent['action'],
+                                'description' => $intent['description'],
+                            ]));
+
+                            $proposalData = $architectOutput->getData();
+                            if (isset($proposalData['error'])) {
+                                throw new \RuntimeException((string) $proposalData['error']);
+                            }
+
+                            // Persiste l'entité éphémère
+                            $processorResult = $this->architectProposalProcessor->process($proposalData, 'agent:architect');
+                            /** @var \ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent|\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow $entity */
+                            $entity = $processorResult['entity'];
+                            $entityId = (int) $entity->getId();
+
+                            // Construit les URLs des 3 boutons HITL
+                            $isAgent = 'create_agent' === $intent['action'];
+                            $inspectRoute = $isAgent ? 'synapse_admin_agents_edit' : 'synapse_admin_workflows_edit';
+                            $promoteRoute = $isAgent ? 'synapse_admin_agents_promote' : 'synapse_admin_workflows_promote';
+                            $rejectRoute = $isAgent ? 'synapse_admin_agents_reject' : 'synapse_admin_workflows_reject';
+
+                            $inspectUrl = $this->urlGenerator->generate($inspectRoute, ['id' => $entityId]);
+                            $promoteUrl = $this->urlGenerator->generate($promoteRoute, ['id' => $entityId]);
+                            $rejectUrl = $this->urlGenerator->generate($rejectRoute, ['id' => $entityId]);
+
+                            // Tokens CSRF scopés à l'entité — format identique à celui attendu
+                            // par les validateCsrfToken() des admin controllers.
+                            $promoteScope = $isAgent ? 'synapse_agent_promote_' : 'synapse_workflow_promote_';
+                            $rejectScope = $isAgent ? 'synapse_agent_reject_' : 'synapse_workflow_reject_';
+                            $promoteCsrfToken = null !== $this->csrfTokenManager
+                                ? $this->csrfTokenManager->getToken($promoteScope.$entityId)->getValue()
+                                : '';
+                            $rejectCsrfToken = null !== $this->csrfTokenManager
+                                ? $this->csrfTokenManager->getToken($rejectScope.$entityId)->getValue()
+                                : '';
+
+                            // Construit le preview adapté au type
+                            if ($isAgent) {
+                                $preview = (string) ($proposalData['system_prompt'] ?? '');
+                                if (strlen($preview) > 300) {
+                                    $preview = substr($preview, 0, 300).'…';
+                                }
+                            } else {
+                                $steps = $proposalData['steps'] ?? [];
+                                $previewLines = [];
+                                if (is_array($steps)) {
+                                    foreach ($steps as $idx => $st) {
+                                        if (!is_array($st)) {
+                                            continue;
+                                        }
+                                        $stepName = is_string($st['name'] ?? null) ? $st['name'] : '?';
+                                        $stepType = is_string($st['type'] ?? null) ? $st['type'] : 'agent';
+                                        $stepAgent = is_string($st['agent_name'] ?? null) ? ' → '.$st['agent_name'] : '';
+                                        $previewLines[] = sprintf('%d. %s (%s)%s', $idx + 1, $stepName, $stepType, $stepAgent);
+                                    }
+                                }
+                                $preview = implode("\n", $previewLines);
+                            }
+
+                            $entityName = method_exists($entity, 'getName') ? (string) $entity->getName() : '';
+                            $entityKey = method_exists($entity, 'getKey')
+                                ? (string) $entity->getKey()
+                                : (method_exists($entity, 'getWorkflowKey') ? (string) $entity->getWorkflowKey() : '');
+                            $entityDesc = method_exists($entity, 'getDescription') ? (string) ($entity->getDescription() ?? '') : '';
+                            $reasoning = is_string($proposalData['reasoning'] ?? null) ? $proposalData['reasoning'] : null;
+
+                            $this->dispatcher->dispatch(new SynapseArchitectProposalEvent(
+                                action: $intent['action'],
+                                entityId: $entityId,
+                                entityKey: $entityKey,
+                                entityName: $entityName,
+                                entityDescription: $entityDesc,
+                                preview: $preview,
+                                inspectUrl: $inspectUrl,
+                                promoteUrl: $promoteUrl,
+                                rejectUrl: $rejectUrl,
+                                promoteCsrfToken: $promoteCsrfToken,
+                                rejectCsrfToken: $rejectCsrfToken,
+                                reasoning: $reasoning,
+                            ));
+
+                            $architectHandled = true;
+                            $architectResult = [
+                                'answer' => sprintf(
+                                    "✨ Proposition créée : **%s**.\n\nConsulte la sidebar pour l'inspecter, la promouvoir ou la rejeter.",
+                                    $entityName,
+                                ),
+                                'usage' => $architectOutput->getUsage(),
+                                'safety' => [],
+                                'model' => null,
+                                'preset_id' => null,
+                                'agent_id' => null,
+                                'debug_id' => $architectOutput->getDebugId(),
+                                'generated_attachments' => [],
+                                'call_id' => null,
+                            ];
+                        } catch (\Throwable $e) {
+                            // Ne pas crasher le chat si l'architecte échoue — dégrader proprement.
+                            $sendEvent('status', [
+                                'message' => 'L\'architecte a échoué : '.$e->getMessage().'. Je continue en mode chat normal.',
+                                'step' => 'architect_failed',
+                            ]);
+                        }
+                    }
+                }
+
                 // ── Workflow delegation ──
                 // Si l'agent sélectionné a un workflowKey, on court-circuite ChatService
                 // et on délègue à WorkflowDelegatingAgent → WorkflowRunner → MultiAgent.
                 // Les sous-agents du workflow appelleront eux-mêmes ChatService.
                 $workflowAgent = null;
-                if (isset($typedOptions['agent']) && is_string($typedOptions['agent']) && '' !== $typedOptions['agent']) {
+                if (!$architectHandled && isset($typedOptions['agent']) && is_string($typedOptions['agent']) && '' !== $typedOptions['agent']) {
                     $agentEntity = $this->agentRegistry->get($typedOptions['agent']);
                     if (null !== $agentEntity && null !== $agentEntity->getWorkflowKey()) {
                         $ctx = $this->agentResolver->createRootContext(
@@ -431,7 +577,9 @@ class ChatApiController extends AbstractController
 
                 // Execute chat (ChatService dispatche les events SynapseTokenStreamedEvent, etc.)
                 try {
-                    if (null !== $workflowAgent) {
+                    if ($architectHandled && null !== $architectResult) {
+                        $result = $architectResult;
+                    } elseif (null !== $workflowAgent) {
                         $sendEvent('status', ['message' => 'Exécution du workflow…', 'step' => 'workflow']);
                         $agentOutput = $workflowAgent->call(new Input($message), $typedOptions);
                         // Convertir Output en format $result attendu par le reste du contrôleur
@@ -462,6 +610,7 @@ class ChatApiController extends AbstractController
                     $this->dispatcher->removeListener(SynapseWorkflowStepStartedEvent::class, $workflowStepStartedListener);
                     $this->dispatcher->removeListener(SynapseWorkflowStepCompletedEvent::class, $workflowStepListener);
                     $this->dispatcher->removeListener(SynapsePlannerPlanProducedEvent::class, $plannerPlanListener);
+                    $this->dispatcher->removeListener(SynapseArchitectProposalEvent::class, $architectProposalListener);
                 }
 
                 // Save BOTH user message and assistant response to database after processing

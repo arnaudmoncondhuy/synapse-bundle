@@ -84,11 +84,44 @@ class WorkflowController extends AbstractController
 
         $workflow->setIsEphemeral(false);
         $workflow->setRetentionUntil(null);
+        $workflow->setIsActive(true); // Chantier I phase 2 : promouvoir = activer
         $this->em->flush();
 
         $this->addFlash('success', sprintf('Workflow « %s » promu en persistant. Tu peux maintenant l\'éditer librement.', $workflow->getName()));
 
         return $this->redirectToRoute('synapse_admin_workflows_edit', ['id' => $workflow->getId()]);
+    }
+
+    // ─── Rejet (Chantier I phase 2) ─────────────────────────────────────────────
+
+    #[Route('/{id}/rejeter', name: 'workflows_reject', methods: ['POST'])]
+    public function reject(SynapseWorkflow $workflow, Request $request): Response
+    {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_workflow_reject_'.$workflow->getId());
+
+        // Rejet d'une proposition architecte : marquer pour garbage collection
+        // immédiate en forçant retentionUntil à maintenant. Le GC
+        // (synapse:ephemeral:gc) supprimera au prochain passage.
+        // On ne delete pas ici pour laisser une trace auditable pendant
+        // quelques minutes/heures avant le passage cron.
+        if (!$workflow->isEphemeral()) {
+            $this->addFlash('error', 'Impossible de rejeter un workflow persistant.');
+
+            return $this->redirectToRoute('synapse_admin_workflows');
+        }
+
+        $workflow->setRetentionUntil(new \DateTimeImmutable());
+        $this->em->flush();
+
+        $this->addFlash('success', sprintf('Workflow « %s » rejeté — sera supprimé au prochain GC.', $workflow->getName()));
+
+        // Si appelé en AJAX (depuis la sidebar), retourner une réponse JSON légère.
+        if ('json' === $request->getPreferredFormat() || $request->headers->get('Accept') === 'application/json') {
+            return $this->json(['status' => 'rejected']);
+        }
+
+        return $this->redirectToRoute('synapse_admin_workflows');
     }
 
     // ─── Nouveau ───────────────────────────────────────────────────────────────

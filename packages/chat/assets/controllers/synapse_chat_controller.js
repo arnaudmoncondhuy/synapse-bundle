@@ -493,6 +493,7 @@ export default class extends Controller {
             'workflow_step_started': () => this.renderWorkflowStepStarted(p),
             'workflow_step':         () => this.renderWorkflowStepCompleted(p),
             'planner_plan':          () => this.renderPlannerPlan(p),
+            'architect_proposal':    () => this.renderArchitectProposal(p),
             'tool_executed':         () => this._onToolExecuted(p),
         };
         return handlers[evt.type]?.();
@@ -1256,6 +1257,7 @@ export default class extends Controller {
                     <div class="synapse-transparency-section" data-section="rag" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="memory" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="plan" style="display:none"></div>
+                    <div class="synapse-transparency-section" data-section="proposals" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="workflow" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="thinking" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="turns" style="display:none"></div>
@@ -1674,6 +1676,112 @@ export default class extends Controller {
         section.appendChild(planEl);
 
         requestAnimationFrame(() => planEl.classList.add('synapse-planner-plan--visible'));
+        this.asideTarget.scrollTop = this.asideTarget.scrollHeight;
+    }
+
+    // ── Chantier I phase 2 : Architect proposal widget HITL ─────────────────
+    //
+    // Reçoit un event `architect_proposal` dispatché par ChatApiController
+    // quand ChatIntentRouter détecte « crée-moi un agent/workflow » et que
+    // l'ArchitectAgent a produit sa proposition (persistée éphémère par
+    // ArchitectProposalProcessor).
+    //
+    // Payload (SynapseArchitectProposalEvent::toArray()) :
+    //   action: 'create_agent' | 'create_workflow'
+    //   entity_id, entity_key, entity_name, entity_description
+    //   preview: string (system prompt tronqué ou liste de steps)
+    //   inspect_url, promote_url, reject_url
+    //   reasoning: string|null
+    //
+    // Affiche une carte dans la section `proposals` avec 3 boutons :
+    // - Inspecter : ouvre la page admin edit dans un nouvel onglet
+    // - Promouvoir : POST CSRF vers la route promote, flip isEphemeral et active
+    // - Rejeter : POST CSRF vers la route reject, set retentionUntil pour GC
+
+    renderArchitectProposal(payload) {
+        const section = this._getSection('proposals');
+        if (!section) return;
+
+        if (!section.querySelector('.synapse-transparency-section__title')) {
+            section.innerHTML = '<div class="synapse-transparency-section__title">📐 Propositions architecte</div>';
+        }
+
+        const isAgent = payload.action === 'create_agent';
+        const badgeLabel = isAgent ? 'agent' : 'workflow';
+        const badgeClass = isAgent ? 'synapse-architect-proposal__badge--agent' : 'synapse-architect-proposal__badge--workflow';
+
+        const card = document.createElement('div');
+        card.className = 'synapse-architect-proposal synapse-architect-proposal--appear';
+        card.setAttribute('data-entity-id', String(payload.entity_id));
+        card.setAttribute('data-action', payload.action);
+
+        const previewHtml = payload.preview
+            ? `<pre class="synapse-architect-proposal__preview">${escapeHtml(payload.preview)}</pre>`
+            : '';
+        const reasoningHtml = payload.reasoning
+            ? `<div class="synapse-architect-proposal__reasoning">${escapeHtml(payload.reasoning)}</div>`
+            : '';
+        const descHtml = payload.entity_description
+            ? `<div class="synapse-architect-proposal__description">${escapeHtml(payload.entity_description)}</div>`
+            : '';
+
+        card.innerHTML = `
+            <div class="synapse-architect-proposal__header">
+                <span class="synapse-architect-proposal__badge ${badgeClass}">${badgeLabel}</span>
+                <span class="synapse-architect-proposal__name">${escapeHtml(payload.entity_name || '')}</span>
+                <code class="synapse-architect-proposal__key">${escapeHtml(payload.entity_key || '')}</code>
+            </div>
+            ${descHtml}
+            ${previewHtml}
+            ${reasoningHtml}
+            <div class="synapse-architect-proposal__actions">
+                <a href="${payload.inspect_url}" target="_blank" rel="noopener" class="synapse-architect-proposal__btn synapse-architect-proposal__btn--secondary">Inspecter</a>
+                <button type="button" class="synapse-architect-proposal__btn synapse-architect-proposal__btn--primary" data-action="promote">Promouvoir</button>
+                <button type="button" class="synapse-architect-proposal__btn synapse-architect-proposal__btn--danger" data-action="reject">Rejeter</button>
+            </div>
+            <div class="synapse-architect-proposal__status" style="display:none"></div>
+        `;
+
+        // Promote / Reject handlers
+        const promoteBtn = card.querySelector('[data-action="promote"]');
+        const rejectBtn = card.querySelector('[data-action="reject"]');
+        const statusEl = card.querySelector('.synapse-architect-proposal__status');
+
+        // Les routes admin promote/reject valident un CSRF scopé par entité
+        // (ex: `synapse_agent_promote_<id>`). Les tokens sont générés côté
+        // controller et passés dans le payload de l'event — on les envoie
+        // via `X-CSRF-Token` que AdminSecurityTrait::validateCsrfToken()
+        // lit en priorité.
+        const post = async (url, adminToken, label) => {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-Token': adminToken,
+                    },
+                    credentials: 'same-origin',
+                });
+                if (!response.ok && response.status !== 302) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                card.classList.add('synapse-architect-proposal--done');
+                promoteBtn.disabled = true;
+                rejectBtn.disabled = true;
+                statusEl.textContent = `✓ ${label}`;
+                statusEl.style.display = 'block';
+            } catch (e) {
+                statusEl.textContent = `✗ Erreur : ${e.message}`;
+                statusEl.style.display = 'block';
+            }
+        };
+
+        promoteBtn.addEventListener('click', () => post(payload.promote_url, payload.promote_csrf_token, 'Promu'));
+        rejectBtn.addEventListener('click', () => post(payload.reject_url, payload.reject_csrf_token, 'Rejeté'));
+
+        section.appendChild(card);
+
+        requestAnimationFrame(() => card.classList.add('synapse-architect-proposal--visible'));
         this.asideTarget.scrollTop = this.asideTarget.scrollHeight;
     }
 

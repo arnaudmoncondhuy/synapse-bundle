@@ -211,6 +211,57 @@ class AgentController extends AbstractController
         ]);
     }
 
+    // ─── Promotion / Rejet (Chantier I phase 2) ─────────────────────────────
+
+    #[Route('/{id}/promouvoir', name: 'agents_promote', methods: ['POST'])]
+    public function promote(SynapseAgent $agent, Request $request): Response
+    {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_promote_'.$agent->getId());
+
+        if (!$agent->isEphemeral()) {
+            $this->addFlash('error', 'Cet agent est déjà persistant.');
+
+            return $this->redirectToRoute('synapse_admin_agents');
+        }
+
+        $agent->setIsEphemeral(false);
+        $agent->setRetentionUntil(null);
+        $agent->setIsActive(true); // Promouvoir = activer
+        $this->em->flush();
+
+        $this->addFlash('success', sprintf('Agent « %s » promu en persistant et activé.', $agent->getName()));
+
+        return $this->redirectToRoute('synapse_admin_agents_edit', ['id' => $agent->getId()]);
+    }
+
+    #[Route('/{id}/rejeter', name: 'agents_reject', methods: ['POST'])]
+    public function reject(SynapseAgent $agent, Request $request): Response
+    {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_reject_'.$agent->getId());
+
+        if (!$agent->isEphemeral()) {
+            $this->addFlash('error', 'Impossible de rejeter un agent persistant.');
+
+            return $this->redirectToRoute('synapse_admin_agents');
+        }
+
+        // Marque pour GC immédiat. Le synapse:ephemeral:gc supprimera au
+        // prochain passage. On évite delete() direct pour laisser une trace
+        // auditable pendant quelques minutes.
+        $agent->setRetentionUntil(new \DateTimeImmutable());
+        $this->em->flush();
+
+        $this->addFlash('success', sprintf('Agent « %s » rejeté — sera supprimé au prochain GC.', $agent->getName()));
+
+        if ('json' === $request->getPreferredFormat() || $request->headers->get('Accept') === 'application/json') {
+            return $this->json(['status' => 'rejected']);
+        }
+
+        return $this->redirectToRoute('synapse_admin_agents');
+    }
+
     // ─── Limite de dépense (agent) ───────────────────────────────────────────
 
     #[Route('/{id}/limite', name: 'agents_limit', methods: ['POST'])]
