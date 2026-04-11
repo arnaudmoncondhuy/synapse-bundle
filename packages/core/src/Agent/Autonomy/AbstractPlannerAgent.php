@@ -192,28 +192,266 @@ PROMPT;
     /**
      * {@inheritdoc}
      *
-     * Implémente la logique planner pour la phase 1 du Chantier D : produit UN
-     * plan initial et le retourne. L'exécution du plan + la boucle observe-
-     * replan sont laissées pour une phase 2 après validation utilisateur.
+     * Implémente la logique planner complète avec boucle observe-plan-replan
+     * (Chantier D phase 3). Pseudo-code :
+     *
+     *   iteration = 0
+     *   observations = null
+     *   while iteration < maxIterations:
+     *       enforceBudget()
+     *       plan = callLLM(goal, observations, iteration)
+     *       if plan.isEmpty(): break
+     *       dispatchPlanEvent(plan)
+     *       result = executeViaWorkflowRunner(plan)
+     *       observations = summarize(result)
+     *       if isGoalReached(goal, result): break
+     *       iteration++
+     *   return aggregateOutput(plan, result, allUsage)
+     *
+     * Le critère d'arrêt par défaut est soit :
+     * - Le dernier run a réussi sans erreur (cas trivial : 1 iteration, pas de replan)
+     * - Le Goal porte des `successCriteria` et le LLM s'auto-évalue comme "goal atteint"
+     * - `maxPlanningIterations` atteint (garde-fou)
+     *
+     * Les sous-classes peuvent override {@see shouldReplan()} pour injecter
+     * leur propre logique d'évaluation.
      */
     protected function execute(Input $input, AgentContext $context): Output
     {
         $goal = $this->resolveGoal($input, $context);
 
-        // Garde-fous budget avant même le premier appel LLM
-        $this->enforceBudget($context, 'before_initial_plan');
+        $maxIterations = $this->resolveMaxIterations($context);
+        $iteration = 0;
+        $cumulativeUsage = [];
+        $previousObservations = null;
+        $lastPlan = null;
+        $lastRunOutput = null;
+        $lastEphemeralKey = null;
+        $lastPlanDebugId = null;
+        $allEphemeralKeys = [];
 
+        while ($iteration < $maxIterations) {
+            $this->enforceBudget($context, sprintf('before_plan_iteration_%d', $iteration));
+
+            // ── 1. Planifier (LLM call structured output) ──
+            [$plan, $planResult] = $this->planOneIteration($input, $goal, $context, $iteration, $previousObservations);
+
+            if (null === $plan) {
+                // Parsing/validation du plan échoué → retour erreur immédiat
+                // avec les usages cumulés jusqu'ici.
+                $cumulativeUsage = $this->mergeUsage(
+                    $cumulativeUsage,
+                    is_array($planResult['usage'] ?? null) ? $planResult['usage'] : [],
+                );
+
+                return new Output(
+                    answer: sprintf(
+                        'Planner failed to produce a valid plan at iteration %d. Raw answer: %s',
+                        $iteration,
+                        mb_substr((string) ($planResult['answer'] ?? ''), 0, 200),
+                    ),
+                    data: [
+                        'error' => 'no_plan',
+                        'iteration' => $iteration,
+                        'goal' => $goal->toArray(),
+                        'raw_answer' => $planResult['answer'] ?? '',
+                    ],
+                    usage: $cumulativeUsage,
+                );
+            }
+
+            $lastPlan = $plan;
+            $cumulativeUsage = $this->mergeUsage(
+                $cumulativeUsage,
+                is_array($planResult['usage'] ?? null) ? $planResult['usage'] : [],
+            );
+            $lastPlanDebugId = is_string($planResult['debug_id'] ?? null) ? $planResult['debug_id'] : $lastPlanDebugId;
+
+            // ── 2. Cas limite : plan vide ──
+            if (0 === $plan->stepsCount()) {
+                // Si c'est la 1re iteration et le planner dit "rien à faire",
+                // on s'arrête proprement. Si on est en replan et le planner
+                // conclut que plus rien n'est faisable, idem : stop.
+                $this->logger->info('Planner {name} produced empty plan at iteration {iter}, stopping', [
+                    'name' => $this->getName(),
+                    'iter' => $iteration,
+                ]);
+
+                break;
+            }
+
+            // ── 3. Persister comme éphémère + dispatcher l'event ──
+            try {
+                $ephemeralWorkflow = $this->persistPlanAsEphemeralWorkflow($plan, $goal);
+                $lastEphemeralKey = $ephemeralWorkflow->getWorkflowKey();
+                $allEphemeralKeys[] = $lastEphemeralKey;
+
+                $this->eventDispatcher?->dispatch(new SynapsePlannerPlanProducedEvent(
+                    plannerName: $this->getName(),
+                    goal: $goal,
+                    plan: $plan,
+                    workflowRunId: null,
+                    ephemeralWorkflowKey: $lastEphemeralKey,
+                ));
+
+                // ── 4. Exécuter le plan via WorkflowRunner ──
+                $runOutput = $this->getWorkflowRunner()->run(
+                    $ephemeralWorkflow,
+                    Input::ofStructured($this->collectInitialInputs($input, $goal)),
+                    ['context' => $context],
+                );
+
+                $lastRunOutput = $runOutput;
+                $cumulativeUsage = $this->mergeUsage($cumulativeUsage, $runOutput->getUsage());
+
+                // ── 5. Évaluer si le goal est atteint ──
+                if (!$this->shouldReplan($goal, $plan, $runOutput, $iteration, $maxIterations)) {
+                    // Goal atteint ou raisons internes de ne pas replanifier : sortie.
+                    break;
+                }
+
+                // ── 6. Construire les observations pour la prochaine iteration ──
+                $previousObservations = $this->buildObservationsFromRun($plan, $runOutput, null);
+                $this->logger->info('Planner {name} requesting replan after iteration {iter}', [
+                    'name' => $this->getName(),
+                    'iter' => $iteration,
+                ]);
+            } catch (BudgetExceededException $e) {
+                // Budget dépassé : remonte l'exception pour que le caller voie
+                // clairement que l'agent s'est arrêté sur un hard limit.
+                throw $e;
+            } catch (\Throwable $e) {
+                // Exécution échouée → au lieu de sortir, on capture l'erreur et
+                // on tente un replan (jusqu'à maxIterations) avec les
+                // observations incluant le message d'erreur. C'est le vrai
+                // pattern observe-plan-replan : apprendre de ses échecs.
+                $this->logger->warning('Planner {name} iteration {iter} failed: {message}', [
+                    'name' => $this->getName(),
+                    'iter' => $iteration,
+                    'message' => $e->getMessage(),
+                ]);
+
+                $previousObservations = $this->buildObservationsFromRun(
+                    $plan,
+                    null,
+                    $e->getMessage(),
+                );
+
+                // Si c'est la dernière iteration autorisée, on remonte l'erreur
+                // comme answer sans retenter.
+                if ($iteration + 1 >= $maxIterations) {
+                    return new Output(
+                        answer: sprintf(
+                            "Plan échoué après %d itération(s) : %s\n\nDernier plan :\n%s",
+                            $iteration + 1,
+                            $e->getMessage(),
+                            $plan->reasoning,
+                        ),
+                        data: [
+                            'error' => 'execution_failed_after_replans',
+                            'iterations' => $iteration + 1,
+                            'max_iterations' => $maxIterations,
+                            'message' => $e->getMessage(),
+                            'goal' => $goal->toArray(),
+                            'last_plan' => $plan->toArray(),
+                            'ephemeral_workflow_keys' => $allEphemeralKeys,
+                        ],
+                        usage: $cumulativeUsage,
+                        debugId: $lastPlanDebugId,
+                    );
+                }
+
+                // Sinon on continue pour un replan avec observations d'erreur
+            }
+
+            ++$iteration;
+        }
+
+        // ── Sortie finale (succès, plan vide, ou max iterations atteint) ──
+
+        if (null === $lastPlan) {
+            // N'est jamais atteint en théorie (on a toujours au moins 1 iter)
+            return new Output(
+                answer: 'Planner stopped without producing any plan.',
+                data: ['error' => 'no_plan_at_all', 'goal' => $goal->toArray()],
+                usage: $cumulativeUsage,
+            );
+        }
+
+        if (0 === $lastPlan->stepsCount()) {
+            return new Output(
+                answer: sprintf(
+                    "Le planner n'a rien à exécuter : %s",
+                    $lastPlan->reasoning,
+                ),
+                data: [
+                    'goal' => $goal->toArray(),
+                    'plan' => $lastPlan->toArray(),
+                    'iterations' => $iteration + 1,
+                    'callable_agents_available' => array_keys($this->getAgentAsToolRegistry()->getCallableAgents()),
+                ],
+                usage: $cumulativeUsage,
+                debugId: $lastPlanDebugId,
+            );
+        }
+
+        $this->logger->info('Planner {name} completed: {iters} iteration(s), {tokens} total tokens', [
+            'name' => $this->getName(),
+            'iters' => $iteration + 1,
+            'tokens' => $cumulativeUsage['total_tokens'] ?? 0,
+        ]);
+
+        return new Output(
+            answer: $lastRunOutput?->getAnswer() ?? sprintf(
+                "Plan exécuté (%d étape(s), %d itération(s)) : %s",
+                $lastPlan->stepsCount(),
+                $iteration + 1,
+                $lastPlan->reasoning,
+            ),
+            data: [
+                'goal' => $goal->toArray(),
+                'plan' => $lastPlan->toArray(),
+                'iterations' => $iteration + 1,
+                'max_iterations' => $maxIterations,
+                'workflow_run_id' => $lastRunOutput?->getMetadata()['workflow_run_id'] ?? null,
+                'workflow_key' => $lastEphemeralKey,
+                'ephemeral_workflow_keys' => $allEphemeralKeys,
+                'step_outputs' => $lastRunOutput?->getData() ?? [],
+                'callable_agents_available' => array_keys($this->getAgentAsToolRegistry()->getCallableAgents()),
+            ],
+            usage: $cumulativeUsage,
+            debugId: $lastPlanDebugId,
+            generatedAttachments: $lastRunOutput?->getGeneratedAttachments() ?? [],
+        );
+    }
+
+    /**
+     * Une iteration de planification : un seul LLM call qui produit un Plan
+     * (ou null si parsing échoue). Extrait pour être réutilisable par la
+     * boucle `execute()` et potentiellement par des sous-classes qui
+     * voudraient override la stratégie de planning sans toucher à la boucle.
+     *
+     * @return array{0: Plan|null, 1: array<string, mixed>}
+     */
+    protected function planOneIteration(
+        Input $input,
+        Goal $goal,
+        AgentContext $context,
+        int $iteration,
+        ?string $previousObservations,
+    ): array {
         $callableAgents = array_map(
             static fn ($a) => sprintf('- **%s** : %s', $a->getName(), $a->getDescription()),
             $this->getAgentAsToolRegistry()->getCallableAgents(),
         );
 
-        $userPrompt = $this->buildUserPromptForPlanning($goal, $input, $callableAgents, iteration: 0, previousObservations: null);
+        $userPrompt = $this->buildUserPromptForPlanning($goal, $input, $callableAgents, $iteration, $previousObservations);
 
-        $this->logger->info('Planner {name} starting for goal: {goal}', [
+        $this->logger->info('Planner {name} iteration {iter}: calling LLM', [
             'name' => $this->getName(),
+            'iter' => $iteration,
             'goal' => $goal->description,
-            'runId' => $context->getRequestId(),
+            'hasObservations' => null !== $previousObservations,
         ]);
 
         $result = $this->chatService->ask(
@@ -221,14 +459,8 @@ PROMPT;
             $this->buildAskOptions([
                 'stateless' => true,
                 'module' => 'autonomy',
-                'action' => 'plan_initial',
-                // Chantier D : force JSON structuré via response_format. Le planner
-                // ne fait PAS de tool-calling (il produit un Plan, il ne l'exécute
-                // pas — l'exécution est la responsabilité de `executeRun()` phase 2).
+                'action' => sprintf('plan_iter_%d', $iteration),
                 'response_format' => PlanResponseSchema::schema(),
-                // Pas de tools à disposition du LLM : le planner décrit des steps
-                // qui référencent des agents, il n'appelle rien lui-même. Passer
-                // une liste de tools sèmerait de la confusion.
                 'tools' => [],
                 'context' => $context,
             ]),
@@ -236,141 +468,127 @@ PROMPT;
 
         $structured = $result['structured_output'] ?? null;
         if (!is_array($structured)) {
-            // Si pas de structured output, on essaie d'extraire depuis la réponse texte
             $structured = $this->tryExtractPlanJson($result['answer'] ?? '');
         }
 
         if (!is_array($structured)) {
-            return new Output(
-                answer: 'Planner failed to produce a valid plan (no structured output and no parseable JSON in answer).',
-                data: [
-                    'error' => 'no_plan',
-                    'raw_answer' => $result['answer'] ?? '',
-                ],
-                usage: is_array($result['usage'] ?? null) ? $result['usage'] : [],
-            );
+            return [null, $result];
         }
 
         try {
-            $plan = Plan::fromArray($structured, iteration: 0);
+            $plan = Plan::fromArray($structured, iteration: $iteration);
         } catch (\InvalidArgumentException $e) {
-            return new Output(
-                answer: sprintf('Planner produced an invalid plan structure: %s', $e->getMessage()),
-                data: [
-                    'error' => 'invalid_plan',
-                    'message' => $e->getMessage(),
-                    'raw' => $structured,
-                ],
-                usage: is_array($result['usage'] ?? null) ? $result['usage'] : [],
-            );
-        }
-
-        $this->logger->info('Planner {name} produced initial plan with {steps} steps', [
-            'name' => $this->getName(),
-            'steps' => $plan->stepsCount(),
-            'runId' => $context->getRequestId(),
-        ]);
-
-        $planUsage = is_array($result['usage'] ?? null) ? $result['usage'] : [];
-        $planDebugId = is_string($result['debug_id'] ?? null) ? $result['debug_id'] : null;
-
-        // ── Chantier D phase 2 : exécution réelle du plan via WorkflowRunner ──
-        //
-        // Le plan est matérialisé comme `SynapseWorkflow` éphémère (visible dans
-        // l'admin, promouvable si l'utilisateur veut le garder), puis exécuté
-        // synchroniquement. Les outputs du workflow deviennent la réponse du
-        // planner, agrégés avec l'usage du planning LLM-call.
-
-        if (0 === $plan->stepsCount()) {
-            // Cas légitime : le planner a conclu que rien n'était faisable avec
-            // les agents disponibles. On retourne le reasoning comme answer
-            // sans lancer d'exécution inutile.
-            return new Output(
-                answer: sprintf(
-                    "Le planner n'a rien à exécuter : %s",
-                    $plan->reasoning,
-                ),
-                data: [
-                    'goal' => $goal->toArray(),
-                    'plan' => $plan->toArray(),
-                    'callable_agents_available' => array_keys($this->getAgentAsToolRegistry()->getCallableAgents()),
-                ],
-                usage: $planUsage,
-                debugId: $planDebugId,
-            );
-        }
-
-        try {
-            $ephemeralWorkflow = $this->persistPlanAsEphemeralWorkflow($plan, $goal);
-
-            // Principe 8 du plan : tout event back doit avoir son rendu front.
-            // Dispatch du plan complet pour que la transparency sidebar du chat
-            // affiche une section `plan` avec le reasoning + les steps + leurs
-            // rationales avant le début de l'exécution.
-            $this->eventDispatcher?->dispatch(new SynapsePlannerPlanProducedEvent(
-                plannerName: $this->getName(),
-                goal: $goal,
-                plan: $plan,
-                workflowRunId: null, // pas encore de runId, créé par WorkflowRunner
-                ephemeralWorkflowKey: $ephemeralWorkflow->getWorkflowKey(),
-            ));
-
-            $runOutput = $this->getWorkflowRunner()->run(
-                $ephemeralWorkflow,
-                Input::ofStructured($this->collectInitialInputs($input, $goal)),
-                ['context' => $context],
-            );
-        } catch (\Throwable $e) {
-            $this->logger->error('Planner {name} failed during plan execution: {message}', [
+            $this->logger->warning('Planner {name} iteration {iter}: invalid plan structure — {message}', [
                 'name' => $this->getName(),
+                'iter' => $iteration,
                 'message' => $e->getMessage(),
-                'exception' => $e,
             ]);
 
-            return new Output(
-                answer: sprintf(
-                    "Plan généré mais l'exécution a échoué : %s\n\nPlan :\n%s",
-                    $e->getMessage(),
-                    $plan->reasoning,
-                ),
-                data: [
-                    'error' => 'execution_failed',
-                    'message' => $e->getMessage(),
-                    'goal' => $goal->toArray(),
-                    'plan' => $plan->toArray(),
-                ],
-                usage: $planUsage,
-                debugId: $planDebugId,
-            );
+            return [null, $result];
         }
 
-        // ── Merge planning usage + execution usage ──
-        $mergedUsage = $this->mergeUsage($planUsage, $runOutput->getUsage());
+        return [$plan, $result];
+    }
 
-        $this->logger->info('Planner {name} completed: plan + exec = {tokens} total tokens, {steps} steps executed', [
-            'name' => $this->getName(),
-            'tokens' => $mergedUsage['total_tokens'] ?? 0,
-            'steps' => $plan->stepsCount(),
-        ]);
+    /**
+     * Décide si une nouvelle iteration de replan est nécessaire après un run
+     * réussi. Par défaut :
+     *
+     * - Si `goal->successCriteria` est vide → **false** (pas de critère, on
+     *   considère la 1re iteration réussie comme suffisante — pragmatique)
+     * - Sinon **false** aussi pour l'instant (le LLM-as-judge pour auto-évaluer
+     *   les critères est out of scope de cette phase, viendra en phase 4)
+     *
+     * Les sous-classes peuvent override pour injecter leur propre logique.
+     * Ex: un planner de recherche peut re-planifier tant que le nombre de
+     * résultats trouvés < seuil cible.
+     */
+    protected function shouldReplan(Goal $goal, Plan $plan, Output $runOutput, int $iteration, int $maxIterations): bool
+    {
+        // Phase 3 : pas d'auto-évaluation LLM, on fait confiance à la 1re
+        // iteration réussie. Si le goal a des critères, ils sont passés au
+        // LLM dans le prompt système pour que **lui** en tienne compte lors
+        // de la planification, mais on ne re-vérifie pas après coup.
+        //
+        // Le replan automatique ne se déclenche donc que sur **échec
+        // d'exécution**, qui est géré directement dans la boucle `execute()`
+        // via le catch sur Throwable.
+        return false;
+    }
 
-        return new Output(
-            answer: $runOutput->getAnswer() ?? sprintf(
-                "Plan exécuté (%d étape(s)) : %s",
-                $plan->stepsCount(),
-                $plan->reasoning,
-            ),
-            data: [
-                'goal' => $goal->toArray(),
-                'plan' => $plan->toArray(),
-                'workflow_run_id' => $runOutput->getMetadata()['workflow_run_id'] ?? null,
-                'workflow_key' => $ephemeralWorkflow->getWorkflowKey(),
-                'step_outputs' => $runOutput->getData(),
-                'callable_agents_available' => array_keys($this->getAgentAsToolRegistry()->getCallableAgents()),
-            ],
-            usage: $mergedUsage,
-            debugId: $planDebugId,
-            generatedAttachments: $runOutput->getGeneratedAttachments(),
-        );
+    /**
+     * Résout le nombre max d'iterations depuis le BudgetLimit du contexte
+     * s'il en a un, sinon retombe sur {@see defaultMaxIterations()}.
+     */
+    protected function resolveMaxIterations(AgentContext $context): int
+    {
+        $budget = $context->getBudget();
+        if (null !== $budget && null !== $budget->maxPlanningIterations) {
+            return max(1, $budget->maxPlanningIterations);
+        }
+
+        return max(1, $this->defaultMaxIterations());
+    }
+
+    /**
+     * Construit un résumé textuel court (< 1500 chars) de ce qui vient de se
+     * passer, à injecter dans le prompt utilisateur de la prochaine iteration
+     * pour que le LLM puisse ajuster son plan en conséquence.
+     *
+     * Format attendu par le LLM : texte libre en français structuré avec des
+     * sections claires (Ce que le plan a fait / Résultats observés / Échec
+     * éventuel / Ce qu'il faut changer).
+     */
+    protected function buildObservationsFromRun(
+        Plan $previousPlan,
+        ?Output $runOutput,
+        ?string $errorMessage,
+    ): string {
+        $lines = [];
+
+        if (null !== $errorMessage) {
+            $lines[] = '## Résultat : ÉCHEC';
+            $lines[] = '';
+            $lines[] = 'L\'exécution du plan précédent a échoué avec le message :';
+            $lines[] = '```';
+            $lines[] = mb_substr($errorMessage, 0, 500);
+            $lines[] = '```';
+            $lines[] = '';
+            $lines[] = 'Analyse la cause de l\'échec et propose un plan alternatif qui évite ce problème. Tu peux choisir des agents différents, changer l\'ordre des steps, ou adapter les input_mapping.';
+
+            return implode("\n", $lines);
+        }
+
+        if (null !== $runOutput) {
+            $lines[] = '## Résultat : SUCCÈS';
+            $lines[] = '';
+            $lines[] = sprintf('Le plan précédent a exécuté ses %d step(s) sans erreur.', $previousPlan->stepsCount());
+            $lines[] = '';
+
+            $data = $runOutput->getData();
+            if ([] !== $data) {
+                $lines[] = '### Outputs produits';
+                $lines[] = '';
+                foreach ($data as $key => $value) {
+                    if (!is_string($value) || '' === trim($value)) {
+                        continue;
+                    }
+                    $preview = mb_substr($value, 0, 300);
+                    if (mb_strlen($value) > 300) {
+                        $preview .= '…';
+                    }
+                    $lines[] = sprintf('**%s** :', (string) $key);
+                    $lines[] = $preview;
+                    $lines[] = '';
+                }
+            }
+
+            $lines[] = 'Analyse si ces outputs satisfont le goal. Si oui, produis un plan vide (steps: []) pour signaler que c\'est terminé. Si non, produis un nouveau plan qui complète ou corrige les outputs existants.';
+
+            return implode("\n", $lines);
+        }
+
+        return 'Aucune observation disponible. Plan le goal comme si c\'était la première iteration.';
     }
 
     /**
