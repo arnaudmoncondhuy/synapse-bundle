@@ -8,6 +8,8 @@ use ArnaudMoncondhuy\SynapseCore\Agent\AgentContext;
 use ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver;
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Exception\WorkflowExecutionException;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor\AgentNodeExecutor;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor\NodeExecutorInterface;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
 use ArnaudMoncondhuy\SynapseCore\Contract\AgentInterface;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseWorkflowStepCompletedEvent;
@@ -54,14 +56,41 @@ final class MultiAgent implements AgentInterface
 {
     private readonly LoggerInterface $logger;
 
+    /**
+     * @var list<NodeExecutorInterface>
+     */
+    private readonly array $nodeExecutors;
+
+    /**
+     * @param iterable<NodeExecutorInterface>|null $nodeExecutors Collection des exécuteurs de nœuds
+     *                                                           (Chantier F). Si null, fallback BC :
+     *                                                           un `AgentNodeExecutor` construit à la
+     *                                                           volée avec le resolver. Les tests unitaires
+     *                                                           pré-chantier F n'ont donc rien à changer.
+     */
     public function __construct(
         private readonly SynapseWorkflow $workflow,
         private readonly SynapseWorkflowRun $run,
         private readonly AgentResolver $resolver,
         private readonly ?EventDispatcherInterface $eventDispatcher = null,
         ?LoggerInterface $logger = null,
+        ?iterable $nodeExecutors = null,
     ) {
         $this->logger = $logger ?? new NullLogger();
+
+        $materialized = null === $nodeExecutors
+            ? []
+            : (is_array($nodeExecutors) ? array_values($nodeExecutors) : iterator_to_array($nodeExecutors, false));
+
+        // Si aucun exécuteur n'a été câblé (null ou iterable vide — typiquement
+        // les tests unitaires pré-F ou un container sans tag), on injecte le
+        // fallback BC : un AgentNodeExecutor qui reproduit à l'identique le
+        // comportement historique. Ça garantit qu'aucun run existant ne casse.
+        if ([] === $materialized) {
+            $materialized = [new AgentNodeExecutor($resolver)];
+        }
+
+        $this->nodeExecutors = $materialized;
     }
 
     public function getName(): string
@@ -99,8 +128,9 @@ final class MultiAgent implements AgentInterface
         $definition = $this->workflow->getDefinition();
         $steps = $this->extractSteps($definition);
 
-        // Pré-validation : tous les agents référencés doivent être résolvables.
-        $this->preValidateAgents($steps);
+        // Pré-validation : chaque step doit avoir un exécuteur connu ; les steps
+        // `agent` doivent en plus pointer sur un agent_name résolvable.
+        $this->preValidateSteps($steps);
 
         // Contexte parent : soit fourni par le caller, soit nouveau contexte racine.
         $parentContext = $options['context'] ?? null;
@@ -127,7 +157,13 @@ final class MultiAgent implements AgentInterface
 
         foreach ($steps as $index => $step) {
             $stepName = (string) $step['name'];
-            $agentName = (string) $step['agent_name'];
+            $stepType = (string) ($step['type'] ?? 'agent');
+            // Pour les events et la dénorm du run, on n'a pas d'agent_name sur
+            // les steps non-agent (ex: conditional). On fallback sur le type
+            // pour que la sidebar affiche "conditional" au lieu d'un champ vide.
+            $agentName = isset($step['agent_name']) && is_string($step['agent_name'])
+                ? $step['agent_name']
+                : $stepType;
             $this->run->setCurrentStepIndex($index);
 
             // Dispatch step started event — la sidebar affiche immédiatement que ce step réfléchit.
@@ -157,11 +193,12 @@ final class MultiAgent implements AgentInterface
                     childOrigin: 'workflow',
                 );
 
-                $agent = $this->resolver->resolve($agentName, $childContext);
-                $stepOutput = $agent->call(
-                    Input::ofStructured($stepInput),
-                    ['context' => $childContext],
-                );
+                // Chantier F : dispatch vers l'exécuteur de nœud adapté au type.
+                // Historique (pré-F) = uniquement `agent`. Aujourd'hui le dispatch
+                // permet d'ajouter `conditional` (et plus tard `parallel`, `loop`,
+                // `sub_workflow`) sans toucher à cette boucle orchestratrice.
+                $executor = $this->pickExecutor($stepType, $stepName);
+                $stepOutput = $executor->execute($step, $stepInput, $state, $childContext);
             } catch (WorkflowExecutionException $e) {
                 $this->markFailed($e->getMessage());
                 throw $e;
@@ -302,9 +339,9 @@ final class MultiAgent implements AgentInterface
             if (!isset($step['name']) || !is_string($step['name']) || '' === $step['name']) {
                 throw WorkflowExecutionException::invalidDefinition(sprintf('step at index %s has no name', (string) $index));
             }
-            if (!isset($step['agent_name']) || !is_string($step['agent_name']) || '' === $step['agent_name']) {
-                throw WorkflowExecutionException::invalidDefinition(sprintf('step "%s" has no agent_name', $step['name']));
-            }
+            // Chantier F : `agent_name` n'est plus requis au niveau de l'extraction — la
+            // pré-validation type-aware dans `preValidateSteps()` s'en occupe selon que
+            // le step est de type `agent` ou d'un autre type (ex: `conditional`).
             $normalized[] = $step;
         }
 
@@ -312,17 +349,73 @@ final class MultiAgent implements AgentInterface
     }
 
     /**
+     * Pré-validation des steps (Chantier F) : type-aware.
+     *
+     * - Un step `agent` (ou sans type, BC) doit pointer sur un `agent_name`
+     *   résolvable via {@see AgentResolver::has()}. C'est ce qui garantit qu'on
+     *   n'entame pas l'exécution d'un workflow dont on sait déjà qu'il planterait
+     *   à mi-parcours sur un agent inconnu.
+     * - Un step non-agent doit simplement pouvoir être pris en charge par au
+     *   moins un {@see NodeExecutorInterface} enregistré. Les validations
+     *   spécifiques au type (ex: `condition` présente pour `conditional`) sont
+     *   déléguées à l'exécuteur lui-même — il jettera `invalidDefinition` au
+     *   moment d'exécuter si son step est malformé.
+     *
      * @param array<int, array<string, mixed>> $steps
      */
-    private function preValidateAgents(array $steps): void
+    private function preValidateSteps(array $steps): void
     {
         foreach ($steps as $step) {
-            /** @var string $agentName */
-            $agentName = $step['agent_name'];
-            if (!$this->resolver->has($agentName)) {
-                throw WorkflowExecutionException::agentNotResolvable((string) $step['name'], $agentName);
+            $stepName = (string) $step['name'];
+            $type = (string) ($step['type'] ?? 'agent');
+
+            if ('agent' === $type) {
+                $agentName = $step['agent_name'] ?? null;
+                if (!is_string($agentName) || '' === $agentName) {
+                    throw WorkflowExecutionException::invalidDefinition(
+                        sprintf('agent step "%s" has no agent_name', $stepName)
+                    );
+                }
+                if (!$this->resolver->has($agentName)) {
+                    throw WorkflowExecutionException::agentNotResolvable($stepName, $agentName);
+                }
+
+                continue;
+            }
+
+            // Step non-agent : il suffit qu'un exécuteur le prenne en charge.
+            // Pas de check plus fin ici — à l'exécuteur de valider son format.
+            foreach ($this->nodeExecutors as $executor) {
+                if ($executor->supports($type)) {
+                    continue 2;
+                }
+            }
+
+            throw WorkflowExecutionException::invalidDefinition(
+                sprintf('step "%s" has unknown type "%s" (no NodeExecutor registered)', $stepName, $type)
+            );
+        }
+    }
+
+    /**
+     * Trouve le premier exécuteur qui déclare supporter le type du step.
+     *
+     * @throws WorkflowExecutionException Si aucun exécuteur ne matche (typiquement
+     *                                    un type ajouté à la def sans avoir tagué
+     *                                    un service {@see NodeExecutorInterface} qui
+     *                                    le gère).
+     */
+    private function pickExecutor(string $type, string $stepName): NodeExecutorInterface
+    {
+        foreach ($this->nodeExecutors as $executor) {
+            if ($executor->supports($type)) {
+                return $executor;
             }
         }
+
+        throw WorkflowExecutionException::invalidDefinition(
+            sprintf('step "%s" has unknown type "%s" (no NodeExecutor registered)', $stepName, $type)
+        );
     }
 
     /**

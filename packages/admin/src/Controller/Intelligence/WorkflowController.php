@@ -329,9 +329,23 @@ class WorkflowController extends AbstractController
             if (!is_string($name) || '' === $name) {
                 return $this->translator->trans('synapse.admin.workflow.validation.step_name_missing', ['index' => (string) $index], 'synapse_admin');
             }
-            $agentName = $step['agent_name'] ?? null;
-            if (!is_string($agentName) || '' === $agentName) {
-                return $this->translator->trans('synapse.admin.workflow.validation.step_agent_missing', ['name' => $name], 'synapse_admin');
+            // Chantier F : `agent_name` n'est obligatoire que pour les steps
+            // de type `agent` (défaut). Les types alternatifs (ex: `conditional`)
+            // ont leurs propres exigences validées au runtime par leur
+            // NodeExecutor dédié — ici, on ne bloque pas la sauvegarde.
+            $type = $step['type'] ?? 'agent';
+            if ('agent' === $type) {
+                $agentName = $step['agent_name'] ?? null;
+                if (!is_string($agentName) || '' === $agentName) {
+                    return $this->translator->trans('synapse.admin.workflow.validation.step_agent_missing', ['name' => $name], 'synapse_admin');
+                }
+            } elseif ('conditional' === $type) {
+                $condition = $step['condition'] ?? null;
+                if (!is_string($condition) || '' === $condition) {
+                    return sprintf('Step "%s" de type "conditional" : clé "condition" manquante ou vide.', $name);
+                }
+            } else {
+                return sprintf('Step "%s" : type "%s" inconnu (attendu : agent, conditional).', $name, (string) $type);
             }
             if (in_array($name, $names, true)) {
                 return $this->translator->trans('synapse.admin.workflow.validation.step_duplicate_name', ['name' => $name], 'synapse_admin');

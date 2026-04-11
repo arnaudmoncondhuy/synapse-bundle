@@ -7,6 +7,7 @@ namespace ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent;
 use ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver;
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Exception\WorkflowExecutionException;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor\NodeExecutorInterface;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
 use ArnaudMoncondhuy\SynapseCore\Message\ExecuteWorkflowMessage;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\WorkflowRunStatus;
@@ -16,6 +17,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
@@ -55,6 +57,17 @@ class WorkflowRunner
 {
     private readonly LoggerInterface $logger;
 
+    /**
+     * @var iterable<NodeExecutorInterface>
+     */
+    private readonly iterable $nodeExecutors;
+
+    /**
+     * @param iterable<NodeExecutorInterface> $nodeExecutors Collection des exécuteurs de nœuds
+     *                                                      (Chantier F), découverts via le tag DI
+     *                                                      `synapse.node_executor`. Passée telle
+     *                                                      quelle à `MultiAgent` à chaque run.
+     */
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly AgentResolver $resolver,
@@ -62,8 +75,15 @@ class WorkflowRunner
         ?LoggerInterface $logger = null,
         private readonly ?SynapseDebugLogRepository $debugLogRepository = null,
         private readonly ?MessageBusInterface $messageBus = null,
+        #[AutowireIterator('synapse.node_executor')]
+        iterable $nodeExecutors = [],
     ) {
         $this->logger = $logger ?? new NullLogger();
+        // Matérialiser une fois en array : MultiAgent est instancié à chaque run,
+        // autant éviter de re-itérer un générateur rewindable par run.
+        $this->nodeExecutors = is_array($nodeExecutors)
+            ? $nodeExecutors
+            : iterator_to_array($nodeExecutors, false);
     }
 
     /**
@@ -160,7 +180,14 @@ class WorkflowRunner
             'version' => $run->getWorkflowVersion(),
         ]);
 
-        $multiAgent = new MultiAgent($workflow, $run, $this->resolver, $this->eventDispatcher, $this->logger);
+        $multiAgent = new MultiAgent(
+            $workflow,
+            $run,
+            $this->resolver,
+            $this->eventDispatcher,
+            $this->logger,
+            $this->nodeExecutors,
+        );
 
         try {
             $output = $multiAgent->call($input, $options);

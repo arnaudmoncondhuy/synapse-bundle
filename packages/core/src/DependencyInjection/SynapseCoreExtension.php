@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\DependencyInjection;
 
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor\NodeExecutorInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\AgentInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\ContextProviderInterface;
@@ -240,6 +241,12 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
 
         $container->registerForAutoconfiguration(RagSourceProviderFactoryInterface::class)
             ->addTag('synapse.rag_source_factory');
+
+        // Chantier F : exécuteurs de nœuds pour le moteur DAG. Auto-discovery
+        // des services qui implémentent NodeExecutorInterface → tag collecté
+        // par WorkflowRunner via AutowireIterator('synapse.node_executor').
+        $container->registerForAutoconfiguration(NodeExecutorInterface::class)
+            ->addTag('synapse.node_executor');
 
         // ── Vector Store Configuration ────────────────────────────────────────
         // L'alias est désormais géré dynamiquement par DynamicVectorStore via core.yaml

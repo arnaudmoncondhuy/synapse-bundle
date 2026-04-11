@@ -9,6 +9,8 @@ use ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver;
 use ArnaudMoncondhuy\SynapseCore\Agent\CodeAgentRegistry;
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Exception\WorkflowExecutionException;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor\AgentNodeExecutor;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor\ConditionalNodeExecutor;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\MultiAgent;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowRunner;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
@@ -238,6 +240,143 @@ final class MultiAgentTest extends TestCase
         $this->assertInstanceOf(AgentContext::class, $capturedContext);
         $this->assertSame('user-123', $capturedContext->getUserId());
         $this->assertSame($run->getWorkflowRunId(), $capturedContext->getWorkflowRunId());
+    }
+
+    public function testChantierFDispatchesConditionalStepToDedicatedExecutor(): void
+    {
+        // Un workflow qui mixe un step "agent" (classifie) puis un step
+        // "conditional" qui évalue le résultat et matérialise un flag dans
+        // son output, consommé ensuite par un deuxième step "agent".
+        $capturedGoFlag = null;
+
+        $classifier = $this->makeSpyAgent('classifier', function (Input $input): Output {
+            return new Output(
+                answer: 'urgent',
+                data: ['priority' => 'urgent'],
+                usage: ['prompt_tokens' => 5, 'completion_tokens' => 2, 'total_tokens' => 7],
+            );
+        });
+
+        $handler = $this->makeSpyAgent('urgent_handler', function (Input $input) use (&$capturedGoFlag): Output {
+            $capturedGoFlag = $input->getStructured()['go'] ?? null;
+
+            return new Output(
+                answer: 'handled',
+                usage: ['prompt_tokens' => 10, 'completion_tokens' => 3, 'total_tokens' => 13],
+            );
+        });
+
+        $resolver = $this->makeResolver([$classifier, $handler]);
+
+        $workflow = $this->makeWorkflow([
+            'version' => 1,
+            'steps' => [
+                [
+                    'name' => 'classify',
+                    'agent_name' => 'classifier',
+                    'input_mapping' => ['message' => '$.inputs.message'],
+                ],
+                [
+                    'name' => 'is_urgent',
+                    'type' => 'conditional',
+                    'condition' => '$.steps.classify.output.data.priority',
+                    'equals' => 'urgent',
+                ],
+                [
+                    'name' => 'handle',
+                    'agent_name' => 'urgent_handler',
+                    'input_mapping' => [
+                        'message' => '$.inputs.message',
+                        'go' => '$.steps.is_urgent.output.data.matched',
+                    ],
+                ],
+            ],
+            'outputs' => [
+                'result' => '$.steps.handle.output.text',
+                'matched' => '$.steps.is_urgent.output.data.matched',
+            ],
+        ]);
+
+        $run = new SynapseWorkflowRun();
+        $run->setWorkflow($workflow);
+
+        $multiAgent = new MultiAgent(
+            $workflow,
+            $run,
+            $resolver,
+            null,
+            null,
+            [new AgentNodeExecutor($resolver), new ConditionalNodeExecutor()],
+        );
+
+        $output = $multiAgent->call(Input::ofStructured(['message' => 'au secours']));
+
+        // Le step conditional a matérialisé le flag, le handler l'a bien reçu.
+        $this->assertTrue($capturedGoFlag);
+
+        // Outputs finaux exposent le matched et la réponse du handler.
+        $this->assertSame('handled', $output->getData()['result']);
+        $this->assertTrue($output->getData()['matched']);
+
+        // Le step conditional n'ajoute aucun token (usage: 0), donc le total
+        // reflète uniquement les 2 appels LLM (7 + 13 = 20).
+        $this->assertSame(20, $output->getUsage()['total_tokens']);
+
+        // Les 3 steps ont bien été exécutés séquentiellement.
+        $this->assertSame(3, $run->getCurrentStepIndex());
+        $this->assertSame(WorkflowRunStatus::COMPLETED, $run->getStatus());
+    }
+
+    public function testChantierFRejectsUnknownStepType(): void
+    {
+        $resolver = $this->makeResolver([]);
+
+        $workflow = $this->makeWorkflow([
+            'version' => 1,
+            'steps' => [
+                ['name' => 'weird', 'type' => 'unknown_type'],
+            ],
+        ]);
+
+        $run = new SynapseWorkflowRun();
+        $run->setWorkflow($workflow);
+
+        $multiAgent = new MultiAgent(
+            $workflow,
+            $run,
+            $resolver,
+            null,
+            null,
+            [new AgentNodeExecutor($resolver), new ConditionalNodeExecutor()],
+        );
+
+        $this->expectException(WorkflowExecutionException::class);
+        $this->expectExceptionMessage('unknown type "unknown_type"');
+
+        $multiAgent->call(Input::ofMessage('x'));
+    }
+
+    public function testChantierFFallbackAgentNodeExecutorWhenNoneInjected(): void
+    {
+        // BC : les tests pré-F construisent MultiAgent sans passer d'executors.
+        // Le fallback doit câbler AgentNodeExecutor automatiquement pour que
+        // les workflows type="agent" continuent de tourner.
+        $spy = $this->makeSpyAgent('spy', fn (): Output => new Output(answer: 'ok'));
+
+        $resolver = $this->makeResolver([$spy]);
+        $workflow = $this->makeWorkflow([
+            'version' => 1,
+            'steps' => [['name' => 'only', 'agent_name' => 'spy']],
+        ]);
+
+        $run = new SynapseWorkflowRun();
+        $run->setWorkflow($workflow);
+
+        // Aucun $nodeExecutors passé → fallback automatique
+        $output = (new MultiAgent($workflow, $run, $resolver))->call(Input::ofMessage('x'));
+
+        $this->assertSame(WorkflowRunStatus::COMPLETED, $run->getStatus());
+        $this->assertNotNull($output);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
