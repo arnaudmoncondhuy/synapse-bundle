@@ -216,6 +216,7 @@
 							<th>Tokens</th>
 							<th>Coût</th>
 							<th>Progrès</th>
+							<th></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -278,10 +279,17 @@
 								<td>
 									<span class="synapse-admin-text-xs">{{ run.currentStepIndex }} / {{ run.stepsCount }}</span>
 								</td>
+								<td>
+									<a href="{{ path('synapse_admin_runs_detail', {workflowRunId: run.workflowRunId}) }}"
+									   class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon"
+									   data-synapse-admin-tooltip="Voir la timeline">
+										<i data-lucide="activity"></i>
+									</a>
+								</td>
 							</tr>
 							{% if run.errorMessage %}
 								<tr>
-									<td colspan="9" class="synapse-admin-text-danger" style="padding-left: 2rem; font-size: 0.8rem;">
+									<td colspan="10" class="synapse-admin-text-danger" style="padding-left: 2rem; font-size: 0.8rem;">
 										<i data-lucide="alert-circle" style="width: 0.9rem; height: 0.9rem;"></i>
 										{{ run.errorMessage|slice(0, 200) }}{% if run.errorMessage|length > 200 %}…{% endif %}
 									</td>

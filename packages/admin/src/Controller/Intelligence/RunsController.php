@@ -7,11 +7,15 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\WorkflowRunStatus;
+use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseDebugLog;
+use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflowRun;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRunRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
@@ -41,6 +45,7 @@ class RunsController extends AbstractController
     public function __construct(
         private readonly SynapseWorkflowRunRepository $runRepository,
         private readonly SynapseWorkflowRepository $workflowRepository,
+        private readonly SynapseDebugLogRepository $debugLogRepository,
         private readonly PermissionCheckerInterface $permissionChecker,
     ) {
     }
@@ -147,5 +152,184 @@ class RunsController extends AbstractController
             'total_cost_period' => $totalCost,
             'total_runs_period' => $totalRunsInPeriod,
         ]);
+    }
+
+    /**
+     * Chantier H phase 2 : détail d'un run avec timeline visuelle.
+     *
+     * Reconstitue la timeline d'un workflow run à partir de la définition du
+     * workflow, de l'état courant du run (currentStepIndex, status), et des
+     * debug logs rattachés (filtrés par workflow_run_id, triés chronologiquement).
+     *
+     * Les steps individuels ne sont pas persistés comme entités à part dans
+     * Synapse — seule la définition du workflow permet de connaître la
+     * structure complète. La durée, les tokens et le coût de chaque step
+     * sont reconstruits à partir des SynapseDebugLog correspondants.
+     */
+    #[Route('/{workflowRunId}', name: 'runs_detail', methods: ['GET'], requirements: ['workflowRunId' => '[0-9a-f-]{36}'])]
+    public function detail(string $workflowRunId): Response
+    {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
+        $run = $this->runRepository->findByWorkflowRunId($workflowRunId);
+        if (null === $run) {
+            throw new NotFoundHttpException(sprintf('Workflow run "%s" not found.', $workflowRunId));
+        }
+
+        // Résoudre la définition du workflow (relation directe ou fallback par
+        // workflowKey si la relation a été nullifiée par onDelete SET NULL)
+        $workflow = $run->getWorkflow();
+        if (null === $workflow) {
+            $workflow = $this->workflowRepository->findOneBy(['workflowKey' => $run->getWorkflowKey()]);
+        }
+
+        // Récupère les debug logs attachés au run, triés chronologiquement
+        /** @var SynapseDebugLog[] $debugLogs */
+        $debugLogs = $this->debugLogRepository->findBy(
+            ['workflowRunId' => $workflowRunId],
+            ['createdAt' => 'ASC'],
+        );
+
+        // Construire la timeline des steps
+        $stepsTimeline = $this->buildStepsTimeline($run, $workflow, $debugLogs);
+
+        // Résumé (redondant avec le run, mais plus pratique pour le template)
+        $summary = [
+            'total_duration_s' => $run->getDurationSeconds(),
+            'total_tokens' => $run->getTotalTokens() ?? 0,
+            'total_cost' => $run->getTotalCost() ?? 0.0,
+            'steps_count' => $run->getStepsCount(),
+            'current_step_index' => $run->getCurrentStepIndex(),
+        ];
+
+        return $this->render('@Synapse/admin/intelligence/run_detail.html.twig', [
+            'run' => $run,
+            'workflow' => $workflow,
+            'steps_timeline' => $stepsTimeline,
+            'summary' => $summary,
+            'debug_logs_count' => count($debugLogs),
+            'is_running' => !$run->getStatus()->isTerminal(),
+        ]);
+    }
+
+    /**
+     * Construit le tableau de la timeline pour le template.
+     *
+     * Pour chaque step déclaré dans la définition du workflow, dérive son
+     * statut depuis (run.currentStepIndex, run.status) et agrège les metrics
+     * des debug logs rattachés via une heuristique sur `action` et sur
+     * l'ordre chronologique.
+     *
+     * Heuristique de rattachement step ↔ debug_log : les debug logs n'ont
+     * pas de champ `step_index` explicite, on les associe par l'ordre
+     * chronologique de leur `createdAt` et la valeur `agent_run_id` qui
+     * correspond au step (un agent invoqué par MultiAgent a un requestId
+     * dédié par step grâce à createChild()). Les logs qui appartiennent
+     * à un step `N` sont ceux créés entre le SynapseWorkflowStepStartedEvent
+     * du step N et celui du step N+1 (ou la fin du run).
+     *
+     * Version simplifiée phase 2 : on distribue les debug logs linéairement
+     * sur les steps en utilisant leur ordre chronologique uniquement, sans
+     * tenir compte des agent_run_id. Suffisant pour 95% des cas (1 step =
+     * 1 agent call = 1 debug log) et évite de bricoler sur la reconstruction
+     * d'arbre. Si un step fait du tool-calling multi-tour, plusieurs debug
+     * logs peuvent lui être attribués.
+     *
+     * @param SynapseDebugLog[] $debugLogs
+     *
+     * @return array<int, array{
+     *     index: int,
+     *     name: string,
+     *     agent_name: string,
+     *     status: string,
+     *     tokens: int,
+     *     cost: float,
+     *     debug_ids: string[],
+     *     model: ?string,
+     * }>
+     */
+    private function buildStepsTimeline(SynapseWorkflowRun $run, ?object $workflow, array $debugLogs): array
+    {
+        $definition = null !== $workflow ? $workflow->getDefinition() : null;
+        $rawSteps = is_array($definition) && isset($definition['steps']) && is_array($definition['steps'])
+            ? $definition['steps']
+            : [];
+
+        // Si la définition est introuvable (workflow supprimé, definition vide),
+        // on ne peut pas reconstituer les noms de steps — on crée des placeholders
+        // à partir de stepsCount.
+        if ([] === $rawSteps && $run->getStepsCount() > 0) {
+            for ($i = 0; $i < $run->getStepsCount(); ++$i) {
+                $rawSteps[] = ['name' => sprintf('step_%d', $i), 'agent_name' => '(inconnu)'];
+            }
+        }
+
+        $currentIndex = $run->getCurrentStepIndex();
+        $runStatus = $run->getStatus();
+        $timeline = [];
+
+        // Distribution linéaire des debug logs sur les steps
+        // Si on a moins de logs que de steps terminés, on met 0/null pour les manquants
+        $completedCount = min($currentIndex, count($rawSteps));
+        $logsPerStep = $completedCount > 0 ? (int) floor(count($debugLogs) / max(1, $completedCount)) : 0;
+        $logCursor = 0;
+
+        foreach ($rawSteps as $index => $rawStep) {
+            $name = is_string($rawStep['name'] ?? null) ? $rawStep['name'] : sprintf('step_%d', $index);
+            $agentName = is_string($rawStep['agent_name'] ?? null) ? $rawStep['agent_name'] : '(inconnu)';
+
+            // Statut dérivé
+            $stepStatus = 'pending';
+            if ($index < $currentIndex) {
+                $stepStatus = 'completed';
+            } elseif ($index === $currentIndex) {
+                if (WorkflowRunStatus::RUNNING === $runStatus) {
+                    $stepStatus = 'running';
+                } elseif (WorkflowRunStatus::FAILED === $runStatus) {
+                    $stepStatus = 'failed';
+                } elseif (WorkflowRunStatus::COMPLETED === $runStatus) {
+                    $stepStatus = 'completed';
+                } elseif (WorkflowRunStatus::CANCELLED === $runStatus) {
+                    $stepStatus = 'cancelled';
+                }
+            }
+
+            // Agrège les logs rattachés à ce step (heuristique linéaire)
+            $stepTokens = 0;
+            $stepCost = 0.0;
+            $stepDebugIds = [];
+            $stepModel = null;
+
+            if ('completed' === $stepStatus && $logsPerStep > 0) {
+                $endCursor = min($logCursor + $logsPerStep, count($debugLogs));
+                // Pour le dernier step completed, on colle jusqu'à la fin pour ne pas perdre des logs
+                if ($index === $completedCount - 1) {
+                    $endCursor = count($debugLogs);
+                }
+                for ($i = $logCursor; $i < $endCursor; ++$i) {
+                    $log = $debugLogs[$i];
+                    $stepTokens += $log->getTotalTokens() ?? 0;
+                    $stepCost += $log->getCost() ?? 0.0;
+                    $stepDebugIds[] = $log->getDebugId();
+                    if (null === $stepModel && null !== $log->getModel()) {
+                        $stepModel = $log->getModel();
+                    }
+                }
+                $logCursor = $endCursor;
+            }
+
+            $timeline[] = [
+                'index' => $index,
+                'name' => $name,
+                'agent_name' => $agentName,
+                'status' => $stepStatus,
+                'tokens' => $stepTokens,
+                'cost' => $stepCost,
+                'debug_ids' => $stepDebugIds,
+                'model' => $stepModel,
+            ];
+        }
+
+        return $timeline;
     }
 }

@@ -306,3 +306,204 @@
     justify-content: space-between;
     align-items: center;
 }
+
+/* ── Chantier H phase 2 : Timeline visuelle d'un workflow run ──────────────
+ *
+ * Utilisée dans `run_detail.html.twig`. Graphe 100% SVG/CSS pur, aucune
+ * dépendance JS. Cohérent avec le style des barres CSS de `runs.html.twig`
+ * (graphe coûts 30j, livré Chantier H phase 5).
+ *
+ * Structure :
+ *   .synapse-timeline
+ *     .synapse-timeline-step.synapse-timeline-step--{status}
+ *       .synapse-timeline-step__marker > .synapse-timeline-step__index
+ *       .synapse-timeline-step__bar-wrapper
+ *         .synapse-timeline-step__header (name + agent + status label)
+ *         .synapse-timeline-step__bar  (barre horizontale colorée)
+ *         .synapse-timeline-step__meta (tokens, cost, debug links)
+ */
+
+.synapse-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0.5rem 0;
+}
+
+.synapse-timeline-step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.synapse-timeline-step__marker {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: white;
+    position: relative;
+}
+
+/* Ligne verticale connectant les markers (sauf le dernier) */
+.synapse-timeline-step:not(:last-child) .synapse-timeline-step__marker::after {
+    content: '';
+    position: absolute;
+    top: 32px;
+    left: 50%;
+    width: 2px;
+    height: calc(100% + 1rem);
+    background: #e5e5e5;
+    transform: translateX(-50%);
+}
+
+.synapse-timeline-step__index {
+    line-height: 1;
+}
+
+.synapse-timeline-step__bar-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+.synapse-timeline-step__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.35rem;
+}
+
+.synapse-timeline-step__name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: monospace;
+    color: #1e293b;
+}
+
+.synapse-timeline-step__agent {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-family: monospace;
+}
+
+.synapse-timeline-step__status-label {
+    font-size: 0.7rem;
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 600;
+}
+
+.synapse-timeline-step__bar {
+    height: 8px;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.synapse-timeline-step__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.4rem;
+    font-size: 0.7rem;
+    color: #64748b;
+}
+
+.synapse-timeline-step__meta a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    color: #6366f1;
+    text-decoration: none;
+    font-family: monospace;
+}
+
+.synapse-timeline-step__meta a:hover {
+    text-decoration: underline;
+}
+
+/* ── 4 statuts : completed / running / pending / failed / cancelled ──── */
+
+.synapse-timeline-step--completed .synapse-timeline-step__marker {
+    background: #10b981;
+}
+
+.synapse-timeline-step--completed .synapse-timeline-step__bar {
+    background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+}
+
+.synapse-timeline-step--completed .synapse-timeline-step__status-label {
+    color: #10b981;
+}
+
+.synapse-timeline-step--running .synapse-timeline-step__marker {
+    background: #3b82f6;
+    animation: synapse-timeline-pulse 1.5s ease-in-out infinite;
+}
+
+.synapse-timeline-step--running .synapse-timeline-step__bar {
+    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #3b82f6 100%);
+    background-size: 200% 100%;
+    animation: synapse-timeline-shimmer 2s linear infinite;
+}
+
+.synapse-timeline-step--running .synapse-timeline-step__status-label {
+    color: #3b82f6;
+}
+
+.synapse-timeline-step--pending .synapse-timeline-step__marker {
+    background: #cbd5e1;
+    color: #64748b;
+}
+
+.synapse-timeline-step--pending .synapse-timeline-step__bar {
+    background: #e5e7eb;
+}
+
+.synapse-timeline-step--pending .synapse-timeline-step__status-label {
+    color: #94a3b8;
+}
+
+.synapse-timeline-step--failed .synapse-timeline-step__marker {
+    background: #ef4444;
+}
+
+.synapse-timeline-step--failed .synapse-timeline-step__bar {
+    background: linear-gradient(90deg, #ef4444 0%, #fca5a5 100%);
+}
+
+.synapse-timeline-step--failed .synapse-timeline-step__status-label {
+    color: #ef4444;
+}
+
+.synapse-timeline-step--cancelled .synapse-timeline-step__marker {
+    background: #f59e0b;
+}
+
+.synapse-timeline-step--cancelled .synapse-timeline-step__bar {
+    background: linear-gradient(90deg, #f59e0b 0%, #fcd34d 100%);
+}
+
+.synapse-timeline-step--cancelled .synapse-timeline-step__status-label {
+    color: #f59e0b;
+}
+
+@keyframes synapse-timeline-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.75; transform: scale(0.95); }
+}
+
+@keyframes synapse-timeline-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}

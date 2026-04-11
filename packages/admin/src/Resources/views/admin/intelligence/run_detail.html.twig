@@ -1,0 +1,237 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Run {{ run.workflowRunId|slice(0, 8) }} | Runs | Synapse Administration{% endblock %}
+
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.intelligence'|trans(domain='synapse_admin') }}</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_runs') }}" class="synapse-admin-topbar__breadcrumb">Runs</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-current">{{ run.workflowRunId|slice(0, 8) }}…</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	{% set status_class = {
+		'pending': 'synapse-admin-badge--neutral',
+		'running': 'synapse-admin-badge--info',
+		'completed': 'synapse-admin-badge--success',
+		'failed': 'synapse-admin-badge--danger',
+		'cancelled': 'synapse-admin-badge--warning',
+	}[run.status.value] ?? 'synapse-admin-badge--neutral' %}
+
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="activity"></i>
+				</span>
+				Run {{ run.workflowKey }}
+				<span class="synapse-admin-badge {{ status_class }}" style="margin-left: 0.5rem;">
+					{{ run.status.value }}
+				</span>
+				{% if is_running %}
+					<span class="synapse-admin-badge synapse-admin-badge--info" style="margin-left: 0.25rem; animation: synapse-timeline-pulse 1.5s ease-in-out infinite;">
+						<i data-lucide="refresh-cw" style="width: 0.8rem; height: 0.8rem;"></i>
+						live
+					</span>
+				{% endif %}
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				<code class="synapse-admin-font-mono" style="font-size: 0.75rem;">{{ run.workflowRunId }}</code> — v{{ run.workflowVersion }}
+				{% if run.userId %} · utilisateur {{ run.userId }}{% endif %}
+				 · démarré {{ run.startedAt|date('d/m/Y H:i:s') }}
+			</p>
+		</div>
+		<div class="synapse-admin-page-header__actions">
+			<a href="{{ path('synapse_admin_runs') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+				<i data-lucide="arrow-left"></i>
+				Retour aux runs
+			</a>
+		</div>
+	</div>
+
+	{# ── KPI cards ────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--4 synapse-admin-mb-lg">
+		<div class="synapse-admin-kpi-card">
+			<div class="synapse-admin-kpi__label">Durée</div>
+			<div class="synapse-admin-kpi__value">
+				{% if summary.total_duration_s is not null %}
+					{{ summary.total_duration_s|round(1) }}s
+				{% else %}
+					<span class="synapse-admin-text-xs synapse-admin-text-muted">en cours…</span>
+				{% endif %}
+			</div>
+		</div>
+		<div class="synapse-admin-kpi-card">
+			<div class="synapse-admin-kpi__label">Tokens</div>
+			<div class="synapse-admin-kpi__value">{{ summary.total_tokens|number_format(0, ',', ' ') }}</div>
+		</div>
+		<div class="synapse-admin-kpi-card">
+			<div class="synapse-admin-kpi__label">Coût (EUR)</div>
+			<div class="synapse-admin-kpi__value">{{ summary.total_cost|number_format(6, ',', ' ') }}</div>
+		</div>
+		<div class="synapse-admin-kpi-card">
+			<div class="synapse-admin-kpi__label">Progression</div>
+			<div class="synapse-admin-kpi__value">{{ summary.current_step_index }} / {{ summary.steps_count }}</div>
+		</div>
+	</div>
+
+	{% if run.errorMessage %}
+		<div class="synapse-admin-alert synapse-admin-alert--danger synapse-admin-mb-lg">
+			<i data-lucide="alert-circle"></i>
+			<div>
+				<strong>Erreur d'exécution</strong>
+				<p style="margin: 0.25rem 0 0 0; font-family: monospace; font-size: 0.8rem;">{{ run.errorMessage }}</p>
+			</div>
+		</div>
+	{% endif %}
+
+	{# ── Timeline visuelle ────────────────────────────────────────────────── #}
+	<div class="synapse-admin-card synapse-admin-mb-lg">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+				<i data-lucide="git-branch"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Timeline des steps</div>
+				<div class="synapse-admin-card__subtitle">
+					Chaque step correspond à une étape de la définition du workflow. Les tokens et coûts sont reconstruits depuis les debug logs rattachés à ce run.
+				</div>
+			</div>
+		</div>
+		<div class="synapse-admin-card__body">
+
+			{% if steps_timeline|length == 0 %}
+				<div class="synapse-admin-empty-state">
+					<p class="synapse-admin-empty-state__title">Aucun step déclaré</p>
+					<p class="synapse-admin-empty-state__subtitle">Le workflow n'a pas de steps dans sa définition, ou la définition est introuvable.</p>
+				</div>
+			{% else %}
+				<div class="synapse-timeline" role="list">
+					{% for step in steps_timeline %}
+						<div class="synapse-timeline-step synapse-timeline-step--{{ step.status }}" role="listitem">
+							<div class="synapse-timeline-step__marker">
+								<span class="synapse-timeline-step__index">{{ loop.index }}</span>
+							</div>
+							<div class="synapse-timeline-step__bar-wrapper">
+								<div class="synapse-timeline-step__header">
+									<code class="synapse-timeline-step__name">{{ step.name }}</code>
+									<span class="synapse-timeline-step__agent">→ {{ step.agent_name }}</span>
+									<span class="synapse-timeline-step__status-label">
+										{% if step.status == 'completed' %}
+											<i data-lucide="check-circle" style="width: 0.9rem; height: 0.9rem;"></i> terminé
+										{% elseif step.status == 'running' %}
+											<i data-lucide="loader" style="width: 0.9rem; height: 0.9rem;"></i> en cours…
+										{% elseif step.status == 'failed' %}
+											<i data-lucide="x-circle" style="width: 0.9rem; height: 0.9rem;"></i> échoué
+										{% elseif step.status == 'cancelled' %}
+											<i data-lucide="minus-circle" style="width: 0.9rem; height: 0.9rem;"></i> annulé
+										{% else %}
+											<i data-lucide="circle" style="width: 0.9rem; height: 0.9rem;"></i> en attente
+										{% endif %}
+									</span>
+								</div>
+								<div class="synapse-timeline-step__bar"></div>
+								<div class="synapse-timeline-step__meta">
+									{% if step.tokens > 0 %}
+										<span>{{ step.tokens|number_format(0, ',', ' ') }} tokens</span>
+									{% endif %}
+									{% if step.cost > 0 %}
+										<span>·</span>
+										<span>{{ step.cost|number_format(6, ',', ' ') }} EUR</span>
+									{% endif %}
+									{% if step.model %}
+										<span>·</span>
+										<span class="synapse-admin-font-mono" style="font-size: 0.7rem;">{{ step.model }}</span>
+									{% endif %}
+									{% for debug_id in step.debug_ids %}
+										<span>·</span>
+										<a href="{{ path('synapse_admin_debug') }}?debug_id={{ debug_id }}" target="_blank" rel="noopener" title="Voir le debug complet">
+											<i data-lucide="file-search" style="width: 0.8rem; height: 0.8rem;"></i>
+											{{ debug_id|slice(4, 8) }}…
+										</a>
+									{% endfor %}
+								</div>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
+		</div>
+	</div>
+
+	{# ── Input / Output collapse ──────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-lg">
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="log-in"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Input</div>
+					<div class="synapse-admin-card__subtitle">Payload racine passé au WorkflowRunner</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				<details>
+					<summary class="synapse-admin-text-sm synapse-admin-text-muted" style="cursor: pointer;">Déplier le JSON</summary>
+					<pre style="font-size: 0.7rem; overflow-x: auto; margin-top: 0.5rem; max-height: 400px;">{{ run.input ? run.input|json_encode(constant('JSON_PRETTY_PRINT') + constant('JSON_UNESCAPED_UNICODE')) : '(vide)' }}</pre>
+				</details>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--success">
+					<i data-lucide="log-out"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Output</div>
+					<div class="synapse-admin-card__subtitle">Outputs finaux agrégés selon la clause <code>outputs</code> du workflow</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+				<details {% if not is_running %}open{% endif %}>
+					<summary class="synapse-admin-text-sm synapse-admin-text-muted" style="cursor: pointer;">Déplier le JSON</summary>
+					<pre style="font-size: 0.7rem; overflow-x: auto; margin-top: 0.5rem; max-height: 400px;">{{ run.output ? run.output|json_encode(constant('JSON_PRETTY_PRINT') + constant('JSON_UNESCAPED_UNICODE')) : '(pas encore d''output)' }}</pre>
+				</details>
+			</div>
+		</div>
+	</div>
+
+	{# ── Info runtime ─────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-text-xs synapse-admin-text-muted">
+		{{ debug_logs_count }} debug log(s) rattaché(s) à ce run ·
+		{% if workflow %}
+			Workflow source : <a href="{{ path('synapse_admin_workflows_edit', {id: workflow.id}) }}">{{ workflow.name }}</a> ·
+		{% else %}
+			Workflow source supprimé (définition perdue) ·
+		{% endif %}
+		{% if is_running %}
+			<strong>Rafraîchissement automatique toutes les 3s</strong>
+		{% endif %}
+	</div>
+
+	{% if is_running %}
+		{#
+		 # Chantier H phase 3 : polling simple via JS inline à la fin du body.
+		 # Quand le run est encore en cours, on recharge la page toutes les 3s.
+		 # Pas de Stimulus, pas de NDJSON — simple et marche dans tous les cas
+		 # (sync run, async worker Messenger, cron). Quand le run devient terminal
+		 # (completed/failed/cancelled), le block `if is_running` disparaît de la
+		 # page suivante et le polling s'arrête naturellement.
+		 #}
+		<script>
+			(function () {
+				// 3s de polling — on arrête automatiquement dès que le status
+				// devient terminal (prochain rendu du template sans ce script).
+				window.setTimeout(function () { window.location.reload(); }, 3000);
+			})();
+		</script>
+	{% endif %}
+
+{% endblock %}
