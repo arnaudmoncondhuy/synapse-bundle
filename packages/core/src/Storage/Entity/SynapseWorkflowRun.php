@@ -157,6 +157,22 @@ class SynapseWorkflowRun
     #[ORM\Column(name: 'generated_attachments', type: Types::JSON, nullable: true)]
     private ?array $generatedAttachments = null;
 
+    /**
+     * Inputs résolus passés à chaque step au moment de son exécution (Chantier H4).
+     *
+     * Chaque clé = nom de step, chaque valeur = array structuré passé à
+     * `AgentInterface::call(Input::ofStructured(...))` après résolution des
+     * JSONPath du `input_mapping`. Persisté par MultiAgent::call() juste avant
+     * l'appel à l'agent. Permet le replay d'un step isolé via
+     * {@see \ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence\RunsController::replayStep()}.
+     *
+     * Format : `{"step_name": {"message": "...", "autre_arg": "..."}, ...}`
+     *
+     * @var array<string, array<string, mixed>>|null
+     */
+    #[ORM\Column(name: 'step_inputs', type: Types::JSON, nullable: true)]
+    private ?array $stepInputs = null;
+
     public function __construct()
     {
         $this->workflowRunId = Uuid::v4()->toRfc4122();
@@ -374,6 +390,39 @@ class SynapseWorkflowRun
     public function setGeneratedAttachments(?array $generatedAttachments): self
     {
         $this->generatedAttachments = $generatedAttachments;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>|null
+     */
+    public function getStepInputs(): ?array
+    {
+        return $this->stepInputs;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>>|null $stepInputs
+     */
+    public function setStepInputs(?array $stepInputs): self
+    {
+        $this->stepInputs = $stepInputs;
+
+        return $this;
+    }
+
+    /**
+     * Ajoute l'input résolu d'un step spécifique au tableau cumulatif.
+     * Utilisé par MultiAgent::call() au moment de l'exécution de chaque step.
+     *
+     * @param array<string, mixed> $input
+     */
+    public function addStepInput(string $stepName, array $input): self
+    {
+        $current = $this->stepInputs ?? [];
+        $current[$stepName] = $input;
+        $this->stepInputs = $current;
 
         return $this;
     }

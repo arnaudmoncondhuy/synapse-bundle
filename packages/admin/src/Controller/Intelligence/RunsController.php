@@ -4,19 +4,25 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 
+use ArnaudMoncondhuy\SynapseCore\Agent\Input;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowRunner;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\WorkflowRunStatus;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseDebugLog;
+use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflowRun;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRunRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
 /**
  * Vue admin "Runs" — Chantier H composante 1 + 5.
@@ -47,6 +53,9 @@ class RunsController extends AbstractController
         private readonly SynapseWorkflowRepository $workflowRepository,
         private readonly SynapseDebugLogRepository $debugLogRepository,
         private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly WorkflowRunner $workflowRunner,
+        private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
 
@@ -331,5 +340,126 @@ class RunsController extends AbstractController
         }
 
         return $timeline;
+    }
+
+    /**
+     * Chantier H phase 4 : replay d'un step avec son input snapshot.
+     *
+     * Crée un workflow éphémère à 1 step (celui à rejouer), l'exécute avec
+     * l'input résolu capturé lors du run original, et redirige vers le
+     * detail du nouveau run. Le nouveau workflow est marqué éphémère avec
+     * retention 7j pour être nettoyé automatiquement.
+     *
+     * Protégé par CSRF parce que c'est une action mutative (crée un run,
+     * consomme des tokens, coûte de l'argent).
+     */
+    #[Route('/{workflowRunId}/replay-step/{stepIndex}', name: 'runs_replay_step', methods: ['POST'], requirements: ['workflowRunId' => '[0-9a-f-]{36}', 'stepIndex' => '\d+'])]
+    public function replayStep(string $workflowRunId, int $stepIndex, Request $request): Response
+    {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+        $this->validateCsrfToken($request, $this->csrfTokenManager, sprintf('replay_step_%s_%d', $workflowRunId, $stepIndex));
+
+        $originalRun = $this->runRepository->findByWorkflowRunId($workflowRunId);
+        if (null === $originalRun) {
+            throw new NotFoundHttpException(sprintf('Workflow run "%s" not found.', $workflowRunId));
+        }
+
+        // Récupérer la définition du workflow original
+        $originalWorkflow = $originalRun->getWorkflow()
+            ?? $this->workflowRepository->findOneBy(['workflowKey' => $originalRun->getWorkflowKey()]);
+
+        if (null === $originalWorkflow) {
+            throw new NotFoundHttpException(sprintf('Workflow definition for run "%s" is no longer available.', $workflowRunId));
+        }
+
+        $definition = $originalWorkflow->getDefinition();
+        $steps = is_array($definition['steps'] ?? null) ? $definition['steps'] : [];
+        if (!isset($steps[$stepIndex]) || !is_array($steps[$stepIndex])) {
+            throw new BadRequestHttpException(sprintf('Step index %d does not exist in workflow "%s".', $stepIndex, $originalWorkflow->getWorkflowKey()));
+        }
+
+        $targetStep = $steps[$stepIndex];
+        $stepName = is_string($targetStep['name'] ?? null) ? $targetStep['name'] : sprintf('step_%d', $stepIndex);
+
+        // Récupérer l'input capturé pour ce step
+        $stepInputs = $originalRun->getStepInputs() ?? [];
+        if (!isset($stepInputs[$stepName]) || !is_array($stepInputs[$stepName])) {
+            $this->addFlash('error', sprintf(
+                'Input non capturé pour le step "%s". Le step a probablement été exécuté avant le Chantier H4 (2026-04-11). Les runs postérieurs capturent les inputs automatiquement.',
+                $stepName,
+            ));
+
+            return $this->redirectToRoute('synapse_admin_runs_detail', ['workflowRunId' => $workflowRunId]);
+        }
+
+        $capturedInput = $stepInputs[$stepName];
+
+        // Construire un workflow éphémère à 1 seul step qui utilise un
+        // input_mapping par identité (chaque clé de l'input capturé devient
+        // une clé JSONPath `$.inputs.X`). Pas de transformation, rejouer à
+        // l'identique.
+        $replayDefinition = [
+            'version' => 1,
+            'steps' => [
+                [
+                    'name' => $stepName,
+                    'agent_name' => (string) ($targetStep['agent_name'] ?? '(unknown)'),
+                    'input_mapping' => array_map(
+                        static fn (string $key): string => sprintf('$.inputs.%s', $key),
+                        array_combine(array_keys($capturedInput), array_keys($capturedInput)),
+                    ),
+                    'output_key' => 'replay_output',
+                ],
+            ],
+            'outputs' => [
+                'replay_output' => sprintf('$.steps.%s.output.text', $stepName),
+            ],
+        ];
+
+        $replayWorkflow = new SynapseWorkflow();
+        $replayWorkflow->setWorkflowKey(sprintf('replay_%s_step%d_%d', substr($workflowRunId, 0, 8), $stepIndex, time()));
+        $replayWorkflow->setName(sprintf('Replay step "%s" de %s', $stepName, $originalWorkflow->getName()));
+        $replayWorkflow->setDescription(sprintf(
+            'Replay éphémère du step %d ("%s") du run %s (workflow %s)',
+            $stepIndex,
+            $stepName,
+            substr($workflowRunId, 0, 8),
+            $originalWorkflow->getWorkflowKey(),
+        ));
+        $replayWorkflow->setDefinition($replayDefinition);
+        $replayWorkflow->setIsBuiltin(false);
+        $replayWorkflow->setIsActive(true);
+        $replayWorkflow->setIsEphemeral(true);
+        $replayWorkflow->setRetentionUntil((new \DateTimeImmutable())->modify('+7 days'));
+
+        $this->entityManager->persist($replayWorkflow);
+        $this->entityManager->flush();
+
+        try {
+            $output = $this->workflowRunner->run(
+                $replayWorkflow,
+                Input::ofStructured($capturedInput),
+                [],
+            );
+        } catch (\Throwable $e) {
+            $this->addFlash('error', sprintf('Replay du step "%s" échoué : %s', $stepName, $e->getMessage()));
+
+            return $this->redirectToRoute('synapse_admin_runs_detail', ['workflowRunId' => $workflowRunId]);
+        }
+
+        $newRunId = $output->getMetadata()['workflow_run_id'] ?? null;
+        if (!is_string($newRunId)) {
+            $this->addFlash('warning', 'Replay terminé mais runId du nouveau run introuvable. Voir la liste des runs.');
+
+            return $this->redirectToRoute('synapse_admin_runs');
+        }
+
+        $this->addFlash('success', sprintf(
+            'Replay du step "%s" terminé avec succès. Nouveau run : %s.',
+            $stepName,
+            substr($newRunId, 0, 8),
+        ));
+
+        return $this->redirectToRoute('synapse_admin_runs_detail', ['workflowRunId' => $newRunId]);
     }
 }

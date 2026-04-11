@@ -144,6 +144,14 @@ final class MultiAgent implements AgentInterface
 
             try {
                 $stepInput = $this->resolveStepInput($step, $state, $stepName);
+
+                // Chantier H4 : capture l'input résolu pour permettre le
+                // replay ultérieur du step via l'action admin replayStep().
+                // On le persiste sur le run avant même l'appel à l'agent :
+                // si l'agent plante, on a quand même la trace de ce qui a
+                // été tenté et on peut rejouer pour debug.
+                $this->run->addStepInput($stepName, $stepInput);
+
                 $childContext = $parentContext->createChild(
                     parentRunId: $parentContext->getRequestId(),
                     childOrigin: 'workflow',

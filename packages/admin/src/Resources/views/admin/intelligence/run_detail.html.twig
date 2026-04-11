@@ -154,6 +154,19 @@
 											{{ debug_id|slice(4, 8) }}…
 										</a>
 									{% endfor %}
+									{% if step.status in ['completed', 'failed'] and run.stepInputs and run.stepInputs[step.name] is defined %}
+										<span>·</span>
+										<form method="POST"
+											action="{{ path('synapse_admin_runs_replay_step', {workflowRunId: run.workflowRunId, stepIndex: step.index}) }}"
+											style="display: inline;"
+											onsubmit="return confirm('Rejouer le step « {{ step.name|escape('js') }} » avec son input capturé ? Cette action consomme des tokens et crée un nouveau run éphémère.');">
+											<input type="hidden" name="_token" value="{{ csrf_token('replay_step_' ~ run.workflowRunId ~ '_' ~ step.index) }}">
+											<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" style="padding: 0.1rem 0.4rem; font-size: 0.7rem;" title="Rejouer ce step avec son input original">
+												<i data-lucide="refresh-cw" style="width: 0.75rem; height: 0.75rem;"></i>
+												replay
+											</button>
+										</form>
+									{% endif %}
 								</div>
 							</div>
 						</div>
