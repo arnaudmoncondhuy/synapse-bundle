@@ -107,6 +107,7 @@ services:
   ArnaudMoncondhuy\SynapseMcp\Tool\ListModelsTool:
     public: true
     arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry'
       - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelRepository'
       - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
     tags:
