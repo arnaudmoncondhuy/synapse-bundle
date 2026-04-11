@@ -8,6 +8,7 @@ use ArnaudMoncondhuy\SynapseCore\Agent\AgentContext;
 use ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver;
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Exception\WorkflowExecutionException;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\StepInputResolver;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
 
 /**
@@ -42,7 +43,9 @@ final class AgentNodeExecutor implements NodeExecutorInterface
 
     public function execute(array $step, array $resolvedInput, array $state, AgentContext $childContext): Output
     {
-        $agentName = $step['agent_name'] ?? null;
+        // Chantier K2 : lit agent_name dans config.agent_name (format Architect 2026-04-11+)
+        // avec fallback sur step.agent_name (format flat historique).
+        $agentName = StepInputResolver::readConfigField($step, 'agent_name');
         if (!is_string($agentName) || '' === $agentName) {
             throw WorkflowExecutionException::invalidDefinition(
                 sprintf('agent step "%s" has no agent_name', (string) ($step['name'] ?? '?'))

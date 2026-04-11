@@ -37,6 +37,27 @@ use Psr\Log\LoggerInterface;
 final class StepInputResolver
 {
     /**
+     * Lit un champ type-spécifique d'un step en cherchant d'abord dans
+     * `$step['config']['<field>']` (format Chantier K2 — wrapper config
+     * qui résout le bug schema discriminator) puis en fallback sur
+     * `$step['<field>']` (format flat historique).
+     *
+     * Utilisé par tous les `NodeExecutor` et le `WorkflowDefinitionValidator`
+     * pour lire `agent_name`, `condition`, `branches`, `items_path`, `step`,
+     * `workflow_key`, `equals`, `item_alias`, `max_iterations`, `input_mapping`.
+     *
+     * @param array<string, mixed> $step
+     */
+    public static function readConfigField(array $step, string $field): mixed
+    {
+        if (isset($step['config']) && is_array($step['config']) && array_key_exists($field, $step['config'])) {
+            return $step['config'][$field];
+        }
+
+        return $step[$field] ?? null;
+    }
+
+    /**
      * @param array<string, mixed> $step  La définition du step (clé `input_mapping` optionnelle)
      * @param array<string, mixed> $state L'état accumulé (`inputs` + `steps`)
      *
@@ -50,7 +71,7 @@ final class StepInputResolver
         ?string $workflowRunId = null,
         ?string $workflowKey = null,
     ): array {
-        $mapping = $step['input_mapping'] ?? null;
+        $mapping = self::readConfigField($step, 'input_mapping');
 
         // Fallback passe-plat : pas de mapping → propage les inputs racine.
         if (!is_array($mapping) || [] === $mapping) {

@@ -106,7 +106,8 @@ final class ParallelNodeExecutor implements NodeExecutorInterface
     public function execute(array $step, array $resolvedInput, array $state, AgentContext $childContext): Output
     {
         $stepName = (string) ($step['name'] ?? 'parallel');
-        $branches = $step['branches'] ?? null;
+        // Chantier K2 : branches dans config.branches avec fallback flat.
+        $branches = StepInputResolver::readConfigField($step, 'branches');
         if (!is_array($branches) || [] === $branches) {
             throw WorkflowExecutionException::invalidDefinition(
                 sprintf('parallel step "%s" has empty or missing "branches"', $stepName)

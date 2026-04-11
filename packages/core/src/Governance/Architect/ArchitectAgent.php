@@ -445,96 +445,104 @@ Concevoir un workflow à partir de la description suivante.
 
 {$description}
 
-## Règles de conception
+## Format d'un step
 
-1. **Clé (`key`)** : slug en minuscules, tirets et underscores autorisés (ex: `document_analysis`), entre 3 et 50 caractères.
-2. **Nom** : lisible en français, court (< 100 caractères).
-3. **Description** : 1-3 phrases résumant ce que fait le workflow.
-4. **Steps** : liste ordonnée des étapes. Chaque étape a un `name` unique et un `type` parmi 5 valeurs. Choisis le type en fonction de la nature de l'étape.
-5. Le reasoning doit justifier l'architecture choisie — notamment le choix des types de steps quand ce n'est pas évident.
+**CHAQUE step a exactement 3 champs** : `name`, `type`, et `config`.
+Les paramètres spécifiques au type vont **TOUS dans `config`** — JAMAIS directement sur le step.
 
-## Types de steps disponibles
+```json
+{ "name": "mon_step", "type": "agent", "config": { "agent_name": "redacteur" } }
+```
 
-⚠️ **ATTENTION — CHAMPS OBLIGATOIRES** : chaque type a des champs que tu DOIS
-remplir. Si tu omets un champ requis, le workflow sera rejeté à la persistance
-avec une erreur explicite. Revérifie chaque step avant de finaliser.
+## Les 5 types de steps
 
-### 1. `agent` (défaut)
-Appelle un agent LLM nommé pour produire un output. C'est le type le plus courant.
-**Champs OBLIGATOIRES** : `name`, `agent_name`.
-**Champs optionnels** : `input_mapping`.
+### `agent` — appeler un agent LLM
+```json
+{ "name": "classify", "type": "agent", "config": {
+    "agent_name": "email_classifier",
+    "input_mapping": { "message": "$.inputs.body" }
+}}
+```
+Champs config : `agent_name` (obligatoire), `input_mapping` (optionnel).
 
-### 2. `conditional`
-Évalue une expression JSONPath et produit un flag booléen `{matched: bool, value: any}`. N'appelle aucun LLM — coût tokens nul.
-Utile pour exposer une décision réutilisable par les steps suivants (qui peuvent lire `$.steps.<name>.output.data.matched`).
-**Champs OBLIGATOIRES** : `name`, `type: "conditional"`, **`condition`** (expression JSONPath non vide — commence par `$.`).
-**Champs optionnels** : `equals` (pour comparaison stricte, sinon truthy check).
+### `conditional` — évaluer une expression, produire un flag
+```json
+{ "name": "is_urgent", "type": "conditional", "config": {
+    "condition": "$.steps.classify.output.data.priority",
+    "equals": "urgent"
+}}
+```
+Champs config : `condition` (obligatoire, expression JSONPath), `equals` (optionnel — si omis, truthy check).
+Accessible ensuite via `$.steps.is_urgent.output.data.matched` (true/false).
 
-❌ **ERREUR FRÉQUENTE** : oublier le champ `condition`. Un `conditional` sans
-   `condition` est invalide. Si tu définis un step conditional, tu DOIS
-   préciser quelle expression évaluer.
+### `parallel` — N branches indépendantes
+```json
+{ "name": "fanout", "type": "parallel", "config": {
+    "branches": [
+        { "name": "summarize", "type": "agent", "config": { "agent_name": "summarizer" } },
+        { "name": "extract", "type": "agent", "config": { "agent_name": "extractor" } }
+    ]
+}}
+```
+Champ config : `branches` (obligatoire, array d'au moins 2 steps COMPLETS avec leur propre `name`/`type`/`config`).
+Outputs accessibles via `$.steps.fanout.output.data.branches.summarize.text` etc.
 
-### 3. `parallel`
-Exécute plusieurs branches indépendantes qui partagent le même state initial mais ne peuvent pas se voir entre elles. Les outputs sont exposés sous `$.steps.<name>.output.data.branches.<branchName>`.
-Utilise parallel quand tu as N traitements qui ne dépendent pas l'un de l'autre — ex: « résume en français ET en anglais en même temps ».
-**Champs OBLIGATOIRES** : `name`, `type: "parallel"`, **`branches`** (array **non vide** d'au moins 2 steps complets, chacun avec son propre `name` + `type` + champs requis).
+### `loop` — itérer un template sur un array
+```json
+{ "name": "per_doc", "type": "loop", "config": {
+    "items_path": "$.inputs.documents",
+    "step": { "name": "process", "type": "agent", "config": { "agent_name": "processor" } },
+    "item_alias": "doc",
+    "max_iterations": 50
+}}
+```
+Champs config : `items_path` (obligatoire, JSONPath vers un array), `step` (obligatoire, step complet avec son `config`), `item_alias` (optionnel, défaut "item"), `max_iterations` (optionnel, défaut 50).
 
-❌ **ERREUR FRÉQUENTE** : oublier le champ `branches`, ou le laisser vide. Un
-   parallel sans branches est invalide. Chaque branche est un step COMPLET
-   (mini-step imbriqué, pas juste une string).
+### `sub_workflow` — déléguer à un workflow persistant
+```json
+{ "name": "delegate", "type": "sub_workflow", "config": {
+    "workflow_key": "email_pipeline",
+    "input_mapping": { "email": "$.inputs.raw" }
+}}
+```
+Champs config : `workflow_key` (obligatoire), `input_mapping` (optionnel).
 
-### 4. `loop`
-Itère un step template sur un array résolu par JSONPath. L'élément courant est exposé sous `$.inputs.item` (ou l'alias configuré), l'index sous `$.inputs.index`.
-Utile quand tu dois appliquer le même traitement à N éléments d'une liste.
-**Champs OBLIGATOIRES** : `name`, `type: "loop"`, **`items_path`** (expression JSONPath vers un array, ex: `$.inputs.documents`), **`step`** (un step complet à itérer, avec son propre type + champs requis).
-**Champs optionnels** : `item_alias` (défaut `"item"`), `max_iterations` (défaut `50`).
-
-### 5. `sub_workflow`
-Délègue à un workflow persistant existant (par sa `key`). Permet la composition : un « workflow d'ingestion » peut réutiliser un « workflow de classification ».
-**Champs OBLIGATOIRES** : `name`, `type: "sub_workflow"`, **`workflow_key`** (clé d'un workflow actif existant).
-**Champs optionnels** : `input_mapping`.
-
-## Exemple combiné
+## Exemple complet
 
 ```json
 {
-  "key": "triage_et_resume",
-  "name": "Triage et résumé d'emails",
-  "description": "Classe un email par priorité, puis traite les urgents et non-urgents différemment.",
-  "steps": [
-    {
-      "name": "classify",
-      "agent_name": "classifier_priorite",
-      "input_mapping": { "message": "$.inputs.email_body" }
-    },
-    {
-      "name": "is_urgent",
-      "type": "conditional",
-      "condition": "$.steps.classify.output.data.priority",
-      "equals": "urgent"
-    },
-    {
-      "name": "double_summary",
-      "type": "parallel",
-      "branches": [
-        { "name": "fr", "agent_name": "summarizer_fr", "input_mapping": { "text": "$.inputs.email_body" } },
-        { "name": "en", "agent_name": "summarizer_en", "input_mapping": { "text": "$.inputs.email_body" } }
-      ]
-    }
-  ],
-  "reasoning": "..."
+    "key": "triage_email_urgent",
+    "name": "Triage emails urgents",
+    "description": "Classe la priorité, puis pour les urgents résume + extrait en parallèle.",
+    "steps": [
+        { "name": "classify", "type": "agent", "config": {
+            "agent_name": "email_classifier",
+            "input_mapping": { "message": "$.inputs.email_body" }
+        }},
+        { "name": "is_urgent", "type": "conditional", "config": {
+            "condition": "$.steps.classify.output.data.priority",
+            "equals": "urgent"
+        }},
+        { "name": "process", "type": "parallel", "config": {
+            "branches": [
+                { "name": "summarize", "type": "agent", "config": { "agent_name": "email_summarizer" } },
+                { "name": "extract_sender", "type": "agent", "config": { "agent_name": "sender_extractor" } }
+            ]
+        }}
+    ],
+    "reasoning": "..."
 }
 ```
 
-## Règles de bon goût
+## Règles
 
-- Préfère un seul step `agent` bien pensé à une séquence de 5 steps qui font la même chose. La complexité n'est pas un but.
-- Utilise `conditional` seulement si l'information doit être réutilisée par un step suivant. Pour une décision interne à un seul step, fais-la gérer par l'agent lui-même.
-- Utilise `parallel` seulement si les branches sont vraiment indépendantes (aucune ne lit l'output d'une autre).
-- Utilise `loop` pour des items homogènes (même traitement). Pour des items hétérogènes, utilise des steps séparés.
-- Utilise `sub_workflow` seulement si le workflow cible est **déjà actif et promu** — tu ne peux pas référencer un workflow éphémère.
+- Préfère un seul step `agent` bien pensé à plusieurs steps qui font la même chose.
+- Utilise `conditional` seulement si son résultat est consommé par un step suivant.
+- Utilise `parallel` seulement si les branches sont vraiment indépendantes.
+- Utilise `loop` pour des items homogènes (même traitement sur chaque).
+- Utilise `sub_workflow` seulement pour un workflow déjà actif et promu.
 
-Réponds uniquement en JSON conforme au schéma fourni.
+Réponds uniquement en JSON conforme au schéma fourni. **N'oublie JAMAIS le champ `config` — il est OBLIGATOIRE sur tous les steps**.
 PROMPT;
     }
 

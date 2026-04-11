@@ -104,14 +104,15 @@ final class LoopNodeExecutor implements NodeExecutorInterface
     {
         $stepName = (string) ($step['name'] ?? 'loop');
 
-        $itemsPath = $step['items_path'] ?? null;
+        // Chantier K2 : tous les champs du loop sont dans config.* avec fallback flat.
+        $itemsPath = StepInputResolver::readConfigField($step, 'items_path');
         if (!is_string($itemsPath) || '' === $itemsPath) {
             throw WorkflowExecutionException::invalidDefinition(
                 sprintf('loop step "%s" missing "items_path"', $stepName)
             );
         }
 
-        $template = $step['step'] ?? null;
+        $template = StepInputResolver::readConfigField($step, 'step');
         if (!is_array($template) || !isset($template['name'])) {
             throw WorkflowExecutionException::invalidDefinition(
                 sprintf('loop step "%s" missing or invalid "step" template', $stepName)
@@ -128,8 +129,9 @@ final class LoopNodeExecutor implements NodeExecutorInterface
             );
         }
 
-        $maxIterations = isset($step['max_iterations']) && is_int($step['max_iterations']) && $step['max_iterations'] > 0
-            ? $step['max_iterations']
+        $maxIterationsValue = StepInputResolver::readConfigField($step, 'max_iterations');
+        $maxIterations = is_int($maxIterationsValue) && $maxIterationsValue > 0
+            ? $maxIterationsValue
             : self::DEFAULT_MAX_ITERATIONS;
 
         if (count($items) > $maxIterations) {
@@ -138,9 +140,8 @@ final class LoopNodeExecutor implements NodeExecutorInterface
             );
         }
 
-        $alias = isset($step['item_alias']) && is_string($step['item_alias']) && '' !== $step['item_alias']
-            ? $step['item_alias']
-            : 'item';
+        $aliasValue = StepInputResolver::readConfigField($step, 'item_alias');
+        $alias = is_string($aliasValue) && '' !== $aliasValue ? $aliasValue : 'item';
 
         $templateType = (string) ($template['type'] ?? 'agent');
         $executor = $this->pickExecutor($templateType, $stepName);

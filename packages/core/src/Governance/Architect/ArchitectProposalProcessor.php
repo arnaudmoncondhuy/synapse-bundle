@@ -205,6 +205,14 @@ class ArchitectProposalProcessor
             throw new \InvalidArgumentException('Le workflow doit contenir au moins une étape.');
         }
 
+        // Chantier K2 : normalise les steps du format Architect (avec wrapper
+        // `config`) vers le format flat historique que le builder admin sait
+        // lire/écrire. Le schema LLM utilise `config` parce que ça marche
+        // beaucoup mieux qu'un schéma flat avec 10 champs ambigus, mais en
+        // DB on stocke toujours en flat pour garder la compat avec tout ce
+        // qui existait déjà (MCP, builder Stimulus, tests).
+        $steps = $this->flattenConfigWrapper($steps);
+
         $definition = [
             'version' => 1,
             'description' => is_string($proposal['description'] ?? null) ? $proposal['description'] : '',
@@ -264,5 +272,75 @@ class ArchitectProposalProcessor
         }
 
         return trim($value);
+    }
+
+    /**
+     * Chantier K2 : normalise les steps du format Architect 2026-04-11+ vers
+     * le format flat historique.
+     *
+     * L'Architect génère des steps de la forme :
+     *     { name, type, config: { agent_name, condition, branches, ... } }
+     *
+     * On remonte les clés de `config` au niveau du step pour obtenir :
+     *     { name, type, agent_name, condition, branches, ... }
+     *
+     * Raison : le format flat est celui que le builder admin Stimulus, le
+     * MCP, les tests unitaires et les workflows écrits manuellement utilisent
+     * depuis le début. Garder une seule représentation en DB simplifie
+     * drastiquement la cohérence. Le format `config` n'existe que le temps
+     * du transit LLM → DB.
+     *
+     * La normalisation est **récursive** pour gérer les cas :
+     * - `parallel.config.branches` (chaque branche est un step complet)
+     * - `loop.config.step` (le template est un step complet)
+     *
+     * @param array<int, mixed> $steps
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function flattenConfigWrapper(array $steps): array
+    {
+        $normalized = [];
+        foreach ($steps as $step) {
+            if (!is_array($step)) {
+                continue;
+            }
+            $normalized[] = $this->flattenStep($step);
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @param array<string, mixed> $step
+     *
+     * @return array<string, mixed>
+     */
+    private function flattenStep(array $step): array
+    {
+        $config = $step['config'] ?? null;
+        if (is_array($config)) {
+            // Remonte les clés de config au niveau du step (config écrase le flat
+            // si conflit — c'est ce que le LLM a généré qui fait foi).
+            foreach ($config as $key => $value) {
+                $step[$key] = $value;
+            }
+            unset($step['config']);
+        }
+
+        // Récursion pour parallel.branches (liste de sous-steps)
+        if (isset($step['branches']) && is_array($step['branches'])) {
+            $step['branches'] = array_map(
+                fn ($b) => is_array($b) ? $this->flattenStep($b) : $b,
+                $step['branches'],
+            );
+        }
+
+        // Récursion pour loop.step (un seul sous-step template)
+        if (isset($step['step']) && is_array($step['step'])) {
+            $step['step'] = $this->flattenStep($step['step']);
+        }
+
+        return $step;
     }
 }

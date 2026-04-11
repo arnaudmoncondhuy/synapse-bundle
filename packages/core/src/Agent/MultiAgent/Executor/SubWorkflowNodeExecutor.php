@@ -7,6 +7,7 @@ namespace ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor;
 use ArnaudMoncondhuy\SynapseCore\Agent\AgentContext;
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Exception\WorkflowExecutionException;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\StepInputResolver;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowRunner;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository;
@@ -79,7 +80,8 @@ final class SubWorkflowNodeExecutor implements NodeExecutorInterface
     {
         $stepName = (string) ($step['name'] ?? 'sub_workflow');
 
-        $workflowKey = $step['workflow_key'] ?? null;
+        // Chantier K2 : workflow_key dans config.workflow_key avec fallback flat.
+        $workflowKey = StepInputResolver::readConfigField($step, 'workflow_key');
         if (!is_string($workflowKey) || '' === $workflowKey) {
             throw WorkflowExecutionException::invalidDefinition(
                 sprintf('sub_workflow step "%s" missing "workflow_key"', $stepName)

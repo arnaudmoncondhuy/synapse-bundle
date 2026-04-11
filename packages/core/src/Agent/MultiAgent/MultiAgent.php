@@ -152,9 +152,9 @@ final class MultiAgent implements AgentInterface
             // Pour les events et la dénorm du run, on n'a pas d'agent_name sur
             // les steps non-agent (ex: conditional). On fallback sur le type
             // pour que la sidebar affiche "conditional" au lieu d'un champ vide.
-            $agentName = isset($step['agent_name']) && is_string($step['agent_name'])
-                ? $step['agent_name']
-                : $stepType;
+            // Chantier K2 : lit dans config.agent_name avec fallback flat.
+            $agentNameRaw = StepInputResolver::readConfigField($step, 'agent_name');
+            $agentName = is_string($agentNameRaw) && '' !== $agentNameRaw ? $agentNameRaw : $stepType;
             $this->run->setCurrentStepIndex($index);
 
             // Dispatch step started event — la sidebar affiche immédiatement que ce step réfléchit.
@@ -361,7 +361,8 @@ final class MultiAgent implements AgentInterface
             $type = (string) ($step['type'] ?? 'agent');
 
             if ('agent' === $type) {
-                $agentName = $step['agent_name'] ?? null;
+                // Chantier K2 : agent_name dans config.agent_name avec fallback flat.
+                $agentName = StepInputResolver::readConfigField($step, 'agent_name');
                 if (!is_string($agentName) || '' === $agentName) {
                     throw WorkflowExecutionException::invalidDefinition(
                         sprintf('agent step "%s" has no agent_name', $stepName)

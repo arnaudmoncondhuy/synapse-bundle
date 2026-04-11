@@ -109,13 +109,36 @@ final class ArchitectResponseSchema
      *
      * Le champ `definition` suit le format pivot de {@see \ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow}.
      *
-     * Chantier F phase 2 : supporte 5 types de steps (`agent`, `conditional`,
-     * `parallel`, `loop`, `sub_workflow`). Le schéma est volontairement
-     * non-strict (`strict: false`) parce qu'OpenAI structured outputs ne
-     * gère pas bien les champs optionnels divergents selon un discriminator.
-     * La validation sémantique stricte est faite post-génération par
-     * {@see \ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowDefinitionValidator}
-     * appelé depuis {@see \ArnaudMoncondhuy\SynapseCore\Governance\Architect\ArchitectProposalProcessor}.
+     * ## Chantier K2 (2026-04-11) : fix schema discriminator via wrapper `config`
+     *
+     * Diagnostic du bug précédent : le schéma flat listait `agent_name`,
+     * `condition`, `branches`, `items_path`, `step`, `workflow_key` côte-à-côte
+     * dans chaque objet step. Testé sur 3 modèles (Gemini 2.5 Pro, 2.5 Flash,
+     * gpt-oss-120b), TOUS faisaient la même erreur : ils remplissaient
+     * `workflow_key` avec une valeur aléatoire pour n'importe quel type au
+     * lieu de remplir le bon champ. Le LLM ne savait pas naviguer la
+     * discrimination champ → type.
+     *
+     * Solution : regrouper TOUS les champs type-spécifiques dans un sous-objet
+     * `config`. Le step lui-même n'a plus que `name`, `type`, `description`
+     * (les 3 champs toujours présents). Le LLM voit alors une structure claire :
+     *
+     * ```json
+     * {
+     *   "name": "classify",
+     *   "type": "agent",
+     *   "config": { "agent_name": "email_classifier" }
+     * }
+     * ```
+     *
+     * Pour chaque type, la documentation du champ `config` indique quels
+     * sous-champs mettre. L'objet `config` est déclaré `additionalProperties:
+     * true` pour accepter n'importe quels sous-champs sans schéma strict.
+     *
+     * Le {@see \ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowDefinitionValidator}
+     * et les executors lisent via `$step['config']['champ']` avec un fallback
+     * sur `$step['champ']` pour rester compatible avec les workflows existants
+     * générés pré-K2 ou écrits manuellement.
      *
      * @return array<string, mixed>
      */
@@ -142,61 +165,25 @@ final class ArchitectResponseSchema
                         ],
                         'steps' => [
                             'type' => 'array',
-                            'description' => 'Liste ordonnée des étapes du workflow. Chaque step a un `name` unique et un `type`. Les 5 types supportés sont : `agent` (défaut, appelle un agent nommé), `conditional` (évalue une expression pour produire un flag), `parallel` (exécute N branches indépendantes), `loop` (itère sur un array), `sub_workflow` (délègue à un workflow persistant existant). Voir les descriptions des champs pour les exigences de chaque type.',
+                            'description' => 'Liste ordonnée des étapes du workflow. Chaque step a un `name` unique, un `type` parmi 5 valeurs, et un `config` qui contient les paramètres spécifiques au type. Ne mets JAMAIS les paramètres spécifiques directement sur le step — ils doivent TOUJOURS être dans `config`.',
                             'items' => [
                                 'type' => 'object',
                                 'properties' => [
                                     'name' => [
                                         'type' => 'string',
-                                        'description' => 'Identifiant unique de l\'étape dans ce workflow.',
+                                        'description' => 'Identifiant unique de l\'étape dans ce workflow (slug, pas de caractères spéciaux).',
                                     ],
                                     'type' => [
                                         'type' => 'string',
                                         'enum' => ['agent', 'conditional', 'parallel', 'loop', 'sub_workflow'],
                                         'description' => 'Type du step. Défaut: `agent`.',
                                     ],
-                                    'agent_name' => [
-                                        'type' => 'string',
-                                        'description' => 'Pour type=agent : clé de l\'agent qui exécute cette étape. Obligatoire si type=agent, ignoré sinon.',
-                                    ],
-                                    'input_mapping' => [
+                                    'config' => [
                                         'type' => 'object',
-                                        'description' => 'Mapping des inputs — clé: nom du paramètre, valeur: expression JSONPath-lite ($.inputs.X ou $.steps.STEP.output.X). S\'applique à agent, conditional, loop (pour le step template), sub_workflow.',
-                                    ],
-                                    'condition' => [
-                                        'type' => 'string',
-                                        'description' => 'Pour type=conditional : expression JSONPath à évaluer (ex: "$.steps.classify.output.data.priority"). Obligatoire si type=conditional. L\'output du step sera {matched: bool, value: <valeur>}.',
-                                    ],
-                                    'equals' => [
-                                        'description' => 'Pour type=conditional : valeur de comparaison stricte. Si absent, le matched est un truthy check sur la valeur évaluée.',
-                                    ],
-                                    'branches' => [
-                                        'type' => 'array',
-                                        'description' => 'Pour type=parallel : liste des branches à exécuter. Chaque branche est un step complet (avec name + type + champs spécifiques). Les branches partagent le state initial mais ne peuvent pas se voir entre elles. Output sous $.steps.X.output.data.branches.<branchName>.',
-                                        'items' => ['type' => 'object'],
-                                    ],
-                                    'items_path' => [
-                                        'type' => 'string',
-                                        'description' => 'Pour type=loop : expression JSONPath vers un array d\'items (ex: "$.inputs.documents"). Obligatoire si type=loop.',
-                                    ],
-                                    'step' => [
-                                        'type' => 'object',
-                                        'description' => 'Pour type=loop : step template à exécuter pour chaque item. L\'item courant est exposé sous $.inputs.<item_alias> (défaut "item"). Obligatoire si type=loop.',
-                                    ],
-                                    'item_alias' => [
-                                        'type' => 'string',
-                                        'description' => 'Pour type=loop : alias de la variable item courant (défaut "item"). L\'index 0-based est toujours exposé sous $.inputs.index.',
-                                    ],
-                                    'max_iterations' => [
-                                        'type' => 'integer',
-                                        'description' => 'Pour type=loop : limite dure du nombre d\'itérations (défaut 50). Garde-fou coût tokens.',
-                                    ],
-                                    'workflow_key' => [
-                                        'type' => 'string',
-                                        'description' => 'Pour type=sub_workflow : clé d\'un workflow actif existant à invoquer. Son output devient l\'output de ce step. Obligatoire si type=sub_workflow.',
+                                        'description' => 'Paramètres spécifiques au type. agent: {agent_name, input_mapping?}. conditional: {condition, equals?}. parallel: {branches: [steps]}. loop: {items_path, step, item_alias?, max_iterations?}. sub_workflow: {workflow_key, input_mapping?}.',
                                     ],
                                 ],
-                                'required' => ['name'],
+                                'required' => ['name', 'type', 'config'],
                             ],
                         ],
                         'reasoning' => [
@@ -206,10 +193,10 @@ final class ArchitectResponseSchema
                     ],
                     'required' => ['key', 'name', 'description', 'steps', 'reasoning'],
                 ],
-                // Chantier F phase 2 : strict=false parce que OpenAI structured
-                // outputs refuse les propriétés optionnelles divergentes selon
-                // un type discriminator. La validation sémantique est faite
-                // post-génération par WorkflowDefinitionValidator.
+                // strict: false parce que le sous-objet `config` est volontairement
+                // sans `properties` définies (chaque type a des champs différents).
+                // La validation stricte est faite post-génération par
+                // WorkflowDefinitionValidator.
                 'strict' => false,
             ],
         ];

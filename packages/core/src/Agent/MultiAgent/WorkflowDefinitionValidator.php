@@ -140,9 +140,9 @@ final class WorkflowDefinitionValidator
      */
     private function validateAgentStep(array $step, string $name): ?string
     {
-        $agentName = $step['agent_name'] ?? null;
+        $agentName = StepInputResolver::readConfigField($step, 'agent_name');
         if (!is_string($agentName) || '' === $agentName) {
-            return sprintf('Le step « %s » doit avoir un champ « agent_name » non vide.', $name);
+            return sprintf('Le step « %s » doit avoir un champ « agent_name » non vide (dans config ou à la racine).', $name);
         }
 
         return null;
@@ -153,7 +153,7 @@ final class WorkflowDefinitionValidator
      */
     private function validateConditionalStep(array $step, string $name): ?string
     {
-        $condition = $step['condition'] ?? null;
+        $condition = StepInputResolver::readConfigField($step, 'condition');
         if (!is_string($condition) || '' === $condition) {
             return sprintf('Step « %s » de type « conditional » : clé « condition » manquante ou vide.', $name);
         }
@@ -166,7 +166,7 @@ final class WorkflowDefinitionValidator
      */
     private function validateParallelStep(array $step, string $name): ?string
     {
-        $branches = $step['branches'] ?? null;
+        $branches = StepInputResolver::readConfigField($step, 'branches');
         if (!is_array($branches) || [] === $branches) {
             return sprintf('Step « %s » de type « parallel » : clé « branches » manquante ou vide.', $name);
         }
@@ -197,12 +197,12 @@ final class WorkflowDefinitionValidator
      */
     private function validateLoopStep(array $step, string $name): ?string
     {
-        $itemsPath = $step['items_path'] ?? null;
+        $itemsPath = StepInputResolver::readConfigField($step, 'items_path');
         if (!is_string($itemsPath) || '' === $itemsPath) {
             return sprintf('Step « %s » de type « loop » : clé « items_path » manquante ou vide.', $name);
         }
 
-        $template = $step['step'] ?? null;
+        $template = StepInputResolver::readConfigField($step, 'step');
         if (!is_array($template)) {
             return sprintf('Step « %s » de type « loop » : clé « step » (template) manquante ou invalide.', $name);
         }
@@ -215,7 +215,7 @@ final class WorkflowDefinitionValidator
      */
     private function validateSubWorkflowStep(array $step, string $name): ?string
     {
-        $workflowKey = $step['workflow_key'] ?? null;
+        $workflowKey = StepInputResolver::readConfigField($step, 'workflow_key');
         if (!is_string($workflowKey) || '' === $workflowKey) {
             return sprintf('Step « %s » de type « sub_workflow » : clé « workflow_key » manquante ou vide.', $name);
         }
@@ -240,7 +240,8 @@ final class WorkflowDefinitionValidator
             if (!is_array($step)) {
                 continue;
             }
-            $mapping = $step['input_mapping'] ?? [];
+            // Chantier K2 : input_mapping peut être dans config.* (nouveau) ou à la racine (ancien)
+            $mapping = StepInputResolver::readConfigField($step, 'input_mapping') ?? [];
             if (is_array($mapping)) {
                 foreach ($mapping as $path) {
                     if (is_string($path)) {

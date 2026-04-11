@@ -67,22 +67,21 @@ final class ArchitectResponseSchemaTest extends TestCase
         $this->assertArrayHasKey('steps', $props);
         $this->assertArrayHasKey('reasoning', $props);
 
-        // Chantier F phase 2 : le schéma supporte désormais 5 types de steps
-        // (agent, conditional, parallel, loop, sub_workflow). Seul `name` est
-        // requis au niveau step — `agent_name` et les champs spécifiques
-        // sont optionnels et validés post-génération par
-        // WorkflowDefinitionValidator.
+        // Chantier K2 : les champs type-spécifiques sont regroupés dans un
+        // sous-objet `config` au lieu d'être flat au niveau du step. Les 3
+        // LLMs testés (Gemini 2.5 Pro/Flash, gpt-oss-120b) se plantaient
+        // systématiquement sur le schéma flat (remplissaient `workflow_key`
+        // avec n'importe quoi). Le wrapper `config` résout le problème.
         $stepProps = $props['steps']['items']['properties'];
         $this->assertArrayHasKey('name', $stepProps);
         $this->assertArrayHasKey('type', $stepProps);
-        $this->assertArrayHasKey('agent_name', $stepProps);
-        $this->assertArrayHasKey('condition', $stepProps);
-        $this->assertArrayHasKey('branches', $stepProps);
-        $this->assertArrayHasKey('items_path', $stepProps);
-        $this->assertArrayHasKey('workflow_key', $stepProps);
+        $this->assertArrayHasKey('config', $stepProps);
+        $this->assertSame('object', $stepProps['config']['type']);
+
         $stepRequired = $props['steps']['items']['required'];
         $this->assertContains('name', $stepRequired);
-        $this->assertNotContains('agent_name', $stepRequired);
+        $this->assertContains('type', $stepRequired);
+        $this->assertContains('config', $stepRequired);
 
         // Enum des types supportés
         $this->assertEqualsCanonicalizing(

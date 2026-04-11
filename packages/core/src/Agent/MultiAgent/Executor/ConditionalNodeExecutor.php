@@ -7,6 +7,7 @@ namespace ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor;
 use ArnaudMoncondhuy\SynapseCore\Agent\AgentContext;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Exception\WorkflowExecutionException;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\JsonPathLite;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\StepInputResolver;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
 
 /**
@@ -74,7 +75,9 @@ final class ConditionalNodeExecutor implements NodeExecutorInterface
     public function execute(array $step, array $resolvedInput, array $state, AgentContext $childContext): Output
     {
         $stepName = (string) ($step['name'] ?? '?');
-        $condition = $step['condition'] ?? null;
+        // Chantier K2 : condition dans config.condition (format Architect 2026-04-11+)
+        // avec fallback sur step.condition.
+        $condition = StepInputResolver::readConfigField($step, 'condition');
         if (!is_string($condition) || '' === $condition) {
             throw WorkflowExecutionException::invalidDefinition(
                 sprintf('conditional step "%s" has no "condition" expression', $stepName)
@@ -87,9 +90,12 @@ final class ConditionalNodeExecutor implements NodeExecutorInterface
             ? JsonPathLite::evaluate($state, $condition)
             : $condition;
 
-        // Mode comparaison stricte si `equals` fourni, sinon truthy check.
-        if (array_key_exists('equals', $step)) {
-            $matched = $value === $step['equals'];
+        // Mode comparaison stricte si `equals` fourni (config ou racine), sinon truthy check.
+        $config = is_array($step['config'] ?? null) ? $step['config'] : [];
+        $hasEquals = array_key_exists('equals', $config) || array_key_exists('equals', $step);
+        if ($hasEquals) {
+            $equalsValue = array_key_exists('equals', $config) ? $config['equals'] : $step['equals'];
+            $matched = $value === $equalsValue;
         } else {
             $matched = (bool) $value;
         }
