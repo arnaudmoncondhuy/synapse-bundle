@@ -257,7 +257,7 @@ class RunsController extends AbstractController
      *     model: ?string,
      * }>
      */
-    private function buildStepsTimeline(SynapseWorkflowRun $run, ?object $workflow, array $debugLogs): array
+    private function buildStepsTimeline(SynapseWorkflowRun $run, ?SynapseWorkflow $workflow, array $debugLogs): array
     {
         $definition = null !== $workflow ? $workflow->getDefinition() : null;
         $rawSteps = is_array($definition) && isset($definition['steps']) && is_array($definition['steps'])

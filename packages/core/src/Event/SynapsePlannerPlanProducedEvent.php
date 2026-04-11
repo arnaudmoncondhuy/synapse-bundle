@@ -63,9 +63,10 @@ final class SynapsePlannerPlanProducedEvent
                 'iteration' => $this->plan->iteration,
                 'reasoning' => $this->plan->reasoning,
                 'steps' => array_map(
+                    /** @param array{name: string, agent_name: string, rationale?: string} $step */
                     static fn (array $step): array => [
-                        'name' => $step['name'] ?? '',
-                        'agent_name' => $step['agent_name'] ?? '',
+                        'name' => $step['name'],
+                        'agent_name' => $step['agent_name'],
                         'rationale' => $step['rationale'] ?? '',
                     ],
                     $this->plan->steps,

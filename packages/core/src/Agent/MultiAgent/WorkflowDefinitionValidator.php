@@ -130,8 +130,7 @@ final class WorkflowDefinitionValidator
             'conditional' => $this->validateConditionalStep($step, $name),
             'parallel' => $this->validateParallelStep($step, $name),
             'loop' => $this->validateLoopStep($step, $name),
-            'sub_workflow' => $this->validateSubWorkflowStep($step, $name),
-            default => null, // unreachable grâce au check in_array ci-dessus
+            default => $this->validateSubWorkflowStep($step, $name), // 'sub_workflow', seul cas restant après in_array ci-dessus
         };
     }
 

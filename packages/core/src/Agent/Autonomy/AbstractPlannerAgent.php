@@ -505,10 +505,10 @@ PROMPT;
         int $iteration,
         ?string $previousObservations,
     ): array {
-        $callableAgents = array_map(
+        $callableAgents = array_values(array_map(
             static fn ($a) => sprintf('- **%s** : %s', $a->getName(), $a->getDescription()),
             $this->getAgentAsToolRegistry()->getCallableAgents(),
-        );
+        ));
 
         $userPrompt = $this->buildUserPromptForPlanning($goal, $input, $callableAgents, $iteration, $previousObservations);
 

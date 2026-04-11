@@ -237,7 +237,7 @@ class DebugLogSubscriber implements EventSubscriberInterface
         // et un fallback 0.0 USD — plus robuste que l'ancienne lecture directe
         // de preset_config qui ne propageait pas toujours les pricings.
         $costModelCurrency = null;
-        if (null !== $this->accountingService && null !== $event->getModel()) {
+        if (null !== $this->accountingService) {
             $pricing = $this->accountingService->getPricingForModel($event->getModel());
             $costModelCurrency = $this->accountingService->calculateCostFromVO($usage, $pricing);
             $currency = $pricing['currency'] ?? 'USD';

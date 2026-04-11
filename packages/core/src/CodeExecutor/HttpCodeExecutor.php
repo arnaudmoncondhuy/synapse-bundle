@@ -95,12 +95,6 @@ final class HttpCodeExecutor implements CodeExecutorInterface
             return ExecutionResult::backendUnavailable(
                 sprintf('Code execution sandbox unreachable at %s: %s', $this->sandboxUrl, $e->getMessage())
             );
-        } catch (\JsonException $e) {
-            return new ExecutionResult(
-                success: false,
-                errorType: 'InvalidSandboxResponse',
-                errorMessage: 'Sandbox returned non-JSON response: '.$e->getMessage(),
-            );
         }
 
         return new ExecutionResult(

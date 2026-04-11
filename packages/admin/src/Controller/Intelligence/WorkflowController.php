@@ -189,7 +189,7 @@ class WorkflowController extends AbstractController
      * et lisibilité douteuse).
      *
      * @param array<string, mixed> $errors
-     * @param list<\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflowRun> $runs
+     * @param array<int, array{id: int, workflowRunId: string, workflowVersion: int, status: \ArnaudMoncondhuy\SynapseCore\Shared\Enum\WorkflowRunStatus, currentStepIndex: int, stepsCount: int, startedAt: \DateTimeImmutable, completedAt: \DateTimeImmutable|null, userId: string|null, totalTokens: int|null, errorMessage: string|null}> $runs
      *
      * @return array<string, mixed>
      */

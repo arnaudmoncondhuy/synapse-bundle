@@ -267,8 +267,9 @@ final class MultiAgent implements AgentInterface
                 $stepNameToIndex[$stepDef['name']] = $idx;
             }
         }
-        foreach ($state['steps'] as $currentStepName => $stepData) {
-            /** @var array{output: array{text: string|null, data: array<string, mixed>, generated_attachments: array<int, array<string, mixed>>}} $stepData */
+        /** @var array<string, array{output: array{text: string|null, data: array<string, mixed>, generated_attachments: array<int, array<string, mixed>>}}> $stepsState */
+        $stepsState = $state['steps'];
+        foreach ($stepsState as $currentStepName => $stepData) {
             foreach ($stepData['output']['generated_attachments'] as $att) {
                 if (!is_array($att) || !isset($att['mime_type'], $att['data'])) {
                     continue;
