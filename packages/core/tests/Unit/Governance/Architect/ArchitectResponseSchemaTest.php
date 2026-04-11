@@ -19,7 +19,8 @@ final class ArchitectResponseSchemaTest extends TestCase
 
         $this->assertSame('json_schema', $schema['type']);
         $this->assertSame('architect_create_agent', $schema['json_schema']['name']);
-        $this->assertTrue($schema['json_schema']['strict']);
+        // Chantier E phase 2 : strict=false pour permettre l'optionnel `allowed_tools`.
+        $this->assertFalse($schema['json_schema']['strict']);
 
         $props = $schema['json_schema']['schema']['properties'];
         $this->assertArrayHasKey('key', $props);
@@ -27,11 +28,13 @@ final class ArchitectResponseSchemaTest extends TestCase
         $this->assertArrayHasKey('emoji', $props);
         $this->assertArrayHasKey('description', $props);
         $this->assertArrayHasKey('system_prompt', $props);
+        $this->assertArrayHasKey('allowed_tools', $props);
         $this->assertArrayHasKey('reasoning', $props);
 
         $required = $schema['json_schema']['schema']['required'];
         $this->assertContains('key', $required);
         $this->assertContains('system_prompt', $required);
+        $this->assertNotContains('allowed_tools', $required);
     }
 
     public function testImprovePromptSchemaHasRequiredStructure(): void

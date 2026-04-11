@@ -221,7 +221,22 @@ Concevoir un agent IA complet à partir de la description suivante.
    - **Professionnel** : ton adapté au contexte de l'agent
    - Longueur typique : 200-800 mots selon la complexité
 
-6. **Reasoning** : explique tes choix de conception.
+6. **Allowed tools (optionnel)** : si la mission de l'agent bénéficie d'un
+   outil spécifique, déclare-le dans `allowed_tools`. Outils disponibles :
+   - `code_execute` : exécute du Python dans un sandbox isolé. Utile pour
+     tout ce qui implique des calculs non-triviaux, du parsing de données
+     tabulaires (CSV/JSON), des regex complexes, ou quand écrire un script
+     est plus fiable que raisonner le résultat. Mentionne-le aussi dans le
+     system prompt avec une instruction du type « utilise `code_execute`
+     pour tes calculs plutôt que de deviner ».
+   - `propose_to_remember` : propose de mémoriser un fait sur l'utilisateur
+     (préférence, contrainte, contexte personnel). À réserver aux agents
+     conversationnels qui parlent à un humain.
+   Si la mission est purement conversationnelle ou rédactionnelle, omets
+   ce champ — l'agent aura accès à tous les outils par défaut, ce qui est
+   OK aussi.
+
+7. **Reasoning** : explique tes choix de conception (prompt, allowed_tools).
 
 Réponds uniquement en JSON conforme au schéma fourni.
 PROMPT;

@@ -50,14 +50,22 @@ final class ArchitectResponseSchema
                             'type' => 'string',
                             'description' => 'System prompt complet de l\'agent, structuré et précis.',
                         ],
+                        'allowed_tools' => [
+                            'type' => 'array',
+                            'items' => ['type' => 'string'],
+                            'description' => 'Chantier E : liste des outils que cet agent peut utiliser. Valeurs courantes : `code_execute` (exécute du Python pour des calculs/parsing/manipulation de données), `propose_to_remember` (mémorise un fait pour l\'utilisateur). Si vide ou omis, l\'agent aura accès à tous les outils enregistrés du système. Ne déclare un outil que s\'il est vraiment pertinent pour la mission de l\'agent.',
+                        ],
                         'reasoning' => [
                             'type' => 'string',
-                            'description' => 'Explication des choix de conception du prompt.',
+                            'description' => 'Explication des choix de conception du prompt (et du choix des allowed_tools si renseigné).',
                         ],
                     ],
                     'required' => ['key', 'name', 'emoji', 'description', 'system_prompt', 'reasoning'],
                 ],
-                'strict' => true,
+                // Chantier E : strict=false pour permettre l'optionnel allowed_tools.
+                // OpenAI strict mode exige que toutes les propriétés soient required,
+                // ce qui forcerait l'agent à toujours déclarer allowed_tools même vide.
+                'strict' => false,
             ],
         ];
     }

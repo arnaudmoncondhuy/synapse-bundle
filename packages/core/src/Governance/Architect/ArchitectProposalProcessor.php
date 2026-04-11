@@ -111,6 +111,14 @@ class ArchitectProposalProcessor
         $agent->setSystemPrompt($systemPrompt);
         $agent->setIsBuiltin(false);
         $agent->setIsActive(false); // Inactif — attend approbation admin
+        // Chantier E phase 2 : appliquer les allowed_tools générés par
+        // l'ArchitectAgent si renseignés. Liste vide = accès à tous les
+        // outils (sémantique existante sur SynapseAgent::hasToolRestrictions).
+        if (isset($proposal['allowed_tools']) && is_array($proposal['allowed_tools'])) {
+            /** @var list<string> $tools */
+            $tools = array_values(array_filter($proposal['allowed_tools'], 'is_string'));
+            $agent->setAllowedToolNames($tools);
+        }
         // Marqué éphémère : visible dans la section « Propositions » de l'admin,
         // promouvable via l'action dédiée, sinon GC au bout de retention_days.
         $agent->setIsEphemeral(true);

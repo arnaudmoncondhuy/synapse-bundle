@@ -151,6 +151,10 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
         // ── Ephemeral entities lifecycle ──────────────────────────────────────
         $container->setParameter('synapse.ephemeral.retention_days', $config['ephemeral']['retention_days'] ?? 7);
 
+        // ── Code Executor (Chantier E phase 2) ───────────────────────────────
+        $container->setParameter('synapse.code_executor.enabled', (bool) ($config['code_executor']['enabled'] ?? false));
+        $container->setParameter('synapse.code_executor.sandbox_url', (string) ($config['code_executor']['sandbox_url'] ?? 'http://synapse-sandbox:8000'));
+
         // ── Autonomy (Chantier D) ────────────────────────────────────────────
         $container->setParameter('synapse.autonomy.callable_agents', $config['autonomy']['callable_agents'] ?? []);
 
@@ -207,6 +211,19 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
         }
         if (isset($config['governance']['judge_preset_key']) && '' !== $config['governance']['judge_preset_key']) {
             $container->setParameter('synapse.governance.judge_preset_key', $config['governance']['judge_preset_key']);
+        }
+
+        // ── Code Executor alias override (Chantier E phase 2) ───────────────
+        // Par défaut, core.yaml alias CodeExecutorInterface → NullCodeExecutor.
+        // Si l'hôte active `synapse.code_executor.enabled: true`, on bascule
+        // l'alias vers HttpCodeExecutor pour que tous les callers (dont
+        // CodeExecuteTool auto-tagué `synapse.tool`) reçoivent automatiquement
+        // le vrai backend sans changer leur code.
+        if ((bool) ($config['code_executor']['enabled'] ?? false)) {
+            $container->setAlias(
+                \ArnaudMoncondhuy\SynapseCore\Contract\CodeExecutorInterface::class,
+                \ArnaudMoncondhuy\SynapseCore\CodeExecutor\HttpCodeExecutor::class,
+            );
         }
 
         // Note: Admin services are loaded by SynapseAdminExtension (separate bundle)
