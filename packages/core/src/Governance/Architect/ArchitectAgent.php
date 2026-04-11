@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\Governance\Architect;
 
+use ArnaudMoncondhuy\SynapseCore\Agent\AgentContext;
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowDefinitionValidator;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
+use ArnaudMoncondhuy\SynapseCore\AgentRegistry;
 use ArnaudMoncondhuy\SynapseCore\Contract\AgentInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
+use ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry;
+use ArnaudMoncondhuy\SynapseCore\Memory\MemoryManager;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
@@ -57,6 +61,9 @@ class ArchitectAgent implements AgentInterface
         private readonly SynapseModelPresetRepository $presetRepository,
         private readonly SynapseAgentRepository $agentRepository,
         private readonly WorkflowDefinitionValidator $workflowValidator,
+        private readonly AgentRegistry $agentRegistry,
+        private readonly ToolRegistry $toolRegistry,
+        private readonly MemoryManager $memoryManager,
         #[Autowire('%synapse.governance.architect_preset_key%')]
         private readonly string $architectPresetKey = '',
         ?LoggerInterface $logger = null,
@@ -122,7 +129,14 @@ class ArchitectAgent implements AgentInterface
             return Output::ofData(['error' => $e->getMessage()]);
         }
 
-        $prompt = $this->buildPrompt($action, (string) $description, $structured);
+        // Phase 1 pivot agentique : rassembler le contexte (mémoires utilisateur,
+        // agents disponibles, tools disponibles) en amont du prompt. Sans ça,
+        // l'architect hallucine des agent_name qui n'existent pas et ignore les
+        // sources de données que l'utilisateur utilise vraiment.
+        $contextUserId = $this->extractUserId($options, $structured);
+        $architectContext = $this->gatherContext((string) $description, $contextUserId);
+
+        $prompt = $this->buildPrompt($action, (string) $description, $structured, $architectContext);
         if (null === $prompt) {
             return Output::ofData(['error' => 'Impossible de construire le prompt — vérifiez les paramètres fournis.']);
         }
@@ -319,19 +333,164 @@ RETRY;
      * Construit le prompt envoyé au LLM selon l'action demandée.
      *
      * @param array<string, mixed> $structured
+     * @param array{memories: list<string>, agents: list<array{key: string, name: string, description: string}>, tools: list<array{name: string, description: string}>} $context
      */
-    private function buildPrompt(string $action, string $description, array $structured): ?string
+    private function buildPrompt(string $action, string $description, array $structured, array $context): ?string
     {
         return match ($action) {
-            'create_agent' => $this->buildCreateAgentPrompt($description),
-            'improve_prompt' => $this->buildImprovePromptPrompt($description, $structured),
-            'create_workflow' => $this->buildCreateWorkflowPrompt($description),
+            'create_agent' => $this->buildCreateAgentPrompt($description, $context),
+            'improve_prompt' => $this->buildImprovePromptPrompt($description, $structured, $context),
+            'create_workflow' => $this->buildCreateWorkflowPrompt($description, $context),
             default => null,
         };
     }
 
-    private function buildCreateAgentPrompt(string $description): string
+    /**
+     * Extrait le user_id depuis les options (AgentContext) ou le structured input.
+     *
+     * @param array<string, mixed> $options
+     * @param array<string, mixed> $structured
+     */
+    private function extractUserId(array $options, array $structured): ?string
     {
+        $ctx = $options['context'] ?? null;
+        if ($ctx instanceof AgentContext) {
+            $uid = $ctx->getUserId();
+            if (null !== $uid && '' !== $uid) {
+                return $uid;
+            }
+        }
+
+        $fromStructured = $structured['user_id'] ?? null;
+        if (is_string($fromStructured) && '' !== $fromStructured) {
+            return $fromStructured;
+        }
+
+        return null;
+    }
+
+    /**
+     * Rassemble le contexte injecté dans le prompt de l'architect :
+     * - les mémoires utilisateur recalled (via recherche sémantique sur la description)
+     * - la liste des agents actifs visibles (depuis AgentRegistry, déjà filtrée par permissions)
+     * - la liste des tools disponibles (depuis ToolRegistry)
+     *
+     * Chaque section est optionnelle — si une source est vide, la section correspondante
+     * est simplement omise du prompt. Les erreurs sont avalées par défaut pour ne pas
+     * bloquer la génération si par exemple l'embedding service est temporairement down.
+     *
+     * @return array{memories: list<string>, agents: list<array{key: string, name: string, description: string}>, tools: list<array{name: string, description: string}>}
+     */
+    private function gatherContext(string $query, ?string $userId): array
+    {
+        $memories = [];
+        if (null !== $userId && '' !== $userId && '' !== trim($query)) {
+            try {
+                $recalled = $this->memoryManager->recall($query, $userId, null, 10);
+                foreach ($recalled as $entry) {
+                    $content = trim((string) ($entry['content'] ?? ''));
+                    if ('' !== $content) {
+                        $memories[] = $content;
+                    }
+                }
+            } catch (\Throwable $e) {
+                $this->logger->warning('ArchitectAgent: memory recall failed — {message}', [
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $agents = [];
+        try {
+            foreach ($this->agentRegistry->getAll() as $key => $data) {
+                $agents[] = [
+                    'key' => is_string($key) ? $key : '',
+                    'name' => is_string($data['name'] ?? null) ? (string) $data['name'] : '',
+                    'description' => is_string($data['description'] ?? null) ? (string) $data['description'] : '',
+                ];
+            }
+        } catch (\Throwable $e) {
+            $this->logger->warning('ArchitectAgent: agent registry listing failed — {message}', [
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+        $tools = [];
+        try {
+            foreach ($this->toolRegistry->getDefinitions() as $def) {
+                $name = is_string($def['name'] ?? null) ? (string) $def['name'] : '';
+                if ('' === $name) {
+                    continue;
+                }
+                $tools[] = [
+                    'name' => $name,
+                    'description' => is_string($def['description'] ?? null) ? (string) $def['description'] : '',
+                ];
+            }
+        } catch (\Throwable $e) {
+            $this->logger->warning('ArchitectAgent: tool registry listing failed — {message}', [
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+        return [
+            'memories' => $memories,
+            'agents' => $agents,
+            'tools' => $tools,
+        ];
+    }
+
+    /**
+     * Formate les 3 sections de contexte (mémoires/agents/tools) en markdown
+     * pour injection dans le prompt. Retourne une chaîne vide si TOUTES les
+     * sections sont vides, sinon une chaîne préfixée d'un saut de ligne.
+     *
+     * @param array{memories: list<string>, agents: list<array{key: string, name: string, description: string}>, tools: list<array{name: string, description: string}>} $context
+     */
+    private function formatContextSections(array $context): string
+    {
+        $parts = [];
+
+        if ([] !== $context['agents']) {
+            $lines = ['## Agents disponibles', '', 'Voici les agents déjà configurés dans Synapse. Tu **DOIS** utiliser ces `agent_name` dans les steps de type `agent` — ne pas en inventer d\'autres. Si aucun agent existant ne convient à une étape, propose un nouveau step `agent` mais choisis un `agent_name` descriptif que l\'utilisateur pourra créer ensuite (et mentionne-le dans ton `reasoning`).', ''];
+            foreach ($context['agents'] as $agent) {
+                $desc = '' !== $agent['description'] ? ' — '.$agent['description'] : '';
+                $lines[] = sprintf('- `%s` (%s)%s', $agent['key'], $agent['name'], $desc);
+            }
+            $parts[] = implode("\n", $lines);
+        }
+
+        if ([] !== $context['tools']) {
+            $lines = ['## Outils disponibles', '', 'Ces outils peuvent être référencés dans `allowed_tools` (pour un agent) ou invoqués par les agents pendant leur exécution. Choisis-les uniquement si la mission en a vraiment besoin.', ''];
+            foreach ($context['tools'] as $tool) {
+                $desc = '' !== $tool['description'] ? ' — '.$tool['description'] : '';
+                $lines[] = sprintf('- `%s`%s', $tool['name'], $desc);
+            }
+            $parts[] = implode("\n", $lines);
+        }
+
+        if ([] !== $context['memories']) {
+            $lines = ['## Contexte utilisateur (mémoires pertinentes)', '', 'Ces informations viennent de la mémoire de l\'utilisateur connecté. Utilise-les pour personnaliser ta proposition — par exemple, si l\'utilisateur a dit qu\'il utilise Google Calendar pour ses rendez-vous, et que la tâche implique de consulter un calendrier, privilégie un agent qui sait lire Google Calendar plutôt qu\'un agent générique.', ''];
+            foreach ($context['memories'] as $memory) {
+                $lines[] = '- '.$memory;
+            }
+            $parts[] = implode("\n", $lines);
+        }
+
+        if ([] === $parts) {
+            return '';
+        }
+
+        return "\n\n".implode("\n\n", $parts);
+    }
+
+    /**
+     * @param array{memories: list<string>, agents: list<array{key: string, name: string, description: string}>, tools: list<array{name: string, description: string}>} $context
+     */
+    private function buildCreateAgentPrompt(string $description, array $context): string
+    {
+        $contextSections = $this->formatContextSections($context);
+
         return <<<PROMPT
 Tu es un expert en ingénierie de prompts pour des agents LLM.
 
@@ -341,7 +500,7 @@ Concevoir un agent IA complet à partir de la description suivante.
 
 ## Description demandée
 
-{$description}
+{$description}{$contextSections}
 
 ## Règles de conception
 
@@ -379,8 +538,9 @@ PROMPT;
 
     /**
      * @param array<string, mixed> $structured
+     * @param array{memories: list<string>, agents: list<array{key: string, name: string, description: string}>, tools: list<array{name: string, description: string}>} $context
      */
-    private function buildImprovePromptPrompt(string $description, array $structured): ?string
+    private function buildImprovePromptPrompt(string $description, array $structured, array $context): ?string
     {
         $agentKey = $structured['agent_key'] ?? null;
         if (!is_string($agentKey) || '' === $agentKey) {
@@ -394,6 +554,7 @@ PROMPT;
 
         $currentPrompt = $agent->getSystemPrompt();
         $agentInfo = $this->formatAgentContext($agent);
+        $contextSections = $this->formatContextSections($context);
 
         $instructions = '';
         $instructionsRaw = $structured['instructions'] ?? null;
@@ -418,7 +579,7 @@ Améliorer le system prompt de l'agent décrit ci-dessous.
 
 ## Demande d'amélioration
 
-{$description}{$instructions}
+{$description}{$instructions}{$contextSections}
 
 ## Règles
 
@@ -432,8 +593,13 @@ Réponds uniquement en JSON conforme au schéma fourni.
 PROMPT;
     }
 
-    private function buildCreateWorkflowPrompt(string $description): string
+    /**
+     * @param array{memories: list<string>, agents: list<array{key: string, name: string, description: string}>, tools: list<array{name: string, description: string}>} $context
+     */
+    private function buildCreateWorkflowPrompt(string $description, array $context): string
     {
+        $contextSections = $this->formatContextSections($context);
+
         return <<<PROMPT
 Tu es un expert en orchestration de workflows multi-agents.
 
@@ -443,7 +609,7 @@ Concevoir un workflow à partir de la description suivante.
 
 ## Description demandée
 
-{$description}
+{$description}{$contextSections}
 
 ## Format d'un step
 

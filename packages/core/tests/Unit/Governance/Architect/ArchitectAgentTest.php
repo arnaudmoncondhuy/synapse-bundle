@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore\Tests\Unit\Governance\Architect;
 
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
+use ArnaudMoncondhuy\SynapseCore\AgentRegistry;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
+use ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry;
 use ArnaudMoncondhuy\SynapseCore\Governance\Architect\ArchitectAgent;
+use ArnaudMoncondhuy\SynapseCore\Memory\MemoryManager;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;

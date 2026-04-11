@@ -569,6 +569,15 @@ class ChatApiController extends AbstractController
                             ];
                         } catch (\Throwable $e) {
                             // Ne pas crasher le chat si l'architecte échoue — dégrader proprement.
+                            // Log l'exception pour debug — le sendEvent est perdu côté user si la sidebar
+                            // n'écoute pas les 'status' events, et sans log persistant on est aveugle.
+                            error_log(sprintf(
+                                '[ChatApiController] ArchitectAgent flow failed: %s in %s:%d\n%s',
+                                $e->getMessage(),
+                                $e->getFile(),
+                                $e->getLine(),
+                                $e->getTraceAsString(),
+                            ));
                             $sendEvent('status', [
                                 'message' => 'L\'architecte a échoué : '.$e->getMessage().'. Je continue en mode chat normal.',
                                 'step' => 'architect_failed',
