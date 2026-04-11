@@ -78,3 +78,12 @@ services:
     # garantissant que le recorder fonctionne sans dépendance LLM.
     ArnaudMoncondhuy\SynapseCore\Contract\PromptJudgeInterface:
         alias: ArnaudMoncondhuy\SynapseCore\Governance\NullPromptJudge
+
+    # ── Chantier E : CodeExecutorInterface (scaffolding) ──────────────────────
+    # Par défaut, l'alias pointe sur NullCodeExecutor qui refuse toute
+    # exécution. Câbler un vrai backend (E2B, Docker, Firecracker) = changer
+    # cet alias vers une classe qui implémente `CodeExecutorInterface`, puis
+    # documenter le modèle de menace dans
+    # packages/core/docs/security/code_execution.md.
+    ArnaudMoncondhuy\SynapseCore\Contract\CodeExecutorInterface:
+        alias: ArnaudMoncondhuy\SynapseCore\CodeExecutor\NullCodeExecutor
