@@ -8,6 +8,7 @@ use ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver;
 use ArnaudMoncondhuy\SynapseCore\Agent\CodeAgentRegistry;
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Exception\WorkflowExecutionException;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor\AgentNodeExecutor;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowRunner;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
 use ArnaudMoncondhuy\SynapseCore\AgentRegistry;
@@ -55,7 +56,7 @@ final class WorkflowRunnerTest extends TestCase
                 ++$flushCount;
             });
 
-        $runner = new WorkflowRunner($em, $resolver);
+        $runner = new WorkflowRunner($em, $resolver, nodeExecutors: [new AgentNodeExecutor($resolver)]);
         $output = $runner->run($workflow, Input::ofMessage('hi'));
 
         $this->assertSame('ok', $output->getData()['answer'] ?? null);
@@ -90,7 +91,7 @@ final class WorkflowRunnerTest extends TestCase
             }));
         $em->expects($this->exactly(2))->method('flush');
 
-        $runner = new WorkflowRunner($em, $resolver);
+        $runner = new WorkflowRunner($em, $resolver, nodeExecutors: [new AgentNodeExecutor($resolver)]);
 
         try {
             $runner->run($workflow, Input::ofMessage('x'));
@@ -121,7 +122,7 @@ final class WorkflowRunnerTest extends TestCase
             $persisted = $arg;
         });
 
-        (new WorkflowRunner($em, $resolver))->run(
+        (new WorkflowRunner($em, $resolver, nodeExecutors: [new AgentNodeExecutor($resolver)]))->run(
             $workflow,
             Input::ofMessage('x'),
             ['user_id' => 'alice-42'],

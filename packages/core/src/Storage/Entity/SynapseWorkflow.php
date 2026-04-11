@@ -95,21 +95,13 @@ class SynapseWorkflow
     private bool $isBuiltin = false;
 
     /**
-     * @deprecated Utiliser {@see $isEphemeral}. Conservé uniquement comme alias
-     *             lecture pour la compatibilité. Sera supprimé une fois toutes
-     *             les références migrées.
-     */
-    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    private bool $isSandbox = false;
-
-    /**
-     * Workflow éphémère : créé typiquement par un LLM via MCP ou un flow HITL.
-     * Les éphémères ont un cycle de vie limité ({@see $retentionUntil}) et sont
-     * affichés séparément dans l'admin (section « Workflows éphémères récents »).
+     * Workflow éphémère : créé typiquement par un LLM via MCP, le chat
+     * (ChatIntentRouter → ArchitectAgent), ou un flow HITL. Les éphémères
+     * ont un cycle de vie limité ({@see $retentionUntil}) et sont affichés
+     * séparément dans l'admin (section « Workflows éphémères récents »).
      *
-     * Ils peuvent être « promus » en persistant via {@see WorkflowController::promote()}.
-     * Remplace la sémantique de l'ancien {@see $isSandbox} qui mélangeait
-     * « temporaire » et « invisible » sur un seul flag.
+     * Ils peuvent être « promus » en persistant via
+     * {@see \ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence\WorkflowController::promote()}.
      */
     #[ORM\Column(name: 'is_ephemeral', type: Types::BOOLEAN, options: ['default' => false])]
     private bool $isEphemeral = false;
@@ -119,9 +111,9 @@ class SynapseWorkflow
      * automatique par {@see \ArnaudMoncondhuy\SynapseCore\Command\EphemeralGcCommand}
      * ou {@see \ArnaudMoncondhuy\SynapseMcp\Tool\CleanupSandboxTool}.
      *
-     * `null` = expire immédiatement (sémantique legacy de `isSandbox`) pour que
-     * le cleanup continue de fonctionner sur les entités créées avant cette
-     * colonne.
+     * `null` = expire immédiatement (l'éphémère est éligible au GC dès qu'il
+     * est créé, ce qui est utile pour les tests jetables qui ne doivent pas
+     * survivre).
      */
     #[ORM\Column(name: 'retention_until', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $retentionUntil = null;
@@ -270,26 +262,6 @@ class SynapseWorkflow
         return $this->updatedAt;
     }
 
-    /**
-     * @deprecated Utiliser {@see isEphemeral()}.
-     */
-    public function isSandbox(): bool
-    {
-        return $this->isEphemeral || $this->isSandbox;
-    }
-
-    /**
-     * @deprecated Utiliser {@see setIsEphemeral()}. Ce setter bascule les deux
-     *             flags en parallèle pour la compatibilité pendant la migration.
-     */
-    public function setIsSandbox(bool $isSandbox): self
-    {
-        $this->isSandbox = $isSandbox;
-        $this->isEphemeral = $isSandbox;
-
-        return $this;
-    }
-
     public function isEphemeral(): bool
     {
         return $this->isEphemeral;
@@ -298,8 +270,6 @@ class SynapseWorkflow
     public function setIsEphemeral(bool $isEphemeral): self
     {
         $this->isEphemeral = $isEphemeral;
-        // Écrit aussi sur le legacy pour les consumers non encore migrés.
-        $this->isSandbox = $isEphemeral;
 
         return $this;
     }

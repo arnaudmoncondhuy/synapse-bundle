@@ -87,7 +87,7 @@ final class MultiAgentTest extends TestCase
         $run = new SynapseWorkflowRun();
         $run->setWorkflow($workflow);
 
-        $multiAgent = new MultiAgent($workflow, $run, $resolver);
+        $multiAgent = new MultiAgent($workflow, $run, $resolver, [new AgentNodeExecutor($resolver)]);
 
         $output = $multiAgent->call(
             Input::ofStructured(['document' => 'Lorem ipsum'])
@@ -139,7 +139,7 @@ final class MultiAgentTest extends TestCase
         $run->setWorkflow($workflow);
         $expectedRunId = $run->getWorkflowRunId();
 
-        (new MultiAgent($workflow, $run, $resolver))->call(Input::ofMessage('hello'));
+        (new MultiAgent($workflow, $run, $resolver, [new AgentNodeExecutor($resolver)]))->call(Input::ofMessage('hello'));
 
         $this->assertCount(2, $capturedRunIds);
         $this->assertSame($expectedRunId, $capturedRunIds[0]);
@@ -164,7 +164,7 @@ final class MultiAgentTest extends TestCase
         $run = new SynapseWorkflowRun();
         $run->setWorkflow($workflow);
 
-        $multiAgent = new MultiAgent($workflow, $run, $resolver);
+        $multiAgent = new MultiAgent($workflow, $run, $resolver, [new AgentNodeExecutor($resolver)]);
 
         try {
             $multiAgent->call(Input::ofMessage('x'));
@@ -191,7 +191,7 @@ final class MultiAgentTest extends TestCase
         $this->expectException(WorkflowExecutionException::class);
         $this->expectExceptionMessage('steps array is missing or empty');
 
-        (new MultiAgent($workflow, $run, $resolver))->call(Input::ofMessage('x'));
+        (new MultiAgent($workflow, $run, $resolver, [new AgentNodeExecutor($resolver)]))->call(Input::ofMessage('x'));
     }
 
     public function testCallThrowsWhenAgentNotResolvable(): void
@@ -209,7 +209,7 @@ final class MultiAgentTest extends TestCase
         $run->setWorkflow($workflow);
 
         try {
-            (new MultiAgent($workflow, $run, $resolver))->call(Input::ofMessage('x'));
+            (new MultiAgent($workflow, $run, $resolver, [new AgentNodeExecutor($resolver)]))->call(Input::ofMessage('x'));
             $this->fail('Expected WorkflowExecutionException');
         } catch (WorkflowExecutionException $e) {
             $this->assertSame('oops', $e->getStepName());
@@ -237,7 +237,7 @@ final class MultiAgentTest extends TestCase
         $run->setWorkflow($workflow);
         $run->setUserId('user-123');
 
-        (new MultiAgent($workflow, $run, $resolver))->call(Input::ofMessage('x'));
+        (new MultiAgent($workflow, $run, $resolver, [new AgentNodeExecutor($resolver)]))->call(Input::ofMessage('x'));
 
         $this->assertInstanceOf(AgentContext::class, $capturedContext);
         $this->assertSame('user-123', $capturedContext->getUserId());
@@ -306,8 +306,6 @@ final class MultiAgentTest extends TestCase
             $workflow,
             $run,
             $resolver,
-            null,
-            null,
             [new AgentNodeExecutor($resolver), new ConditionalNodeExecutor()],
         );
 
@@ -347,8 +345,6 @@ final class MultiAgentTest extends TestCase
             $workflow,
             $run,
             $resolver,
-            null,
-            null,
             [new AgentNodeExecutor($resolver), new ConditionalNodeExecutor()],
         );
 
@@ -419,7 +415,7 @@ final class MultiAgentTest extends TestCase
         $run = new SynapseWorkflowRun();
         $run->setWorkflow($workflow);
 
-        $multiAgent = new MultiAgent($workflow, $run, $resolver, null, null, [$agentExec, $parallelExec]);
+        $multiAgent = new MultiAgent($workflow, $run, $resolver, [$agentExec, $parallelExec]);
         $output = $multiAgent->call(Input::ofMessage('kickoff'));
 
         $this->assertSame('UP=INPUT TEXT, LOW=input text', $output->getData()['final']);
@@ -460,7 +456,7 @@ final class MultiAgentTest extends TestCase
         $run = new SynapseWorkflowRun();
         $run->setWorkflow($workflow);
 
-        $multiAgent = new MultiAgent($workflow, $run, $resolver, null, null, [$agentExec, $loopExec]);
+        $multiAgent = new MultiAgent($workflow, $run, $resolver, [$agentExec, $loopExec]);
         $output = $multiAgent->call(Input::ofStructured(['numbers' => [2, 3, 4]]));
 
         $iterations = $output->getData()['results'];
@@ -489,7 +485,7 @@ final class MultiAgentTest extends TestCase
         $run->setWorkflow($workflow);
 
         // Aucun $nodeExecutors passé → fallback automatique
-        $output = (new MultiAgent($workflow, $run, $resolver))->call(Input::ofMessage('x'));
+        $output = (new MultiAgent($workflow, $run, $resolver, [new AgentNodeExecutor($resolver)]))->call(Input::ofMessage('x'));
 
         $this->assertSame(WorkflowRunStatus::COMPLETED, $run->getStatus());
         $this->assertNotNull($output);

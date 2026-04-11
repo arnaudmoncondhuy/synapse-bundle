@@ -45,7 +45,7 @@ class ListPresetsTool
                 'providerName' => $p->getProviderName(),
                 'model' => $p->getModel(),
                 'isActive' => $p->isActive(),
-                'isSandbox' => $p->isSandbox(),
+                'isEphemeral' => $p->isEphemeral(),
                 'temperature' => $p->getGenerationTemperature(),
                 'topP' => $p->getGenerationTopP(),
                 'topK' => $p->getGenerationTopK(),

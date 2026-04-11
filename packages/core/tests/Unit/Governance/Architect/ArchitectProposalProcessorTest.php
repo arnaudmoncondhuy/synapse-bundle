@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\Tests\Unit\Governance\Architect;
 
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowDefinitionValidator;
 use ArnaudMoncondhuy\SynapseCore\Governance\Architect\ArchitectProposalProcessor;
 use ArnaudMoncondhuy\SynapseCore\Governance\PromptVersionRecorder;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
@@ -55,7 +56,7 @@ final class ArchitectProposalProcessorTest extends TestCase
         // Un seul flush explicite côté processor (le 2e flush est porté par snapshot)
         $em->expects($this->once())->method('flush');
 
-        $processor = new ArchitectProposalProcessor($em, $agentRepo, $recorder);
+        $processor = new ArchitectProposalProcessor($em, $agentRepo, $recorder, new WorkflowDefinitionValidator());
 
         $result = $processor->process([
             '_action' => 'create_agent',
@@ -84,6 +85,7 @@ final class ArchitectProposalProcessorTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $agentRepo,
             $this->createStub(PromptVersionRecorder::class),
+            new WorkflowDefinitionValidator(),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -103,6 +105,7 @@ final class ArchitectProposalProcessorTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $this->createStub(SynapseAgentRepository::class),
             $this->createStub(PromptVersionRecorder::class),
+            new WorkflowDefinitionValidator(),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -144,6 +147,7 @@ final class ArchitectProposalProcessorTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $agentRepo,
             $recorder,
+            new WorkflowDefinitionValidator(),
         );
 
         $result = $processor->process([
@@ -165,6 +169,7 @@ final class ArchitectProposalProcessorTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $this->createStub(SynapseAgentRepository::class),
             $this->createStub(PromptVersionRecorder::class),
+            new WorkflowDefinitionValidator(),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -185,6 +190,7 @@ final class ArchitectProposalProcessorTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $agentRepo,
             $this->createStub(PromptVersionRecorder::class),
+            new WorkflowDefinitionValidator(),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -213,6 +219,7 @@ final class ArchitectProposalProcessorTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $agentRepo,
             $recorder,
+            new WorkflowDefinitionValidator(),
         );
 
         $result = $processor->process([
@@ -242,6 +249,7 @@ final class ArchitectProposalProcessorTest extends TestCase
             $em,
             $this->createStub(SynapseAgentRepository::class),
             $this->createStub(PromptVersionRecorder::class),
+            new WorkflowDefinitionValidator(),
         );
 
         $result = $processor->process([
@@ -267,6 +275,7 @@ final class ArchitectProposalProcessorTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $this->createStub(SynapseAgentRepository::class),
             $this->createStub(PromptVersionRecorder::class),
+            new WorkflowDefinitionValidator(),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -295,6 +304,7 @@ final class ArchitectProposalProcessorTest extends TestCase
             $em,
             $this->createStub(SynapseAgentRepository::class),
             $this->createStub(PromptVersionRecorder::class),
+            new WorkflowDefinitionValidator(),
         );
 
         // Type inconnu → plus d'exception, mais persistance + warning log
@@ -326,6 +336,7 @@ final class ArchitectProposalProcessorTest extends TestCase
             $em,
             $this->createStub(SynapseAgentRepository::class),
             $this->createStub(PromptVersionRecorder::class),
+            new WorkflowDefinitionValidator(),
         );
 
         $result = $processor->process([
@@ -366,6 +377,7 @@ final class ArchitectProposalProcessorTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $this->createStub(SynapseAgentRepository::class),
             $this->createStub(PromptVersionRecorder::class),
+            new WorkflowDefinitionValidator(),
         );
 
         $this->expectException(\InvalidArgumentException::class);
@@ -380,6 +392,7 @@ final class ArchitectProposalProcessorTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $this->createStub(SynapseAgentRepository::class),
             $this->createStub(PromptVersionRecorder::class),
+            new WorkflowDefinitionValidator(),
         );
 
         $this->expectException(\InvalidArgumentException::class);

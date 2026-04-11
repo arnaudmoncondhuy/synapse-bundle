@@ -108,12 +108,6 @@ class SynapseModelPreset
     private bool $streamingEnabled = true;
 
     /**
-     * @deprecated Utiliser {@see $isEphemeral}. Conservé comme alias lecture.
-     */
-    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    private bool $isSandbox = false;
-
-    /**
      * Preset éphémère : créé typiquement par un LLM via MCP pour tester un
      * modèle/provider avant adoption. Cycle de vie limité par retentionUntil.
      */
@@ -301,25 +295,6 @@ class SynapseModelPreset
         return $this;
     }
 
-    /**
-     * @deprecated Utiliser {@see isEphemeral()}.
-     */
-    public function isSandbox(): bool
-    {
-        return $this->isEphemeral || $this->isSandbox;
-    }
-
-    /**
-     * @deprecated Utiliser {@see setIsEphemeral()}. Dual-write pendant migration.
-     */
-    public function setIsSandbox(bool $isSandbox): self
-    {
-        $this->isSandbox = $isSandbox;
-        $this->isEphemeral = $isSandbox;
-
-        return $this;
-    }
-
     public function isEphemeral(): bool
     {
         return $this->isEphemeral;
@@ -328,7 +303,6 @@ class SynapseModelPreset
     public function setIsEphemeral(bool $isEphemeral): self
     {
         $this->isEphemeral = $isEphemeral;
-        $this->isSandbox = $isEphemeral;
 
         return $this;
     }

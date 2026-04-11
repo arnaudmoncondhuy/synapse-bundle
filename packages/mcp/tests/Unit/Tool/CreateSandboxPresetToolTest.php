@@ -21,7 +21,7 @@ class CreateSandboxPresetToolTest extends TestCase
     {
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects($this->once())->method('persist')->with($this->callback(
-            fn (SynapseModelPreset $p) => $p->isSandbox() && 'test_preset' === $p->getKey() && !$p->isActive()
+            fn (SynapseModelPreset $p) => $p->isEphemeral() && 'test_preset' === $p->getKey() && !$p->isActive()
         ));
         $em->expects($this->once())->method('flush');
 

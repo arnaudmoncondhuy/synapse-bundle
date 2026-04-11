@@ -37,20 +37,14 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 class ArchitectProposalProcessor
 {
-    private WorkflowDefinitionValidator $definitionValidator;
-
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly SynapseAgentRepository $agentRepository,
         private readonly PromptVersionRecorder $promptVersionRecorder,
-        ?WorkflowDefinitionValidator $definitionValidator = null,
+        private readonly WorkflowDefinitionValidator $definitionValidator,
         #[Autowire('%synapse.ephemeral.retention_days%')]
         private readonly int $retentionDays = 7,
     ) {
-        // Chantier F phase 2 : fallback vers une instance locale si pas
-        // injectée. Le validateur est sans état et pur — pas de risque de
-        // divergence entre l'instance DI et l'instance de fallback.
-        $this->definitionValidator = $definitionValidator ?? new WorkflowDefinitionValidator();
     }
 
     /**

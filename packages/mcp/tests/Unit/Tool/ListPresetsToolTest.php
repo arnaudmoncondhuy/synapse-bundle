@@ -43,7 +43,7 @@ class ListPresetsToolTest extends TestCase
         $result = $tool(includeSandbox: true);
 
         $this->assertSame(2, $result['count']);
-        $this->assertTrue($result['presets'][1]['isSandbox']);
+        $this->assertTrue($result['presets'][1]['isEphemeral']);
     }
 
     public function testDeniesAccessWithoutAdmin(): void
@@ -63,7 +63,7 @@ class ListPresetsToolTest extends TestCase
         $preset->setName($name);
         $preset->setProviderName($provider);
         $preset->setModel($model);
-        $preset->setIsSandbox($sandbox);
+        $preset->setIsEphemeral($sandbox);
 
         return $preset;
     }

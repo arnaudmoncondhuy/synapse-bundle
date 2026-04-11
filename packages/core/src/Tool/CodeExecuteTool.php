@@ -43,15 +43,8 @@ class CodeExecuteTool implements AiToolInterface
 {
     public function __construct(
         private readonly CodeExecutorInterface $executor,
-        // Optionnel : quand disponible, l'event est dispatché après chaque
-        // exécution pour que la transparency sidebar puisse afficher une
-        // carte dédiée (principe 8). Non-bloquant si absent (tests unitaires).
-        private readonly ?EventDispatcherInterface $eventDispatcher = null,
-        // Optionnel : quand disponible, persiste chaque exécution dans
-        // `synapse_code_execution` pour l'audit a posteriori (Chantier E,
-        // plan ligne 178). Laissé optionnel pour les tests unitaires qui
-        // instancient le tool sans conteneur DI.
-        private readonly ?EntityManagerInterface $entityManager = null,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -113,41 +106,36 @@ class CodeExecuteTool implements AiToolInterface
         $resultArray = $result->toArray();
 
         // Audit trail persistant (Chantier E phase 4) : stocke l'exécution
-        // dans `synapse_code_execution` pour pouvoir la retrouver
-        // a posteriori. On le fait **avant** de dispatcher l'event pour que
-        // la ligne soit présente en DB si un listener avale ou délaye le flush.
-        if (null !== $this->entityManager) {
-            try {
-                $execution = (new SynapseCodeExecution())
-                    ->setCode($code)
-                    ->setLanguage($language)
-                    ->setSuccess((bool) ($resultArray['success'] ?? false))
-                    ->setStdout(is_string($resultArray['stdout'] ?? null) ? $resultArray['stdout'] : null)
-                    ->setStderr(is_string($resultArray['stderr'] ?? null) ? $resultArray['stderr'] : null)
-                    ->setReturnValue($resultArray['return_value'] ?? null)
-                    ->setDurationMs(is_int($resultArray['duration_ms'] ?? null) ? $resultArray['duration_ms'] : 0)
-                    ->setErrorType(is_string($resultArray['error_type'] ?? null) ? $resultArray['error_type'] : null)
-                    ->setErrorMessage(is_string($resultArray['error_message'] ?? null) ? $resultArray['error_message'] : null);
+        // dans `synapse_code_execution` pour pouvoir la retrouver a posteriori.
+        // Try/catch pour que l'audit ne bloque JAMAIS l'exécution du code si
+        // la DB est temporairement down.
+        try {
+            $execution = (new SynapseCodeExecution())
+                ->setCode($code)
+                ->setLanguage($language)
+                ->setSuccess((bool) ($resultArray['success'] ?? false))
+                ->setStdout(is_string($resultArray['stdout'] ?? null) ? $resultArray['stdout'] : null)
+                ->setStderr(is_string($resultArray['stderr'] ?? null) ? $resultArray['stderr'] : null)
+                ->setReturnValue($resultArray['return_value'] ?? null)
+                ->setDurationMs(is_int($resultArray['duration_ms'] ?? null) ? $resultArray['duration_ms'] : 0)
+                ->setErrorType(is_string($resultArray['error_type'] ?? null) ? $resultArray['error_type'] : null)
+                ->setErrorMessage(is_string($resultArray['error_message'] ?? null) ? $resultArray['error_message'] : null);
 
-                $this->entityManager->persist($execution);
-                $this->entityManager->flush();
-            } catch (\Throwable $e) {
-                // L'audit trail ne doit JAMAIS bloquer l'exécution du code —
-                // si la DB est down ou la table manque, on continue et on
-                // laisse la sidebar afficher le résultat pour le LLM.
-            }
+            $this->entityManager->persist($execution);
+            $this->entityManager->flush();
+        } catch (\Throwable) {
+            // L'audit trail est best-effort — si la DB est down ou la table
+            // manque, on continue pour que le LLM ait quand même son résultat.
         }
 
         // Principe 8 : dispatch d'un event porteur du code source + résultat
         // complet pour que la transparency sidebar du chat puisse afficher
         // une carte dédiée avec syntax-highlighted Python + stdout + return_value.
-        if (null !== $this->eventDispatcher) {
-            $this->eventDispatcher->dispatch(new SynapseCodeExecutedEvent(
-                code: $code,
-                language: $language,
-                result: $resultArray,
-            ));
-        }
+        $this->eventDispatcher->dispatch(new SynapseCodeExecutedEvent(
+            code: $code,
+            language: $language,
+            result: $resultArray,
+        ));
 
         return $resultArray;
     }

@@ -157,13 +157,6 @@ class SynapseAgent
     private ?array $accessControl = null;
 
     /**
-     * @deprecated Utiliser {@see $isEphemeral}. Conservé comme alias lecture
-     *             pour la migration Chantier A.
-     */
-    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    private bool $isSandbox = false;
-
-    /**
      * Agent éphémère : créé typiquement par un LLM via MCP ou par l'ArchitectAgent.
      * Exclus des listings admin/chat classiques mais résolvable par AgentResolver.
      * Cycle de vie limité par {@see $retentionUntil}.
@@ -443,26 +436,6 @@ class SynapseAgent
             || (empty($this->accessControl['roles']) && empty($this->accessControl['userIdentifiers']));
     }
 
-    /**
-     * @deprecated Utiliser {@see isEphemeral()}.
-     */
-    public function isSandbox(): bool
-    {
-        return $this->isEphemeral || $this->isSandbox;
-    }
-
-    /**
-     * @deprecated Utiliser {@see setIsEphemeral()}. Propagation dual-write
-     *             le temps que tous les consumers soient migrés.
-     */
-    public function setIsSandbox(bool $isSandbox): self
-    {
-        $this->isSandbox = $isSandbox;
-        $this->isEphemeral = $isSandbox;
-
-        return $this;
-    }
-
     public function isEphemeral(): bool
     {
         return $this->isEphemeral;
@@ -471,7 +444,6 @@ class SynapseAgent
     public function setIsEphemeral(bool $isEphemeral): self
     {
         $this->isEphemeral = $isEphemeral;
-        $this->isSandbox = $isEphemeral;
 
         return $this;
     }
@@ -529,7 +501,6 @@ class SynapseAgent
             'isActive' => $this->isActive,
             'visibleInChat' => $this->visibleInChat,
             'isPublic' => $this->isPublic(),
-            'isSandbox' => $this->isSandbox, // @deprecated — conservé pour les templates Twig pas encore migrés
             'isEphemeral' => $this->isEphemeral,
             'retentionUntil' => $this->retentionUntil?->format(\DateTimeInterface::ATOM),
             'workflowKey' => $this->workflowKey,

@@ -9,6 +9,7 @@ use ArnaudMoncondhuy\SynapseCore\CodeExecutor\NullCodeExecutor;
 use ArnaudMoncondhuy\SynapseCore\Contract\CodeExecutorInterface;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseCodeExecutedEvent;
 use ArnaudMoncondhuy\SynapseCore\Tool\CodeExecuteTool;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
@@ -19,7 +20,7 @@ final class CodeExecuteToolTest extends TestCase
 {
     public function testMetadataIsExposedForLlm(): void
     {
-        $tool = new CodeExecuteTool(new NullCodeExecutor());
+        $tool = $this->makeTool(new NullCodeExecutor());
 
         $this->assertSame('code_execute', $tool->getName());
         $this->assertNotEmpty($tool->getLabel());
@@ -34,7 +35,7 @@ final class CodeExecuteToolTest extends TestCase
 
     public function testExecuteRejectsEmptyCode(): void
     {
-        $tool = new CodeExecuteTool(new NullCodeExecutor());
+        $tool = $this->makeTool(new NullCodeExecutor());
 
         $result = $tool->execute(['code' => '']);
         $this->assertIsArray($result);
@@ -44,7 +45,7 @@ final class CodeExecuteToolTest extends TestCase
 
     public function testExecuteRejectsMissingCode(): void
     {
-        $tool = new CodeExecuteTool(new NullCodeExecutor());
+        $tool = $this->makeTool(new NullCodeExecutor());
 
         $result = $tool->execute([]);
         $this->assertIsArray($result);
@@ -81,7 +82,7 @@ final class CodeExecuteToolTest extends TestCase
             }
         };
 
-        $tool = new CodeExecuteTool($spy);
+        $tool = $this->makeTool($spy);
         $result = $tool->execute(['code' => 'result = 6 * 7', 'language' => 'python']);
 
         $this->assertCount(1, $spy->calls);
@@ -95,7 +96,7 @@ final class CodeExecuteToolTest extends TestCase
 
     public function testExecuteWithNullExecutorPropagatesUnavailable(): void
     {
-        $tool = new CodeExecuteTool(new NullCodeExecutor());
+        $tool = $this->makeTool(new NullCodeExecutor());
         $result = $tool->execute(['code' => 'print(1)']);
 
         $this->assertFalse($result['success']);
@@ -137,7 +138,11 @@ final class CodeExecuteToolTest extends TestCase
                 return $event;
             });
 
-        $tool = new CodeExecuteTool($spyExec, $dispatcher);
+        $tool = new CodeExecuteTool(
+            $spyExec,
+            $dispatcher,
+            $this->createStub(EntityManagerInterface::class),
+        );
         $tool->execute(['code' => 'print("hello")', 'language' => 'python']);
 
         $this->assertCount(1, $dispatchedEvents);
@@ -148,12 +153,27 @@ final class CodeExecuteToolTest extends TestCase
         $this->assertSame('hello', $dispatchedEvents[0]->result['return_value']);
     }
 
-    public function testExecuteWorksWithoutDispatcher(): void
+    public function testExecuteResultIsSerializableArray(): void
     {
-        // Backwards-compat : le dispatcher est optionnel, absence ne doit pas crasher.
-        $tool = new CodeExecuteTool(new NullCodeExecutor());
+        // Vérifie que le retour de execute() est bien un tableau avec les
+        // clés attendues (contrat avec ToolRegistry / LLM).
+        $tool = $this->makeTool(new NullCodeExecutor());
         $result = $tool->execute(['code' => 'print(1)']);
         $this->assertIsArray($result);
         $this->assertArrayHasKey('success', $result);
+    }
+
+    /**
+     * Factory helper : construit un CodeExecuteTool avec des stubs pour
+     * les dépendances transverses (event dispatcher + entity manager) qui
+     * ne sont pas directement observées dans les tests de base.
+     */
+    private function makeTool(CodeExecutorInterface $executor): CodeExecuteTool
+    {
+        return new CodeExecuteTool(
+            $executor,
+            $this->createStub(EventDispatcherInterface::class),
+            $this->createStub(EntityManagerInterface::class),
+        );
     }
 }

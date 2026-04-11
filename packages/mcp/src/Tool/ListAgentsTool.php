@@ -52,7 +52,7 @@ class ListAgentsTool
             'isActive' => $agent->isActive(),
             'isBuiltin' => $agent->isBuiltin(),
             'isPublic' => $agent->isPublic(),
-            'isSandbox' => $agent->isSandbox(),
+            'isEphemeral' => $agent->isEphemeral(),
             'source' => 'db',
         ], $dbAgents);
 

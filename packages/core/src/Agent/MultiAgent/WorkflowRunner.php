@@ -184,9 +184,9 @@ class WorkflowRunner
             $workflow,
             $run,
             $this->resolver,
+            $this->nodeExecutors,
             $this->eventDispatcher,
             $this->logger,
-            $this->nodeExecutors,
         );
 
         try {

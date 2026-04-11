@@ -26,7 +26,7 @@ class CreateSandboxAgentToolTest extends TestCase
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects($this->once())->method('persist')->with($this->callback(
-            fn (SynapseAgent $a) => $a->isSandbox()
+            fn (SynapseAgent $a) => $a->isEphemeral()
                 && 'test_agent' === $a->getKey()
                 && 'Test Agent' === $a->getName()
                 && $a->isActive()

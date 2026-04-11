@@ -63,7 +63,7 @@ class WorkflowController extends AbstractController
 
         return $this->render('@Synapse/admin/intelligence/workflows.html.twig', [
             'workflows' => $workflows,
-            'sandbox_workflows' => $ephemeralWorkflows, // clé conservée pour le template existant
+            'ephemeral_workflows' => $ephemeralWorkflows,
             'runs_counts' => $runsCounts,
         ]);
     }

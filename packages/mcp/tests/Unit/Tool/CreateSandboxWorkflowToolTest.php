@@ -21,7 +21,7 @@ class CreateSandboxWorkflowToolTest extends TestCase
     {
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects($this->once())->method('persist')->with($this->callback(
-            fn (SynapseWorkflow $w) => $w->isSandbox()
+            fn (SynapseWorkflow $w) => $w->isEphemeral()
                 && 'test_wf' === $w->getWorkflowKey()
                 && $w->isActive()
         ));

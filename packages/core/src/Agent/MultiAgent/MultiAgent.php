@@ -8,7 +8,6 @@ use ArnaudMoncondhuy\SynapseCore\Agent\AgentContext;
 use ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver;
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Exception\WorkflowExecutionException;
-use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor\AgentNodeExecutor;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor\NodeExecutorInterface;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
 use ArnaudMoncondhuy\SynapseCore\Contract\AgentInterface;
@@ -62,35 +61,27 @@ final class MultiAgent implements AgentInterface
     private readonly array $nodeExecutors;
 
     /**
-     * @param iterable<NodeExecutorInterface>|null $nodeExecutors Collection des exécuteurs de nœuds
-     *                                                           (Chantier F). Si null, fallback BC :
-     *                                                           un `AgentNodeExecutor` construit à la
-     *                                                           volée avec le resolver. Les tests unitaires
-     *                                                           pré-chantier F n'ont donc rien à changer.
+     * @param iterable<NodeExecutorInterface> $nodeExecutors Collection des exécuteurs de nœuds
+     *                                                      (Chantier F). Typiquement injectée par
+     *                                                      `WorkflowRunner` via AutowireIterator,
+     *                                                      ou passée explicitement dans les tests.
+     *                                                      Doit contenir au moins un executor qui
+     *                                                      supporte le type `agent` (sinon les
+     *                                                      workflows historiques cassent).
      */
     public function __construct(
         private readonly SynapseWorkflow $workflow,
         private readonly SynapseWorkflowRun $run,
         private readonly AgentResolver $resolver,
+        iterable $nodeExecutors,
         private readonly ?EventDispatcherInterface $eventDispatcher = null,
         ?LoggerInterface $logger = null,
-        ?iterable $nodeExecutors = null,
     ) {
         $this->logger = $logger ?? new NullLogger();
 
-        $materialized = null === $nodeExecutors
-            ? []
-            : (is_array($nodeExecutors) ? array_values($nodeExecutors) : iterator_to_array($nodeExecutors, false));
-
-        // Si aucun exécuteur n'a été câblé (null ou iterable vide — typiquement
-        // les tests unitaires pré-F ou un container sans tag), on injecte le
-        // fallback BC : un AgentNodeExecutor qui reproduit à l'identique le
-        // comportement historique. Ça garantit qu'aucun run existant ne casse.
-        if ([] === $materialized) {
-            $materialized = [new AgentNodeExecutor($resolver)];
-        }
-
-        $this->nodeExecutors = $materialized;
+        $this->nodeExecutors = is_array($nodeExecutors)
+            ? array_values($nodeExecutors)
+            : iterator_to_array($nodeExecutors, false);
     }
 
     public function getName(): string

@@ -108,7 +108,7 @@ class Configuration implements ConfigurationInterface
             ->integerNode('retention_days')
             ->defaultValue(7)
             ->min(0)
-            ->info('Nombre de jours pendant lesquels une entité éphémère est conservée avant d\'être éligible à la suppression automatique par synapse:ephemeral:gc ou cleanup_sandbox. 0 = expire immédiatement (équivalent à l\'ancien isSandbox).')
+            ->info('Nombre de jours pendant lesquels une entité éphémère est conservée avant d\'être éligible à la suppression automatique par synapse:ephemeral:gc ou cleanup_sandbox. 0 = expire immédiatement.')
             ->end()
             ->end()
             ->end()
