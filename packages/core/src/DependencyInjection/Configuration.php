@@ -50,16 +50,16 @@ class Configuration implements ConfigurationInterface
             ->end()
 
             // ── Encryption ────────────────────────────────────────────────────
+            // Le chiffrement est OBLIGATOIRE. La clé doit être définie dans
+            // .env.local (jamais commitée). Générer via :
+            //   php -r "echo base64_encode(random_bytes(32));"
             ->arrayNode('encryption')
             ->addDefaultsIfNotSet()
             ->children()
-            ->booleanNode('enabled')
-            ->defaultFalse()
-            ->info('Activer le chiffrement des conversations (libsodium AES-256-GCM)')
-            ->end()
             ->scalarNode('key')
-            ->defaultNull()
-            ->info('Clé de chiffrement (32 bytes, ex: %env(SYNAPSE_ENCRYPTION_KEY)%)')
+            ->isRequired()
+            ->cannotBeEmpty()
+            ->info('Clé de chiffrement base64 (32 bytes). Définir dans .env.local via SYNAPSE_ENCRYPTION_KEY. Jamais en clair dans un fichier commité.')
             ->end()
             ->end()
             ->end()

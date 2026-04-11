@@ -122,13 +122,9 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
         $container->setParameter('synapse.persistence.message_class', $config['persistence']['message_class']);
 
         // ── Encryption ────────────────────────────────────────────────────────
-        $encryptionEnabled = $config['encryption']['enabled'] ?? false;
-        $container->setParameter('synapse.encryption.enabled', $encryptionEnabled);
-        $container->setParameter('synapse.encryption.key', $config['encryption']['key'] ?? null);
-
-        if (!$encryptionEnabled) {
-            @trigger_error('Synapse: encryption is disabled — LLM credentials and conversations are stored in plaintext. Set synapse.encryption.enabled to true for production.', \E_USER_NOTICE);
-        }
+        // Obligatoire depuis le chantier credentials-crypto. La clé DOIT être
+        // définie dans .env.local (jamais commitée).
+        $container->setParameter('synapse.encryption.key', $config['encryption']['key']);
 
         // ── Security ──────────────────────────────────────────────────────────
         $container->setParameter('synapse.security.admin_role', $config['security']['admin_role'] ?? 'ROLE_ADMIN');
@@ -161,18 +157,17 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
         $container->setParameter('synapse.version', $version);
 
         // ── Encryption Service ────────────────────────────────────────────────
-        if ($config['encryption']['enabled']) {
-            $container
-                ->register('synapse.encryption_service', LibsodiumEncryptionService::class)
-                ->setArguments([$config['encryption']['key']])
-                ->setAutowired(true)
-                ->setPublic(false);
+        // Toujours enregistré — le chiffrement est obligatoire.
+        $container
+            ->register('synapse.encryption_service', LibsodiumEncryptionService::class)
+            ->setArguments([$config['encryption']['key']])
+            ->setAutowired(true)
+            ->setPublic(false);
 
-            $container->setAlias(
-                EncryptionServiceInterface::class,
-                'synapse.encryption_service'
-            );
-        }
+        $container->setAlias(
+            EncryptionServiceInterface::class,
+            'synapse.encryption_service'
+        );
 
         // ── Chargement des services ───────────────────────────────────────────
         $loader = new YamlFileLoader($container, new FileLocator(\dirname(__DIR__, 1).'/../config'));
@@ -191,10 +186,7 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
                 $managerDef->setArgument('$messageClass', $config['persistence']['message_class'] ?? null);
             }
 
-            // Explicitly set encryption service if enabled to avoid autowiring gaps for optional params
-            if ($config['encryption']['enabled']) {
-                $managerDef->setArgument('$encryptionService', new Reference(EncryptionServiceInterface::class));
-            }
+            $managerDef->setArgument('$encryptionService', new Reference(EncryptionServiceInterface::class));
         }
 
         // ── Auto-configuration (Tags automatiques) ────────────────────────────

@@ -39,7 +39,7 @@ class ConversationManager
         private readonly EntityManagerInterface $em,
         /** @var SynapseConversationRepository<SynapseConversation>|null */
         private readonly ?SynapseConversationRepository $conversationRepo = null,
-        private readonly ?EncryptionServiceInterface $encryptionService = null,
+        private readonly EncryptionServiceInterface $encryptionService,
         private readonly ?PermissionCheckerInterface $permissionChecker = null,
         /** @var class-string<SynapseConversation>|null */
         private readonly ?string $conversationClass = null,

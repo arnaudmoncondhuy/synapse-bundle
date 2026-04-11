@@ -25,7 +25,7 @@ class MemoryManager
         private readonly VectorStoreInterface $vectorStore,
         private readonly SynapseVectorMemoryRepository $repository,
         private readonly EntityManagerInterface $em,
-        private readonly ?EncryptionServiceInterface $encryptionService = null,
+        private readonly EncryptionServiceInterface $encryptionService,
     ) {
     }
 

@@ -35,7 +35,7 @@ class OvhImageGenerationClient implements ImageGenerationClientInterface
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly ?SynapseProviderRepository $providerRepository = null,
-        private readonly ?EncryptionServiceInterface $encryptionService = null,
+        private readonly EncryptionServiceInterface $encryptionService,
     ) {
     }
 

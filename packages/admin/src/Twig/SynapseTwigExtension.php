@@ -24,7 +24,7 @@ class SynapseTwigExtension extends AbstractExtension
     public function __construct(
         private readonly ToneRegistry $toneRegistry,
         private readonly AgentRegistry $agentRegistry,
-        private readonly ?EncryptionServiceInterface $encryptionService = null,
+        private readonly EncryptionServiceInterface $encryptionService,
         private readonly ?\ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface $permissionChecker = null,
         private readonly ?ConfigProviderInterface $configProvider = null,
         private readonly ?ModelCapabilityRegistry $modelCapabilityRegistry = null,

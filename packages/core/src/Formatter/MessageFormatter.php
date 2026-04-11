@@ -26,7 +26,7 @@ class MessageFormatter implements MessageFormatterInterface
     private array $trailingGeneratedAttachments = [];
 
     public function __construct(
-        private ?EncryptionServiceInterface $encryptionService = null,
+        private EncryptionServiceInterface $encryptionService,
         private ?AttachmentStorageService $attachmentStorage = null,
         private ?EntityManagerInterface $em = null,
     ) {

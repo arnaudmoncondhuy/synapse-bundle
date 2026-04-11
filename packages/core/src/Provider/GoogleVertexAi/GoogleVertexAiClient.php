@@ -52,7 +52,7 @@ class GoogleVertexAiClient extends AbstractLlmClient implements EmbeddingClientI
         ConfigProviderInterface $configProvider,
         ModelCapabilityRegistry $capabilityRegistry,
         private readonly ?SynapseProviderRepository $providerRepository = null,
-        private readonly ?EncryptionServiceInterface $encryptionService = null,
+        private readonly EncryptionServiceInterface $encryptionService,
     ) {
         parent::__construct($httpClient, $configProvider, $capabilityRegistry);
     }

@@ -23,6 +23,13 @@ class SynapseTwigExtensionTest extends TestCase
         ?ConfigProviderInterface $config = null,
         ?ModelCapabilityRegistry $capabilities = null,
     ): SynapseTwigExtension {
+        if (null === $encryption) {
+            $encryption = $this->createMock(EncryptionServiceInterface::class);
+            $encryption->method('isEncrypted')->willReturn(false);
+            $encryption->method('encrypt')->willReturnArgument(0);
+            $encryption->method('decrypt')->willReturnArgument(0);
+        }
+
         return new SynapseTwigExtension(
             $this->createStub(ToneRegistry::class),
             $this->createStub(AgentRegistry::class),

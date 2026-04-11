@@ -42,7 +42,7 @@ class DatabaseConfigProvider implements ConfigProviderInterface
         private readonly SynapseProviderRepository $providerRepo,
         private readonly PresetValidator $presetValidator,
         private readonly ?CacheInterface $cache = null,
-        private readonly ?EncryptionServiceInterface $encryptionService = null,
+        private readonly EncryptionServiceInterface $encryptionService,
         private readonly ?LoggerInterface $logger = null,
         private readonly ?EventDispatcherInterface $dispatcher = null,
     ) {

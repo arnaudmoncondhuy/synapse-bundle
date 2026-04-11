@@ -28,7 +28,7 @@ class DoctrineVectorStore implements VectorStoreInterface
         private readonly EntityManagerInterface $em,
         private readonly SynapseVectorMemoryRepository $repository,
         private readonly ?LoggerInterface $logger = null,
-        private readonly ?EncryptionServiceInterface $encryptionService = null,
+        private readonly EncryptionServiceInterface $encryptionService,
     ) {
         $connection = $this->em->getConnection();
         $platform = $connection->getDatabasePlatform()::class;
