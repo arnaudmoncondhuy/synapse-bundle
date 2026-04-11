@@ -22,10 +22,11 @@ Cocher `[x]` au fur et à mesure des transferts.
 
 ---
 
-### [ ] Éphémères visibles dans l'admin + MCP trusted
-**Statut** : ✅ À migrer  
-**Ce que ça fait** : Les workflows éphémères (générés à la volée) apparaissent dans l'admin pour le debug. Flag `mcp_trusted` dans la config pour que les tools MCP ne refusent pas en "Admin role required".  
-**Pourquoi migrer** : Socle de plusieurs autres fonctionnalités. MCP trusted est documenté et nécessaire dès qu'on utilise le MCP.
+### [~] Éphémères visibles dans l'admin + MCP trusted
+**Statut** : ✅ **MCP trusted migré** (commit `a9700c8`) — éphémères visibles toujours à migrer  
+**Ce que ça fait** : 2 features distinctes regroupées :
+- **MCP trusted** : flag `synapse.security.mcp_trusted` qui bypass le check admin sur `/_mcp` pour permettre aux tools MCP de fonctionner sans session HTTP. **MIGRÉ** + 8 nouveaux tools CRUD (list_models, list_workflows, update/delete preset/agent/workflow).
+- **Éphémères visibles** : afficher les workflows éphémères dans l'admin pour le debug. **PAS ENCORE MIGRÉ**.
 
 ---
 
@@ -158,3 +159,4 @@ Cocher `[x]` au fur et à mesure des transferts.
 | 2026-04-11 | `f418e80` | Provider Anthropic |
 | 2026-04-11 | `4c9eadf` | Exécution code Python (sandbox) |
 | 2026-04-11 | `3c50b5f` | Code executor — audit trail + widget sidebar |
+| 2026-04-11 | `a9700c8` | MCP trusted flag + 8 nouveaux tools CRUD |
