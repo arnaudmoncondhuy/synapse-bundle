@@ -138,6 +138,7 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
         $container->setParameter('synapse.security.chat_role', $config['security']['chat_role'] ?? 'ROLE_USER');
         $apiCsrfEnabled = $config['security']['api_csrf_enabled'] ?? true;
         $container->setParameter('synapse.security.api_csrf_enabled', $apiCsrfEnabled);
+        $container->setParameter('synapse.security.mcp_trusted', (bool) ($config['security']['mcp_trusted'] ?? false));
 
         if (!$apiCsrfEnabled) {
             @trigger_error('Synapse: CSRF protection is disabled on API endpoints. This exposes chat endpoints to cross-site request forgery attacks.', \E_USER_WARNING);

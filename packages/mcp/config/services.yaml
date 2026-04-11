@@ -100,3 +100,79 @@ services:
       - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
     tags:
       - { name: mcp.tool }
+
+  # === CRUD Tools (read + update + delete for models, presets, agents, workflows) ===
+
+  ArnaudMoncondhuy\SynapseMcp\Tool\ListModelsTool:
+    public: true
+    arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelRepository'
+      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
+    tags:
+      - { name: mcp.tool }
+
+  ArnaudMoncondhuy\SynapseMcp\Tool\ListWorkflowsTool:
+    public: true
+    arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository'
+      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
+    tags:
+      - { name: mcp.tool }
+
+  ArnaudMoncondhuy\SynapseMcp\Tool\UpdatePresetTool:
+    public: true
+    arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository'
+      - '@doctrine.orm.entity_manager'
+      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
+    tags:
+      - { name: mcp.tool }
+
+  ArnaudMoncondhuy\SynapseMcp\Tool\DeletePresetTool:
+    public: true
+    arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository'
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository'
+      - '@doctrine.orm.entity_manager'
+      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
+    tags:
+      - { name: mcp.tool }
+
+  ArnaudMoncondhuy\SynapseMcp\Tool\UpdateAgentTool:
+    public: true
+    arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository'
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository'
+      - '@doctrine.orm.entity_manager'
+      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
+    tags:
+      - { name: mcp.tool }
+
+  ArnaudMoncondhuy\SynapseMcp\Tool\DeleteAgentTool:
+    public: true
+    arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository'
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository'
+      - '@doctrine.orm.entity_manager'
+      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
+    tags:
+      - { name: mcp.tool }
+
+  ArnaudMoncondhuy\SynapseMcp\Tool\UpdateWorkflowTool:
+    public: true
+    arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository'
+      - '@doctrine.orm.entity_manager'
+      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
+    tags:
+      - { name: mcp.tool }
+
+  ArnaudMoncondhuy\SynapseMcp\Tool\DeleteWorkflowTool:
+    public: true
+    arguments:
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository'
+      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository'
+      - '@doctrine.orm.entity_manager'
+      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
+    tags:
+      - { name: mcp.tool }
