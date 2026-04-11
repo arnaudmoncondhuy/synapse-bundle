@@ -127,3 +127,226 @@
         width: 100%;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * Chantier J : Workflow Builder v2 (Stimulus) — inspiré n8n
+ *
+ * Styles pour le controller `synapse-workflow-builder` qui gère le
+ * CRUD complet des 5 types de steps. Couleurs par type, nested cards
+ * pour parallel/loop, type picker dropdown.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Couleurs par type (CSS variables) ──────────────────────────────────── */
+
+.synapse-wf-step--agent        { --sv2-wf-step-color: #3b82f6; }  /* bleu */
+.synapse-wf-step--conditional  { --sv2-wf-step-color: #f59e0b; }  /* ambre */
+.synapse-wf-step--parallel     { --sv2-wf-step-color: #8b5cf6; }  /* violet */
+.synapse-wf-step--loop         { --sv2-wf-step-color: #10b981; }  /* vert */
+.synapse-wf-step--sub_workflow { --sv2-wf-step-color: #6366f1; }  /* indigo */
+
+/* ── Card de step ───────────────────────────────────────────────────────── */
+
+.synapse-wf-step {
+    position: relative;
+    border-left: 3px solid var(--sv2-wf-step-color, var(--synapse-admin-primary));
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.synapse-wf-step:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Connecteur vertical entre steps consécutifs (inspiration n8n) */
+.synapse-wf-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: -2px;
+    bottom: -16px;
+    width: 3px;
+    height: 16px;
+    background: var(--synapse-admin-border, #e5e7eb);
+    z-index: 1;
+}
+
+/* Nested cards (parallel branches, loop template) : profondeur visuelle */
+.synapse-wf-step--depth-1 {
+    margin-left: 1rem;
+    background: rgba(0, 0, 0, 0.015);
+}
+
+.synapse-wf-step--depth-2 {
+    margin-left: 2rem;
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.synapse-wf-step--depth-3 {
+    margin-left: 3rem;
+    background: rgba(0, 0, 0, 0.045);
+}
+
+/* ── Header d'un step ───────────────────────────────────────────────────── */
+
+.synapse-wf-step__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.8rem;
+}
+
+.synapse-wf-step__icon {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+    color: var(--sv2-wf-step-color);
+}
+
+.synapse-wf-step__name-input {
+    flex: 1;
+    font-family: var(--synapse-admin-font-mono, monospace);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid transparent;
+    background: transparent;
+    min-width: 0;
+}
+
+.synapse-wf-step__name-input:hover,
+.synapse-wf-step__name-input:focus {
+    border-color: var(--synapse-admin-border, #e5e7eb);
+    background: white;
+}
+
+.synapse-wf-step__type-select {
+    flex-shrink: 0;
+    width: auto;
+    padding: 0.25rem 1.6rem 0.25rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border: 1px solid var(--sv2-wf-step-color);
+    background: rgba(0, 0, 0, 0) no-repeat right 0.35rem center/0.8rem;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='3'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-color: color-mix(in srgb, var(--sv2-wf-step-color) 10%, white);
+    color: var(--sv2-wf-step-color);
+    border-radius: 12px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.synapse-wf-step__actions {
+    display: flex;
+    gap: 0.2rem;
+    margin-left: auto;
+}
+
+/* ── Body d'un step ─────────────────────────────────────────────────────── */
+
+.synapse-wf-step__body {
+    padding: 0.5rem 0.8rem 0.8rem 0.8rem;
+    border-top: 1px solid var(--synapse-admin-border-light, #f3f4f6);
+}
+
+/* ── Mapping rows (réutilisé pour agent + sub_workflow) ─────────────────── */
+
+.synapse-wf-step__mapping {
+    margin-top: 0.5rem;
+}
+
+.synapse-wf-step__mapping-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.synapse-wf-step__mapping-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+
+.synapse-wf-step__mapping-key {
+    flex: 0 0 120px;
+    font-family: monospace;
+    font-size: 0.75rem;
+}
+
+.synapse-wf-step__mapping-source {
+    flex: 1;
+    font-size: 0.75rem;
+    min-width: 0;
+}
+
+.synapse-wf-step__mapping-literal {
+    flex: 1;
+    font-size: 0.75rem;
+    min-width: 0;
+}
+
+/* ── Parallel branches (nested cards) ──────────────────────────────────── */
+
+.synapse-wf-step__branches {
+    border-left: 2px dashed var(--sv2-wf-step-color, #8b5cf6);
+    padding-left: 0.6rem;
+    margin-left: 0.4rem;
+    margin-top: 0.4rem;
+}
+
+.synapse-wf-step__branches .synapse-wf-step {
+    margin-bottom: 0.6rem;
+}
+
+.synapse-wf-step__branches .synapse-wf-step:last-child {
+    margin-bottom: 0;
+}
+
+/* ── Add step dropdown (type picker à l'insertion) ──────────────────────── */
+
+.synapse-wf-step__add-dropdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.4rem;
+    padding: 0.6rem;
+    margin-top: 0.4rem;
+    background: color-mix(in srgb, var(--synapse-admin-primary) 5%, white);
+    border: 1px dashed var(--synapse-admin-primary);
+    border-radius: 8px;
+    animation: synapse-wf-add-dropdown-appear 0.15s ease;
+}
+
+@keyframes synapse-wf-add-dropdown-appear {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.synapse-wf-step__add-option {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.7rem;
+    background: white;
+    border: 1px solid var(--synapse-admin-border, #e5e7eb);
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--synapse-admin-text, #1e293b);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.synapse-wf-step__add-option:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.synapse-wf-step__add-option--agent:hover        { border-color: #3b82f6; }
+.synapse-wf-step__add-option--conditional:hover  { border-color: #f59e0b; }
+.synapse-wf-step__add-option--parallel:hover     { border-color: #8b5cf6; }
+.synapse-wf-step__add-option--loop:hover         { border-color: #10b981; }
+.synapse-wf-step__add-option--sub_workflow:hover { border-color: #6366f1; }
+
+.synapse-wf-step__add-option-icon {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}

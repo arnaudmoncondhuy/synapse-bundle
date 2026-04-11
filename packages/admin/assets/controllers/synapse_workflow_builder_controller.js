@@ -104,10 +104,52 @@ export default class extends Controller {
 
     // ── Public actions (invoked via data-action) ────────────────────────────
 
-    addStep() {
-        this.def.steps.push(this._createStepOfType('agent'));
-        this._syncJson();
-        this.render();
+    addStep(event) {
+        // Chantier J partie 2 : ouvre un dropdown de type à côté du bouton
+        // pour que le user choisisse le type avant l'insertion. Click
+        // ailleurs = fermeture.
+        this._closeOpenTypeDropdown();
+
+        const dropdown = document.createElement('div');
+        dropdown.className = 'synapse-wf-step__add-dropdown';
+        for (const t of STEP_TYPES) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'synapse-wf-step__add-option synapse-wf-step__add-option--' + t.value;
+            btn.innerHTML = '<span class="synapse-wf-step__add-option-icon">' + t.icon + '</span><span>' + t.label + '</span>';
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.def.steps.push(this._createStepOfType(t.value));
+                this._syncJson();
+                this._closeOpenTypeDropdown();
+                this.render();
+            });
+            dropdown.appendChild(btn);
+        }
+
+        // Positionne au-dessous du bouton cliqué
+        const btn = event?.currentTarget || this.addStepButtonTarget;
+        btn.parentNode.insertBefore(dropdown, btn.nextSibling);
+        this._openDropdown = dropdown;
+
+        // Fermeture au click ailleurs
+        setTimeout(() => {
+            const onClickOutside = (e) => {
+                if (!dropdown.contains(e.target) && e.target !== btn) {
+                    this._closeOpenTypeDropdown();
+                    document.removeEventListener('click', onClickOutside);
+                }
+            };
+            document.addEventListener('click', onClickOutside);
+        }, 0);
+    }
+
+    _closeOpenTypeDropdown() {
+        if (this._openDropdown) {
+            this._openDropdown.remove();
+            this._openDropdown = null;
+        }
     }
 
     addOutput() {
@@ -224,10 +266,19 @@ export default class extends Controller {
             case 'agent':
                 this._renderAgentBody(step, body, options);
                 break;
+            case 'conditional':
+                this._renderConditionalBody(step, body, options);
+                break;
+            case 'parallel':
+                this._renderParallelBody(step, body, options);
+                break;
+            case 'loop':
+                this._renderLoopBody(step, body, options);
+                break;
+            case 'sub_workflow':
+                this._renderSubWorkflowBody(step, body, options);
+                break;
             default:
-                // Chantier J partie 1 : les 4 autres types sont rendus en
-                // read-only jusqu'à la partie 2 qui livrera les formulaires
-                // d'édition dédiés.
                 this._renderReadOnlyBody(step, stepType, body);
                 break;
         }
@@ -261,12 +312,38 @@ export default class extends Controller {
         });
         header.appendChild(nameInput);
 
-        // Type badge (readonly en partie 1, deviendra dropdown type picker en partie 2)
-        const typeBadge = document.createElement('span');
-        typeBadge.className = 'synapse-admin-badge synapse-wf-step__type-badge synapse-wf-step__type-badge--' + (step.type || 'agent');
-        typeBadge.textContent = typeMeta.label;
-        typeBadge.title = 'Type ' + typeMeta.value;
-        header.appendChild(typeBadge);
+        // Type picker — dropdown qui change le type du step. Au changement,
+        // les champs du type courant sont effacés et ceux du nouveau type
+        // sont initialisés via _createStepOfType.
+        const typeSelect = document.createElement('select');
+        typeSelect.className = 'synapse-admin-input synapse-wf-step__type-select synapse-wf-step__type-select--' + (step.type || 'agent');
+        typeSelect.title = 'Type de step';
+        for (const t of STEP_TYPES) {
+            const opt = new Option(t.icon + ' ' + t.label, t.value);
+            if ((step.type || 'agent') === t.value) {
+                opt.selected = true;
+            }
+            typeSelect.appendChild(opt);
+        }
+        // Désactiver le type picker quand on dépasse la limite de nesting
+        // (éviter que le user imbrique parallel > parallel > parallel...
+        // plus profondément qu'autorisé, car le runtime borne via
+        // AgentContext::maxDepth).
+        if (options.depth >= MAX_NESTING_DEPTH - 1) {
+            typeSelect.title = 'Type fixe à ce niveau de profondeur (max ' + MAX_NESTING_DEPTH + ')';
+        }
+        typeSelect.addEventListener('change', () => {
+            const newType = typeSelect.value;
+            const oldType = step.type || 'agent';
+            if (newType === oldType) return;
+            if (!this._confirmTypeChange(step, oldType, newType)) {
+                typeSelect.value = oldType;
+                return;
+            }
+            this._changeStepType(step, newType);
+            options.onUpdate();
+        });
+        header.appendChild(typeSelect);
 
         // Actions
         const actions = document.createElement('div');
@@ -462,7 +539,338 @@ export default class extends Controller {
         return row;
     }
 
-    // ── Body — Read-only (stub partie 1 pour types non-agent) ──────────────
+    // ── Body — Conditional ─────────────────────────────────────────────────
+
+    _renderConditionalBody(step, body, options) {
+        // Condition expression (JSONPath ou littéral)
+        const condGroup = document.createElement('div');
+        condGroup.className = 'synapse-admin-form-group synapse-admin-mb-md';
+        const condLabel = document.createElement('label');
+        condLabel.className = 'synapse-admin-label';
+        condLabel.innerHTML = 'Condition (JSONPath) <span class="synapse-admin-required">*</span>';
+        condGroup.appendChild(condLabel);
+
+        const condInput = document.createElement('input');
+        condInput.type = 'text';
+        condInput.className = 'synapse-admin-input synapse-admin-font-mono';
+        condInput.placeholder = '$.steps.classify.output.data.priority';
+        condInput.value = step.condition || '';
+        condInput.addEventListener('input', () => {
+            step.condition = condInput.value;
+            this._syncJson();
+        });
+        condGroup.appendChild(condInput);
+
+        const condHelp = document.createElement('p');
+        condHelp.className = 'synapse-admin-help-text';
+        condHelp.innerHTML = 'Expression à évaluer. Commence par <code>$.</code> pour un JSONPath, sinon valeur littérale. Le résultat est accessible via <code>$.steps.' + escapeHtml(step.name || '&lt;nom&gt;') + '.output.data.matched</code>.';
+        condGroup.appendChild(condHelp);
+        body.appendChild(condGroup);
+
+        // Toggle comparaison stricte vs truthy check
+        const equalsGroup = document.createElement('div');
+        equalsGroup.className = 'synapse-admin-form-group synapse-admin-mb-md';
+
+        const equalsToggleLabel = document.createElement('label');
+        equalsToggleLabel.className = 'synapse-admin-label synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm';
+        const equalsCheckbox = document.createElement('input');
+        equalsCheckbox.type = 'checkbox';
+        equalsCheckbox.checked = 'equals' in step;
+        equalsToggleLabel.appendChild(equalsCheckbox);
+        const equalsLabelText = document.createElement('span');
+        equalsLabelText.textContent = 'Comparaison stricte (sinon truthy check)';
+        equalsToggleLabel.appendChild(equalsLabelText);
+        equalsGroup.appendChild(equalsToggleLabel);
+
+        const equalsInputWrap = document.createElement('div');
+        equalsInputWrap.className = 'synapse-admin-mt-sm';
+        equalsInputWrap.style.display = equalsCheckbox.checked ? '' : 'none';
+        const equalsInput = document.createElement('input');
+        equalsInput.type = 'text';
+        equalsInput.className = 'synapse-admin-input synapse-admin-font-mono';
+        equalsInput.placeholder = 'valeur à comparer (ex: "urgent" ou 42 ou true)';
+        equalsInput.value = 'equals' in step ? JSON.stringify(step.equals) : '';
+        equalsInput.addEventListener('input', () => {
+            // On tente de parser comme JSON pour supporter string/number/bool/null
+            try {
+                step.equals = JSON.parse(equalsInput.value);
+            } catch (e) {
+                // Si c'est pas du JSON valide, on stocke comme string brute
+                step.equals = equalsInput.value;
+            }
+            this._syncJson();
+        });
+        equalsInputWrap.appendChild(equalsInput);
+        equalsGroup.appendChild(equalsInputWrap);
+
+        equalsCheckbox.addEventListener('change', () => {
+            if (equalsCheckbox.checked) {
+                step.equals = step.equals ?? '';
+                equalsInputWrap.style.display = '';
+            } else {
+                delete step.equals;
+                equalsInputWrap.style.display = 'none';
+            }
+            this._syncJson();
+        });
+        body.appendChild(equalsGroup);
+    }
+
+    // ── Body — Parallel (récursif) ─────────────────────────────────────────
+
+    _renderParallelBody(step, body, options) {
+        if (!Array.isArray(step.branches)) {
+            step.branches = [];
+        }
+
+        const header = document.createElement('div');
+        header.className = 'synapse-admin-flex synapse-admin-items-center synapse-admin-justify-between synapse-admin-mb-sm';
+        const label = document.createElement('span');
+        label.className = 'synapse-admin-label';
+        label.innerHTML = 'Branches <span class="synapse-admin-text-tertiary">(exécutées indépendamment)</span>';
+        header.appendChild(label);
+
+        const addBranchBtn = document.createElement('button');
+        addBranchBtn.type = 'button';
+        addBranchBtn.className = 'synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm';
+        addBranchBtn.innerHTML = '<i data-lucide="plus"></i> Ajouter une branche';
+        addBranchBtn.addEventListener('click', () => {
+            step.branches.push(this._createStepOfType('agent'));
+            this._syncJson();
+            options.onUpdate();
+        });
+        header.appendChild(addBranchBtn);
+        body.appendChild(header);
+
+        // Liste des branches — rendu récursif via _renderStep avec depth+1
+        const branchesContainer = document.createElement('div');
+        branchesContainer.className = 'synapse-wf-step__branches';
+
+        if (step.branches.length === 0) {
+            branchesContainer.innerHTML = '<div class="synapse-admin-text-xs synapse-admin-text-tertiary" style="padding:0.5rem;">Aucune branche. Clique « Ajouter une branche » pour commencer.</div>';
+        } else {
+            step.branches.forEach((branch, idx) => {
+                const branchCard = this._renderStep(branch, {
+                    depth: options.depth + 1,
+                    index: idx,
+                    allowMove: true,
+                    allowRemove: true,
+                    isFirst: idx === 0,
+                    isLast: idx === step.branches.length - 1,
+                    onUpdate: options.onUpdate,
+                    onMoveUp: () => {
+                        if (idx > 0) {
+                            [step.branches[idx - 1], step.branches[idx]] = [step.branches[idx], step.branches[idx - 1]];
+                            this._syncJson();
+                            options.onUpdate();
+                        }
+                    },
+                    onMoveDown: () => {
+                        if (idx < step.branches.length - 1) {
+                            [step.branches[idx + 1], step.branches[idx]] = [step.branches[idx], step.branches[idx + 1]];
+                            this._syncJson();
+                            options.onUpdate();
+                        }
+                    },
+                    onRemove: () => {
+                        step.branches.splice(idx, 1);
+                        this._syncJson();
+                        options.onUpdate();
+                    },
+                });
+                branchesContainer.appendChild(branchCard);
+            });
+        }
+        body.appendChild(branchesContainer);
+
+        // Aide contextuelle
+        const help = document.createElement('p');
+        help.className = 'synapse-admin-help-text synapse-admin-mt-sm';
+        help.innerHTML = 'Output accessible via <code>$.steps.' + escapeHtml(step.name || '&lt;nom&gt;') + '.output.data.branches.&lt;branchName&gt;.text</code>';
+        body.appendChild(help);
+    }
+
+    // ── Body — Loop (récursif) ─────────────────────────────────────────────
+
+    _renderLoopBody(step, body, options) {
+        // items_path
+        const itemsGroup = document.createElement('div');
+        itemsGroup.className = 'synapse-admin-form-group synapse-admin-mb-md';
+        const itemsLabel = document.createElement('label');
+        itemsLabel.className = 'synapse-admin-label';
+        itemsLabel.innerHTML = 'Items (JSONPath vers un array) <span class="synapse-admin-required">*</span>';
+        itemsGroup.appendChild(itemsLabel);
+
+        const itemsInput = document.createElement('input');
+        itemsInput.type = 'text';
+        itemsInput.className = 'synapse-admin-input synapse-admin-font-mono';
+        itemsInput.placeholder = '$.inputs.documents';
+        itemsInput.value = step.items_path || '';
+        itemsInput.addEventListener('input', () => {
+            step.items_path = itemsInput.value;
+            this._syncJson();
+        });
+        itemsGroup.appendChild(itemsInput);
+        body.appendChild(itemsGroup);
+
+        // item_alias + max_iterations (ligne 2 colonnes)
+        const row2 = document.createElement('div');
+        row2.className = 'synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-md';
+
+        const aliasGroup = document.createElement('div');
+        aliasGroup.className = 'synapse-admin-form-group';
+        const aliasLabel = document.createElement('label');
+        aliasLabel.className = 'synapse-admin-label synapse-admin-text-sm';
+        aliasLabel.textContent = 'Alias item';
+        aliasGroup.appendChild(aliasLabel);
+        const aliasInput = document.createElement('input');
+        aliasInput.type = 'text';
+        aliasInput.className = 'synapse-admin-input synapse-admin-font-mono';
+        aliasInput.placeholder = 'item';
+        aliasInput.value = step.item_alias || '';
+        aliasInput.addEventListener('input', () => {
+            step.item_alias = aliasInput.value || undefined;
+            if (!step.item_alias) delete step.item_alias;
+            this._syncJson();
+        });
+        aliasGroup.appendChild(aliasInput);
+        row2.appendChild(aliasGroup);
+
+        const maxGroup = document.createElement('div');
+        maxGroup.className = 'synapse-admin-form-group';
+        const maxLabel = document.createElement('label');
+        maxLabel.className = 'synapse-admin-label synapse-admin-text-sm';
+        maxLabel.textContent = 'Max itérations';
+        maxGroup.appendChild(maxLabel);
+        const maxInput = document.createElement('input');
+        maxInput.type = 'number';
+        maxInput.className = 'synapse-admin-input';
+        maxInput.min = '1';
+        maxInput.max = '1000';
+        maxInput.placeholder = '50';
+        maxInput.value = step.max_iterations || '';
+        maxInput.addEventListener('input', () => {
+            const v = parseInt(maxInput.value, 10);
+            if (Number.isFinite(v) && v > 0) {
+                step.max_iterations = v;
+            } else {
+                delete step.max_iterations;
+            }
+            this._syncJson();
+        });
+        maxGroup.appendChild(maxInput);
+        row2.appendChild(maxGroup);
+        body.appendChild(row2);
+
+        // Step template (1 step rendu récursivement)
+        const tplHeader = document.createElement('div');
+        tplHeader.className = 'synapse-admin-mb-sm';
+        tplHeader.innerHTML = '<span class="synapse-admin-label">Step template <span class="synapse-admin-text-tertiary">(exécuté pour chaque item)</span></span>';
+        body.appendChild(tplHeader);
+
+        if (!step.step) {
+            step.step = this._createStepOfType('agent');
+            step.step.name = 'template';
+        }
+
+        const tplCard = this._renderStep(step.step, {
+            depth: options.depth + 1,
+            index: 0,
+            allowMove: false,  // un seul template, pas de move
+            allowRemove: false,  // un seul template, pas de remove
+            isFirst: true,
+            isLast: true,
+            onUpdate: options.onUpdate,
+            onMoveUp: () => {},
+            onMoveDown: () => {},
+            onRemove: () => {},
+        });
+        body.appendChild(tplCard);
+
+        // Aide contextuelle
+        const help = document.createElement('p');
+        help.className = 'synapse-admin-help-text synapse-admin-mt-sm';
+        const alias = step.item_alias || 'item';
+        help.innerHTML = 'L\'item courant est accessible via <code>$.inputs.' + escapeHtml(alias) + '</code> et l\'index via <code>$.inputs.index</code>. Outputs sous <code>$.steps.' + escapeHtml(step.name || '&lt;nom&gt;') + '.output.data.iterations</code>.';
+        body.appendChild(help);
+    }
+
+    // ── Body — Sub-workflow ────────────────────────────────────────────────
+
+    _renderSubWorkflowBody(step, body, options) {
+        // Sélecteur de workflow cible
+        const wfGroup = document.createElement('div');
+        wfGroup.className = 'synapse-admin-form-group synapse-admin-mb-md';
+        const wfLabel = document.createElement('label');
+        wfLabel.className = 'synapse-admin-label';
+        wfLabel.innerHTML = 'Workflow délégué <span class="synapse-admin-required">*</span>';
+        wfGroup.appendChild(wfLabel);
+
+        const wfSelect = document.createElement('select');
+        wfSelect.className = 'synapse-admin-input';
+        wfSelect.appendChild(new Option('— Sélectionne un workflow —', ''));
+
+        let found = false;
+        for (const wf of this.workflowsValue) {
+            const opt = new Option(wf.name + ' (' + wf.key + ')', wf.key);
+            if (step.workflow_key === wf.key) {
+                opt.selected = true;
+                found = true;
+            }
+            wfSelect.appendChild(opt);
+        }
+        if (step.workflow_key && !found) {
+            const ghost = new Option('⚠️ ' + step.workflow_key + ' (introuvable ou inactif)', step.workflow_key);
+            ghost.selected = true;
+            wfSelect.appendChild(ghost);
+        }
+        wfSelect.addEventListener('change', () => {
+            step.workflow_key = wfSelect.value;
+            this._syncJson();
+        });
+        wfGroup.appendChild(wfSelect);
+
+        const help = document.createElement('p');
+        help.className = 'synapse-admin-help-text';
+        help.textContent = 'Les workflows inactifs, éphémères, et le workflow courant sont exclus de la liste pour éviter les références circulaires.';
+        wfGroup.appendChild(help);
+        body.appendChild(wfGroup);
+
+        // Section input_mapping (standard, comme pour agent)
+        body.appendChild(this._buildMappingSection(step, options));
+    }
+
+    // ── Type change handling ───────────────────────────────────────────────
+
+    _confirmTypeChange(step, oldType, newType) {
+        // Champs critiques qui seront perdus par type
+        const lossCheck = {
+            agent: () => (step.agent_name && step.agent_name !== '') || (step.input_mapping && Object.keys(step.input_mapping).length > 0),
+            conditional: () => step.condition && step.condition !== '',
+            parallel: () => Array.isArray(step.branches) && step.branches.length > 0,
+            loop: () => step.items_path || (step.step && step.step.agent_name),
+            sub_workflow: () => step.workflow_key && step.workflow_key !== '',
+        };
+        const check = lossCheck[oldType];
+        if (check && check()) {
+            return window.confirm(`Changer le type de « ${step.name || 'ce step'} » de ${oldType} vers ${newType} effacera les champs spécifiques au type actuel. Continuer ?`);
+        }
+        return true;
+    }
+
+    _changeStepType(step, newType) {
+        // Preserve le nom uniquement, efface tout le reste, puis merge avec
+        // les champs par défaut du nouveau type.
+        const preservedName = step.name;
+        for (const key of Object.keys(step)) {
+            delete step[key];
+        }
+        const defaults = this._createStepOfType(newType);
+        Object.assign(step, defaults);
+        step.name = preservedName;
+    }
+
+    // ── Body — Read-only (fallback pour types inconnus) ────────────────────
 
     _renderReadOnlyBody(step, stepType, body) {
         const alert = document.createElement('div');
