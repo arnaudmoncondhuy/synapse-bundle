@@ -1,0 +1,298 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Runs | Intelligence | Synapse Administration{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.intelligence'|trans(domain='synapse_admin') }}</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-current">Runs</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="activity"></i>
+				</span>
+				Runs de workflows
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Vue unifiée de tous les runs (persistants et éphémères), avec filtres et graphe des coûts sur la période.
+			</p>
+		</div>
+	</div>
+
+	{# ── KPI période sélectionnée ──────────────────────────────────────────── #}
+	<div class="synapse-admin-grid synapse-admin-grid--4 synapse-admin-mb-lg">
+		<div class="synapse-admin-kpi-card">
+			<div class="synapse-admin-kpi__label">Runs sur la période</div>
+			<div class="synapse-admin-kpi__value">{{ total_runs_period }}</div>
+		</div>
+		<div class="synapse-admin-kpi-card">
+			<div class="synapse-admin-kpi__label">Coût total (EUR)</div>
+			<div class="synapse-admin-kpi__value">{{ total_cost_period|number_format(4, ',', ' ') }}</div>
+		</div>
+		<div class="synapse-admin-kpi-card">
+			<div class="synapse-admin-kpi__label">Runs affichés (filtres actifs)</div>
+			<div class="synapse-admin-kpi__value">{{ runs|length }}</div>
+		</div>
+		<div class="synapse-admin-kpi-card">
+			<div class="synapse-admin-kpi__label">Période</div>
+			<div class="synapse-admin-kpi__value" style="font-size: 1rem;">
+				{{ {'24h': '24 heures', '7d': '7 jours', '30d': '30 jours', 'all': 'Tous'}[filters.period] ?? filters.period }}
+			</div>
+		</div>
+	</div>
+
+	{# ── Graphe coûts quotidiens (H composante 5) ─────────────────────────── #}
+	{% if cost_by_day|length > 0 %}
+		<div class="synapse-admin-card synapse-admin-mb-lg">
+			<div class="synapse-admin-card__header">
+				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
+					<i data-lucide="trending-up"></i>
+				</div>
+				<div>
+					<div class="synapse-admin-card__title">Coûts quotidiens</div>
+					<div class="synapse-admin-card__subtitle">
+						Somme des coûts persistés (colonne <code>synapse_workflow_run.total_cost</code>, Chantier B) — barres proportionnelles, survol pour détail.
+					</div>
+				</div>
+			</div>
+			<div class="synapse-admin-card__body">
+				{% set max_cost = 0 %}
+				{% for day in cost_by_day %}
+					{% if day.cost > max_cost %}{% set max_cost = day.cost %}{% endif %}
+				{% endfor %}
+				{% set bar_scale = max_cost > 0 ? max_cost : 0.0001 %}
+
+				<div style="display: flex; align-items: flex-end; gap: 4px; height: 160px; padding: 0.5rem 0; border-bottom: 1px solid var(--synapse-admin-color-border, #e5e5e5);">
+					{% for day in cost_by_day %}
+						{% set height_pct = day.cost > 0 ? ((day.cost / bar_scale) * 100) : 2 %}
+						<div
+							style="flex: 1; background: {{ day.cost > 0 ? '#f59e0b' : '#e5e5e5' }}; height: {{ height_pct }}%; border-radius: 3px 3px 0 0; min-height: 2px; position: relative; cursor: help;"
+							title="{{ day.date }} — {{ day.cost|number_format(6, ',', ' ') }} EUR sur {{ day.runs }} run(s)">
+						</div>
+					{% endfor %}
+				</div>
+
+				<div style="display: flex; gap: 4px; padding-top: 0.25rem; font-size: 0.7rem; color: var(--synapse-admin-text-muted, #666);">
+					{% for day in cost_by_day %}
+						{% if loop.first or loop.last or loop.index0 % 5 == 0 %}
+							<div style="flex: 1; text-align: center;">{{ day.date|slice(8, 2) }}/{{ day.date|slice(5, 2) }}</div>
+						{% else %}
+							<div style="flex: 1;"></div>
+						{% endif %}
+					{% endfor %}
+				</div>
+			</div>
+
+			{% if top_workflows_by_cost|length > 0 %}
+				<div class="synapse-admin-card__body synapse-admin-card__body--compact" style="border-top: 1px solid var(--synapse-admin-color-border, #e5e5e5);">
+					<div class="synapse-admin-card__subtitle synapse-admin-mb-md">
+						<strong>Top 5 workflows par coût sur la période</strong>
+					</div>
+					{% for w in top_workflows_by_cost %}
+						<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-md synapse-admin-mb-sm">
+							<code class="synapse-admin-font-mono" style="flex: 0 0 auto; font-size: 0.8rem;">{{ w.workflowKey }}</code>
+							<div style="flex: 1; background: #f0f0f0; height: 10px; border-radius: 5px; overflow: hidden;">
+								<div style="height: 100%; width: {{ (w.cost / top_workflows_by_cost[0].cost * 100)|round(1) }}%; background: #f59e0b;"></div>
+							</div>
+							<span style="flex: 0 0 auto; font-size: 0.85rem; min-width: 100px; text-align: right;">
+								<strong>{{ w.cost|number_format(6, ',', ' ') }}</strong> EUR <span class="synapse-admin-text-muted">({{ w.runs }} run{{ w.runs > 1 ? 's' : '' }})</span>
+							</span>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+		</div>
+	{% endif %}
+
+	{# ── Filtres ──────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-card synapse-admin-mb-lg">
+		<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+			<form method="GET" action="{{ path('synapse_admin_runs') }}" class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-end" style="flex-wrap: wrap;">
+
+				<div style="flex: 1; min-width: 150px;">
+					<label class="synapse-admin-text-xs synapse-admin-text-muted">Période</label>
+					<select name="period" class="synapse-admin-input">
+						<option value="24h" {{ filters.period == '24h' ? 'selected' }}>24 heures</option>
+						<option value="7d" {{ filters.period == '7d' ? 'selected' }}>7 jours</option>
+						<option value="30d" {{ filters.period == '30d' ? 'selected' }}>30 jours</option>
+						<option value="all" {{ filters.period == 'all' ? 'selected' }}>Tous</option>
+					</select>
+				</div>
+
+				<div style="flex: 1; min-width: 150px;">
+					<label class="synapse-admin-text-xs synapse-admin-text-muted">Statut</label>
+					<select name="status" class="synapse-admin-input">
+						<option value="">Tous</option>
+						{% for status in status_options %}
+							<option value="{{ status.value }}" {{ filters.status is defined and filters.status == status ? 'selected' }}>
+								{{ status.value }}
+							</option>
+						{% endfor %}
+					</select>
+				</div>
+
+				<div style="flex: 1; min-width: 200px;">
+					<label class="synapse-admin-text-xs synapse-admin-text-muted">Workflow</label>
+					<select name="workflow_key" class="synapse-admin-input">
+						<option value="">Tous</option>
+						{% for key, name in workflow_options %}
+							<option value="{{ key }}" {{ filters.workflow_key == key ? 'selected' }}>
+								{{ name }} ({{ key }})
+							</option>
+						{% endfor %}
+					</select>
+				</div>
+
+				{% if user_options|length > 0 %}
+					<div style="flex: 1; min-width: 150px;">
+						<label class="synapse-admin-text-xs synapse-admin-text-muted">Utilisateur</label>
+						<select name="user_id" class="synapse-admin-input">
+							<option value="">Tous</option>
+							{% for uid in user_options %}
+								<option value="{{ uid }}" {{ filters.user_id == uid ? 'selected' }}>{{ uid }}</option>
+							{% endfor %}
+						</select>
+					</div>
+				{% endif %}
+
+				<div style="flex: 0 0 auto;">
+					<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
+						<i data-lucide="filter"></i>
+						Filtrer
+					</button>
+				</div>
+
+				{% if filters.status or filters.workflow_key or filters.user_id %}
+					<div style="flex: 0 0 auto;">
+						<a href="{{ path('synapse_admin_runs', {period: filters.period}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+							<i data-lucide="x"></i>
+							Réinitialiser
+						</a>
+					</div>
+				{% endif %}
+			</form>
+		</div>
+	</div>
+
+	{# ── Table des runs ───────────────────────────────────────────────────── #}
+	<div class="synapse-admin-card">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+				<i data-lucide="list"></i>
+			</div>
+			<div>
+				<div class="synapse-admin-card__title">Runs ({{ runs|length }})</div>
+				<div class="synapse-admin-card__subtitle">
+					Triés par date de démarrage décroissante, limite 200 résultats.
+				</div>
+			</div>
+		</div>
+		<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+			{% if runs|length == 0 %}
+				<div class="synapse-admin-empty-state">
+					<i data-lucide="inbox" class="synapse-admin-empty-state__icon"></i>
+					<p class="synapse-admin-empty-state__title">Aucun run sur la période</p>
+					<p class="synapse-admin-empty-state__subtitle">
+						Essaie d'élargir la période ou de retirer les filtres.
+					</p>
+				</div>
+			{% else %}
+				<table class="synapse-admin-table">
+					<thead>
+						<tr>
+							<th>Statut</th>
+							<th>Workflow</th>
+							<th>Run ID</th>
+							<th>Utilisateur</th>
+							<th>Démarré</th>
+							<th>Durée</th>
+							<th>Tokens</th>
+							<th>Coût</th>
+							<th>Progrès</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for run in runs %}
+							{% set status_class = {
+								'pending': 'synapse-admin-badge--neutral',
+								'running': 'synapse-admin-badge--info',
+								'completed': 'synapse-admin-badge--success',
+								'failed': 'synapse-admin-badge--danger',
+								'cancelled': 'synapse-admin-badge--warning',
+							}[run.status.value] ?? 'synapse-admin-badge--neutral' %}
+							<tr>
+								<td>
+									<span class="synapse-admin-badge {{ status_class }}">
+										{{ run.status.value }}
+									</span>
+								</td>
+								<td>
+									<code class="synapse-admin-font-mono" style="font-size: 0.75rem;">{{ run.workflowKey }}</code>
+									<br>
+									<span class="synapse-admin-text-xs synapse-admin-text-muted">v{{ run.workflowVersion }}</span>
+								</td>
+								<td>
+									<code class="synapse-admin-font-mono" style="font-size: 0.7rem;" title="{{ run.workflowRunId }}">
+										{{ run.workflowRunId|slice(0, 8) }}…
+									</code>
+								</td>
+								<td>
+									{% if run.userId %}
+										<span class="synapse-admin-text-sm">{{ run.userId }}</span>
+									{% else %}
+										<span class="synapse-admin-text-xs synapse-admin-text-muted">système</span>
+									{% endif %}
+								</td>
+								<td>
+									<span class="synapse-admin-text-xs">{{ run.startedAt|date('d/m H:i:s') }}</span>
+								</td>
+								<td>
+									{% if run.durationSeconds is not null %}
+										{{ run.durationSeconds|round(1) }}s
+									{% else %}
+										<span class="synapse-admin-text-xs synapse-admin-text-muted">—</span>
+									{% endif %}
+								</td>
+								<td>
+									{% if run.totalTokens %}
+										{{ run.totalTokens|number_format(0, ',', ' ') }}
+									{% else %}
+										<span class="synapse-admin-text-xs synapse-admin-text-muted">—</span>
+									{% endif %}
+								</td>
+								<td>
+									{% if run.totalCost is not null %}
+										<strong>{{ run.totalCost|number_format(6, ',', ' ') }}</strong>
+										<span class="synapse-admin-text-xs synapse-admin-text-muted">EUR</span>
+									{% else %}
+										<span class="synapse-admin-text-xs synapse-admin-text-muted">—</span>
+									{% endif %}
+								</td>
+								<td>
+									<span class="synapse-admin-text-xs">{{ run.currentStepIndex }} / {{ run.stepsCount }}</span>
+								</td>
+							</tr>
+							{% if run.errorMessage %}
+								<tr>
+									<td colspan="9" class="synapse-admin-text-danger" style="padding-left: 2rem; font-size: 0.8rem;">
+										<i data-lucide="alert-circle" style="width: 0.9rem; height: 0.9rem;"></i>
+										{{ run.errorMessage|slice(0, 200) }}{% if run.errorMessage|length > 200 %}…{% endif %}
+									</td>
+								</tr>
+							{% endif %}
+						{% endfor %}
+					</tbody>
+				</table>
+			{% endif %}
+
+		</div>
+	</div>
+
+{% endblock %}

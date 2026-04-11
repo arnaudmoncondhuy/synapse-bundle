@@ -107,4 +107,138 @@ class SynapseWorkflowRunRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute();
     }
+
+    /**
+     * Recherche filtrée des runs pour la page admin "Runs" (Chantier H).
+     *
+     * Tous les filtres sont optionnels. Chaque filtre est combiné en AND.
+     *
+     * @param array{
+     *     status?: WorkflowRunStatus|null,
+     *     workflowKey?: string|null,
+     *     userId?: string|null,
+     *     since?: \DateTimeImmutable|null,
+     *     until?: \DateTimeImmutable|null,
+     * } $filters
+     *
+     * @return SynapseWorkflowRun[]
+     */
+    public function findFiltered(array $filters = [], int $limit = 100): array
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->orderBy('r.startedAt', 'DESC')
+            ->setMaxResults($limit);
+
+        if (isset($filters['status']) && $filters['status'] instanceof WorkflowRunStatus) {
+            $qb->andWhere('r.status = :status')->setParameter('status', $filters['status']);
+        }
+        if (isset($filters['workflowKey']) && is_string($filters['workflowKey']) && '' !== $filters['workflowKey']) {
+            $qb->andWhere('r.workflowKey = :wkey')->setParameter('wkey', $filters['workflowKey']);
+        }
+        if (isset($filters['userId']) && is_string($filters['userId']) && '' !== $filters['userId']) {
+            $qb->andWhere('r.userId = :uid')->setParameter('uid', $filters['userId']);
+        }
+        if (isset($filters['since']) && $filters['since'] instanceof \DateTimeImmutable) {
+            $qb->andWhere('r.startedAt >= :since')->setParameter('since', $filters['since']);
+        }
+        if (isset($filters['until']) && $filters['until'] instanceof \DateTimeImmutable) {
+            $qb->andWhere('r.startedAt <= :until')->setParameter('until', $filters['until']);
+        }
+
+        /** @var SynapseWorkflowRun[] $result */
+        $result = $qb->getQuery()->getResult();
+
+        return $result;
+    }
+
+    /**
+     * Somme des coûts par jour sur les N derniers jours (Chantier H composante 5).
+     *
+     * Utilisé par le dashboard pour le graphe en barres "coût quotidien sur
+     * 30 jours". Retourne une liste de tuples {date: 'YYYY-MM-DD', cost: float, runs: int}
+     * triée par date ascendante. Les jours sans run sont **remplis à 0** pour
+     * avoir un graphe continu (évite les trous dans l'axe des abscisses).
+     *
+     * Utilise SQL natif (pas DQL) parce que les fonctions de date varient
+     * entre Postgres/MySQL/SQLite et que DQL demande un custom DQL function
+     * pour `DATE()`. SQL natif est simple et ce repo est Postgres-only.
+     *
+     * @return array<int, array{date: string, cost: float, runs: int}>
+     */
+    public function costByDay(int $days = 30): array
+    {
+        $since = (new \DateTimeImmutable())->modify(sprintf('-%d days', $days))->setTime(0, 0, 0);
+
+        $connection = $this->getEntityManager()->getConnection();
+        $sql = <<<'SQL'
+SELECT TO_CHAR(started_at::date, 'YYYY-MM-DD') AS day,
+       COALESCE(SUM(total_cost), 0) AS cost,
+       COUNT(id) AS runs
+FROM synapse_workflow_run
+WHERE started_at >= :since
+GROUP BY day
+ORDER BY day ASC
+SQL;
+
+        /** @var array<int, array{day: string, cost: string|float|null, runs: int|string}> $rows */
+        $rows = $connection->executeQuery($sql, ['since' => $since->format('Y-m-d H:i:s')])->fetchAllAssociative();
+
+        // Index rows by date for O(1) lookup
+        $byDate = [];
+        foreach ($rows as $row) {
+            $byDate[(string) $row['day']] = [
+                'cost' => null !== $row['cost'] ? (float) $row['cost'] : 0.0,
+                'runs' => (int) $row['runs'],
+            ];
+        }
+
+        // Fill missing days with 0 for continuous timeline
+        $result = [];
+        $cursor = $since;
+        $today = (new \DateTimeImmutable())->setTime(0, 0, 0);
+        while ($cursor <= $today) {
+            $dateStr = $cursor->format('Y-m-d');
+            $result[] = [
+                'date' => $dateStr,
+                'cost' => $byDate[$dateStr]['cost'] ?? 0.0,
+                'runs' => $byDate[$dateStr]['runs'] ?? 0,
+            ];
+            $cursor = $cursor->modify('+1 day');
+        }
+
+        return $result;
+    }
+
+    /**
+     * Top N workflows par coût total sur une période (Chantier H composante 5).
+     *
+     * @return array<int, array{workflowKey: string, cost: float, runs: int}>
+     */
+    public function topWorkflowsByCost(int $days = 30, int $limit = 10): array
+    {
+        $since = (new \DateTimeImmutable())->modify(sprintf('-%d days', $days))->setTime(0, 0, 0);
+
+        /** @var array<int, array{workflowKey: string, total: string|null, runs: int}> $rows */
+        $rows = $this->createQueryBuilder('r')
+            ->select('r.workflowKey', 'SUM(r.totalCost) AS total', 'COUNT(r.id) AS runs')
+            ->andWhere('r.startedAt >= :since')
+            ->andWhere('r.totalCost IS NOT NULL')
+            ->setParameter('since', $since)
+            ->groupBy('r.workflowKey')
+            ->orderBy('total', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getArrayResult();
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[] = [
+                'workflowKey' => (string) $row['workflowKey'],
+                'cost' => null !== ($row['total'] ?? null) ? (float) $row['total'] : 0.0,
+                'runs' => (int) ($row['runs'] ?? 0),
+            ];
+        }
+
+        return $result;
+    }
 }
