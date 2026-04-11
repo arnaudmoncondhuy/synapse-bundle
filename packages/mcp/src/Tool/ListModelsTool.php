@@ -11,7 +11,23 @@ use Mcp\Capability\Attribute\McpTool;
 
 #[McpTool(
     name: 'list_models',
-    description: 'List all LLM models declared in Synapse provider YAML catalogs (Google Vertex AI, OVH, Anthropic, etc.), grouped by provider. Each model includes its modelId, label, provider, capabilities (vision, thinking, function calling, streaming, response schema), pricing (input/output per 1M tokens), currency, and effective enabled state. The enabled state is computed by overlaying the synapse_model table (admin overrides) on top of the YAML defaults: a model absent from the table is enabled by default; a model present with isEnabled=false is disabled. Use providerFilter to restrict the output to a single provider slug. Read-only — to toggle a model use the admin UI.'
+    description: <<<'DESC'
+        List all LLM models declared in Synapse provider YAML catalogs (Google Vertex AI, OVH, Anthropic, etc.), grouped by provider.
+
+        Each model entry exposes :
+        - modelId, label, provider, isEnabled, inDb (true if a row exists in synapse_model)
+        - pricing : { input, output, outputImage, currency } (per 1M tokens)
+        - capabilities : textGeneration, embedding, imageGeneration, thinking, functionCalling, parallelToolCalls, responseSchema, streaming, systemPrompt, safetySettings, topK, vision, acceptedMimeTypes (list of MIME types)
+        - limits : maxInputTokens, maxOutputTokens, contextWindow
+        - embeddingDimensions (only for embedding models)
+        - providerRegions (Vertex AI regions where the model is available)
+        - rgpdRisk (RGPD risk classification, if known)
+        - deprecatedAt (ISO date if the model is scheduled for deprecation)
+
+        The enabled state is computed by overlaying the synapse_model table (admin overrides) on top of the YAML defaults : a model absent from the table is enabled by default ; a model present with isEnabled=false is disabled.
+
+        Use providerFilter to restrict the output to a single provider slug. Read-only — to toggle a model use the admin UI.
+        DESC
 )]
 class ListModelsTool
 {
@@ -57,6 +73,11 @@ class ListModelsTool
 
                 $dbEntry = $dbOverrides[$modelId] ?? null;
 
+                // Re-fetch via getCapabilities pour récupérer les champs absents
+                // de getAllCapabilitiesMap (acceptedMimeTypes, supportsSystemPrompt,
+                // supportsSafetySettings, supportsTopK, supportsParallelToolCalls).
+                $fullCaps = $this->capabilityRegistry->getCapabilities($modelId);
+
                 $grouped[$providerName][] = [
                     'modelId' => $modelId,
                     'label' => $dbEntry?->getLabel() ?? $modelId,
@@ -67,21 +88,37 @@ class ListModelsTool
                         'input' => $dbEntry?->getPricingInput() ?? $caps['pricingInput'] ?? null,
                         'output' => $dbEntry?->getPricingOutput() ?? $caps['pricingOutput'] ?? null,
                         'outputImage' => $dbEntry?->getPricingOutputImage() ?? $caps['pricingOutputImage'] ?? null,
-                        'currency' => $dbEntry?->getCurrency() ?? 'USD',
+                        'currency' => $dbEntry?->getCurrency() ?? $fullCaps->currency,
                     ],
                     'capabilities' => [
-                        'textGeneration' => $caps['supportsTextGeneration'] ?? false,
-                        'embedding' => $caps['supportsEmbedding'] ?? false,
-                        'imageGeneration' => $caps['supportsImageGeneration'] ?? false,
-                        'thinking' => $caps['supportsThinking'] ?? false,
-                        'functionCalling' => $caps['supportsFunctionCalling'] ?? false,
-                        'streaming' => $caps['supportsStreaming'] ?? false,
-                        'vision' => $caps['supportsVision'] ?? false,
-                        'responseSchema' => $caps['supportsResponseSchema'] ?? false,
+                        // Modes de génération
+                        'textGeneration' => $fullCaps->supportsTextGeneration,
+                        'embedding' => $fullCaps->supportsEmbedding,
+                        'imageGeneration' => $fullCaps->supportsImageGeneration,
+                        // Reasoning / structured output
+                        'thinking' => $fullCaps->supportsThinking,
+                        'functionCalling' => $fullCaps->supportsFunctionCalling,
+                        'parallelToolCalls' => $fullCaps->supportsParallelToolCalls,
+                        'responseSchema' => $fullCaps->supportsResponseSchema,
+                        // Streaming et prompt système
+                        'streaming' => $fullCaps->supportsStreaming,
+                        'systemPrompt' => $fullCaps->supportsSystemPrompt,
+                        // Safety / sampling
+                        'safetySettings' => $fullCaps->supportsSafetySettings,
+                        'topK' => $fullCaps->supportsTopK,
+                        // Multimodal
+                        'vision' => $fullCaps->supportsVision,
+                        'acceptedMimeTypes' => $fullCaps->acceptedMimeTypes,
                     ],
-                    'maxInputTokens' => $caps['maxInputTokens'] ?? null,
-                    'maxOutputTokens' => $caps['maxOutputTokens'] ?? null,
-                    'deprecatedAt' => $caps['deprecatedAt'] ?? null,
+                    'limits' => [
+                        'maxInputTokens' => $fullCaps->maxInputTokens,
+                        'maxOutputTokens' => $fullCaps->maxOutputTokens,
+                        'contextWindow' => $fullCaps->contextWindow,
+                    ],
+                    'embeddingDimensions' => $fullCaps->dimensions,
+                    'providerRegions' => $fullCaps->providerRegions,
+                    'rgpdRisk' => $fullCaps->rgpdRisk,
+                    'deprecatedAt' => $fullCaps->deprecatedAt,
                 ];
             }
 
