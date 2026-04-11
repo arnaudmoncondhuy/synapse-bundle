@@ -104,7 +104,7 @@ final class BudgetLimit
     }
 
     /**
-     * @return array<string, int|float|null>
+     * @return array<string, float|int|null>
      */
     public function toArray(): array
     {

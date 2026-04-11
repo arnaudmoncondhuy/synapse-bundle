@@ -58,7 +58,7 @@ final class StepInputResolver
     }
 
     /**
-     * @param array<string, mixed> $step  La définition du step (clé `input_mapping` optionnelle)
+     * @param array<string, mixed> $step La définition du step (clé `input_mapping` optionnelle)
      * @param array<string, mixed> $state L'état accumulé (`inputs` + `steps`)
      *
      * @return array<string, mixed> L'input résolu à passer à l'exécuteur du step

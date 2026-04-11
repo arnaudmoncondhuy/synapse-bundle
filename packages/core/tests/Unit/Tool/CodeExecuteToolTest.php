@@ -56,7 +56,7 @@ final class CodeExecuteToolTest extends TestCase
     public function testExecuteDelegatesToExecutorAndSerializesResult(): void
     {
         // Spy executor qui enregistre ses appels et retourne un résultat prévisible.
-        $spy = new class() implements CodeExecutorInterface {
+        $spy = new class implements CodeExecutorInterface {
             public array $calls = [];
 
             public function execute(string $code, string $language = 'python', array $inputs = [], array $options = []): ExecutionResult
@@ -106,7 +106,7 @@ final class CodeExecuteToolTest extends TestCase
     public function testExecuteDispatchesSynapseCodeExecutedEventWhenDispatcherPresent(): void
     {
         // Spy executor qui retourne un résultat prévisible.
-        $spyExec = new class() implements CodeExecutorInterface {
+        $spyExec = new class implements CodeExecutorInterface {
             public function execute(string $code, string $language = 'python', array $inputs = [], array $options = []): ExecutionResult
             {
                 return new ExecutionResult(

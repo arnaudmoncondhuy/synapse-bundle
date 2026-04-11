@@ -106,7 +106,7 @@ final class WorkflowDefinitionValidator
      * `parallel` et le template de `loop`).
      *
      * @param array<string, mixed> $step
-     * @param string               $locationHint Hint pour les messages d'erreur (index numérique ou chemin « parallel/branches/0 »)
+     * @param string $locationHint Hint pour les messages d'erreur (index numérique ou chemin « parallel/branches/0 »)
      */
     private function validateStep(array $step, string $locationHint): ?string
     {
@@ -227,7 +227,7 @@ final class WorkflowDefinitionValidator
      * Collecte tous les noms de steps référencés par JSONPath dans les
      * `input_mapping` et les `outputs` de premier niveau.
      *
-     * @param array<int, mixed>    $steps
+     * @param array<int, mixed> $steps
      * @param array<string, mixed>|mixed $outputs
      *
      * @return list<string>

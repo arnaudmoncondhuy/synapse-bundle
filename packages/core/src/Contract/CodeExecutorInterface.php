@@ -59,17 +59,17 @@ interface CodeExecutorInterface
     /**
      * Exécute `$code` dans l'environnement isolé géré par l'implémentation.
      *
-     * @param string               $code     Le code source à exécuter. Syntaxe dépend de `$language`.
-     * @param string               $language Langage du code (défaut `python`). Une implémentation
-     *                                       peut refuser un langage qu'elle ne supporte pas en
-     *                                       retournant un `ExecutionResult` marqué `failed = true`.
-     * @param array<string, mixed> $inputs   Valeurs injectées dans l'environnement d'exécution
-     *                                       (pour Python : variables globales ou `sys.argv`,
-     *                                       selon l'implémentation). Doivent être JSON-sérialisables.
-     * @param array<string, mixed> $options  Options opaques spécifiques à l'implémentation
-     *                                       (timeout override, memory_limit override, etc.). Les
-     *                                       implémentations doivent ignorer silencieusement les
-     *                                       clés qu'elles ne reconnaissent pas.
+     * @param string $code Le code source à exécuter. Syntaxe dépend de `$language`.
+     * @param string $language Langage du code (défaut `python`). Une implémentation
+     *                         peut refuser un langage qu'elle ne supporte pas en
+     *                         retournant un `ExecutionResult` marqué `failed = true`.
+     * @param array<string, mixed> $inputs Valeurs injectées dans l'environnement d'exécution
+     *                                     (pour Python : variables globales ou `sys.argv`,
+     *                                     selon l'implémentation). Doivent être JSON-sérialisables.
+     * @param array<string, mixed> $options Options opaques spécifiques à l'implémentation
+     *                                      (timeout override, memory_limit override, etc.). Les
+     *                                      implémentations doivent ignorer silencieusement les
+     *                                      clés qu'elles ne reconnaissent pas.
      */
     public function execute(string $code, string $language = 'python', array $inputs = [], array $options = []): ExecutionResult;
 

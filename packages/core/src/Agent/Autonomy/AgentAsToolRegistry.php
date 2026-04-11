@@ -45,9 +45,9 @@ final class AgentAsToolRegistry
 
     /**
      * @param array<int, string> $configuredCallableAgentKeys Liste de clés
-     *     déclarées dans `synapse.autonomy.callable_agents`. Alternative
-     *     déclarative au marker `CallableByAgentsInterface` — permet
-     *     d'exposer des agents DB comme délégables sans toucher à leur code.
+     *                                                        déclarées dans `synapse.autonomy.callable_agents`. Alternative
+     *                                                        déclarative au marker `CallableByAgentsInterface` — permet
+     *                                                        d'exposer des agents DB comme délégables sans toucher à leur code.
      */
     public function __construct(
         private readonly CodeAgentRegistry $codeAgentRegistry,

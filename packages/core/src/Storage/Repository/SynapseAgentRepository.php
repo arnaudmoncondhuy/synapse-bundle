@@ -108,7 +108,7 @@ class SynapseAgentRepository extends ServiceEntityRepository
     }
 
     /**
-     * @deprecated Utiliser {@see findEphemeral()}.
+     * @deprecated utiliser {@see findEphemeral()}
      *
      * @return array<int, SynapseAgent>
      */

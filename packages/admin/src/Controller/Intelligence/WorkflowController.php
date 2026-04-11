@@ -117,7 +117,7 @@ class WorkflowController extends AbstractController
         $this->addFlash('success', sprintf('Workflow « %s » rejeté — sera supprimé au prochain GC.', $workflow->getName()));
 
         // Si appelé en AJAX (depuis la sidebar), retourner une réponse JSON légère.
-        if ('json' === $request->getPreferredFormat() || $request->headers->get('Accept') === 'application/json') {
+        if ('json' === $request->getPreferredFormat() || 'application/json' === $request->headers->get('Accept')) {
             return $this->json(['status' => 'rejected']);
         }
 

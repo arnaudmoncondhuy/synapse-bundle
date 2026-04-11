@@ -104,13 +104,13 @@ abstract class AbstractPlannerAgent extends AbstractAgent
 
     protected function getAgentAsToolRegistry(): AgentAsToolRegistry
     {
-        /** @var AgentAsToolRegistry */
+        /* @var AgentAsToolRegistry */
         return $this->autonomyServicesLocator->get(AgentAsToolRegistry::class);
     }
 
     protected function getWorkflowRunner(): WorkflowRunner
     {
-        /** @var WorkflowRunner */
+        /* @var WorkflowRunner */
         return $this->autonomyServicesLocator->get(WorkflowRunner::class);
     }
 
@@ -468,7 +468,7 @@ PROMPT;
 
         return new Output(
             answer: $lastRunOutput?->getAnswer() ?? sprintf(
-                "Plan exécuté (%d étape(s), %d itération(s)) : %s",
+                'Plan exécuté (%d étape(s), %d itération(s)) : %s',
                 $lastPlan->stepsCount(),
                 $iteration + 1,
                 $lastPlan->reasoning,
@@ -823,12 +823,7 @@ PROMPT;
         );
 
         if (null !== $violation) {
-            throw new BudgetExceededException(
-                violationDetail: sprintf('[%s] %s', $checkpoint, $violation),
-                budget: $budget,
-                currentDepth: $context->getDepth(),
-                elapsedSeconds: $context->getElapsedSeconds(),
-            );
+            throw new BudgetExceededException(violationDetail: sprintf('[%s] %s', $checkpoint, $violation), budget: $budget, currentDepth: $context->getDepth(), elapsedSeconds: $context->getElapsedSeconds());
         }
     }
 

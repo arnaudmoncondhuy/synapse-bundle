@@ -79,9 +79,7 @@ final class ConditionalNodeExecutor implements NodeExecutorInterface
         // avec fallback sur step.condition.
         $condition = StepInputResolver::readConfigField($step, 'condition');
         if (!is_string($condition) || '' === $condition) {
-            throw WorkflowExecutionException::invalidDefinition(
-                sprintf('conditional step "%s" has no "condition" expression', $stepName)
-            );
+            throw WorkflowExecutionException::invalidDefinition(sprintf('conditional step "%s" has no "condition" expression', $stepName));
         }
 
         // Si c'est une expression JSONPath, on l'évalue sur l'état accumulé.

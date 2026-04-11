@@ -62,12 +62,12 @@ final class MultiAgent implements AgentInterface
 
     /**
      * @param iterable<NodeExecutorInterface> $nodeExecutors Collection des exécuteurs de nœuds
-     *                                                      (Chantier F). Typiquement injectée par
-     *                                                      `WorkflowRunner` via AutowireIterator,
-     *                                                      ou passée explicitement dans les tests.
-     *                                                      Doit contenir au moins un executor qui
-     *                                                      supporte le type `agent` (sinon les
-     *                                                      workflows historiques cassent).
+     *                                                       (Chantier F). Typiquement injectée par
+     *                                                       `WorkflowRunner` via AutowireIterator,
+     *                                                       ou passée explicitement dans les tests.
+     *                                                       Doit contenir au moins un executor qui
+     *                                                       supporte le type `agent` (sinon les
+     *                                                       workflows historiques cassent).
      */
     public function __construct(
         private readonly SynapseWorkflow $workflow,
@@ -364,9 +364,7 @@ final class MultiAgent implements AgentInterface
                 // Chantier K2 : agent_name dans config.agent_name avec fallback flat.
                 $agentName = StepInputResolver::readConfigField($step, 'agent_name');
                 if (!is_string($agentName) || '' === $agentName) {
-                    throw WorkflowExecutionException::invalidDefinition(
-                        sprintf('agent step "%s" has no agent_name', $stepName)
-                    );
+                    throw WorkflowExecutionException::invalidDefinition(sprintf('agent step "%s" has no agent_name', $stepName));
                 }
                 if (!$this->resolver->has($agentName)) {
                     throw WorkflowExecutionException::agentNotResolvable($stepName, $agentName);
@@ -383,19 +381,17 @@ final class MultiAgent implements AgentInterface
                 }
             }
 
-            throw WorkflowExecutionException::invalidDefinition(
-                sprintf('step "%s" has unknown type "%s" (no NodeExecutor registered)', $stepName, $type)
-            );
+            throw WorkflowExecutionException::invalidDefinition(sprintf('step "%s" has unknown type "%s" (no NodeExecutor registered)', $stepName, $type));
         }
     }
 
     /**
      * Trouve le premier exécuteur qui déclare supporter le type du step.
      *
-     * @throws WorkflowExecutionException Si aucun exécuteur ne matche (typiquement
+     * @throws WorkflowExecutionException si aucun exécuteur ne matche (typiquement
      *                                    un type ajouté à la def sans avoir tagué
      *                                    un service {@see NodeExecutorInterface} qui
-     *                                    le gère).
+     *                                    le gère)
      */
     private function pickExecutor(string $type, string $stepName): NodeExecutorInterface
     {
@@ -405,9 +401,7 @@ final class MultiAgent implements AgentInterface
             }
         }
 
-        throw WorkflowExecutionException::invalidDefinition(
-            sprintf('step "%s" has unknown type "%s" (no NodeExecutor registered)', $stepName, $type)
-        );
+        throw WorkflowExecutionException::invalidDefinition(sprintf('step "%s" has unknown type "%s" (no NodeExecutor registered)', $stepName, $type));
     }
 
     /**

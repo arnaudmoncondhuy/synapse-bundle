@@ -180,7 +180,7 @@ GROUP BY day
 ORDER BY day ASC
 SQL;
 
-        /** @var array<int, array{day: string, cost: string|float|null, runs: int|string}> $rows */
+        /** @var array<int, array{day: string, cost: float|string|null, runs: int|string}> $rows */
         $rows = $connection->executeQuery($sql, ['since' => $since->format('Y-m-d H:i:s')])->fetchAllAssociative();
 
         // Index rows by date for O(1) lookup

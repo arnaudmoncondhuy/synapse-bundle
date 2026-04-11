@@ -47,9 +47,7 @@ final class AgentNodeExecutor implements NodeExecutorInterface
         // avec fallback sur step.agent_name (format flat historique).
         $agentName = StepInputResolver::readConfigField($step, 'agent_name');
         if (!is_string($agentName) || '' === $agentName) {
-            throw WorkflowExecutionException::invalidDefinition(
-                sprintf('agent step "%s" has no agent_name', (string) ($step['name'] ?? '?'))
-            );
+            throw WorkflowExecutionException::invalidDefinition(sprintf('agent step "%s" has no agent_name', (string) ($step['name'] ?? '?')));
         }
 
         $agent = $this->resolver->resolve($agentName, $childContext);

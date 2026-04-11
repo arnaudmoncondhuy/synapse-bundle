@@ -85,9 +85,9 @@ final class ParallelNodeExecutor implements NodeExecutorInterface
 
     /**
      * @param iterable<NodeExecutorInterface> $nodeExecutors Collection de tous les exécuteurs
-     *                                                      enregistrés, injectée via le tag
-     *                                                      `synapse.node_executor` pour permettre
-     *                                                      le dispatch récursif des branches.
+     *                                                       enregistrés, injectée via le tag
+     *                                                       `synapse.node_executor` pour permettre
+     *                                                       le dispatch récursif des branches.
      */
     public function __construct(
         #[AutowireIterator('synapse.node_executor')]
@@ -109,9 +109,7 @@ final class ParallelNodeExecutor implements NodeExecutorInterface
         // Chantier K2 : branches dans config.branches avec fallback flat.
         $branches = StepInputResolver::readConfigField($step, 'branches');
         if (!is_array($branches) || [] === $branches) {
-            throw WorkflowExecutionException::invalidDefinition(
-                sprintf('parallel step "%s" has empty or missing "branches"', $stepName)
-            );
+            throw WorkflowExecutionException::invalidDefinition(sprintf('parallel step "%s" has empty or missing "branches"', $stepName));
         }
 
         $branchOutputs = [];
@@ -120,9 +118,7 @@ final class ParallelNodeExecutor implements NodeExecutorInterface
 
         foreach ($branches as $idx => $branch) {
             if (!is_array($branch) || !isset($branch['name']) || !is_string($branch['name'])) {
-                throw WorkflowExecutionException::invalidDefinition(
-                    sprintf('parallel step "%s" branch #%s is invalid', $stepName, (string) $idx)
-                );
+                throw WorkflowExecutionException::invalidDefinition(sprintf('parallel step "%s" branch #%s is invalid', $stepName, (string) $idx));
             }
             $branchName = $branch['name'];
 
@@ -182,8 +178,6 @@ final class ParallelNodeExecutor implements NodeExecutorInterface
             }
         }
 
-        throw WorkflowExecutionException::invalidDefinition(
-            sprintf('parallel step "%s": branch "%s" has unknown type "%s"', $parentStepName, $branchName, $type)
-        );
+        throw WorkflowExecutionException::invalidDefinition(sprintf('parallel step "%s": branch "%s" has unknown type "%s"', $parentStepName, $branchName, $type));
     }
 }

@@ -83,16 +83,12 @@ final class SubWorkflowNodeExecutor implements NodeExecutorInterface
         // Chantier K2 : workflow_key dans config.workflow_key avec fallback flat.
         $workflowKey = StepInputResolver::readConfigField($step, 'workflow_key');
         if (!is_string($workflowKey) || '' === $workflowKey) {
-            throw WorkflowExecutionException::invalidDefinition(
-                sprintf('sub_workflow step "%s" missing "workflow_key"', $stepName)
-            );
+            throw WorkflowExecutionException::invalidDefinition(sprintf('sub_workflow step "%s" missing "workflow_key"', $stepName));
         }
 
         $workflow = $this->workflowRepository->findActiveByKey($workflowKey);
         if (null === $workflow) {
-            throw WorkflowExecutionException::invalidDefinition(
-                sprintf('sub_workflow step "%s": workflow "%s" not found or not active', $stepName, $workflowKey)
-            );
+            throw WorkflowExecutionException::invalidDefinition(sprintf('sub_workflow step "%s": workflow "%s" not found or not active', $stepName, $workflowKey));
         }
 
         /** @var WorkflowRunner $runner */

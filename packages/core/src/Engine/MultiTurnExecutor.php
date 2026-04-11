@@ -267,13 +267,7 @@ class MultiTurnExecutor
         );
 
         if (null !== $violation) {
-            throw new BudgetExceededException(
-                violationDetail: sprintf('before turn #%d — %s', $turn, $violation),
-                budget: $budget,
-                currentTokens: $cumulativeUsage->promptTokens + $cumulativeUsage->completionTokens,
-                currentDepth: $context->getDepth(),
-                elapsedSeconds: $context->getElapsedSeconds(),
-            );
+            throw new BudgetExceededException(violationDetail: sprintf('before turn #%d — %s', $turn, $violation), budget: $budget, currentTokens: $cumulativeUsage->promptTokens + $cumulativeUsage->completionTokens, currentDepth: $context->getDepth(), elapsedSeconds: $context->getElapsedSeconds());
         }
     }
 }

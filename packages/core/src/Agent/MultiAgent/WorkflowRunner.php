@@ -64,9 +64,9 @@ class WorkflowRunner
 
     /**
      * @param iterable<NodeExecutorInterface> $nodeExecutors Collection des exécuteurs de nœuds
-     *                                                      (Chantier F), découverts via le tag DI
-     *                                                      `synapse.node_executor`. Passée telle
-     *                                                      quelle à `MultiAgent` à chaque run.
+     *                                                       (Chantier F), découverts via le tag DI
+     *                                                       `synapse.node_executor`. Passée telle
+     *                                                       quelle à `MultiAgent` à chaque run.
      */
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
@@ -119,7 +119,7 @@ class WorkflowRunner
      *
      * @param array{context?: \ArnaudMoncondhuy\SynapseCore\Agent\AgentContext, user_id?: string|null} $options
      *
-     * @throws \RuntimeException Si le MessageBus n'est pas injecté (bundle mal configuré).
+     * @throws \RuntimeException si le MessageBus n'est pas injecté (bundle mal configuré)
      */
     public function runAsync(SynapseWorkflow $workflow, Input $input, array $options = []): SynapseWorkflowRun
     {

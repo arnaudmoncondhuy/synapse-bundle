@@ -135,7 +135,7 @@ class SynapseModelPresetRepository extends ServiceEntityRepository
     }
 
     /**
-     * @deprecated Utiliser {@see findEphemeral()}.
+     * @deprecated utiliser {@see findEphemeral()}
      *
      * @return SynapseModelPreset[]
      */

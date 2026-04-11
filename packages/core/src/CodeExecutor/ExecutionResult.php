@@ -33,20 +33,20 @@ namespace ArnaudMoncondhuy\SynapseCore\CodeExecutor;
 final readonly class ExecutionResult
 {
     /**
-     * @param bool        $success     `true` si l'exécution s'est terminée sans erreur fatale.
-     *                                 `false` si timeout, exception non rattrapée, OOM, ou
-     *                                 exécuteur indisponible.
-     * @param string      $stdout      Sortie standard capturée (déjà tronquée par l'exécuteur
-     *                                 à une limite safety configurable, ex: 1 MB).
-     * @param string      $stderr      Sortie d'erreur capturée (idem).
-     * @param mixed       $returnValue Valeur retournée par le code (selon la sémantique de
-     *                                 l'exécuteur : pour Python, c'est typiquement la valeur
-     *                                 d'une variable `result` conventionnelle).
-     * @param int         $durationMs  Durée d'exécution réelle en millisecondes.
-     * @param string|null $errorType   Classe d'erreur quand `success = false` (ex:
-     *                                 `TimeoutException`, `MemoryLimitExceeded`,
-     *                                 `PythonSyntaxError`, `BackendUnavailable`).
-     * @param string|null $errorMessage Message d'erreur lisible.
+     * @param bool $success `true` si l'exécution s'est terminée sans erreur fatale.
+     *                      `false` si timeout, exception non rattrapée, OOM, ou
+     *                      exécuteur indisponible.
+     * @param string $stdout sortie standard capturée (déjà tronquée par l'exécuteur
+     *                       à une limite safety configurable, ex: 1 MB)
+     * @param string $stderr sortie d'erreur capturée (idem)
+     * @param mixed $returnValue valeur retournée par le code (selon la sémantique de
+     *                           l'exécuteur : pour Python, c'est typiquement la valeur
+     *                           d'une variable `result` conventionnelle)
+     * @param int $durationMs durée d'exécution réelle en millisecondes
+     * @param string|null $errorType classe d'erreur quand `success = false` (ex:
+     *                               `TimeoutException`, `MemoryLimitExceeded`,
+     *                               `PythonSyntaxError`, `BackendUnavailable`)
+     * @param string|null $errorMessage message d'erreur lisible
      */
     public function __construct(
         public bool $success,

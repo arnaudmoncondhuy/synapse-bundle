@@ -255,7 +255,7 @@ class AgentController extends AbstractController
 
         $this->addFlash('success', sprintf('Agent « %s » rejeté — sera supprimé au prochain GC.', $agent->getName()));
 
-        if ('json' === $request->getPreferredFormat() || $request->headers->get('Accept') === 'application/json') {
+        if ('json' === $request->getPreferredFormat() || 'application/json' === $request->headers->get('Accept')) {
             return $this->json(['status' => 'rejected']);
         }
 

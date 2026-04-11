@@ -108,10 +108,7 @@ final class CallAgentTool implements AiToolInterface
     public function execute(array $parameters): mixed
     {
         if (null === $this->parentContext) {
-            throw new \LogicException(sprintf(
-                'CallAgentTool (%s) executed without a parent context. The caller (typically a PlannerAgent) must call setParentContext() before triggering a multi-turn LLM loop that may invoke this tool.',
-                $this->getName(),
-            ));
+            throw new \LogicException(sprintf('CallAgentTool (%s) executed without a parent context. The caller (typically a PlannerAgent) must call setParentContext() before triggering a multi-turn LLM loop that may invoke this tool.', $this->getName()));
         }
 
         $message = isset($parameters['message']) && is_string($parameters['message']) ? $parameters['message'] : '';

@@ -146,7 +146,7 @@ class SynapseWorkflowRun
      *   data: string,          // base64 (nullable/tronqué si gros — TBD Chantier H)
      *   size_bytes: int        // taille du contenu décodé
      * }
-     * ```
+     * ```.
      *
      * Persisté en fin de run par {@see \ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\MultiAgent::call()}.
      * Exposé en forme **summary** (sans `data`) par `inspect_workflow_run` MCP

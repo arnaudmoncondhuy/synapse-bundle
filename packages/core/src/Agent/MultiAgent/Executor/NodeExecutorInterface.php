@@ -62,13 +62,13 @@ interface NodeExecutorInterface
     /**
      * Exécute le nœud et retourne son output normalisé.
      *
-     * @param array<string, mixed> $step          Le step brut de la définition.
-     * @param array<string, mixed> $resolvedInput L'input déjà résolu par `MultiAgent`.
-     * @param array<string, mixed> $state         L'état accumulé du run (`inputs`, `steps`).
-     * @param AgentContext         $childContext  Contexte enfant déjà forgé par `MultiAgent`.
+     * @param array<string, mixed> $step le step brut de la définition
+     * @param array<string, mixed> $resolvedInput L'input déjà résolu par `MultiAgent`
+     * @param array<string, mixed> $state L'état accumulé du run (`inputs`, `steps`)
+     * @param AgentContext $childContext contexte enfant déjà forgé par `MultiAgent`
      *
-     * @throws WorkflowExecutionException Si le step est invalide ou si l'exécution échoue
-     *                                    de manière non récupérable.
+     * @throws WorkflowExecutionException si le step est invalide ou si l'exécution échoue
+     *                                    de manière non récupérable
      */
     public function execute(array $step, array $resolvedInput, array $state, AgentContext $childContext): Output;
 }

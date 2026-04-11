@@ -107,16 +107,12 @@ final class LoopNodeExecutor implements NodeExecutorInterface
         // Chantier K2 : tous les champs du loop sont dans config.* avec fallback flat.
         $itemsPath = StepInputResolver::readConfigField($step, 'items_path');
         if (!is_string($itemsPath) || '' === $itemsPath) {
-            throw WorkflowExecutionException::invalidDefinition(
-                sprintf('loop step "%s" missing "items_path"', $stepName)
-            );
+            throw WorkflowExecutionException::invalidDefinition(sprintf('loop step "%s" missing "items_path"', $stepName));
         }
 
         $template = StepInputResolver::readConfigField($step, 'step');
         if (!is_array($template) || !isset($template['name'])) {
-            throw WorkflowExecutionException::invalidDefinition(
-                sprintf('loop step "%s" missing or invalid "step" template', $stepName)
-            );
+            throw WorkflowExecutionException::invalidDefinition(sprintf('loop step "%s" missing or invalid "step" template', $stepName));
         }
 
         $items = JsonPathLite::isExpression($itemsPath)
@@ -124,9 +120,7 @@ final class LoopNodeExecutor implements NodeExecutorInterface
             : null;
 
         if (!is_array($items)) {
-            throw WorkflowExecutionException::invalidDefinition(
-                sprintf('loop step "%s": items_path "%s" did not resolve to an array (got %s)', $stepName, $itemsPath, get_debug_type($items))
-            );
+            throw WorkflowExecutionException::invalidDefinition(sprintf('loop step "%s": items_path "%s" did not resolve to an array (got %s)', $stepName, $itemsPath, get_debug_type($items)));
         }
 
         $maxIterationsValue = StepInputResolver::readConfigField($step, 'max_iterations');
@@ -135,9 +129,7 @@ final class LoopNodeExecutor implements NodeExecutorInterface
             : self::DEFAULT_MAX_ITERATIONS;
 
         if (count($items) > $maxIterations) {
-            throw WorkflowExecutionException::invalidDefinition(
-                sprintf('loop step "%s": %d items exceeds max_iterations=%d', $stepName, count($items), $maxIterations)
-            );
+            throw WorkflowExecutionException::invalidDefinition(sprintf('loop step "%s": %d items exceeds max_iterations=%d', $stepName, count($items), $maxIterations));
         }
 
         $aliasValue = StepInputResolver::readConfigField($step, 'item_alias');
@@ -204,8 +196,6 @@ final class LoopNodeExecutor implements NodeExecutorInterface
             }
         }
 
-        throw WorkflowExecutionException::invalidDefinition(
-            sprintf('loop step "%s": template has unknown type "%s"', $loopStepName, $type)
-        );
+        throw WorkflowExecutionException::invalidDefinition(sprintf('loop step "%s": template has unknown type "%s"', $loopStepName, $type));
     }
 }

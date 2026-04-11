@@ -103,8 +103,6 @@ class SynapseCodeExecution
     /**
      * Valeur retournée via la convention `result = ...` (extraite par le
      * wrapper Python côté sandbox). JSON-sérialisable ou `repr()` en fallback.
-     *
-     * @var mixed
      */
     #[ORM\Column(name: 'return_value', type: Types::JSON, nullable: true)]
     private mixed $returnValue = null;

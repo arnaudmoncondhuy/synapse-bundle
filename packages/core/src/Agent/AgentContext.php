@@ -41,7 +41,7 @@ final class AgentContext
      * @param string|null $workflowRunId UUID du workflow englobant si on est dans un workflow
      * @param int $depth Profondeur courante (0 = appel racine)
      * @param int $maxDepth Profondeur maximale autorisée
-     * @param int|null $budgetTokensRemaining (@deprecated) Budget tokens restant hérité — conservé pour BC mais remplacé par $budget (Chantier D).
+     * @param int|null $budgetTokensRemaining (@deprecated) Budget tokens restant hérité — conservé pour BC mais remplacé par $budget (Chantier D)
      * @param string $origin Origine de l'appel : 'direct' | 'code' | 'config' | 'ephemeral' | 'workflow'
      * @param BudgetLimit|null $budget Limites de budget (Chantier D). null = pas de budget explicite, l'ancien `budgetTokensRemaining` prend le relais s'il est renseigné.
      * @param Goal|null $goal Objectif poursuivi par l'agent autonome (Chantier D). null pour les agents conversationnels/réactifs classiques. Porté pour que les sous-agents appelés dans une boucle planner puissent y accéder.
@@ -142,7 +142,7 @@ final class AgentContext
 
     /**
      * Retourne une copie avec un `BudgetLimit` appliqué. Utilisé typiquement
-     * par un {@see \ArnaudMoncondhuy\SynapseCore\Agent\Autonomy\AbstractPlannerAgent}
+     * par un {@see Autonomy\AbstractPlannerAgent}
      * qui démarre un run autonome avec des limites explicites.
      */
     public function withBudget(BudgetLimit $budget): self
