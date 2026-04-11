@@ -55,6 +55,8 @@ services:
             # CallAgentTool (Chantier D) : instancié par AgentAsToolRegistry avec
             # un AgentInterface spécifique par instance, pas un service autowirable
             - '../src/Agent/Autonomy/CallAgentTool.php'
+            # PlanResponseSchema (Chantier D) : utilitaire statique, pas un service
+            - '../src/Agent/Autonomy/PlanResponseSchema.php'
 
     # UserAwareContextProvider : classe abstraite → $language injecté via YAML
     ArnaudMoncondhuy\SynapseCore\Context\UserAwareContextProvider:

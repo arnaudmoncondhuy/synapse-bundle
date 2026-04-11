@@ -87,6 +87,19 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
 
+            // ── Autonomy (Chantier D) ─────────────────────────────────────────
+            ->arrayNode('autonomy')
+            ->addDefaultsIfNotSet()
+            ->info('Configuration du système d\'agents autonomes (Chantier D) : planner, agent-as-tool, budgets.')
+            ->children()
+            ->arrayNode('callable_agents')
+            ->info('Liste des clés d\'agents (code OU DB) qui peuvent être délégués par un autre agent (ex: un PlannerAgent). Ces agents apparaîtront comme des tools `call_agent__<key>` dans la liste de tools d\'un agent autonome. Alternative déclarative au marker CallableByAgentsInterface, qui reste valable pour les agents code purs.')
+            ->scalarPrototype()->end()
+            ->defaultValue([])
+            ->end()
+            ->end()
+            ->end()
+
             // ── Ephemeral entities lifecycle ──────────────────────────────────
             ->arrayNode('ephemeral')
             ->addDefaultsIfNotSet()

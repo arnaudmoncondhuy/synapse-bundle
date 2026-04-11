@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseMcp\Tool;
 
+use ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver;
 use ArnaudMoncondhuy\SynapseCore\Agent\CodeAgentRegistry;
+use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\AgentRegistry;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
@@ -21,6 +23,7 @@ class RunAgentTestTool
         private readonly AgentRegistry $agentRegistry,
         private readonly CodeAgentRegistry $codeAgentRegistry,
         private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly AgentResolver $agentResolver,
     ) {
     }
 
@@ -54,6 +57,42 @@ class RunAgentTestTool
         $agentName = $dbAgent?->getName() ?? $codeAgent?->getLabel() ?? $agentKey;
 
         try {
+            // Pour un agent **code** avec une logique execute() custom (ex:
+            // DemoPlannerAgent du Chantier D, ou PresetValidatorAgent), il faut
+            // absolument passer par $agent->call() pour que la logique métier
+            // spécifique soit invoquée. Sinon ChatService::ask() skipperait
+            // execute() et ferait un simple tour conversationnel basé uniquement
+            // sur le system prompt de l'agent.
+            //
+            // Pour un agent **DB** (ConfiguredAgent), il n'y a pas de logique
+            // custom → ChatService::ask() est suffisant et identique à ce que
+            // ConfiguredAgent ferait de toute façon.
+            if (null !== $codeAgent) {
+                $context = $this->agentResolver->createRootContext(
+                    userId: null !== $userId ? (string) $userId : null,
+                    origin: 'mcp_test',
+                );
+                $resolvedAgent = $this->agentResolver->resolve($agentKey, $context);
+                $output = $resolvedAgent->call(
+                    Input::ofMessage($input),
+                    ['context' => $context],
+                );
+
+                return [
+                    'status' => 'success',
+                    'agentKey' => $agentKey,
+                    'agentName' => $agentName,
+                    'source' => 'code',
+                    'input' => $input,
+                    'answer' => $output->getAnswer() ?? '',
+                    'data' => $output->getData(),
+                    'debugId' => $output->getDebugId(),
+                    'usage' => $output->getUsage(),
+                    'timestamp' => (new \DateTime())->format('c'),
+                ];
+            }
+
+            // Agent DB : ChatService::ask() directement (legacy).
             $options = [
                 'agent' => $agentKey,
                 'streaming' => false,
@@ -69,7 +108,7 @@ class RunAgentTestTool
                 'status' => 'success',
                 'agentKey' => $agentKey,
                 'agentName' => $agentName,
-                'source' => null !== $dbAgent ? 'db' : 'code',
+                'source' => 'db',
                 'input' => $input,
                 'answer' => $result['answer'] ?? '',
                 'model' => $result['model'] ?? 'unknown',

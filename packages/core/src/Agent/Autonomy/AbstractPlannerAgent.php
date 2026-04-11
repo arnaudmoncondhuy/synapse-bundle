@@ -8,11 +8,14 @@ use ArnaudMoncondhuy\SynapseCore\Agent\AbstractAgent;
 use ArnaudMoncondhuy\SynapseCore\Agent\AgentContext;
 use ArnaudMoncondhuy\SynapseCore\Agent\Exception\BudgetExceededException;
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowRunner;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\BudgetLimit;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\Goal;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\Plan;
+use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -80,11 +83,15 @@ abstract class AbstractPlannerAgent extends AbstractAgent
      * au moment de construire le planner — la résolution est différée à
      * `$this->getAgentAsToolRegistry()` appelé dans `execute()`, moment où
      * tous les agents sont déjà instanciés dans CodeAgentRegistry.
+     *
+     * Idem pour `WorkflowRunner` (indirectement : il dépend de `AgentResolver`
+     * qui dépend des agents qui dépendent du planner).
      */
     public function __construct(
         protected readonly ChatService $chatService,
-        #[AutowireLocator([AgentAsToolRegistry::class])]
-        private readonly ContainerInterface $agentAsToolRegistryLocator,
+        #[AutowireLocator([AgentAsToolRegistry::class, WorkflowRunner::class])]
+        private readonly ContainerInterface $autonomyServicesLocator,
+        protected readonly EntityManagerInterface $entityManager,
         ?LoggerInterface $logger = null,
     ) {
         $this->logger = $logger ?? new NullLogger();
@@ -93,7 +100,13 @@ abstract class AbstractPlannerAgent extends AbstractAgent
     protected function getAgentAsToolRegistry(): AgentAsToolRegistry
     {
         /** @var AgentAsToolRegistry */
-        return $this->agentAsToolRegistryLocator->get(AgentAsToolRegistry::class);
+        return $this->autonomyServicesLocator->get(AgentAsToolRegistry::class);
+    }
+
+    protected function getWorkflowRunner(): WorkflowRunner
+    {
+        /** @var WorkflowRunner */
+        return $this->autonomyServicesLocator->get(WorkflowRunner::class);
     }
 
     /**
@@ -206,6 +219,15 @@ PROMPT;
                 'stateless' => true,
                 'module' => 'autonomy',
                 'action' => 'plan_initial',
+                // Chantier D : force JSON structuré via response_format. Le planner
+                // ne fait PAS de tool-calling (il produit un Plan, il ne l'exécute
+                // pas — l'exécution est la responsabilité de `executeRun()` phase 2).
+                'response_format' => PlanResponseSchema::schema(),
+                // Pas de tools à disposition du LLM : le planner décrit des steps
+                // qui référencent des agents, il n'appelle rien lui-même. Passer
+                // une liste de tools sèmerait de la confusion.
+                'tools' => [],
+                'context' => $context,
             ]),
         );
 
@@ -246,24 +268,174 @@ PROMPT;
             'runId' => $context->getRequestId(),
         ]);
 
-        // Chantier D phase 1 : on retourne le plan sans l'exécuter. L'exécution
-        // multi-tour arrive en phase 2 après validation utilisateur du pattern.
+        $planUsage = is_array($result['usage'] ?? null) ? $result['usage'] : [];
+        $planDebugId = is_string($result['debug_id'] ?? null) ? $result['debug_id'] : null;
+
+        // ── Chantier D phase 2 : exécution réelle du plan via WorkflowRunner ──
+        //
+        // Le plan est matérialisé comme `SynapseWorkflow` éphémère (visible dans
+        // l'admin, promouvable si l'utilisateur veut le garder), puis exécuté
+        // synchroniquement. Les outputs du workflow deviennent la réponse du
+        // planner, agrégés avec l'usage du planning LLM-call.
+
+        if (0 === $plan->stepsCount()) {
+            // Cas légitime : le planner a conclu que rien n'était faisable avec
+            // les agents disponibles. On retourne le reasoning comme answer
+            // sans lancer d'exécution inutile.
+            return new Output(
+                answer: sprintf(
+                    "Le planner n'a rien à exécuter : %s",
+                    $plan->reasoning,
+                ),
+                data: [
+                    'goal' => $goal->toArray(),
+                    'plan' => $plan->toArray(),
+                    'callable_agents_available' => array_keys($this->getAgentAsToolRegistry()->getCallableAgents()),
+                ],
+                usage: $planUsage,
+                debugId: $planDebugId,
+            );
+        }
+
+        try {
+            $ephemeralWorkflow = $this->persistPlanAsEphemeralWorkflow($plan, $goal);
+            $runOutput = $this->getWorkflowRunner()->run(
+                $ephemeralWorkflow,
+                Input::ofStructured($this->collectInitialInputs($input, $goal)),
+                ['context' => $context],
+            );
+        } catch (\Throwable $e) {
+            $this->logger->error('Planner {name} failed during plan execution: {message}', [
+                'name' => $this->getName(),
+                'message' => $e->getMessage(),
+                'exception' => $e,
+            ]);
+
+            return new Output(
+                answer: sprintf(
+                    "Plan généré mais l'exécution a échoué : %s\n\nPlan :\n%s",
+                    $e->getMessage(),
+                    $plan->reasoning,
+                ),
+                data: [
+                    'error' => 'execution_failed',
+                    'message' => $e->getMessage(),
+                    'goal' => $goal->toArray(),
+                    'plan' => $plan->toArray(),
+                ],
+                usage: $planUsage,
+                debugId: $planDebugId,
+            );
+        }
+
+        // ── Merge planning usage + execution usage ──
+        $mergedUsage = $this->mergeUsage($planUsage, $runOutput->getUsage());
+
+        $this->logger->info('Planner {name} completed: plan + exec = {tokens} total tokens, {steps} steps executed', [
+            'name' => $this->getName(),
+            'tokens' => $mergedUsage['total_tokens'] ?? 0,
+            'steps' => $plan->stepsCount(),
+        ]);
+
         return new Output(
-            answer: sprintf(
-                "Plan généré (%d étape(s)) :\n\n%s",
+            answer: $runOutput->getAnswer() ?? sprintf(
+                "Plan exécuté (%d étape(s)) : %s",
                 $plan->stepsCount(),
                 $plan->reasoning,
             ),
             data: [
                 'goal' => $goal->toArray(),
                 'plan' => $plan->toArray(),
-                'workflow_definition' => $plan->toWorkflowDefinition(),
+                'workflow_run_id' => $runOutput->getMetadata()['workflow_run_id'] ?? null,
+                'workflow_key' => $ephemeralWorkflow->getWorkflowKey(),
+                'step_outputs' => $runOutput->getData(),
                 'callable_agents_available' => array_keys($this->getAgentAsToolRegistry()->getCallableAgents()),
-                'next_phase' => 'Execute this plan via WorkflowRunner + loop back with observations for replan (Chantier D phase 2, deferred pending user review).',
             ],
-            usage: is_array($result['usage'] ?? null) ? $result['usage'] : [],
-            debugId: is_string($result['debug_id'] ?? null) ? $result['debug_id'] : null,
+            usage: $mergedUsage,
+            debugId: $planDebugId,
+            generatedAttachments: $runOutput->getGeneratedAttachments(),
         );
+    }
+
+    /**
+     * Persiste un Plan comme SynapseWorkflow éphémère, immédiatement exécutable.
+     *
+     * Le workflow généré porte :
+     * - `workflowKey` unique : `planner_<requestId>_<timestamp>`
+     * - `isEphemeral = true` + `retentionUntil` hérité de synapse.ephemeral.retention_days
+     *   (via la même convention que les autres créations éphémères Chantier A)
+     * - `isActive = true` (exécutable immédiatement par le runner)
+     * - La définition pivot du plan (steps + outputs)
+     */
+    protected function persistPlanAsEphemeralWorkflow(Plan $plan, Goal $goal): SynapseWorkflow
+    {
+        $workflow = new SynapseWorkflow();
+        $workflow->setWorkflowKey(sprintf('planner_%s_%d', $this->getName(), time()));
+        $workflow->setName(sprintf('Plan généré par %s', $this->getLabel()));
+        $workflow->setDescription(sprintf(
+            'Plan éphémère produit par %s pour : %s',
+            $this->getName(),
+            mb_substr($goal->description, 0, 150),
+        ));
+        $workflow->setDefinition($plan->toWorkflowDefinition());
+        $workflow->setIsBuiltin(false);
+        $workflow->setIsActive(true);
+        $workflow->setIsEphemeral(true);
+        // retention_until est géré par WorkflowRunner → MultiAgent → l'hôte décide
+        // de la rétention standard. On ne set pas explicitement ici pour laisser
+        // la config par défaut s'appliquer.
+        $workflow->setRetentionUntil(
+            (new \DateTimeImmutable())->modify('+7 days'),
+        );
+
+        $this->entityManager->persist($workflow);
+        $this->entityManager->flush();
+
+        return $workflow;
+    }
+
+    /**
+     * Construit le tableau d'inputs passé au WorkflowRunner comme racine.
+     * Par défaut, on injecte `message` + `goal` + le contenu structured de l'Input.
+     * Sous-classe peut override pour enrichir.
+     *
+     * @return array<string, mixed>
+     */
+    protected function collectInitialInputs(Input $input, Goal $goal): array
+    {
+        $inputs = [
+            'message' => $input->getMessage(),
+            'goal' => $goal->description,
+        ];
+
+        foreach ($input->getStructured() as $key => $value) {
+            if (is_string($key)) {
+                $inputs[$key] = $value;
+            }
+        }
+
+        return $inputs;
+    }
+
+    /**
+     * Agrège deux structures d'usage (format TokenUsage-like array).
+     *
+     * @param array<string, mixed> $a
+     * @param array<string, mixed> $b
+     *
+     * @return array<string, int>
+     */
+    private function mergeUsage(array $a, array $b): array
+    {
+        $keys = ['prompt_tokens', 'completion_tokens', 'total_tokens', 'thinking_tokens'];
+        $merged = [];
+        foreach ($keys as $k) {
+            $va = isset($a[$k]) && is_int($a[$k]) ? $a[$k] : 0;
+            $vb = isset($b[$k]) && is_int($b[$k]) ? $b[$k] : 0;
+            $merged[$k] = $va + $vb;
+        }
+
+        return $merged;
     }
 
     private function resolveGoal(Input $input, AgentContext $context): Goal
@@ -293,6 +465,19 @@ PROMPT;
             $goal->toPromptBlock(),
             '',
         ];
+
+        // Chantier D phase 2 : informer le planner des inputs racine qui seront
+        // disponibles pour `input_mapping` au runtime. Ce bloc est critique
+        // pour que les steps utilisent les bons JSONPath.
+        $lines[] = '## Inputs root disponibles';
+        $lines[] = '';
+        $lines[] = 'Le WorkflowRunner injectera ces inputs à la racine. Tu DOIS les référencer exactement avec ces clés :';
+        $lines[] = '';
+        $lines[] = '- `$.inputs.message` : le message texte initial de l\'utilisateur (peut être vide si le caller n\'a fourni que du structured)';
+        $lines[] = '- `$.inputs.goal` : la description textuelle du goal courant';
+        $lines[] = '';
+        $lines[] = 'Tu peux aussi référencer la sortie d\'un step précédent via `$.steps.NOM_STEP.output.text`.';
+        $lines[] = '';
 
         if ([] !== $callableAgentsDescriptions) {
             $lines[] = '## Agents disponibles comme étapes du plan';

@@ -150,6 +150,9 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
         // ── Ephemeral entities lifecycle ──────────────────────────────────────
         $container->setParameter('synapse.ephemeral.retention_days', $config['ephemeral']['retention_days'] ?? 7);
 
+        // ── Autonomy (Chantier D) ────────────────────────────────────────────
+        $container->setParameter('synapse.autonomy.callable_agents', $config['autonomy']['callable_agents'] ?? []);
+
         // Note: l'override des paramètres governance (architect_preset_key,
         // judge_preset_key) est fait plus bas, APRÈS le load de core.yaml qui
         // définit les valeurs par défaut (vides). Si on les settait ici, elles

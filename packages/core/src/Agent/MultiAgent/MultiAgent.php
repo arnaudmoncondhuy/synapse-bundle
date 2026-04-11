@@ -341,7 +341,23 @@ final class MultiAgent implements AgentInterface
     private function resolveStepInput(array $step, array $state, string $stepName): array
     {
         $mapping = $step['input_mapping'] ?? null;
-        if (!is_array($mapping)) {
+
+        // Chantier D phase 2 : si le planner n'a pas fourni d'input_mapping
+        // (ou un mapping vide), on propage les inputs racine du workflow par
+        // défaut — sémantique "passe-plat" qui évite un LLM call avec un
+        // prompt vide. C'est ce qu'un agent simple conversationnel attend.
+        if (!is_array($mapping) || [] === $mapping) {
+            $rootInputs = $state['inputs'] ?? [];
+            if (is_array($rootInputs) && [] !== $rootInputs) {
+                // Priorité au champ `message` s'il existe (convention forte)
+                if (isset($rootInputs['message']) && is_string($rootInputs['message']) && '' !== $rootInputs['message']) {
+                    return ['message' => $rootInputs['message']];
+                }
+
+                // Sinon, passer tous les inputs racine tels quels
+                return $rootInputs;
+            }
+
             return [];
         }
 

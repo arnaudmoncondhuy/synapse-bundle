@@ -15,6 +15,7 @@ services:
       - '@ArnaudMoncondhuy\SynapseCore\AgentRegistry'
       - '@ArnaudMoncondhuy\SynapseCore\Agent\CodeAgentRegistry'
       - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
+      - '@ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver'
     tags:
       - { name: mcp.tool }
 
