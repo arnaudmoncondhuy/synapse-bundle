@@ -130,6 +130,22 @@ class Configuration implements ConfigurationInterface
             ->end()
             ->end()
 
+            // ── Code Executor (sandbox Python) ────────────────────────────────
+            ->arrayNode('code_executor')
+            ->addDefaultsIfNotSet()
+            ->info('Backend d\'exécution de code Python pour l\'outil `code_execute`. Par défaut désactivé → NullCodeExecutor retourne BackendUnavailable.')
+            ->children()
+            ->booleanNode('enabled')
+            ->defaultFalse()
+            ->info('Si true, câble HttpCodeExecutor vers un container sidecar `synapse-sandbox`. Nécessite que le sidecar soit lancé côté infra.')
+            ->end()
+            ->scalarNode('sandbox_url')
+            ->defaultValue('http://synapse-sandbox:8000')
+            ->info('URL interne du container sidecar. Ne pas exposer sur l\'host — l\'isolation réseau fait partie du modèle de sécurité.')
+            ->end()
+            ->end()
+            ->end()
+
             // ── Routing ───────────────────────────────────────────────────────
             ->arrayNode('routing')
             ->addDefaultsIfNotSet()

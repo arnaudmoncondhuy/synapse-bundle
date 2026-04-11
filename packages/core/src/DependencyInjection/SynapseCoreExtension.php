@@ -126,6 +126,13 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
         // définie dans .env.local (jamais commitée).
         $container->setParameter('synapse.encryption.key', $config['encryption']['key']);
 
+        // ── Code Executor (sandbox Python) ────────────────────────────────────
+        // Par défaut désactivé → alias sur NullCodeExecutor (dans core.yaml).
+        // Si activé, on override l'alias vers HttpCodeExecutor plus bas,
+        // après le load de core.yaml.
+        $container->setParameter('synapse.code_executor.enabled', (bool) ($config['code_executor']['enabled'] ?? false));
+        $container->setParameter('synapse.code_executor.sandbox_url', (string) ($config['code_executor']['sandbox_url'] ?? 'http://synapse-sandbox:8000'));
+
         // ── Security ──────────────────────────────────────────────────────────
         $container->setParameter('synapse.security.admin_role', $config['security']['admin_role'] ?? 'ROLE_ADMIN');
         $container->setParameter('synapse.security.chat_role', $config['security']['chat_role'] ?? 'ROLE_USER');
@@ -174,6 +181,19 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
 
         // Load core services (always loaded)
         $loader->load('core.yaml');
+
+        // ── Code Executor alias override ─────────────────────────────────────
+        // core.yaml alias CodeExecutorInterface → NullCodeExecutor par défaut.
+        // Si l'hôte active `synapse.code_executor.enabled: true`, on bascule
+        // l'alias vers HttpCodeExecutor pour que tous les callers (dont
+        // CodeExecuteTool auto-tagué `synapse.tool`) reçoivent automatiquement
+        // le vrai backend sans changer leur code.
+        if ((bool) ($config['code_executor']['enabled'] ?? false)) {
+            $container->setAlias(
+                \ArnaudMoncondhuy\SynapseCore\Contract\CodeExecutorInterface::class,
+                \ArnaudMoncondhuy\SynapseCore\CodeExecutor\HttpCodeExecutor::class,
+            );
+        }
 
         // Note: Admin services are loaded by SynapseAdminExtension (separate bundle)
 

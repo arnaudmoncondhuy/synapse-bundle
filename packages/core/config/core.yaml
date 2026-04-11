@@ -73,3 +73,12 @@ services:
     # garantissant que le recorder fonctionne sans dépendance LLM.
     ArnaudMoncondhuy\SynapseCore\Contract\PromptJudgeInterface:
         alias: ArnaudMoncondhuy\SynapseCore\Governance\NullPromptJudge
+
+    # ── CodeExecutor (sandbox Python) ─────────────────────────────────────────
+    # Par défaut, l'alias pointe sur NullCodeExecutor qui refuse toute
+    # exécution et retourne BackendUnavailable. Si l'hôte active
+    # `synapse.code_executor.enabled: true`, SynapseCoreExtension bascule
+    # l'alias vers HttpCodeExecutor (container sidecar). Le tool `code_execute`
+    # reste toujours enregistré — visible dans l'admin même quand désactivé.
+    ArnaudMoncondhuy\SynapseCore\Contract\CodeExecutorInterface:
+        alias: ArnaudMoncondhuy\SynapseCore\CodeExecutor\NullCodeExecutor
