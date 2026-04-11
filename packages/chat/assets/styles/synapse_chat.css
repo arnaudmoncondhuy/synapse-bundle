@@ -1989,6 +1989,114 @@
     50% { opacity: 0.5; }
 }
 
+/* ── Code Execution (tool code_execute) ──────────────────────────────────── */
+.synapse-code-exec {
+    background: var(--synapse-chat-bg-secondary, #f8fafc);
+    border: 1px solid var(--synapse-chat-border, #e2e8f0);
+    border-left: 3px solid var(--synapse-chat-accent, #6366f1);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.synapse-code-exec--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.synapse-code-exec--ok {
+    border-left-color: #10b981;
+}
+
+.synapse-code-exec--fail {
+    border-left-color: #ef4444;
+}
+
+.synapse-code-exec__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 0.75rem;
+}
+
+.synapse-code-exec__status {
+    font-weight: 700;
+}
+
+.synapse-code-exec--ok .synapse-code-exec__status {
+    color: #10b981;
+}
+
+.synapse-code-exec--fail .synapse-code-exec__status {
+    color: #ef4444;
+}
+
+.synapse-code-exec__lang {
+    background: var(--synapse-chat-accent, #6366f1);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    text-transform: uppercase;
+}
+
+.synapse-code-exec__duration {
+    color: var(--synapse-chat-text-muted, #94a3b8);
+    margin-left: auto;
+    font-size: 0.7rem;
+}
+
+.synapse-code-exec__label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--synapse-chat-text-muted, #94a3b8);
+    margin-top: 6px;
+    margin-bottom: 2px;
+}
+
+.synapse-code-exec__code,
+.synapse-code-exec__stdout,
+.synapse-code-exec__stderr,
+.synapse-code-exec__return {
+    background: var(--synapse-chat-bg, #0f172a);
+    color: #e2e8f0;
+    font-family: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, monospace;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin: 0 0 4px 0;
+    overflow-x: auto;
+    max-height: 240px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.synapse-code-exec__stderr {
+    color: #fecaca;
+}
+
+.synapse-code-exec__return {
+    color: #a7f3d0;
+}
+
+.synapse-code-exec__error {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 6px;
+    padding: 6px 8px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 4px;
+}
+
 /* Responsive : sur petits écrans, la sidebar passe en overlay */
 @media (max-width: 768px) {
     .synapse-chat-aside--open {

@@ -9,6 +9,7 @@ use ArnaudMoncondhuy\SynapseCore\CodeExecutor\NullCodeExecutor;
 use ArnaudMoncondhuy\SynapseCore\Contract\CodeExecutorInterface;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseCodeExecutedEvent;
 use ArnaudMoncondhuy\SynapseCore\Tool\CodeExecuteTool;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
@@ -135,7 +136,11 @@ final class CodeExecuteToolTest extends TestCase
                 return $event;
             });
 
-        $tool = new CodeExecuteTool($spyExec, $dispatcher);
+        $tool = new CodeExecuteTool(
+            $spyExec,
+            $dispatcher,
+            $this->createStub(EntityManagerInterface::class),
+        );
         $tool->execute(['code' => 'print("hello")', 'language' => 'python']);
 
         $this->assertCount(1, $dispatchedEvents);
@@ -159,6 +164,7 @@ final class CodeExecuteToolTest extends TestCase
         return new CodeExecuteTool(
             $executor,
             $this->createStub(EventDispatcherInterface::class),
+            $this->createStub(EntityManagerInterface::class),
         );
     }
 }

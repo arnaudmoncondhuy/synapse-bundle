@@ -492,6 +492,7 @@ export default class extends Controller {
             'artifacts':             () => this.renderArtifacts(p),
             'workflow_step_started': () => this.renderWorkflowStepStarted(p),
             'workflow_step':         () => this.renderWorkflowStepCompleted(p),
+            'code_execution':        () => this.renderCodeExecution(p),
             'tool_executed':         () => this._onToolExecuted(p),
         };
         return handlers[evt.type]?.();
@@ -1255,6 +1256,7 @@ export default class extends Controller {
                     <div class="synapse-transparency-section" data-section="rag" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="memory" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="workflow" style="display:none"></div>
+                    <div class="synapse-transparency-section" data-section="code" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="thinking" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="turns" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="artifacts" style="display:none"></div>
@@ -1694,6 +1696,58 @@ export default class extends Controller {
                 });
             }
         }
+
+        this.asideTarget.scrollTop = this.asideTarget.scrollHeight;
+    }
+
+    /**
+     * Affiche une carte "code exécuté" dans la section transparency.
+     * Reçu depuis SynapseCodeExecutedEvent → ChatApiController → event 'code_execution'.
+     *
+     * Payload : { code, language, result: { success, stdout, stderr, return_value, duration_ms, error_type, error_message } }
+     */
+    renderCodeExecution(payload) {
+        const container = this._getSection('code');
+        if (!container) return;
+
+        if (!container.querySelector('.synapse-transparency-section__title')) {
+            container.innerHTML = '<div class="synapse-transparency-section__title">🐍 Code exécuté</div>';
+        }
+
+        const result = payload.result || {};
+        const success = result.success === true;
+        const code = payload.code || '';
+        const stdout = result.stdout || '';
+        const stderr = result.stderr || '';
+        const returnValue = result.return_value;
+        const durationMs = result.duration_ms || 0;
+        const errorType = result.error_type || null;
+        const errorMessage = result.error_message || null;
+
+        const returnValueStr = (returnValue === null || returnValue === undefined)
+            ? null
+            : (typeof returnValue === 'object' ? JSON.stringify(returnValue, null, 2) : String(returnValue));
+
+        const statusClass = success ? 'synapse-code-exec--ok' : 'synapse-code-exec--fail';
+        const statusIcon = success ? '✓' : '✗';
+        const statusLabel = success ? 'OK' : (errorType || 'Erreur');
+
+        const card = document.createElement('div');
+        card.className = `synapse-code-exec ${statusClass} synapse-code-exec--appear`;
+        card.innerHTML = `
+            <div class="synapse-code-exec__header">
+                <span class="synapse-code-exec__status">${statusIcon} ${escapeHtml(statusLabel)}</span>
+                <span class="synapse-code-exec__lang">${escapeHtml(payload.language || 'python')}</span>
+                ${durationMs > 0 ? `<span class="synapse-code-exec__duration">${durationMs} ms</span>` : ''}
+            </div>
+            <pre class="synapse-code-exec__code"><code>${escapeHtml(code)}</code></pre>
+            ${stdout ? `<div class="synapse-code-exec__label">stdout</div><pre class="synapse-code-exec__stdout">${escapeHtml(stdout)}</pre>` : ''}
+            ${stderr ? `<div class="synapse-code-exec__label">stderr</div><pre class="synapse-code-exec__stderr">${escapeHtml(stderr)}</pre>` : ''}
+            ${returnValueStr !== null ? `<div class="synapse-code-exec__label">return</div><pre class="synapse-code-exec__return">${escapeHtml(returnValueStr)}</pre>` : ''}
+            ${errorMessage ? `<div class="synapse-code-exec__error">${escapeHtml(errorMessage)}</div>` : ''}
+        `;
+        container.appendChild(card);
+        requestAnimationFrame(() => card.classList.add('synapse-code-exec--visible'));
 
         this.asideTarget.scrollTop = this.asideTarget.scrollHeight;
     }

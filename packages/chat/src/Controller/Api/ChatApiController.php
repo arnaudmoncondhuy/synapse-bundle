@@ -12,6 +12,7 @@ use ArnaudMoncondhuy\SynapseCore\Contract\ConversationOwnerInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseChunkReceivedEvent;
+use ArnaudMoncondhuy\SynapseCore\Event\SynapseCodeExecutedEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseMemoryResultsEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseMultiTurnIterationEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseRagResultsEvent;
@@ -322,6 +323,11 @@ class ChatApiController extends AbstractController
                         'usage' => $e->usage,
                     ]);
                 };
+                // Transparency: code execution (tool code_execute) — affiche une carte
+                // avec le code Python + stdout + return_value dans la sidebar.
+                $codeExecutedListener = function (SynapseCodeExecutedEvent $e) use ($sendEvent): void {
+                    $sendEvent('code_execution', $e->toArray());
+                };
                 $this->dispatcher->addListener(SynapseStatusChangedEvent::class, $statusListener);
                 $this->dispatcher->addListener(SynapseTokenStreamedEvent::class, $tokenListener);
                 $this->dispatcher->addListener(SynapseToolCallCompletedEvent::class, $toolListener);
@@ -333,6 +339,7 @@ class ChatApiController extends AbstractController
                 $this->dispatcher->addListener(SynapseUsageRecordedEvent::class, $usageListener);
                 $this->dispatcher->addListener(SynapseWorkflowStepStartedEvent::class, $workflowStepStartedListener);
                 $this->dispatcher->addListener(SynapseWorkflowStepCompletedEvent::class, $workflowStepListener);
+                $this->dispatcher->addListener(SynapseCodeExecutedEvent::class, $codeExecutedListener);
 
                 // Pass user_id for spending limit checks
                 $user = $this->getUser();
@@ -452,6 +459,7 @@ class ChatApiController extends AbstractController
                     $this->dispatcher->removeListener(SynapseUsageRecordedEvent::class, $usageListener);
                     $this->dispatcher->removeListener(SynapseWorkflowStepStartedEvent::class, $workflowStepStartedListener);
                     $this->dispatcher->removeListener(SynapseWorkflowStepCompletedEvent::class, $workflowStepListener);
+                    $this->dispatcher->removeListener(SynapseCodeExecutedEvent::class, $codeExecutedListener);
                 }
 
                 // Save BOTH user message and assistant response to database after processing

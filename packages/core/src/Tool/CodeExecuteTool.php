@@ -7,6 +7,8 @@ namespace ArnaudMoncondhuy\SynapseCore\Tool;
 use ArnaudMoncondhuy\SynapseCore\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\CodeExecutorInterface;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseCodeExecutedEvent;
+use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseCodeExecution;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
@@ -38,6 +40,7 @@ class CodeExecuteTool implements AiToolInterface
     public function __construct(
         private readonly CodeExecutorInterface $executor,
         private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -97,6 +100,28 @@ class CodeExecuteTool implements AiToolInterface
 
         $result = $this->executor->execute($code, $language);
         $resultArray = $result->toArray();
+
+        // Audit trail persistant : stocke l'exécution dans `synapse_code_execution`
+        // pour audit a posteriori. Try/catch pour que l'audit ne bloque JAMAIS
+        // l'exécution du code si la DB est down ou la table manque.
+        try {
+            $execution = (new SynapseCodeExecution())
+                ->setCode($code)
+                ->setLanguage($language)
+                ->setSuccess((bool) ($resultArray['success'] ?? false))
+                ->setStdout(is_string($resultArray['stdout'] ?? null) ? $resultArray['stdout'] : null)
+                ->setStderr(is_string($resultArray['stderr'] ?? null) ? $resultArray['stderr'] : null)
+                ->setReturnValue($resultArray['return_value'] ?? null)
+                ->setDurationMs(is_int($resultArray['duration_ms'] ?? null) ? $resultArray['duration_ms'] : 0)
+                ->setErrorType(is_string($resultArray['error_type'] ?? null) ? $resultArray['error_type'] : null)
+                ->setErrorMessage(is_string($resultArray['error_message'] ?? null) ? $resultArray['error_message'] : null);
+
+            $this->entityManager->persist($execution);
+            $this->entityManager->flush();
+        } catch (\Throwable) {
+            // Best-effort — si la DB est down ou la table manque, on continue
+            // pour que le LLM ait quand même son résultat.
+        }
 
         // Principe 8 : dispatch d'un event porteur du code source + résultat
         // complet pour que la transparency sidebar du chat puisse afficher
