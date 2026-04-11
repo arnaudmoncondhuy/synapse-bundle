@@ -100,9 +100,9 @@ Cocher `[x]` au fur et à mesure des transferts.
 ---
 
 ### [x] Exécution de code Python (sandbox sidecar)
-**Statut** : ✅ **Migré** (commit `4c9eadf`)  
-**Ce que ça fait** : `CodeExecutorInterface` + `NullCodeExecutor` + `HttpCodeExecutor` + tool `code_execute` + événement `SynapseCodeExecutedEvent`. Le tool est toujours enregistré (visible dans l'admin), avec fallback BackendUnavailable quand le sandbox n'est pas configuré.  
-**Note de migration** : basile a déjà le container `synapse-sandbox` up. Check `synapse:doctor` ajouté qui valide la config en 3 modes (disabled/OK/WARN non bloquant). L'entité `SynapseCodeExecution` d'audit trail n'a **pas** été migrée — les events restent disponibles pour tracing en temps réel. Les tests couvrent 24 cas.
+**Statut** : ✅ **Migré complet** (commits `4c9eadf` + `3c50b5f`)  
+**Ce que ça fait** : `CodeExecutorInterface` + `NullCodeExecutor` + `HttpCodeExecutor` + tool `code_execute` + événement `SynapseCodeExecutedEvent` + entité `SynapseCodeExecution` pour l'audit trail + widget transparency sidebar avec rendu temps réel.  
+**Note de migration** : basile a déjà le container `synapse-sandbox` up. Check `synapse:doctor` ajouté (3 modes disabled/OK/WARN non bloquant). Le tool reste visible dans l'admin même quand le sandbox n'est pas configuré, avec fallback BackendUnavailable. Audit trail best-effort (try/catch). Widget JS + CSS dédiés. 24 tests unitaires.
 
 ---
 
@@ -157,3 +157,4 @@ Cocher `[x]` au fur et à mesure des transferts.
 | 2026-04-11 | `d80b098` | Encryption obligatoire |
 | 2026-04-11 | `f418e80` | Provider Anthropic |
 | 2026-04-11 | `4c9eadf` | Exécution code Python (sandbox) |
+| 2026-04-11 | `3c50b5f` | Code executor — audit trail + widget sidebar |
