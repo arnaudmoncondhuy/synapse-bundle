@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore\Governance\Architect;
 
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowDefinitionValidator;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
 use ArnaudMoncondhuy\SynapseCore\Contract\AgentInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
@@ -46,12 +47,16 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 class ArchitectAgent implements AgentInterface
 {
+    /** Nombre max de retries avec feedback quand la proposition échoue à la validation. */
+    private const MAX_VALIDATION_RETRIES = 2;
+
     private readonly LoggerInterface $logger;
 
     public function __construct(
         private readonly ChatService $chatService,
         private readonly SynapseModelPresetRepository $presetRepository,
         private readonly SynapseAgentRepository $agentRepository,
+        private readonly WorkflowDefinitionValidator $workflowValidator,
         #[Autowire('%synapse.governance.architect_preset_key%')]
         private readonly string $architectPresetKey = '',
         ?LoggerInterface $logger = null,
@@ -122,44 +127,174 @@ class ArchitectAgent implements AgentInterface
             return Output::ofData(['error' => 'Impossible de construire le prompt — vérifiez les paramètres fournis.']);
         }
 
-        try {
-            $result = $this->chatService->ask(
-                message: $prompt,
-                options: [
-                    'agent' => $this->getName(),
-                    'preset' => $preset,
-                    'stateless' => true,
-                    'module' => 'governance',
-                    'action' => 'architect_'.$action,
-                    'response_format' => $schema,
-                ],
-            );
-        } catch (\Throwable $e) {
-            $this->logger->error('ArchitectAgent: LLM call failed — {message}', [
-                'message' => $e->getMessage(),
-                'action' => $action,
-                'exception' => $e,
+        // Boucle retry-with-feedback : si la proposition échoue à la
+        // validation (seulement pour create_workflow qui a une validation
+        // structurelle forte), on rappelle le LLM avec le message d'erreur
+        // et la dernière tentative. Gemini Flash Lite oublie régulièrement
+        // des champs obligatoires sur les types conditional/parallel/loop,
+        // ce retry corrige le tir en 1-2 itérations sans intervention user.
+        $currentPrompt = $prompt;
+        $totalUsage = [];
+        $attempts = 0;
+        $maxAttempts = 1 + self::MAX_VALIDATION_RETRIES;
+        $lastProposal = null;
+        $lastResult = null;
+        $lastValidationError = null;
+
+        $lastLlmError = null;
+        while ($attempts < $maxAttempts) {
+            ++$attempts;
+
+            try {
+                $lastResult = $this->chatService->ask(
+                    message: $currentPrompt,
+                    options: [
+                        'agent' => $this->getName(),
+                        'preset' => $preset,
+                        'stateless' => true,
+                        'module' => 'governance',
+                        'action' => 'architect_'.$action.($attempts > 1 ? '_retry' : ''),
+                        'response_format' => $schema,
+                    ],
+                );
+                $lastLlmError = null;
+            } catch (\Throwable $e) {
+                $lastLlmError = $e->getMessage();
+                $this->logger->warning('ArchitectAgent: LLM call failed attempt {attempt}/{max} — {message}', [
+                    'message' => $lastLlmError,
+                    'action' => $action,
+                    'attempt' => $attempts,
+                    'max' => $maxAttempts,
+                ]);
+
+                if ($attempts >= $maxAttempts) {
+                    // Plus de retries possibles, on remonte l'erreur
+                    return Output::ofData(['error' => 'Appel LLM échoué après '.$attempts.' tentative(s) : '.$lastLlmError]);
+                }
+
+                // Retry immédiat : sur exception transitoire (HTTP 400 Gemini
+                // « function response parts »), un simple retry sans changer
+                // le prompt suffit souvent — c'est côté Gemini le bug.
+                continue;
+            }
+
+            // Agrège les usages cumulatifs sur les retries
+            $usage = is_array($lastResult['usage'] ?? null) ? $lastResult['usage'] : [];
+            foreach (['prompt_tokens', 'completion_tokens', 'total_tokens', 'thinking_tokens'] as $k) {
+                if (isset($usage[$k]) && is_int($usage[$k])) {
+                    $totalUsage[$k] = ($totalUsage[$k] ?? 0) + $usage[$k];
+                }
+            }
+
+            $lastProposal = $lastResult['structured_output'] ?? null;
+            if (!is_array($lastProposal)) {
+                // Si même le structured_output est manquant, retry ne sert à rien
+                return Output::ofData(['error' => 'Le LLM n\'a pas retourné de structured output.']);
+            }
+
+            // Validation préflight — seulement pour create_workflow.
+            // Les autres actions (create_agent, improve_prompt) n'ont pas
+            // de validation structurelle équivalente côté Synapse.
+            if ('create_workflow' !== $action) {
+                break;
+            }
+
+            $lastValidationError = $this->preflightValidateWorkflow($lastProposal);
+            if (null === $lastValidationError) {
+                // Proposition valide, sortie de la boucle retry.
+                break;
+            }
+
+            $this->logger->info('ArchitectAgent: proposition invalide à la tentative {attempt}, retry — {error}', [
+                'attempt' => $attempts,
+                'error' => $lastValidationError,
             ]);
 
-            return Output::ofData(['error' => 'Appel LLM échoué : '.$e->getMessage()]);
+            if ($attempts >= $maxAttempts) {
+                // Max retries atteint, on sort avec la dernière proposition
+                // (sera rejetée par le processor avec le même message).
+                break;
+            }
+
+            // Prépare le prompt de retry avec le feedback
+            $currentPrompt = $this->buildRetryPrompt($prompt, $lastProposal, $lastValidationError);
         }
 
-        $proposal = $result['structured_output'] ?? null;
-        if (!is_array($proposal)) {
-            return Output::ofData(['error' => 'Le LLM n\'a pas retourné de structured output.']);
+        if (null === $lastProposal || null === $lastResult) {
+            return Output::ofData(['error' => 'Aucune proposition générée après '.$attempts.' tentative(s).']);
         }
 
-        $proposal['_action'] = $action;
-        $proposal['_debug_id'] = $result['debug_id'] ?? null;
-
-        $usage = $result['usage'] ?? [];
+        $lastProposal['_action'] = $action;
+        $lastProposal['_debug_id'] = $lastResult['debug_id'] ?? null;
+        $lastProposal['_attempts'] = $attempts;
 
         return new Output(
-            answer: $result['answer'] ?? null,
-            data: $proposal,
-            usage: is_array($usage) ? $usage : [],
-            debugId: is_string($result['debug_id'] ?? null) ? $result['debug_id'] : null,
+            answer: $lastResult['answer'] ?? null,
+            data: $lastProposal,
+            usage: $totalUsage,
+            debugId: is_string($lastResult['debug_id'] ?? null) ? $lastResult['debug_id'] : null,
         );
+    }
+
+    /**
+     * Valide une proposition de workflow avant même de la soumettre au processor.
+     * Construit une `definition` temporaire et la passe à WorkflowDefinitionValidator.
+     *
+     * @param array<string, mixed> $proposal
+     */
+    private function preflightValidateWorkflow(array $proposal): ?string
+    {
+        $steps = $proposal['steps'] ?? null;
+        if (!is_array($steps) || [] === $steps) {
+            return 'Le workflow doit contenir au moins une étape.';
+        }
+
+        $definition = [
+            'version' => 1,
+            'description' => is_string($proposal['description'] ?? null) ? $proposal['description'] : '',
+            'steps' => $steps,
+        ];
+
+        return $this->workflowValidator->validate($definition);
+    }
+
+    /**
+     * Construit un prompt de retry qui inclut l'ancienne tentative + le message
+     * d'erreur du validator. Le LLM doit re-produire la proposition en
+     * corrigeant spécifiquement l'erreur pointée.
+     *
+     * @param array<string, mixed> $previousAttempt
+     */
+    private function buildRetryPrompt(string $originalPrompt, array $previousAttempt, string $error): string
+    {
+        $previousJson = json_encode(
+            array_diff_key($previousAttempt, array_flip(['_action', '_debug_id', '_attempts'])),
+            \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES,
+        );
+
+        return <<<RETRY
+{$originalPrompt}
+
+---
+
+## ⚠️ Tentative précédente rejetée
+
+Tu as déjà essayé de répondre à cette demande, mais ta proposition a été
+rejetée par le validateur avec l'erreur suivante :
+
+**{$error}**
+
+Voici ce que tu avais généré (fautif) :
+
+```json
+{$previousJson}
+```
+
+Produis une NOUVELLE proposition qui corrige cette erreur précise.
+Relis attentivement les règles des types de steps — notamment les
+champs OBLIGATOIRES de chaque type — et assure-toi que ton JSON les
+contient tous. Ne recopie pas les erreurs de la version précédente.
+RETRY;
     }
 
     private function resolvePreset(): ?SynapseModelPreset
@@ -320,28 +455,44 @@ Concevoir un workflow à partir de la description suivante.
 
 ## Types de steps disponibles
 
+⚠️ **ATTENTION — CHAMPS OBLIGATOIRES** : chaque type a des champs que tu DOIS
+remplir. Si tu omets un champ requis, le workflow sera rejeté à la persistance
+avec une erreur explicite. Revérifie chaque step avant de finaliser.
+
 ### 1. `agent` (défaut)
 Appelle un agent LLM nommé pour produire un output. C'est le type le plus courant.
-Champs : `name`, `agent_name`, `input_mapping?`.
+**Champs OBLIGATOIRES** : `name`, `agent_name`.
+**Champs optionnels** : `input_mapping`.
 
 ### 2. `conditional`
 Évalue une expression JSONPath et produit un flag booléen `{matched: bool, value: any}`. N'appelle aucun LLM — coût tokens nul.
 Utile pour exposer une décision réutilisable par les steps suivants (qui peuvent lire `$.steps.<name>.output.data.matched`).
-Champs : `name`, `type: "conditional"`, `condition` (JSONPath), `equals?` (comparaison stricte, sinon truthy check).
+**Champs OBLIGATOIRES** : `name`, `type: "conditional"`, **`condition`** (expression JSONPath non vide — commence par `$.`).
+**Champs optionnels** : `equals` (pour comparaison stricte, sinon truthy check).
+
+❌ **ERREUR FRÉQUENTE** : oublier le champ `condition`. Un `conditional` sans
+   `condition` est invalide. Si tu définis un step conditional, tu DOIS
+   préciser quelle expression évaluer.
 
 ### 3. `parallel`
 Exécute plusieurs branches indépendantes qui partagent le même state initial mais ne peuvent pas se voir entre elles. Les outputs sont exposés sous `$.steps.<name>.output.data.branches.<branchName>`.
 Utilise parallel quand tu as N traitements qui ne dépendent pas l'un de l'autre — ex: « résume en français ET en anglais en même temps ».
-Champs : `name`, `type: "parallel"`, `branches: [...]` (chaque branche est elle-même un step complet, typiquement de type agent ou sub_workflow).
+**Champs OBLIGATOIRES** : `name`, `type: "parallel"`, **`branches`** (array **non vide** d'au moins 2 steps complets, chacun avec son propre `name` + `type` + champs requis).
+
+❌ **ERREUR FRÉQUENTE** : oublier le champ `branches`, ou le laisser vide. Un
+   parallel sans branches est invalide. Chaque branche est un step COMPLET
+   (mini-step imbriqué, pas juste une string).
 
 ### 4. `loop`
 Itère un step template sur un array résolu par JSONPath. L'élément courant est exposé sous `$.inputs.item` (ou l'alias configuré), l'index sous `$.inputs.index`.
 Utile quand tu dois appliquer le même traitement à N éléments d'une liste.
-Champs : `name`, `type: "loop"`, `items_path` (JSONPath vers un array), `step` (template du step à itérer), `item_alias?` (défaut "item"), `max_iterations?` (défaut 50).
+**Champs OBLIGATOIRES** : `name`, `type: "loop"`, **`items_path`** (expression JSONPath vers un array, ex: `$.inputs.documents`), **`step`** (un step complet à itérer, avec son propre type + champs requis).
+**Champs optionnels** : `item_alias` (défaut `"item"`), `max_iterations` (défaut `50`).
 
 ### 5. `sub_workflow`
 Délègue à un workflow persistant existant (par sa `key`). Permet la composition : un « workflow d'ingestion » peut réutiliser un « workflow de classification ».
-Champs : `name`, `type: "sub_workflow"`, `workflow_key`, `input_mapping?`.
+**Champs OBLIGATOIRES** : `name`, `type: "sub_workflow"`, **`workflow_key`** (clé d'un workflow actif existant).
+**Champs optionnels** : `input_mapping`.
 
 ## Exemple combiné
 

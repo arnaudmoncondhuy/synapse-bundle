@@ -217,14 +217,22 @@ class ArchitectProposalProcessor
             'steps' => $steps,
         ];
 
-        // Chantier F phase 2 : valider la definition avant persistance. Le LLM
-        // peut avoir halluciné un type inconnu, oublié un champ obligatoire,
-        // ou créé une référence JSONPath cassée. On préfère rejeter la
-        // proposition au niveau de l'architecte (avec un message clair) que
-        // de persister en base une definition qui crashera au premier run.
+        // Chantier J partie 2 : validation **warning-only** pour les workflows
+        // proposés par l'Architect. L'ancienne politique (rejet strict avant
+        // persistance) se heurtait à la réalité : le LLM Gemini Flash Lite
+        // oublie régulièrement des champs obligatoires sur les types
+        // conditional/parallel/loop. Plutôt que de bloquer le user, on
+        // persiste l'éphémère tel quel (inactif + non-promu) et on log un
+        // warning. Le user ouvre le workflow dans le builder admin qui
+        // affiche chaque step avec ses champs éditables, corrige, puis
+        // promeut. La validation stricte reste en place côté admin au save
+        // (cf. WorkflowController::applyFormData).
         $validationError = $this->definitionValidator->validate($definition);
         if (null !== $validationError) {
-            throw new \InvalidArgumentException(sprintf('Workflow proposé invalide : %s', $validationError));
+            error_log(sprintf(
+                '[ArchitectProposalProcessor] Workflow proposé par l\'architect contient des erreurs de validation (persisté comme éphémère brouillon) : %s',
+                $validationError,
+            ));
         }
 
         $workflow = new SynapseWorkflow();

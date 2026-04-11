@@ -280,21 +280,25 @@ final class ArchitectProposalProcessorTest extends TestCase
         ]);
     }
 
-    public function testProcessCreateWorkflowRejectsInvalidPivot(): void
+    public function testProcessCreateWorkflowPersistsInvalidPivotAsDraft(): void
     {
-        // Chantier F phase 2 : le processor appelle WorkflowDefinitionValidator
-        // avant de persister. Un step avec un type inconnu doit être rejeté.
+        // Chantier J partie 2 : politique warning-only pour les workflows
+        // proposés par l'Architect. Une proposition avec un step invalide
+        // est **persistée quand même** comme éphémère brouillon, pour que
+        // l'utilisateur puisse la corriger dans le builder admin. La
+        // validation stricte reste côté admin au save.
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->once())->method('persist');
+        $em->expects($this->once())->method('flush');
+
         $processor = new ArchitectProposalProcessor(
-            $this->createStub(EntityManagerInterface::class),
+            $em,
             $this->createStub(SynapseAgentRepository::class),
             $this->createStub(PromptVersionRecorder::class),
         );
 
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches('/Workflow proposé invalide/');
-        $this->expectExceptionMessageMatches('/inconnu/');
-
-        $processor->process([
+        // Type inconnu → plus d'exception, mais persistance + warning log
+        $result = $processor->process([
             '_action' => 'create_workflow',
             'key' => 'test',
             'name' => 'Test',
@@ -304,6 +308,9 @@ final class ArchitectProposalProcessorTest extends TestCase
             ],
             'reasoning' => 'test',
         ]);
+
+        $this->assertSame('create_workflow', $result['type']);
+        $this->assertInstanceOf(SynapseWorkflow::class, $result['entity']);
     }
 
     public function testProcessCreateWorkflowAcceptsChantierFTypes(): void

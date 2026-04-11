@@ -240,6 +240,7 @@ final class ArchitectAgentTest extends TestCase
             chatService: $this->createStub(ChatService::class),
             presetRepository: $presetRepo ?? $this->createStub(SynapseModelPresetRepository::class),
             agentRepository: $this->createStub(SynapseAgentRepository::class),
+            workflowValidator: new \ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowDefinitionValidator(),
             architectPresetKey: $architectPresetKey,
         );
     }
@@ -257,6 +258,7 @@ final class ArchitectAgentTest extends TestCase
             chatService: $chatService ?? $this->createStub(ChatService::class),
             presetRepository: $presetRepo,
             agentRepository: $agentRepo ?? $this->createStub(SynapseAgentRepository::class),
+            workflowValidator: new \ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowDefinitionValidator(),
             architectPresetKey: 'architect_preset',
         );
     }
