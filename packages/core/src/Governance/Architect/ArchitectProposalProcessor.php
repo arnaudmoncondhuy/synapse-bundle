@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\Governance\Architect;
 
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowDefinitionValidator;
 use ArnaudMoncondhuy\SynapseCore\Governance\PromptVersionRecorder;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow;
@@ -36,13 +37,20 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  */
 class ArchitectProposalProcessor
 {
+    private WorkflowDefinitionValidator $definitionValidator;
+
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly SynapseAgentRepository $agentRepository,
         private readonly PromptVersionRecorder $promptVersionRecorder,
+        ?WorkflowDefinitionValidator $definitionValidator = null,
         #[Autowire('%synapse.ephemeral.retention_days%')]
         private readonly int $retentionDays = 7,
     ) {
+        // Chantier F phase 2 : fallback vers une instance locale si pas
+        // injectée. Le validateur est sans état et pur — pas de risque de
+        // divergence entre l'instance DI et l'instance de fallback.
+        $this->definitionValidator = $definitionValidator ?? new WorkflowDefinitionValidator();
     }
 
     /**
@@ -200,6 +208,16 @@ class ArchitectProposalProcessor
             'description' => is_string($proposal['description'] ?? null) ? $proposal['description'] : '',
             'steps' => $steps,
         ];
+
+        // Chantier F phase 2 : valider la definition avant persistance. Le LLM
+        // peut avoir halluciné un type inconnu, oublié un champ obligatoire,
+        // ou créé une référence JSONPath cassée. On préfère rejeter la
+        // proposition au niveau de l'architecte (avec un message clair) que
+        // de persister en base une definition qui crashera au premier run.
+        $validationError = $this->definitionValidator->validate($definition);
+        if (null !== $validationError) {
+            throw new \InvalidArgumentException(sprintf('Workflow proposé invalide : %s', $validationError));
+        }
 
         $workflow = new SynapseWorkflow();
         $workflow->setWorkflowKey($key);

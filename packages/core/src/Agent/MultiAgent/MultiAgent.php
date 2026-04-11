@@ -434,6 +434,11 @@ final class MultiAgent implements AgentInterface
     /**
      * Construit l'input à passer à un step en résolvant son `input_mapping`.
      *
+     * Chantier F phase 2 : la logique est extraite dans {@see StepInputResolver}
+     * pour être partagée avec les exécuteurs composites (`parallel`, `loop`)
+     * qui doivent résoudre des sous-steps. Ce wrapper garde la signature
+     * existante et passe les références au run/workflow pour la log de warning.
+     *
      * @param array<string, mixed> $step
      * @param array<string, mixed> $state
      *
@@ -441,56 +446,14 @@ final class MultiAgent implements AgentInterface
      */
     private function resolveStepInput(array $step, array $state, string $stepName): array
     {
-        $mapping = $step['input_mapping'] ?? null;
-
-        // Chantier D phase 2 : si le planner n'a pas fourni d'input_mapping
-        // (ou un mapping vide), on propage les inputs racine du workflow par
-        // défaut — sémantique "passe-plat" qui évite un LLM call avec un
-        // prompt vide. C'est ce qu'un agent simple conversationnel attend.
-        if (!is_array($mapping) || [] === $mapping) {
-            $rootInputs = $state['inputs'] ?? [];
-            if (is_array($rootInputs) && [] !== $rootInputs) {
-                // Priorité au champ `message` s'il existe (convention forte)
-                if (isset($rootInputs['message']) && is_string($rootInputs['message']) && '' !== $rootInputs['message']) {
-                    return ['message' => $rootInputs['message']];
-                }
-
-                // Sinon, passer tous les inputs racine tels quels
-                return $rootInputs;
-            }
-
-            return [];
-        }
-
-        $resolved = [];
-        foreach ($mapping as $key => $expression) {
-            if (!is_string($key)) {
-                continue;
-            }
-            if (is_string($expression) && JsonPathLite::isExpression($expression)) {
-                $value = JsonPathLite::evaluate($state, $expression);
-                $resolved[$key] = $value;
-                if (null === $value) {
-                    // Remontée : un JSONPath résolu à null est souvent le signe d'un
-                    // typo dans la definition (ex: $.steps.X.output.answer au lieu
-                    // de $.steps.X.output.text) — ça produit un run qui "réussit"
-                    // mais avec des inputs vides passés au step suivant. On warn
-                    // bruyamment avec le contexte nécessaire au diagnostic.
-                    $this->logger->warning('Workflow step "{step}" input_mapping "{key}" → "{path}" résout à null. Typo dans le chemin ?', [
-                        'step' => $stepName,
-                        'key' => $key,
-                        'path' => $expression,
-                        'workflow_run_id' => $this->run->getWorkflowRunId(),
-                        'workflow_key' => $this->workflow->getWorkflowKey(),
-                    ]);
-                }
-            } else {
-                // Valeur littérale (string/int/bool/array/null)
-                $resolved[$key] = $expression;
-            }
-        }
-
-        return $resolved;
+        return StepInputResolver::resolve(
+            step: $step,
+            state: $state,
+            logger: $this->logger,
+            stepName: $stepName,
+            workflowRunId: $this->run->getWorkflowRunId(),
+            workflowKey: $this->workflow->getWorkflowKey(),
+        );
     }
 
     /**

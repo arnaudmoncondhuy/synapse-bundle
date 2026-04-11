@@ -64,13 +64,28 @@ final class ArchitectResponseSchemaTest extends TestCase
         $this->assertArrayHasKey('steps', $props);
         $this->assertArrayHasKey('reasoning', $props);
 
-        // steps est un array d'objets avec name + agent_name requis
+        // Chantier F phase 2 : le schéma supporte désormais 5 types de steps
+        // (agent, conditional, parallel, loop, sub_workflow). Seul `name` est
+        // requis au niveau step — `agent_name` et les champs spécifiques
+        // sont optionnels et validés post-génération par
+        // WorkflowDefinitionValidator.
         $stepProps = $props['steps']['items']['properties'];
         $this->assertArrayHasKey('name', $stepProps);
+        $this->assertArrayHasKey('type', $stepProps);
         $this->assertArrayHasKey('agent_name', $stepProps);
+        $this->assertArrayHasKey('condition', $stepProps);
+        $this->assertArrayHasKey('branches', $stepProps);
+        $this->assertArrayHasKey('items_path', $stepProps);
+        $this->assertArrayHasKey('workflow_key', $stepProps);
         $stepRequired = $props['steps']['items']['required'];
         $this->assertContains('name', $stepRequired);
-        $this->assertContains('agent_name', $stepRequired);
+        $this->assertNotContains('agent_name', $stepRequired);
+
+        // Enum des types supportés
+        $this->assertEqualsCanonicalizing(
+            ['agent', 'conditional', 'parallel', 'loop', 'sub_workflow'],
+            $stepProps['type']['enum'],
+        );
     }
 
     public function testForActionReturnsCorrectSchema(): void

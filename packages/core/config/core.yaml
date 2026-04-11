@@ -50,6 +50,8 @@ services:
             - '../src/Agent/MultiAgent/Exception/'
             # JsonPathLite : utilitaire statique, pas un service
             - '../src/Agent/MultiAgent/JsonPathLite.php'
+            # StepInputResolver : utilitaire statique partagé entre MultiAgent et les NodeExecutor composites
+            - '../src/Agent/MultiAgent/StepInputResolver.php'
             # ArchitectResponseSchema : utilitaire statique, pas un service
             - '../src/Governance/Architect/ArchitectResponseSchema.php'
             # CallAgentTool (Chantier D) : instancié par AgentAsToolRegistry avec

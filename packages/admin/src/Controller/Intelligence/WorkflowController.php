@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowDefinitionValidator;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow;
@@ -40,6 +41,7 @@ class WorkflowController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly PermissionCheckerInterface $permissionChecker,
         private readonly TranslatorInterface $translator,
+        private readonly WorkflowDefinitionValidator $definitionValidator,
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
@@ -292,114 +294,17 @@ class WorkflowController extends AbstractController
             return $this->translator->trans('synapse.admin.workflow.validation.definition_not_object', [], 'synapse_admin');
         }
 
-        $error = $this->validatePivotStructure($decoded);
+        // Chantier F phase 2 : la logique de validation du pivot est extraite
+        // dans le service `WorkflowDefinitionValidator`, partagé avec
+        // `ArchitectProposalProcessor` pour rejeter les propositions LLM
+        // malformées avant persistance.
+        $error = $this->definitionValidator->validate($decoded);
         if (null !== $error) {
             return $error;
         }
 
         /* @var array<string, mixed> $decoded */
         $workflow->setDefinition($decoded);
-
-        return null;
-    }
-
-    /**
-     * Valide le format pivot : `steps` non-vide, chaque step avec `name`+`agent_name`,
-     * noms uniques, références `$.steps.NAME.*` cohérentes.
-     *
-     * @param array<string, mixed> $definition
-     */
-    private function validatePivotStructure(array $definition): ?string
-    {
-        if (!isset($definition['steps']) || !is_array($definition['steps'])) {
-            return $this->translator->trans('synapse.admin.workflow.validation.steps_missing', [], 'synapse_admin');
-        }
-
-        $steps = $definition['steps'];
-        if ([] === $steps) {
-            return $this->translator->trans('synapse.admin.workflow.validation.steps_empty', [], 'synapse_admin');
-        }
-
-        $names = [];
-        foreach ($steps as $index => $step) {
-            if (!is_array($step)) {
-                return $this->translator->trans('synapse.admin.workflow.validation.step_not_object', ['index' => (string) $index], 'synapse_admin');
-            }
-            $name = $step['name'] ?? null;
-            if (!is_string($name) || '' === $name) {
-                return $this->translator->trans('synapse.admin.workflow.validation.step_name_missing', ['index' => (string) $index], 'synapse_admin');
-            }
-            // Chantier F : `agent_name` n'est obligatoire que pour les steps
-            // de type `agent` (défaut). Les types alternatifs (ex: `conditional`)
-            // ont leurs propres exigences validées au runtime par leur
-            // NodeExecutor dédié — ici, on ne bloque pas la sauvegarde.
-            $type = $step['type'] ?? 'agent';
-            if ('agent' === $type) {
-                $agentName = $step['agent_name'] ?? null;
-                if (!is_string($agentName) || '' === $agentName) {
-                    return $this->translator->trans('synapse.admin.workflow.validation.step_agent_missing', ['name' => $name], 'synapse_admin');
-                }
-            } elseif ('conditional' === $type) {
-                $condition = $step['condition'] ?? null;
-                if (!is_string($condition) || '' === $condition) {
-                    return sprintf('Step "%s" de type "conditional" : clé "condition" manquante ou vide.', $name);
-                }
-            } else {
-                return sprintf('Step "%s" : type "%s" inconnu (attendu : agent, conditional).', $name, (string) $type);
-            }
-            if (in_array($name, $names, true)) {
-                return $this->translator->trans('synapse.admin.workflow.validation.step_duplicate_name', ['name' => $name], 'synapse_admin');
-            }
-            $names[] = $name;
-        }
-
-        // Références croisées `$.steps.NAME.*` dans input_mapping / outputs
-        $referencedNames = [];
-        foreach ($steps as $step) {
-            if (!is_array($step)) {
-                continue;
-            }
-            $mapping = $step['input_mapping'] ?? [];
-            if (is_array($mapping)) {
-                foreach ($mapping as $path) {
-                    if (is_string($path)) {
-                        $ref = $this->extractStepRef($path);
-                        if (null !== $ref) {
-                            $referencedNames[] = $ref;
-                        }
-                    }
-                }
-            }
-        }
-        $outputs = $definition['outputs'] ?? [];
-        if (is_array($outputs)) {
-            foreach ($outputs as $path) {
-                if (is_string($path)) {
-                    $ref = $this->extractStepRef($path);
-                    if (null !== $ref) {
-                        $referencedNames[] = $ref;
-                    }
-                }
-            }
-        }
-        foreach ($referencedNames as $ref) {
-            if (!in_array($ref, $names, true)) {
-                return $this->translator->trans('synapse.admin.workflow.validation.dangling_reference', ['name' => $ref], 'synapse_admin');
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Extrait le nom de step référencé dans une expression `$.steps.NAME.xxx`.
-     * Retourne null si l'expression ne référence pas un step.
-     */
-    private function extractStepRef(string $path): ?string
-    {
-        if (1 === preg_match('/^\$\.steps\.([a-zA-Z0-9_-]+)/', $path, $matches)) {
-            return $matches[1];
-        }
 
         return null;
     }

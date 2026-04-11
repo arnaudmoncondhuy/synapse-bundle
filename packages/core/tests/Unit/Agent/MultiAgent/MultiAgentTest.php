@@ -11,6 +11,8 @@ use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Exception\WorkflowExecutionException;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor\AgentNodeExecutor;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor\ConditionalNodeExecutor;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor\LoopNodeExecutor;
+use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\Executor\ParallelNodeExecutor;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\MultiAgent;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowRunner;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
@@ -354,6 +356,120 @@ final class MultiAgentTest extends TestCase
         $this->expectExceptionMessage('unknown type "unknown_type"');
 
         $multiAgent->call(Input::ofMessage('x'));
+    }
+
+    public function testChantierFPhase2ParallelBranchesExecute(): void
+    {
+        // Un step agent produit une liste, un step parallel la fanout en 2
+        // branches agent, un troisième step agent lit l'output des deux
+        // branches via $.steps.par.output.data.branches.<name>.text.
+        $lister = $this->makeSpyAgent('lister', function (): Output {
+            return new Output(answer: 'input text', usage: ['prompt_tokens' => 2, 'completion_tokens' => 1, 'total_tokens' => 3]);
+        });
+
+        $upper = $this->makeSpyAgent('upper', function (Input $input): Output {
+            $text = (string) ($input->getStructured()['text'] ?? '');
+
+            return new Output(answer: strtoupper($text), usage: ['prompt_tokens' => 3, 'completion_tokens' => 2, 'total_tokens' => 5]);
+        });
+
+        $lower = $this->makeSpyAgent('lower', function (Input $input): Output {
+            $text = (string) ($input->getStructured()['text'] ?? '');
+
+            return new Output(answer: strtolower($text), usage: ['prompt_tokens' => 3, 'completion_tokens' => 2, 'total_tokens' => 5]);
+        });
+
+        $combiner = $this->makeSpyAgent('combiner', function (Input $input): Output {
+            $structured = $input->getStructured();
+
+            return new Output(
+                answer: sprintf('UP=%s, LOW=%s', $structured['up'] ?? '', $structured['low'] ?? ''),
+                usage: ['prompt_tokens' => 4, 'completion_tokens' => 3, 'total_tokens' => 7],
+            );
+        });
+
+        $resolver = $this->makeResolver([$lister, $upper, $lower, $combiner]);
+        $agentExec = new AgentNodeExecutor($resolver);
+        $parallelExec = new ParallelNodeExecutor([$agentExec]);
+
+        $workflow = $this->makeWorkflow([
+            'version' => 1,
+            'steps' => [
+                ['name' => 'gen', 'agent_name' => 'lister'],
+                [
+                    'name' => 'par',
+                    'type' => 'parallel',
+                    'branches' => [
+                        ['name' => 'upper', 'agent_name' => 'upper', 'input_mapping' => ['text' => '$.steps.gen.output.text']],
+                        ['name' => 'lower', 'agent_name' => 'lower', 'input_mapping' => ['text' => '$.steps.gen.output.text']],
+                    ],
+                ],
+                [
+                    'name' => 'merge',
+                    'agent_name' => 'combiner',
+                    'input_mapping' => [
+                        'up' => '$.steps.par.output.data.branches.upper.text',
+                        'low' => '$.steps.par.output.data.branches.lower.text',
+                    ],
+                ],
+            ],
+            'outputs' => ['final' => '$.steps.merge.output.text'],
+        ]);
+
+        $run = new SynapseWorkflowRun();
+        $run->setWorkflow($workflow);
+
+        $multiAgent = new MultiAgent($workflow, $run, $resolver, null, null, [$agentExec, $parallelExec]);
+        $output = $multiAgent->call(Input::ofMessage('kickoff'));
+
+        $this->assertSame('UP=INPUT TEXT, LOW=input text', $output->getData()['final']);
+        $this->assertSame(WorkflowRunStatus::COMPLETED, $run->getStatus());
+        // 3 (gen) + 5+5 (branches) + 7 (merge) = 20
+        $this->assertSame(20, $output->getUsage()['total_tokens']);
+    }
+
+    public function testChantierFPhase2LoopIteratesOverItems(): void
+    {
+        $processor = $this->makeSpyAgent('processor', function (Input $input): Output {
+            $num = $input->getStructured()['n'] ?? 0;
+
+            return new Output(answer: sprintf('squared=%d', $num * $num), usage: ['prompt_tokens' => 2, 'completion_tokens' => 1, 'total_tokens' => 3]);
+        });
+
+        $resolver = $this->makeResolver([$processor]);
+        $agentExec = new AgentNodeExecutor($resolver);
+        $loopExec = new LoopNodeExecutor([$agentExec]);
+
+        $workflow = $this->makeWorkflow([
+            'version' => 1,
+            'steps' => [
+                [
+                    'name' => 'each',
+                    'type' => 'loop',
+                    'items_path' => '$.inputs.numbers',
+                    'step' => [
+                        'name' => 'sq',
+                        'agent_name' => 'processor',
+                        'input_mapping' => ['n' => '$.inputs.item'],
+                    ],
+                ],
+            ],
+            'outputs' => ['results' => '$.steps.each.output.data.iterations'],
+        ]);
+
+        $run = new SynapseWorkflowRun();
+        $run->setWorkflow($workflow);
+
+        $multiAgent = new MultiAgent($workflow, $run, $resolver, null, null, [$agentExec, $loopExec]);
+        $output = $multiAgent->call(Input::ofStructured(['numbers' => [2, 3, 4]]));
+
+        $iterations = $output->getData()['results'];
+        $this->assertCount(3, $iterations);
+        $this->assertSame('squared=4', $iterations[0]['output']['text']);
+        $this->assertSame('squared=9', $iterations[1]['output']['text']);
+        $this->assertSame('squared=16', $iterations[2]['output']['text']);
+        // 3 × 3 = 9
+        $this->assertSame(9, $output->getUsage()['total_tokens']);
     }
 
     public function testChantierFFallbackAgentNodeExecutorWhenNoneInjected(): void

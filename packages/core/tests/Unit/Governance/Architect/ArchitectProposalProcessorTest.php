@@ -280,6 +280,77 @@ final class ArchitectProposalProcessorTest extends TestCase
         ]);
     }
 
+    public function testProcessCreateWorkflowRejectsInvalidPivot(): void
+    {
+        // Chantier F phase 2 : le processor appelle WorkflowDefinitionValidator
+        // avant de persister. Un step avec un type inconnu doit être rejeté.
+        $processor = new ArchitectProposalProcessor(
+            $this->createStub(EntityManagerInterface::class),
+            $this->createStub(SynapseAgentRepository::class),
+            $this->createStub(PromptVersionRecorder::class),
+        );
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/Workflow proposé invalide/');
+        $this->expectExceptionMessageMatches('/inconnu/');
+
+        $processor->process([
+            '_action' => 'create_workflow',
+            'key' => 'test',
+            'name' => 'Test',
+            'description' => 'dummy',
+            'steps' => [
+                ['name' => 's1', 'type' => 'martian_step'],
+            ],
+            'reasoning' => 'test',
+        ]);
+    }
+
+    public function testProcessCreateWorkflowAcceptsChantierFTypes(): void
+    {
+        // Un workflow mixte agent + parallel + loop + sub_workflow doit passer
+        // la validation (même si les agents/workflows cibles n'existent pas —
+        // c'est la responsabilité du runtime).
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects($this->once())->method('persist');
+        $em->expects($this->once())->method('flush');
+
+        $processor = new ArchitectProposalProcessor(
+            $em,
+            $this->createStub(SynapseAgentRepository::class),
+            $this->createStub(PromptVersionRecorder::class),
+        );
+
+        $result = $processor->process([
+            '_action' => 'create_workflow',
+            'key' => 'mix_wf',
+            'name' => 'Workflow mixte',
+            'description' => 'demo',
+            'steps' => [
+                ['name' => 'classify', 'agent_name' => 'clf'],
+                ['name' => 'is_ok', 'type' => 'conditional', 'condition' => '$.steps.classify.output.text'],
+                [
+                    'name' => 'fanout',
+                    'type' => 'parallel',
+                    'branches' => [
+                        ['name' => 'a', 'agent_name' => 'w1'],
+                        ['name' => 'b', 'agent_name' => 'w2'],
+                    ],
+                ],
+                [
+                    'name' => 'for_each',
+                    'type' => 'loop',
+                    'items_path' => '$.inputs.items',
+                    'step' => ['name' => 'one', 'agent_name' => 'processor'],
+                ],
+                ['name' => 'delegate', 'type' => 'sub_workflow', 'workflow_key' => 'nested'],
+            ],
+            'reasoning' => 'demo',
+        ]);
+
+        $this->assertSame('create_workflow', $result['type']);
+    }
+
     // ── Dispatch ──────────────────────────────────────────────────────────
 
     public function testProcessThrowsOnMissingAction(): void
