@@ -99,10 +99,10 @@ Cocher `[x]` au fur et à mesure des transferts.
 
 ---
 
-### [ ] Exécution de code Python (sandbox sidecar)
-**Statut** : ⚠️ À discuter  
-**Ce que ça fait** : `CodeExecutorInterface` + tool `code_execute` permettant aux agents d'exécuter du Python dans un sandbox isolé (container Docker sidecar `synapse-sandbox`).  
-**Condition** : le container sidecar doit être configuré sur l'app hôte. Sans lui, le tool existe mais échoue. **Proposition** : migrer l'interface + `NullCodeExecutor` + le tool ; laisser `HttpCodeExecutor` et le widget sidebar en attente de confirmation usage prod.
+### [x] Exécution de code Python (sandbox sidecar)
+**Statut** : ✅ **Migré** (commit `4c9eadf`)  
+**Ce que ça fait** : `CodeExecutorInterface` + `NullCodeExecutor` + `HttpCodeExecutor` + tool `code_execute` + événement `SynapseCodeExecutedEvent`. Le tool est toujours enregistré (visible dans l'admin), avec fallback BackendUnavailable quand le sandbox n'est pas configuré.  
+**Note de migration** : basile a déjà le container `synapse-sandbox` up. Check `synapse:doctor` ajouté qui valide la config en 3 modes (disabled/OK/WARN non bloquant). L'entité `SynapseCodeExecution` d'audit trail n'a **pas** été migrée — les events restent disponibles pour tracing en temps réel. Les tests couvrent 24 cas.
 
 ---
 
@@ -145,9 +145,9 @@ Cocher `[x]` au fur et à mesure des transferts.
 
 | Catégorie | Nb fonctionnalités |
 |-----------|-------------------|
-| ✅ Migrées | 2 |
+| ✅ Migrées | 3 |
 | ✅ À migrer (prêtes) | 8 |
-| ⚠️ À discuter (conditions) | 4 |
+| ⚠️ À discuter (conditions) | 3 |
 | ❌ Ne pas migrer | 2 |
 
 ## Historique des migrations
@@ -156,3 +156,4 @@ Cocher `[x]` au fur et à mesure des transferts.
 |------|--------|----------------|
 | 2026-04-11 | `d80b098` | Encryption obligatoire |
 | 2026-04-11 | `f418e80` | Provider Anthropic |
+| 2026-04-11 | `4c9eadf` | Exécution code Python (sandbox) |
