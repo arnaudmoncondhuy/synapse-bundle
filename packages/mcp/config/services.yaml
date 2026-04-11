@@ -1,118 +1,17 @@
 services:
-  ArnaudMoncondhuy\SynapseMcp\Tool\ListAgentsTool:
-    public: true
-    arguments:
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository'
-      - '@ArnaudMoncondhuy\SynapseCore\Agent\CodeAgentRegistry'
-      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
-    tags:
-      - { name: mcp.tool }
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: true # Requis par symfony/mcp-bundle pour que les tools soient récupérables via ServiceLocator
 
-  ArnaudMoncondhuy\SynapseMcp\Tool\RunAgentTestTool:
-    public: true
-    arguments:
-      - '@ArnaudMoncondhuy\SynapseCore\Engine\ChatService'
-      - '@ArnaudMoncondhuy\SynapseCore\AgentRegistry'
-      - '@ArnaudMoncondhuy\SynapseCore\Agent\CodeAgentRegistry'
-      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
-      - '@ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver'
-    tags:
-      - { name: mcp.tool }
-
-  ArnaudMoncondhuy\SynapseMcp\Tool\InspectAgentDebugTool:
-    public: true
-    arguments:
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseDebugLogRepository'
-      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
-    tags:
-      - { name: mcp.tool }
-
-  ArnaudMoncondhuy\SynapseMcp\Tool\UpdateAgentSystemPromptTool:
-    public: true
-    arguments:
-      - '@ArnaudMoncondhuy\SynapseCore\AgentRegistry'
-      - '@doctrine.orm.entity_manager'
-    tags:
-      - { name: mcp.tool }
-
-  # === Sandbox Tools ===
-
-  ArnaudMoncondhuy\SynapseMcp\Tool\ListPresetsTool:
-    public: true
-    arguments:
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository'
-      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
-    tags:
-      - { name: mcp.tool }
-
-  ArnaudMoncondhuy\SynapseMcp\Tool\CreateSandboxPresetTool:
-    public: true
-    arguments:
-      - '@doctrine.orm.entity_manager'
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository'
-      - '@ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry'
-      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
-      - '%synapse.ephemeral.retention_days%'
-    tags:
-      - { name: mcp.tool }
-
-  ArnaudMoncondhuy\SynapseMcp\Tool\CreateSandboxAgentTool:
-    public: true
-    arguments:
-      - '@doctrine.orm.entity_manager'
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository'
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository'
-      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
-      - '%synapse.ephemeral.retention_days%'
-    tags:
-      - { name: mcp.tool }
-
-  ArnaudMoncondhuy\SynapseMcp\Tool\CreateSandboxWorkflowTool:
-    public: true
-    arguments:
-      - '@doctrine.orm.entity_manager'
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository'
-      - '@ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver'
-      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
-      - '%synapse.ephemeral.retention_days%'
-    tags:
-      - { name: mcp.tool }
-
-  ArnaudMoncondhuy\SynapseMcp\Tool\RunWorkflowTool:
-    public: true
-    arguments:
-      - '@ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowRunner'
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository'
-      - '@ArnaudMoncondhuy\SynapseCore\Agent\AgentResolver'
-      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
-    tags:
-      - { name: mcp.tool }
-
-  ArnaudMoncondhuy\SynapseMcp\Tool\InspectWorkflowRunTool:
-    public: true
-    arguments:
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRunRepository'
-      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
-    tags:
-      - { name: mcp.tool }
-
-  ArnaudMoncondhuy\SynapseMcp\Tool\RunArchitectProposalTool:
-    public: true
-    arguments:
-      - '@ArnaudMoncondhuy\SynapseCore\Governance\Architect\ArchitectAgent'
-      - '@ArnaudMoncondhuy\SynapseCore\Governance\Architect\ArchitectProposalProcessor'
-      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
-    tags:
-      - { name: mcp.tool }
-
-  ArnaudMoncondhuy\SynapseMcp\Tool\CleanupSandboxTool:
-    public: true
-    arguments:
-      - '@doctrine.orm.entity_manager'
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository'
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository'
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRunRepository'
-      - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository'
-      - '@ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface'
-    tags:
-      - { name: mcp.tool }
+    # Auto-découverte de tous les tools MCP sous src/Tool/. L'attribut
+    # `#[McpTool]` + autoconfigure ajoute automatiquement le tag `mcp.tool`.
+    # Les arguments scalaires (ex: `%synapse.ephemeral.retention_days%`) sont
+    # fournis via `#[Autowire]` dans les constructeurs PHP, pas ici — ce qui
+    # élimine la classe de bug "drift services.yaml ↔ PHP" qui nous a déjà
+    # mordu 3 fois (ListAgentsTool, RunAgentTestTool, CreateSandbox*Tool).
+    #
+    # Voir feedback_big_chantiers_on_branch.md et le commit de Chantier D
+    # phase 2 pour l'historique de ce refacto.
+    ArnaudMoncondhuy\SynapseMcp\Tool\:
+        resource: '../src/Tool/'
