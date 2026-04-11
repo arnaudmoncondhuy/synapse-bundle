@@ -149,13 +149,7 @@ class WorkflowController extends AbstractController
             }
         }
 
-        return $this->render('@Synapse/admin/intelligence/workflow_edit.html.twig', [
-            'workflow' => $workflow,
-            'is_new' => true,
-            'errors' => $errors,
-            'runs' => [],
-            'agents' => $this->agentRepo->findAllOrdered(),
-        ]);
+        return $this->render('@Synapse/admin/intelligence/workflow_edit.html.twig', $this->buildEditContext($workflow, true, $errors, []));
     }
 
     // ─── Édition ───────────────────────────────────────────────────────────────
@@ -182,13 +176,68 @@ class WorkflowController extends AbstractController
 
         $runs = $this->runRepo->findRecentForWorkflow($workflow, 10);
 
-        return $this->render('@Synapse/admin/intelligence/workflow_edit.html.twig', [
+        return $this->render('@Synapse/admin/intelligence/workflow_edit.html.twig', $this->buildEditContext($workflow, false, $errors, $runs));
+    }
+
+    /**
+     * Construit le contexte Twig pour le template workflow_edit, incluant les
+     * JSON pré-encodés pour le Stimulus controller (Chantier J).
+     *
+     * Le builder Stimulus lit `agents_json` et `workflows_json` via
+     * `data-synapse-workflow-builder-*-value` attributes. On encode les listes
+     * côté PHP pour éviter toute interpolation Twig dans du JS (risque XSS
+     * et lisibilité douteuse).
+     *
+     * @param array<string, mixed> $errors
+     * @param list<\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflowRun> $runs
+     *
+     * @return array<string, mixed>
+     */
+    private function buildEditContext(SynapseWorkflow $workflow, bool $isNew, array $errors, array $runs): array
+    {
+        $agents = $this->agentRepo->findAllOrdered();
+
+        // Liste des agents sérialisée en JSON pour le controller Stimulus.
+        // Champs minimums utilisés par le builder JS : key, name, emoji.
+        $agentsList = array_map(static fn ($a) => [
+            'key' => $a->getKey(),
+            'name' => $a->getName(),
+            'emoji' => $a->getEmoji(),
+        ], $agents);
+
+        // Liste des workflows actifs pour le sélecteur `sub_workflow` (Chantier J
+        // partie 2). On exclut :
+        //   - les workflows inactifs (ne peuvent pas être référencés au runtime)
+        //   - le workflow courant (évite qu'il se référence lui-même via sub_workflow)
+        //   - les éphémères (ne sont pas stables)
+        $allWorkflows = $this->workflowRepo->findAllOrdered();
+        $workflowsList = [];
+        $currentId = $workflow->getId();
+        foreach ($allWorkflows as $wf) {
+            if (!$wf->isActive()) {
+                continue;
+            }
+            if ($wf->isEphemeral()) {
+                continue;
+            }
+            if (null !== $currentId && $wf->getId() === $currentId) {
+                continue;
+            }
+            $workflowsList[] = [
+                'key' => $wf->getWorkflowKey(),
+                'name' => $wf->getName(),
+            ];
+        }
+
+        return [
             'workflow' => $workflow,
-            'is_new' => false,
+            'is_new' => $isNew,
             'errors' => $errors,
             'runs' => $runs,
-            'agents' => $this->agentRepo->findAllOrdered(),
-        ]);
+            'agents' => $agents,
+            'agents_json' => json_encode($agentsList, \JSON_THROW_ON_ERROR),
+            'workflows_json' => json_encode($workflowsList, \JSON_THROW_ON_ERROR),
+        ];
     }
 
     // ─── Vue runs complète ─────────────────────────────────────────────────────

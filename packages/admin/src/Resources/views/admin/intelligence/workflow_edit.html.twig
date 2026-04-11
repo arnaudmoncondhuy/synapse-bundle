@@ -138,10 +138,19 @@
 		</div>
 
 		{# ── Pipeline (Visual Step Builder + JSON toggle) ─────────────────────── #}
-		<input type="hidden" id="workflow-definition-json" name="definition"
-			value="{{ workflow.definition|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES')) }}">
+		{# Chantier J : builder Stimulus. L'input hidden contient la definition JSON, #}
+		{# le controller `synapse-workflow-builder` lit/écrit via le target               #}
+		{# `definitionInput` et re-render le visual panel.                                 #}
 
-		<div class="synapse-admin-card synapse-admin-mb-lg">
+		<div class="synapse-admin-card synapse-admin-mb-lg"
+			data-controller="synapse-workflow-builder"
+			data-synapse-workflow-builder-agents-value="{{ agents_json|default('[]') }}"
+			data-synapse-workflow-builder-workflows-value="{{ workflows_json|default('[]') }}"
+		>
+			<input type="hidden" name="definition"
+				data-synapse-workflow-builder-target="definitionInput"
+				value="{{ workflow.definition|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES')) }}">
+
 			<div class="synapse-admin-card__header">
 				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
 					<i data-lucide="workflow"></i>
@@ -152,10 +161,16 @@
 				</div>
 				<div class="synapse-admin-card__header-actions">
 					<div class="synapse-step-builder-mode-toggle">
-						<button type="button" id="btn-mode-visual" class="synapse-admin-btn synapse-admin-btn--sm synapse-admin-btn--primary">
+						<button type="button"
+							class="synapse-admin-btn synapse-admin-btn--sm synapse-admin-btn--primary"
+							data-synapse-workflow-builder-target="modeVisualButton"
+							data-action="synapse-workflow-builder#setModeVisual">
 							<i data-lucide="layout-list"></i> {{ 'synapse.admin.workflow.edit.builder.mode_visual'|trans(domain='synapse_admin') }}
 						</button>
-						<button type="button" id="btn-mode-json" class="synapse-admin-btn synapse-admin-btn--sm synapse-admin-btn--ghost">
+						<button type="button"
+							class="synapse-admin-btn synapse-admin-btn--sm synapse-admin-btn--ghost"
+							data-synapse-workflow-builder-target="modeJsonButton"
+							data-action="synapse-workflow-builder#setModeJson">
 							<i data-lucide="code"></i> {{ 'synapse.admin.workflow.edit.builder.mode_json'|trans(domain='synapse_admin') }}
 						</button>
 					</div>
@@ -171,10 +186,14 @@
 				{% endif %}
 
 				{# ── Visual builder ── #}
-				<div id="workflow-visual-builder">
-					<div id="workflow-steps-container" class="synapse-step-builder-list"></div>
+				<div data-synapse-workflow-builder-target="visualPanel">
+					<div data-synapse-workflow-builder-target="stepsContainer" class="synapse-step-builder-list"></div>
 
-					<button type="button" id="btn-add-step" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-mt-md" style="width:100%;">
+					<button type="button"
+						class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-mt-md"
+						style="width:100%;"
+						data-synapse-workflow-builder-target="addStepButton"
+						data-action="synapse-workflow-builder#addStep">
 						<i data-lucide="plus"></i> {{ 'synapse.admin.workflow.edit.builder.add_step'|trans(domain='synapse_admin') }}
 					</button>
 
@@ -182,17 +201,21 @@
 					<div class="synapse-step-builder-outputs synapse-admin-mt-lg">
 						<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-justify-between synapse-admin-mb-sm">
 							<span class="synapse-admin-label">{{ 'synapse.admin.workflow.edit.builder.outputs'|trans(domain='synapse_admin') }}</span>
-							<button type="button" id="btn-add-output" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+							<button type="button"
+								class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm"
+								data-synapse-workflow-builder-target="addOutputButton"
+								data-action="synapse-workflow-builder#addOutput">
 								<i data-lucide="plus"></i> {{ 'synapse.admin.workflow.edit.builder.output_add'|trans(domain='synapse_admin') }}
 							</button>
 						</div>
-						<div id="workflow-outputs-container"></div>
+						<div data-synapse-workflow-builder-target="outputsContainer"></div>
 					</div>
 				</div>
 
 				{# ── JSON editor (hidden by default) ── #}
-				<div id="workflow-json-editor" hidden>
-					<textarea id="workflow-definition-textarea"
+				<div data-synapse-workflow-builder-target="jsonPanel" hidden>
+					<textarea
+						data-synapse-workflow-builder-target="jsonTextarea"
 						class="synapse-admin-input synapse-admin-textarea synapse-admin-font-mono"
 						rows="20" spellcheck="false"
 						style="font-size: 0.85rem; line-height: 1.5;"></textarea>
@@ -263,478 +286,5 @@
 		</div>
 	{% endif %}
 
-	<script>
-	(function () {
-		'use strict';
-
-		/* ── DOM refs ─────────────────────────────────────────────────────── */
-		const hiddenInput    = document.getElementById('workflow-definition-json');
-		const stepsContainer = document.getElementById('workflow-steps-container');
-		const outsContainer  = document.getElementById('workflow-outputs-container');
-		const visualPanel    = document.getElementById('workflow-visual-builder');
-		const jsonPanel      = document.getElementById('workflow-json-editor');
-		const jsonTextarea   = document.getElementById('workflow-definition-textarea');
-		const btnVisual      = document.getElementById('btn-mode-visual');
-		const btnJson        = document.getElementById('btn-mode-json');
-		const btnAddStep     = document.getElementById('btn-add-step');
-		const btnAddOutput   = document.getElementById('btn-add-output');
-
-		/* ── Data ─────────────────────────────────────────────────────────── */
-		const agents = [
-			{% for a in agents %}
-			{ key: '{{ a.key|e('js') }}', name: '{{ a.name|e('js') }}', emoji: '{{ a.emoji|e('js') }}' }{{ not loop.last ? ',' : '' }}
-			{% endfor %}
-		];
-
-		let def; // the live definition object
-		try { def = JSON.parse(hiddenInput.value); } catch (e) { def = { version: 1, steps: [] }; }
-		if (!def.steps) { def.steps = []; }
-		if (!def.outputs) { def.outputs = {}; }
-		// Le message du chat est toujours disponible comme input implicite
-		if (!def.inputs || Object.keys(def.inputs).length === 0) {
-			def.inputs = { message: { type: 'string', required: true } };
-		}
-
-		/* ── Helpers ──────────────────────────────────────────────────────── */
-		function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
-		function syncJson() {
-			hiddenInput.value = JSON.stringify(def, null, 2);
-		}
-
-		function refreshIcons() {
-			if (typeof lucide !== 'undefined') { lucide.createIcons(); }
-		}
-
-		/** Build <option> list for source selects (mappings & outputs). */
-		function sourceOptions(currentValue, maxStepIndex) {
-			const sel = (v) => currentValue === v ? ' selected' : '';
-			// A value is literal if it's defined (even empty) and not a JSONPath
-			const isLiteral = currentValue !== undefined && currentValue !== null && !String(currentValue).startsWith('$');
-			const noSelection = currentValue === undefined || currentValue === null;
-			let html = '<option value=""' + (noSelection ? ' selected' : '') + '>-- S\u00e9lectionner --</option>';
-
-			// ── Le message du chat (= $.inputs.message)
-			const msgPath = '$.inputs.message';
-			html += '<option value="' + esc(msgPath) + '"' + sel(msgPath) + '>Le message envoy\u00e9 dans le chat</option>';
-
-			// ── Autres inputs custom (sauf "message" déjà listé)
-			const inputs = def.inputs || {};
-			for (const k of Object.keys(inputs)) {
-				if (k === 'message') continue;
-				const v = '$.inputs.' + k;
-				html += '<option value="' + esc(v) + '"' + sel(v) + '>Input \u00ab ' + esc(k) + ' \u00bb</option>';
-			}
-
-			// ── Résultats des étapes précédentes
-			for (let i = 0; i < maxStepIndex; i++) {
-				const s = def.steps[i];
-				if (!s || !s.name) continue;
-				const prefix = '$.steps.' + s.name + '.output.';
-				html += '<option value="' + esc(prefix + 'text') + '"' + sel(prefix + 'text') + '>R\u00e9ponse de l\u2019\u00e9tape \u00ab ' + esc(s.name) + ' \u00bb</option>';
-				html += '<option value="' + esc(prefix + 'data') + '"' + sel(prefix + 'data') + '>Donn\u00e9es JSON de l\u2019\u00e9tape \u00ab ' + esc(s.name) + ' \u00bb</option>';
-			}
-
-			// ── Texte fixe (instruction statique)
-			html += '<option value="__literal__"' + (isLiteral ? ' selected' : '') + '>Texte fixe (instruction toujours identique)</option>';
-
-			// Fallback: unknown path already stored
-			if (currentValue && currentValue.startsWith('$')) {
-				const exists = html.includes('value="' + esc(currentValue) + '"');
-				if (!exists) {
-					html += '<option value="' + esc(currentValue) + '" selected>' + esc(currentValue) + '</option>';
-				}
-			}
-
-			return html;
-		}
-
-		/* ── Render steps ─────────────────────────────────────────────────── */
-		function render() {
-			stepsContainer.innerHTML = '';
-
-			if (def.steps.length === 0) {
-				stepsContainer.innerHTML = '<div class="synapse-admin-alert synapse-admin-alert--info"><i data-lucide="info"></i><div>{{ 'synapse.admin.workflow.edit.builder.empty'|trans(domain='synapse_admin')|e('js') }}</div></div>';
-				renderOutputs();
-				refreshIcons();
-				syncJson();
-				return;
-			}
-
-			for (let i = 0; i < def.steps.length; i++) {
-				stepsContainer.appendChild(renderStep(i));
-			}
-			renderOutputs();
-			refreshIcons();
-			syncJson();
-		}
-
-		function renderStep(index) {
-			const step = def.steps[index];
-			const card = document.createElement('div');
-			card.className = 'synapse-admin-card synapse-step-builder-card synapse-admin-mb-md';
-
-			// Chantier F phase 2 : détecter les types de steps non-agent
-			// (parallel, loop, conditional, sub_workflow) pour les afficher
-			// en mode read-only au lieu du formulaire agent-only. Le builder
-			// n'édite que les steps `agent`, les autres types passent par
-			// le mode JSON pour modification.
-			const stepType = step.type || 'agent';
-			const isNonAgentType = stepType !== 'agent';
-
-			// ── Header
-			const header = document.createElement('div');
-			header.className = 'synapse-admin-card__header synapse-step-builder-card__header';
-			const typeBadge = isNonAgentType
-				? '<span class="synapse-admin-badge synapse-admin-badge--warning" title="Type non éditable en mode visuel" style="margin-left:0.4rem;">' + esc(stepType) + '</span>'
-				: '';
-			header.innerHTML =
-				'<span class="synapse-admin-badge synapse-admin-badge--primary synapse-step-builder-badge">' + (index + 1) + '</span>' +
-				'<input type="text" class="synapse-admin-input synapse-step-builder-name-input" ' +
-					'value="' + esc(step.name || '') + '" placeholder="{{ 'synapse.admin.workflow.edit.builder.step_name_placeholder'|trans(domain='synapse_admin')|e('js') }}">' +
-				typeBadge +
-				'<div class="synapse-step-builder-card__actions">' +
-					(index > 0 ? '<button type="button" class="synapse-admin-btn synapse-admin-btn--icon synapse-admin-btn--ghost synapse-admin-btn--sm" data-action="move-up" title="{{ 'synapse.admin.workflow.edit.builder.move_up'|trans(domain='synapse_admin')|e('js') }}"><i data-lucide="chevron-up"></i></button>' : '') +
-					(index < def.steps.length - 1 ? '<button type="button" class="synapse-admin-btn synapse-admin-btn--icon synapse-admin-btn--ghost synapse-admin-btn--sm" data-action="move-down" title="{{ 'synapse.admin.workflow.edit.builder.move_down'|trans(domain='synapse_admin')|e('js') }}"><i data-lucide="chevron-down"></i></button>' : '') +
-					'<button type="button" class="synapse-admin-btn synapse-admin-btn--icon synapse-admin-btn--danger synapse-admin-btn--sm" data-action="remove" title="{{ 'synapse.admin.workflow.edit.builder.remove_step'|trans(domain='synapse_admin')|e('js') }}"><i data-lucide="trash-2"></i></button>' +
-				'</div>';
-			card.appendChild(header);
-
-			// Name change
-			header.querySelector('.synapse-step-builder-name-input').addEventListener('input', function () {
-				step.name = this.value.replace(/[^a-zA-Z0-9_-]/g, '');
-				this.value = step.name;
-				syncJson();
-			});
-
-			// Header actions
-			header.addEventListener('click', function (e) {
-				const btn = e.target.closest('[data-action]');
-				if (!btn) return;
-				const action = btn.dataset.action;
-				if (action === 'move-up') { moveStep(index, -1); }
-				else if (action === 'move-down') { moveStep(index, 1); }
-				else if (action === 'remove') { removeStep(index); }
-			});
-
-			// ── Body
-			const body = document.createElement('div');
-			body.className = 'synapse-admin-card__body synapse-admin-card__body--compact';
-
-			// Chantier F phase 2 : rendu read-only pour les types non-agent.
-			// On n'essaie pas d'éditer parallel/loop/conditional/sub_workflow
-			// via le builder — le JSON reste authoritative. On affiche juste
-			// un résumé des champs spécifiques pour que l'utilisateur voie
-			// la structure sans avoir à basculer en mode JSON.
-			if (isNonAgentType) {
-				const summary = document.createElement('div');
-				summary.className = 'synapse-admin-alert synapse-admin-alert--info';
-				let summaryHtml = '<div style="width:100%;">';
-				summaryHtml += '<div class="synapse-admin-text-sm synapse-admin-mb-sm"><strong>Step de type <code>' + esc(stepType) + '</code></strong> — non éditable en mode visuel. Passe en mode JSON pour modifier.</div>';
-
-				if (stepType === 'conditional') {
-					summaryHtml += '<div class="synapse-admin-text-xs synapse-admin-mb-xs"><strong>Condition</strong> : <code>' + esc(step.condition || '') + '</code></div>';
-					if (step.equals !== undefined) {
-						summaryHtml += '<div class="synapse-admin-text-xs"><strong>Comparé à</strong> : <code>' + esc(JSON.stringify(step.equals)) + '</code></div>';
-					} else {
-						summaryHtml += '<div class="synapse-admin-text-xs synapse-admin-text-muted">Truthy check (pas de valeur <code>equals</code>)</div>';
-					}
-				} else if (stepType === 'parallel') {
-					const branches = Array.isArray(step.branches) ? step.branches : [];
-					summaryHtml += '<div class="synapse-admin-text-xs synapse-admin-mb-xs"><strong>' + branches.length + ' branche(s)</strong> exécutées indépendamment :</div>';
-					summaryHtml += '<ul class="synapse-admin-text-xs" style="margin:0.25rem 0 0 1rem;">';
-					for (const b of branches) {
-						const bType = b.type || 'agent';
-						const bAgent = b.agent_name ? ' → <code>' + esc(b.agent_name) + '</code>' : '';
-						summaryHtml += '<li><code>' + esc(b.name || '?') + '</code> (' + esc(bType) + ')' + bAgent + '</li>';
-					}
-					summaryHtml += '</ul>';
-				} else if (stepType === 'loop') {
-					summaryHtml += '<div class="synapse-admin-text-xs synapse-admin-mb-xs"><strong>Items</strong> : <code>' + esc(step.items_path || '') + '</code></div>';
-					if (step.item_alias) {
-						summaryHtml += '<div class="synapse-admin-text-xs synapse-admin-mb-xs"><strong>Alias item</strong> : <code>' + esc(step.item_alias) + '</code></div>';
-					}
-					if (step.max_iterations) {
-						summaryHtml += '<div class="synapse-admin-text-xs synapse-admin-mb-xs"><strong>Max itérations</strong> : ' + step.max_iterations + '</div>';
-					}
-					const tpl = step.step || {};
-					const tplAgent = tpl.agent_name ? ' → <code>' + esc(tpl.agent_name) + '</code>' : '';
-					summaryHtml += '<div class="synapse-admin-text-xs"><strong>Step template</strong> : <code>' + esc(tpl.name || '?') + '</code> (' + esc(tpl.type || 'agent') + ')' + tplAgent + '</div>';
-				} else if (stepType === 'sub_workflow') {
-					summaryHtml += '<div class="synapse-admin-text-xs"><strong>Workflow délégué</strong> : <code>' + esc(step.workflow_key || '') + '</code></div>';
-				}
-
-				summaryHtml += '</div>';
-				summary.innerHTML = '<i data-lucide="info"></i>' + summaryHtml;
-				body.appendChild(summary);
-				card.appendChild(body);
-				return card;
-			}
-
-			// Agent select
-			let agentHtml = '<div class="synapse-admin-form-group synapse-admin-mb-md">' +
-				'<label class="synapse-admin-label">{{ 'synapse.admin.workflow.edit.builder.agent'|trans(domain='synapse_admin')|e('js') }} <span class="synapse-admin-required">*</span></label>' +
-				'<select class="synapse-admin-input" data-field="agent_name">' +
-				'<option value="">\u2014 {{ 'synapse.admin.workflow.edit.builder.agent_placeholder'|trans(domain='synapse_admin')|e('js') }} \u2014</option>';
-			let agentFound = false;
-			for (const a of agents) {
-				const sel = step.agent_name === a.key ? ' selected' : '';
-				if (sel) agentFound = true;
-				agentHtml += '<option value="' + esc(a.key) + '"' + sel + '>' + esc(a.emoji) + ' ' + esc(a.name) + ' (' + esc(a.key) + ')</option>';
-			}
-			if (step.agent_name && !agentFound) {
-				agentHtml += '<option value="' + esc(step.agent_name) + '" selected>\u26a0\ufe0f ' + esc(step.agent_name) + ' (introuvable)</option>';
-			}
-			agentHtml += '</select></div>';
-			body.innerHTML = agentHtml;
-
-			body.querySelector('[data-field="agent_name"]').addEventListener('change', function () {
-				step.agent_name = this.value;
-				syncJson();
-			});
-
-			// Mapping section
-			const mappingSection = document.createElement('div');
-			mappingSection.className = 'synapse-step-builder-mapping synapse-admin-mt-sm';
-
-			const mappingHeader = document.createElement('div');
-			mappingHeader.className = 'synapse-admin-flex synapse-admin-items-center synapse-admin-justify-between synapse-admin-mb-sm';
-			mappingHeader.innerHTML =
-				'<span class="synapse-admin-label synapse-admin-text-sm">{{ 'synapse.admin.workflow.edit.builder.mapping'|trans(domain='synapse_admin')|e('js') }}</span>' +
-				'<button type="button" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm" data-action="add-mapping"><i data-lucide="plus"></i> {{ 'synapse.admin.workflow.edit.builder.mapping_add'|trans(domain='synapse_admin')|e('js') }}</button>';
-			mappingSection.appendChild(mappingHeader);
-
-			mappingHeader.querySelector('[data-action="add-mapping"]').addEventListener('click', function () {
-				if (!step.input_mapping) step.input_mapping = {};
-				step.input_mapping['param_' + Date.now()] = '';
-				syncJson();
-				render();
-			});
-
-			const mappingRows = document.createElement('div');
-			mappingRows.className = 'synapse-step-builder-mapping-rows';
-			const mapping = step.input_mapping || {};
-			const keys = Object.keys(mapping);
-			if (keys.length === 0) {
-				mappingRows.innerHTML = '<div class="synapse-admin-text-xs synapse-admin-text-tertiary" style="padding:0.25rem 0;">Aucun mapping.</div>';
-			} else {
-				for (const k of keys) {
-					mappingRows.appendChild(renderMappingRow(step, k, index));
-				}
-			}
-			mappingSection.appendChild(mappingRows);
-			body.appendChild(mappingSection);
-
-			card.appendChild(body);
-			return card;
-		}
-
-		function isLiteralValue(v) {
-			return v !== undefined && v !== null && !String(v).startsWith('$');
-		}
-
-		function renderMappingRow(step, key, stepIndex) {
-			const row = document.createElement('div');
-			row.className = 'synapse-step-builder-mapping-row';
-
-			const value = step.input_mapping[key];
-			const literal = isLiteralValue(value);
-
-			// Build base row: key input + source select + remove button
-			row.innerHTML =
-				'<input type="text" class="synapse-admin-input synapse-step-builder-mapping-key" value="' + esc(key) + '" placeholder="{{ 'synapse.admin.workflow.edit.builder.mapping_key'|trans(domain='synapse_admin')|e('js') }}">' +
-				'<select class="synapse-admin-input synapse-step-builder-mapping-source">' + sourceOptions(value, stepIndex) + '</select>' +
-				'<button type="button" class="synapse-admin-btn synapse-admin-btn--icon synapse-admin-btn--ghost synapse-admin-btn--sm" data-action="remove-mapping"><i data-lucide="x"></i></button>';
-
-			const selectEl = row.querySelector('.synapse-step-builder-mapping-source');
-			const removeBtn = row.querySelector('[data-action="remove-mapping"]');
-
-			// Insert literal text input if needed (before the remove button)
-			function showLiteralInput() {
-				let litInput = row.querySelector('.synapse-step-builder-mapping-literal');
-				if (litInput) return litInput;
-				litInput = document.createElement('input');
-				litInput.type = 'text';
-				litInput.className = 'synapse-admin-input synapse-step-builder-mapping-literal';
-				litInput.placeholder = '{{ 'synapse.admin.workflow.edit.builder.mapping_literal'|trans(domain='synapse_admin')|e('js') }}';
-				litInput.value = isLiteralValue(step.input_mapping[key]) ? step.input_mapping[key] : '';
-				litInput.addEventListener('input', function () {
-					step.input_mapping[key] = this.value;
-					syncJson();
-				});
-				row.insertBefore(litInput, removeBtn);
-				return litInput;
-			}
-
-			function hideLiteralInput() {
-				const litInput = row.querySelector('.synapse-step-builder-mapping-literal');
-				if (litInput) litInput.remove();
-			}
-
-			// Show literal input on initial render if value is literal
-			if (literal) { showLiteralInput(); }
-
-			// Key change
-			row.querySelector('.synapse-step-builder-mapping-key').addEventListener('input', function () {
-				const oldKey = key;
-				const newKey = this.value.replace(/[^a-zA-Z0-9_-]/g, '');
-				this.value = newKey;
-				if (newKey !== oldKey && newKey) {
-					const val = step.input_mapping[oldKey];
-					delete step.input_mapping[oldKey];
-					step.input_mapping[newKey] = val;
-					key = newKey;
-					syncJson();
-				}
-			});
-
-			// Source select change — no re-render, toggle literal input inline
-			selectEl.addEventListener('change', function () {
-				if (this.value === '__literal__') {
-					step.input_mapping[key] = '';
-					const litInput = showLiteralInput();
-					litInput.focus();
-					syncJson();
-				} else {
-					step.input_mapping[key] = this.value;
-					hideLiteralInput();
-					syncJson();
-				}
-			});
-
-			// Remove
-			removeBtn.addEventListener('click', function () {
-				delete step.input_mapping[key];
-				syncJson();
-				render();
-			});
-
-			return row;
-		}
-
-		/* ── Render outputs ───────────────────────────────────────────────── */
-		function renderOutputs() {
-			outsContainer.innerHTML = '';
-			const outputs = def.outputs || {};
-			const keys = Object.keys(outputs);
-
-			if (keys.length === 0) {
-				outsContainer.innerHTML = '<div class="synapse-admin-text-xs synapse-admin-text-tertiary" style="padding:0.25rem 0;">Aucune sortie d\u00e9finie.</div>';
-				return;
-			}
-
-			for (const k of keys) {
-				outsContainer.appendChild(renderOutputRow(k));
-			}
-		}
-
-		function renderOutputRow(key) {
-			const row = document.createElement('div');
-			row.className = 'synapse-step-builder-mapping-row';
-
-			const value = def.outputs[key] || '';
-			row.innerHTML =
-				'<input type="text" class="synapse-admin-input synapse-step-builder-mapping-key" value="' + esc(key) + '" placeholder="{{ 'synapse.admin.workflow.edit.builder.output_key'|trans(domain='synapse_admin')|e('js') }}">' +
-				'<select class="synapse-admin-input synapse-step-builder-mapping-source">' + sourceOptions(value, def.steps.length) + '</select>' +
-				'<button type="button" class="synapse-admin-btn synapse-admin-btn--icon synapse-admin-btn--ghost synapse-admin-btn--sm" data-action="remove-output"><i data-lucide="x"></i></button>';
-
-			// Key change
-			row.querySelector('.synapse-step-builder-mapping-key').addEventListener('input', function () {
-				const oldKey = key;
-				const newKey = this.value.replace(/[^a-zA-Z0-9_-]/g, '');
-				this.value = newKey;
-				if (newKey !== oldKey && newKey) {
-					const val = def.outputs[oldKey];
-					delete def.outputs[oldKey];
-					def.outputs[newKey] = val;
-					key = newKey;
-					syncJson();
-				}
-			});
-
-			// Source select
-			row.querySelector('.synapse-step-builder-mapping-source').addEventListener('change', function () {
-				def.outputs[key] = this.value;
-				syncJson();
-			});
-
-			// Remove
-			row.querySelector('[data-action="remove-output"]').addEventListener('click', function () {
-				delete def.outputs[key];
-				syncJson();
-				render();
-			});
-
-			return row;
-		}
-
-		/* ── Step actions ─────────────────────────────────────────────────── */
-		function addStep() {
-			def.steps.push({ name: 'step_' + (def.steps.length + 1), agent_name: '', input_mapping: {} });
-			syncJson();
-			render();
-		}
-
-		function removeStep(index) {
-			def.steps.splice(index, 1);
-			syncJson();
-			render();
-		}
-
-		function moveStep(index, direction) {
-			const target = index + direction;
-			if (target < 0 || target >= def.steps.length) return;
-			const tmp = def.steps[index];
-			def.steps[index] = def.steps[target];
-			def.steps[target] = tmp;
-			syncJson();
-			render();
-		}
-
-		/* ── Mode toggle ──────────────────────────────────────────────────── */
-		function setMode(mode) {
-			if (mode === 'json') {
-				syncJson();
-				jsonTextarea.value = JSON.stringify(def, null, 2);
-				visualPanel.hidden = true;
-				jsonPanel.hidden = false;
-				btnJson.className = 'synapse-admin-btn synapse-admin-btn--sm synapse-admin-btn--primary';
-				btnVisual.className = 'synapse-admin-btn synapse-admin-btn--sm synapse-admin-btn--ghost';
-			} else {
-				// Parse textarea back into def
-				try {
-					const parsed = JSON.parse(jsonTextarea.value);
-					// Preserve unknown fields
-					Object.assign(def, parsed);
-					def.steps = parsed.steps || [];
-					def.outputs = parsed.outputs || {};
-				} catch (e) {
-					// If JSON is invalid, stay in JSON mode
-					alert('JSON invalide : ' + e.message);
-					return;
-				}
-				visualPanel.hidden = false;
-				jsonPanel.hidden = true;
-				btnVisual.className = 'synapse-admin-btn synapse-admin-btn--sm synapse-admin-btn--primary';
-				btnJson.className = 'synapse-admin-btn synapse-admin-btn--sm synapse-admin-btn--ghost';
-				render();
-			}
-		}
-
-		/* ── Event bindings ───────────────────────────────────────────────── */
-		btnAddStep.addEventListener('click', addStep);
-		btnAddOutput.addEventListener('click', function () {
-			if (!def.outputs) def.outputs = {};
-			def.outputs['output_' + (Object.keys(def.outputs).length + 1)] = '';
-			syncJson();
-			render();
-		});
-		btnVisual.addEventListener('click', function () { setMode('visual'); });
-		btnJson.addEventListener('click', function () { setMode('json'); });
-
-		/* ── Initial render ───────────────────────────────────────────────── */
-		render();
-	})();
-	</script>
 
 {% endblock %}
