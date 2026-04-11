@@ -11,6 +11,7 @@ use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\MultiAgent\WorkflowRunner;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
+use ArnaudMoncondhuy\SynapseCore\Event\SynapsePlannerPlanProducedEvent;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\BudgetLimit;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\Goal;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\Plan;
@@ -20,6 +21,7 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Classe de base pour un agent **planificateur autonome** (Chantier D).
@@ -93,6 +95,7 @@ abstract class AbstractPlannerAgent extends AbstractAgent
         private readonly ContainerInterface $autonomyServicesLocator,
         protected readonly EntityManagerInterface $entityManager,
         ?LoggerInterface $logger = null,
+        protected readonly ?EventDispatcherInterface $eventDispatcher = null,
     ) {
         $this->logger = $logger ?? new NullLogger();
     }
@@ -299,6 +302,19 @@ PROMPT;
 
         try {
             $ephemeralWorkflow = $this->persistPlanAsEphemeralWorkflow($plan, $goal);
+
+            // Principe 8 du plan : tout event back doit avoir son rendu front.
+            // Dispatch du plan complet pour que la transparency sidebar du chat
+            // affiche une section `plan` avec le reasoning + les steps + leurs
+            // rationales avant le début de l'exécution.
+            $this->eventDispatcher?->dispatch(new SynapsePlannerPlanProducedEvent(
+                plannerName: $this->getName(),
+                goal: $goal,
+                plan: $plan,
+                workflowRunId: null, // pas encore de runId, créé par WorkflowRunner
+                ephemeralWorkflowKey: $ephemeralWorkflow->getWorkflowKey(),
+            ));
+
             $runOutput = $this->getWorkflowRunner()->run(
                 $ephemeralWorkflow,
                 Input::ofStructured($this->collectInitialInputs($input, $goal)),

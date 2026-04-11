@@ -492,6 +492,7 @@ export default class extends Controller {
             'artifacts':             () => this.renderArtifacts(p),
             'workflow_step_started': () => this.renderWorkflowStepStarted(p),
             'workflow_step':         () => this.renderWorkflowStepCompleted(p),
+            'planner_plan':          () => this.renderPlannerPlan(p),
             'tool_executed':         () => this._onToolExecuted(p),
         };
         return handlers[evt.type]?.();
@@ -1254,6 +1255,7 @@ export default class extends Controller {
                 <div class="synapse-transparency-body">
                     <div class="synapse-transparency-section" data-section="rag" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="memory" style="display:none"></div>
+                    <div class="synapse-transparency-section" data-section="plan" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="workflow" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="thinking" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="turns" style="display:none"></div>
@@ -1597,6 +1599,82 @@ export default class extends Controller {
         } else {
             this.artifactsBtnTarget.classList.add('synapse-hidden');
         }
+    }
+
+    // ── Planner Plan (Chantier D) ───────────────────────────────────────────
+    //
+    // Reçoit un event `planner_plan` dispatché par AbstractPlannerAgent juste
+    // après la génération d'un plan par le LLM, avant l'exécution du workflow.
+    // Affiche une carte avec le raisonnement global, le goal, et la liste des
+    // steps avec leurs rationales individuelles.
+    //
+    // Payload (SynapsePlannerPlanProducedEvent::toArray()) :
+    //   planner_name: string
+    //   workflow_run_id: string|null
+    //   ephemeral_workflow_key: string|null
+    //   goal: {description, success_criteria}
+    //   plan: {iteration, reasoning, steps[{name, agent_name, rationale}], outputs}
+    //
+    // Quand la boucle observe-plan-replan est active (phase 3+), cet event
+    // peut être émis plusieurs fois avec des `iteration` croissants — on
+    // empile les plans dans la section pour montrer l'évolution.
+
+    renderPlannerPlan(payload) {
+        const section = this._getSection('plan');
+        if (!section) return;
+
+        if (!section.querySelector('.synapse-transparency-section__title')) {
+            section.innerHTML = '<div class="synapse-transparency-section__title">🗺️ Plan</div>';
+        }
+
+        const plan = payload.plan || {};
+        const goal = payload.goal || {};
+        const steps = Array.isArray(plan.steps) ? plan.steps : [];
+        const iteration = plan.iteration ?? 0;
+        const plannerName = payload.planner_name || 'planner';
+
+        const planEl = document.createElement('div');
+        planEl.className = 'synapse-planner-plan synapse-planner-plan--appear';
+        planEl.setAttribute('data-iteration', String(iteration));
+
+        const iterationBadge = iteration > 0
+            ? `<span class="synapse-planner-plan__badge">replan #${iteration}</span>`
+            : `<span class="synapse-planner-plan__badge synapse-planner-plan__badge--initial">plan initial</span>`;
+
+        const criteriaHtml = Array.isArray(goal.success_criteria) && goal.success_criteria.length > 0
+            ? `<ul class="synapse-planner-plan__criteria">${
+                goal.success_criteria.map((c) => `<li>${escapeHtml(c)}</li>`).join('')
+            }</ul>`
+            : '';
+
+        const stepsHtml = steps.length > 0
+            ? steps.map((step, idx) => `
+                <div class="synapse-planner-plan__step">
+                    <div class="synapse-planner-plan__step-header">
+                        <span class="synapse-planner-plan__step-number">${idx + 1}</span>
+                        <span class="synapse-planner-plan__step-name">${escapeHtml(step.name || '')}</span>
+                        <span class="synapse-planner-plan__step-agent">→ ${escapeHtml(step.agent_name || '')}</span>
+                    </div>
+                    ${step.rationale ? `<div class="synapse-planner-plan__step-rationale">${escapeHtml(step.rationale)}</div>` : ''}
+                </div>
+            `).join('')
+            : '<div class="synapse-planner-plan__empty">Aucune étape — le planner a conclu qu\'aucune action n\'était faisable.</div>';
+
+        planEl.innerHTML = `
+            <div class="synapse-planner-plan__header">
+                ${iterationBadge}
+                <span class="synapse-planner-plan__planner">${escapeHtml(plannerName)}</span>
+            </div>
+            ${goal.description ? `<div class="synapse-planner-plan__goal"><strong>Objectif :</strong> ${escapeHtml(goal.description)}</div>` : ''}
+            ${criteriaHtml}
+            ${plan.reasoning ? `<div class="synapse-planner-plan__reasoning">${escapeHtml(plan.reasoning)}</div>` : ''}
+            <div class="synapse-planner-plan__steps">${stepsHtml}</div>
+        `;
+
+        section.appendChild(planEl);
+
+        requestAnimationFrame(() => planEl.classList.add('synapse-planner-plan--visible'));
+        this.asideTarget.scrollTop = this.asideTarget.scrollHeight;
     }
 
     // ── Workflow Steps (compatibilité) ──────────────────────────────────────

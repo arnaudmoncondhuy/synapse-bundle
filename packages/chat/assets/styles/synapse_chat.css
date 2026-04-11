@@ -1989,6 +1989,158 @@
     50% { opacity: 0.5; }
 }
 
+/* ── Planner Plan (Chantier D — transparency sidebar) ─────────────────────
+ *
+ * Affiche le plan structuré produit par un AbstractPlannerAgent juste avant
+ * l'exécution du workflow éphémère. Permet à l'utilisateur de voir le
+ * raisonnement du planner et la décomposition en steps.
+ *
+ * Visuellement distingué des workflow_steps classiques par une bordure
+ * gauche ambre (cohérent avec les "Workflows éphémères récents" de l'admin
+ * livré en Chantier A) — les deux surfaces partagent la même sémantique
+ * "proposition vivante mutable" par opposition à "entité persistante".
+ */
+
+.synapse-planner-plan {
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.08) 0%, var(--synapse-chat-hover, #f8fafc) 40%);
+    border: 1px solid var(--synapse-chat-border, #e2e8f0);
+    border-left: 3px solid #f59e0b;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.synapse-planner-plan--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.synapse-planner-plan__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.synapse-planner-plan__badge {
+    background: #f59e0b;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.synapse-planner-plan__badge--initial {
+    background: #6366f1;
+}
+
+.synapse-planner-plan__planner {
+    font-size: 0.7rem;
+    color: var(--synapse-chat-muted, #94a3b8);
+    font-family: monospace;
+}
+
+.synapse-planner-plan__goal {
+    font-size: 0.75rem;
+    color: var(--synapse-chat-text, #1e293b);
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+.synapse-planner-plan__criteria {
+    margin: 4px 0 8px 0;
+    padding-left: 18px;
+    font-size: 0.7rem;
+    color: var(--synapse-chat-text-secondary, #475569);
+}
+
+.synapse-planner-plan__criteria li {
+    margin-bottom: 2px;
+}
+
+.synapse-planner-plan__reasoning {
+    background: rgba(99, 102, 241, 0.05);
+    border-left: 2px solid rgba(99, 102, 241, 0.3);
+    padding: 6px 10px;
+    font-size: 0.73rem;
+    font-style: italic;
+    color: var(--synapse-chat-text-secondary, #475569);
+    line-height: 1.5;
+    margin-bottom: 10px;
+    border-radius: 0 4px 4px 0;
+}
+
+.synapse-planner-plan__steps {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.synapse-planner-plan__step {
+    background: white;
+    border: 1px solid var(--synapse-chat-border, #e2e8f0);
+    border-radius: 6px;
+    padding: 8px 10px;
+}
+
+.synapse-planner-plan__step-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.synapse-planner-plan__step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: #f59e0b;
+    color: white;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.synapse-planner-plan__step-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--synapse-chat-text, #1e293b);
+    font-family: monospace;
+}
+
+.synapse-planner-plan__step-agent {
+    font-size: 0.68rem;
+    color: var(--synapse-chat-muted, #94a3b8);
+    margin-left: auto;
+    white-space: nowrap;
+    font-family: monospace;
+}
+
+.synapse-planner-plan__step-rationale {
+    font-size: 0.7rem;
+    color: var(--synapse-chat-text-secondary, #475569);
+    line-height: 1.4;
+    padding-left: 24px;
+}
+
+.synapse-planner-plan__empty {
+    font-size: 0.73rem;
+    color: var(--synapse-chat-muted, #94a3b8);
+    font-style: italic;
+    text-align: center;
+    padding: 8px;
+}
+
 /* Responsive : sur petits écrans, la sidebar passe en overlay */
 @media (max-width: 768px) {
     .synapse-chat-aside--open {

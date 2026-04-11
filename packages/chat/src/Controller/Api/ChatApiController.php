@@ -21,6 +21,7 @@ use ArnaudMoncondhuy\SynapseCore\Event\SynapseToolCallCompletedEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseToolCallStartedEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseUsageRecordedEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseWorkflowStepCompletedEvent;
+use ArnaudMoncondhuy\SynapseCore\Event\SynapsePlannerPlanProducedEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseWorkflowStepStartedEvent;
 use ArnaudMoncondhuy\SynapseCore\Formatter\MessageFormatter;
 use ArnaudMoncondhuy\SynapseCore\Manager\ConversationManager;
@@ -322,6 +323,13 @@ class ChatApiController extends AbstractController
                         'usage' => $e->usage,
                     ]);
                 };
+                // Chantier D + Principe 8 : quand un PlannerAgent produit un
+                // plan, l'envoyer en live au front pour afficher la section
+                // `plan` dans la transparency sidebar. Le payload est déjà
+                // formaté pour le renderer JS via toArray().
+                $plannerPlanListener = function (SynapsePlannerPlanProducedEvent $e) use ($sendEvent): void {
+                    $sendEvent('planner_plan', $e->toArray());
+                };
                 $this->dispatcher->addListener(SynapseStatusChangedEvent::class, $statusListener);
                 $this->dispatcher->addListener(SynapseTokenStreamedEvent::class, $tokenListener);
                 $this->dispatcher->addListener(SynapseToolCallCompletedEvent::class, $toolListener);
@@ -333,6 +341,7 @@ class ChatApiController extends AbstractController
                 $this->dispatcher->addListener(SynapseUsageRecordedEvent::class, $usageListener);
                 $this->dispatcher->addListener(SynapseWorkflowStepStartedEvent::class, $workflowStepStartedListener);
                 $this->dispatcher->addListener(SynapseWorkflowStepCompletedEvent::class, $workflowStepListener);
+                $this->dispatcher->addListener(SynapsePlannerPlanProducedEvent::class, $plannerPlanListener);
 
                 // Pass user_id for spending limit checks
                 $user = $this->getUser();
@@ -452,6 +461,7 @@ class ChatApiController extends AbstractController
                     $this->dispatcher->removeListener(SynapseUsageRecordedEvent::class, $usageListener);
                     $this->dispatcher->removeListener(SynapseWorkflowStepStartedEvent::class, $workflowStepStartedListener);
                     $this->dispatcher->removeListener(SynapseWorkflowStepCompletedEvent::class, $workflowStepListener);
+                    $this->dispatcher->removeListener(SynapsePlannerPlanProducedEvent::class, $plannerPlanListener);
                 }
 
                 // Save BOTH user message and assistant response to database after processing
