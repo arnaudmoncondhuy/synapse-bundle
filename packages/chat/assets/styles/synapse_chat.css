@@ -2315,3 +2315,136 @@
     background: #f1f5f9;
     color: #1e293b;
 }
+
+/* ── Chantier E phase 3 : widget exécution de code (principe 8) ───────── */
+
+.synapse-code-execution {
+    background: #1e293b; /* fond sombre comme un éditeur de code */
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 12px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    font-size: 0.75rem;
+}
+
+.synapse-code-execution--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.synapse-code-execution--success {
+    border-left: 3px solid #22c55e; /* vert */
+}
+
+.synapse-code-execution--failed {
+    border-left: 3px solid #ef4444; /* rouge */
+}
+
+.synapse-code-execution__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #334155;
+}
+
+.synapse-code-execution__lang {
+    font-family: monospace;
+    font-size: 0.7rem;
+    color: #fbbf24; /* jaune Python */
+    background: rgba(251, 191, 36, 0.1);
+    padding: 1px 6px;
+    border-radius: 3px;
+    text-transform: lowercase;
+}
+
+.synapse-code-execution__status {
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.synapse-code-execution--success .synapse-code-execution__status {
+    color: #22c55e;
+}
+
+.synapse-code-execution--failed .synapse-code-execution__status {
+    color: #ef4444;
+}
+
+.synapse-code-execution__duration {
+    margin-left: auto;
+    font-size: 0.68rem;
+    color: #64748b;
+    font-family: monospace;
+}
+
+.synapse-code-execution__label {
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+    margin: 0.6rem 0 0.2rem 0;
+    font-weight: 600;
+}
+
+.synapse-code-execution__code,
+.synapse-code-execution__stdout,
+.synapse-code-execution__stderr,
+.synapse-code-execution__return {
+    font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+    font-size: 0.72rem;
+    padding: 8px;
+    border-radius: 5px;
+    margin: 0;
+    max-height: 220px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.5;
+}
+
+.synapse-code-execution__code {
+    background: #0f172a;
+    color: #f1f5f9;
+    border: 1px solid #334155;
+}
+
+.synapse-code-execution__stdout {
+    background: #0c1420;
+    color: #94a3b8;
+    border-left: 2px solid #64748b;
+}
+
+.synapse-code-execution__return {
+    background: rgba(34, 197, 94, 0.08);
+    color: #86efac;
+    border-left: 2px solid #22c55e;
+    font-weight: 600;
+}
+
+.synapse-code-execution__stderr {
+    background: rgba(239, 68, 68, 0.08);
+    color: #fca5a5;
+    border-left: 2px solid #ef4444;
+}
+
+.synapse-code-execution__error {
+    margin-top: 0.5rem;
+    padding: 6px 10px;
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border-radius: 5px;
+    font-size: 0.72rem;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.synapse-code-execution__error strong {
+    display: block;
+    margin-bottom: 2px;
+    color: #ef4444;
+    font-family: monospace;
+}

@@ -7,8 +7,10 @@ namespace ArnaudMoncondhuy\SynapseCore\Tests\Unit\Tool;
 use ArnaudMoncondhuy\SynapseCore\CodeExecutor\ExecutionResult;
 use ArnaudMoncondhuy\SynapseCore\CodeExecutor\NullCodeExecutor;
 use ArnaudMoncondhuy\SynapseCore\Contract\CodeExecutorInterface;
+use ArnaudMoncondhuy\SynapseCore\Event\SynapseCodeExecutedEvent;
 use ArnaudMoncondhuy\SynapseCore\Tool\CodeExecuteTool;
 use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @covers \ArnaudMoncondhuy\SynapseCore\Tool\CodeExecuteTool
@@ -98,5 +100,60 @@ final class CodeExecuteToolTest extends TestCase
 
         $this->assertFalse($result['success']);
         $this->assertSame('BackendUnavailable', $result['error_type']);
+    }
+
+    public function testExecuteDispatchesSynapseCodeExecutedEventWhenDispatcherPresent(): void
+    {
+        // Spy executor qui retourne un résultat prévisible.
+        $spyExec = new class() implements CodeExecutorInterface {
+            public function execute(string $code, string $language = 'python', array $inputs = [], array $options = []): ExecutionResult
+            {
+                return new ExecutionResult(
+                    success: true,
+                    stdout: "hello\n",
+                    returnValue: 'hello',
+                    durationMs: 42,
+                );
+            }
+
+            public function isAvailable(): bool
+            {
+                return true;
+            }
+
+            public function getSupportedLanguages(): array
+            {
+                return ['python'];
+            }
+        };
+
+        $dispatchedEvents = [];
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->expects($this->once())
+            ->method('dispatch')
+            ->willReturnCallback(function (object $event) use (&$dispatchedEvents): object {
+                $dispatchedEvents[] = $event;
+
+                return $event;
+            });
+
+        $tool = new CodeExecuteTool($spyExec, $dispatcher);
+        $tool->execute(['code' => 'print("hello")', 'language' => 'python']);
+
+        $this->assertCount(1, $dispatchedEvents);
+        $this->assertInstanceOf(SynapseCodeExecutedEvent::class, $dispatchedEvents[0]);
+        $this->assertSame('print("hello")', $dispatchedEvents[0]->code);
+        $this->assertSame('python', $dispatchedEvents[0]->language);
+        $this->assertTrue($dispatchedEvents[0]->result['success']);
+        $this->assertSame('hello', $dispatchedEvents[0]->result['return_value']);
+    }
+
+    public function testExecuteWorksWithoutDispatcher(): void
+    {
+        // Backwards-compat : le dispatcher est optionnel, absence ne doit pas crasher.
+        $tool = new CodeExecuteTool(new NullCodeExecutor());
+        $result = $tool->execute(['code' => 'print(1)']);
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('success', $result);
     }
 }

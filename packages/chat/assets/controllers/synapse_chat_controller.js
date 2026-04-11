@@ -494,6 +494,7 @@ export default class extends Controller {
             'workflow_step':         () => this.renderWorkflowStepCompleted(p),
             'planner_plan':          () => this.renderPlannerPlan(p),
             'architect_proposal':    () => this.renderArchitectProposal(p),
+            'code_executed':         () => this.renderCodeExecution(p),
             'tool_executed':         () => this._onToolExecuted(p),
         };
         return handlers[evt.type]?.();
@@ -1259,6 +1260,7 @@ export default class extends Controller {
                     <div class="synapse-transparency-section" data-section="plan" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="proposals" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="workflow" style="display:none"></div>
+                    <div class="synapse-transparency-section" data-section="code" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="thinking" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="turns" style="display:none"></div>
                     <div class="synapse-transparency-section" data-section="artifacts" style="display:none"></div>
@@ -1782,6 +1784,108 @@ export default class extends Controller {
         section.appendChild(card);
 
         requestAnimationFrame(() => card.classList.add('synapse-architect-proposal--visible'));
+        this.asideTarget.scrollTop = this.asideTarget.scrollHeight;
+    }
+
+    // ── Chantier E phase 3 : code execution widget (principe 8) ─────────────
+    //
+    // Reçoit un event `code_executed` dispatché par `CodeExecuteTool` après
+    // chaque exécution via le sandbox HTTP. Affiche une carte dédiée dans la
+    // section `code` avec :
+    //
+    //   - le code Python source en monospace (pas de syntax highlight externe,
+    //     juste du <pre> formaté proprement)
+    //   - le stdout capturé (ou empty state si silencieux)
+    //   - le return_value mis en évidence quand présent (convention `result = ...`)
+    //   - un bandeau d'erreur avec stderr si `success: false`
+    //   - la durée d'exécution en ms
+    //
+    // Payload (SynapseCodeExecutedEvent::toArray()) :
+    //   code: string
+    //   language: string ('python')
+    //   result: { success, stdout, stderr, return_value, duration_ms, error_type, error_message }
+    //
+    // Plusieurs exécutions successives s'empilent dans la section pour
+    // montrer l'historique complet d'un turn multi-outils.
+
+    renderCodeExecution(payload) {
+        const section = this._getSection('code');
+        if (!section) return;
+
+        if (!section.querySelector('.synapse-transparency-section__title')) {
+            section.innerHTML = '<div class="synapse-transparency-section__title">🐍 Exécution de code</div>';
+        }
+
+        const code = payload.code || '';
+        const language = payload.language || 'python';
+        const result = payload.result || {};
+        const success = result.success === true;
+
+        const card = document.createElement('div');
+        card.className = 'synapse-code-execution synapse-code-execution--appear';
+        if (success) {
+            card.classList.add('synapse-code-execution--success');
+        } else {
+            card.classList.add('synapse-code-execution--failed');
+        }
+
+        // Header : langue + statut + durée
+        const statusIcon = success ? '✓' : '✗';
+        const durationMs = typeof result.duration_ms === 'number' ? result.duration_ms : 0;
+
+        // Stdout : affiché si non vide
+        const stdout = typeof result.stdout === 'string' ? result.stdout : '';
+        const stdoutHtml = stdout !== ''
+            ? `<div class="synapse-code-execution__label">stdout</div><pre class="synapse-code-execution__stdout">${escapeHtml(stdout)}</pre>`
+            : '';
+
+        // return_value : mis en évidence si non null/undefined
+        const returnValue = result.return_value;
+        const hasReturnValue = returnValue !== null && returnValue !== undefined;
+        let returnValueDisplay = '';
+        if (hasReturnValue) {
+            try {
+                returnValueDisplay = JSON.stringify(returnValue, null, 2);
+            } catch (e) {
+                returnValueDisplay = String(returnValue);
+            }
+        }
+        const returnValueHtml = hasReturnValue
+            ? `<div class="synapse-code-execution__label">return_value</div><pre class="synapse-code-execution__return">${escapeHtml(returnValueDisplay)}</pre>`
+            : '';
+
+        // stderr : affiché en bandeau d'erreur si échec ou stderr non vide
+        const stderr = typeof result.stderr === 'string' ? result.stderr : '';
+        const errorType = typeof result.error_type === 'string' ? result.error_type : '';
+        const errorMsg = typeof result.error_message === 'string' ? result.error_message : '';
+        let errorHtml = '';
+        if (!success && (errorType || errorMsg)) {
+            errorHtml = `<div class="synapse-code-execution__error">
+                <strong>${escapeHtml(errorType || 'Erreur')}</strong>
+                ${errorMsg ? `<div>${escapeHtml(errorMsg)}</div>` : ''}
+            </div>`;
+        }
+        const stderrHtml = stderr !== ''
+            ? `<div class="synapse-code-execution__label">stderr</div><pre class="synapse-code-execution__stderr">${escapeHtml(stderr)}</pre>`
+            : '';
+
+        card.innerHTML = `
+            <div class="synapse-code-execution__header">
+                <span class="synapse-code-execution__lang">${escapeHtml(language)}</span>
+                <span class="synapse-code-execution__status">${statusIcon}</span>
+                <span class="synapse-code-execution__duration">${durationMs}ms</span>
+            </div>
+            <div class="synapse-code-execution__label">code</div>
+            <pre class="synapse-code-execution__code">${escapeHtml(code)}</pre>
+            ${stdoutHtml}
+            ${returnValueHtml}
+            ${errorHtml}
+            ${stderrHtml}
+        `;
+
+        section.appendChild(card);
+
+        requestAnimationFrame(() => card.classList.add('synapse-code-execution--visible'));
         this.asideTarget.scrollTop = this.asideTarget.scrollHeight;
     }
 

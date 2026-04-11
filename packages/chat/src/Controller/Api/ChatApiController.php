@@ -14,6 +14,7 @@ use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseArchitectProposalEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseChunkReceivedEvent;
+use ArnaudMoncondhuy\SynapseCore\Event\SynapseCodeExecutedEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseMemoryResultsEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseMultiTurnIterationEvent;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseRagResultsEvent;
@@ -346,6 +347,13 @@ class ChatApiController extends AbstractController
                 $architectProposalListener = function (SynapseArchitectProposalEvent $e) use ($sendEvent): void {
                     $sendEvent('architect_proposal', $e->toArray());
                 };
+                // Chantier E phase 3 + Principe 8 : quand CodeExecuteTool
+                // exécute du code via le sandbox, remonter au front une
+                // carte dédiée avec le source Python + stdout + return_value
+                // pour la section `code` de la transparency sidebar.
+                $codeExecutedListener = function (SynapseCodeExecutedEvent $e) use ($sendEvent): void {
+                    $sendEvent('code_executed', $e->toArray());
+                };
                 $this->dispatcher->addListener(SynapseStatusChangedEvent::class, $statusListener);
                 $this->dispatcher->addListener(SynapseTokenStreamedEvent::class, $tokenListener);
                 $this->dispatcher->addListener(SynapseToolCallCompletedEvent::class, $toolListener);
@@ -359,6 +367,7 @@ class ChatApiController extends AbstractController
                 $this->dispatcher->addListener(SynapseWorkflowStepCompletedEvent::class, $workflowStepListener);
                 $this->dispatcher->addListener(SynapsePlannerPlanProducedEvent::class, $plannerPlanListener);
                 $this->dispatcher->addListener(SynapseArchitectProposalEvent::class, $architectProposalListener);
+                $this->dispatcher->addListener(SynapseCodeExecutedEvent::class, $codeExecutedListener);
 
                 // Pass user_id for spending limit checks
                 $user = $this->getUser();
@@ -611,6 +620,7 @@ class ChatApiController extends AbstractController
                     $this->dispatcher->removeListener(SynapseWorkflowStepCompletedEvent::class, $workflowStepListener);
                     $this->dispatcher->removeListener(SynapsePlannerPlanProducedEvent::class, $plannerPlanListener);
                     $this->dispatcher->removeListener(SynapseArchitectProposalEvent::class, $architectProposalListener);
+                    $this->dispatcher->removeListener(SynapseCodeExecutedEvent::class, $codeExecutedListener);
                 }
 
                 // Save BOTH user message and assistant response to database after processing

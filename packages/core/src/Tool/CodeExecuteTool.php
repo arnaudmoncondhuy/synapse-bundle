@@ -6,6 +6,8 @@ namespace ArnaudMoncondhuy\SynapseCore\Tool;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\CodeExecutorInterface;
+use ArnaudMoncondhuy\SynapseCore\Event\SynapseCodeExecutedEvent;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Outil LLM qui expose l'exécution de code arbitraire via le
@@ -39,6 +41,10 @@ class CodeExecuteTool implements AiToolInterface
 {
     public function __construct(
         private readonly CodeExecutorInterface $executor,
+        // Optionnel : quand disponible, l'event est dispatché après chaque
+        // exécution pour que la transparency sidebar puisse afficher une
+        // carte dédiée (principe 8). Non-bloquant si absent (tests unitaires).
+        private readonly ?EventDispatcherInterface $eventDispatcher = null,
     ) {
     }
 
@@ -97,7 +103,19 @@ class CodeExecuteTool implements AiToolInterface
             : 'python';
 
         $result = $this->executor->execute($code, $language);
+        $resultArray = $result->toArray();
 
-        return $result->toArray();
+        // Principe 8 : dispatch d'un event porteur du code source + résultat
+        // complet pour que la transparency sidebar du chat puisse afficher
+        // une carte dédiée avec syntax-highlighted Python + stdout + return_value.
+        if (null !== $this->eventDispatcher) {
+            $this->eventDispatcher->dispatch(new SynapseCodeExecutedEvent(
+                code: $code,
+                language: $language,
+                result: $resultArray,
+            ));
+        }
+
+        return $resultArray;
     }
 }
