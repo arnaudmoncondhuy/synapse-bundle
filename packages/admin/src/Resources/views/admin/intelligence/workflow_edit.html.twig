@@ -374,13 +374,25 @@
 			const card = document.createElement('div');
 			card.className = 'synapse-admin-card synapse-step-builder-card synapse-admin-mb-md';
 
+			// Chantier F phase 2 : détecter les types de steps non-agent
+			// (parallel, loop, conditional, sub_workflow) pour les afficher
+			// en mode read-only au lieu du formulaire agent-only. Le builder
+			// n'édite que les steps `agent`, les autres types passent par
+			// le mode JSON pour modification.
+			const stepType = step.type || 'agent';
+			const isNonAgentType = stepType !== 'agent';
+
 			// ── Header
 			const header = document.createElement('div');
 			header.className = 'synapse-admin-card__header synapse-step-builder-card__header';
+			const typeBadge = isNonAgentType
+				? '<span class="synapse-admin-badge synapse-admin-badge--warning" title="Type non éditable en mode visuel" style="margin-left:0.4rem;">' + esc(stepType) + '</span>'
+				: '';
 			header.innerHTML =
 				'<span class="synapse-admin-badge synapse-admin-badge--primary synapse-step-builder-badge">' + (index + 1) + '</span>' +
 				'<input type="text" class="synapse-admin-input synapse-step-builder-name-input" ' +
 					'value="' + esc(step.name || '') + '" placeholder="{{ 'synapse.admin.workflow.edit.builder.step_name_placeholder'|trans(domain='synapse_admin')|e('js') }}">' +
+				typeBadge +
 				'<div class="synapse-step-builder-card__actions">' +
 					(index > 0 ? '<button type="button" class="synapse-admin-btn synapse-admin-btn--icon synapse-admin-btn--ghost synapse-admin-btn--sm" data-action="move-up" title="{{ 'synapse.admin.workflow.edit.builder.move_up'|trans(domain='synapse_admin')|e('js') }}"><i data-lucide="chevron-up"></i></button>' : '') +
 					(index < def.steps.length - 1 ? '<button type="button" class="synapse-admin-btn synapse-admin-btn--icon synapse-admin-btn--ghost synapse-admin-btn--sm" data-action="move-down" title="{{ 'synapse.admin.workflow.edit.builder.move_down'|trans(domain='synapse_admin')|e('js') }}"><i data-lucide="chevron-down"></i></button>' : '') +
@@ -408,6 +420,56 @@
 			// ── Body
 			const body = document.createElement('div');
 			body.className = 'synapse-admin-card__body synapse-admin-card__body--compact';
+
+			// Chantier F phase 2 : rendu read-only pour les types non-agent.
+			// On n'essaie pas d'éditer parallel/loop/conditional/sub_workflow
+			// via le builder — le JSON reste authoritative. On affiche juste
+			// un résumé des champs spécifiques pour que l'utilisateur voie
+			// la structure sans avoir à basculer en mode JSON.
+			if (isNonAgentType) {
+				const summary = document.createElement('div');
+				summary.className = 'synapse-admin-alert synapse-admin-alert--info';
+				let summaryHtml = '<div style="width:100%;">';
+				summaryHtml += '<div class="synapse-admin-text-sm synapse-admin-mb-sm"><strong>Step de type <code>' + esc(stepType) + '</code></strong> — non éditable en mode visuel. Passe en mode JSON pour modifier.</div>';
+
+				if (stepType === 'conditional') {
+					summaryHtml += '<div class="synapse-admin-text-xs synapse-admin-mb-xs"><strong>Condition</strong> : <code>' + esc(step.condition || '') + '</code></div>';
+					if (step.equals !== undefined) {
+						summaryHtml += '<div class="synapse-admin-text-xs"><strong>Comparé à</strong> : <code>' + esc(JSON.stringify(step.equals)) + '</code></div>';
+					} else {
+						summaryHtml += '<div class="synapse-admin-text-xs synapse-admin-text-muted">Truthy check (pas de valeur <code>equals</code>)</div>';
+					}
+				} else if (stepType === 'parallel') {
+					const branches = Array.isArray(step.branches) ? step.branches : [];
+					summaryHtml += '<div class="synapse-admin-text-xs synapse-admin-mb-xs"><strong>' + branches.length + ' branche(s)</strong> exécutées indépendamment :</div>';
+					summaryHtml += '<ul class="synapse-admin-text-xs" style="margin:0.25rem 0 0 1rem;">';
+					for (const b of branches) {
+						const bType = b.type || 'agent';
+						const bAgent = b.agent_name ? ' → <code>' + esc(b.agent_name) + '</code>' : '';
+						summaryHtml += '<li><code>' + esc(b.name || '?') + '</code> (' + esc(bType) + ')' + bAgent + '</li>';
+					}
+					summaryHtml += '</ul>';
+				} else if (stepType === 'loop') {
+					summaryHtml += '<div class="synapse-admin-text-xs synapse-admin-mb-xs"><strong>Items</strong> : <code>' + esc(step.items_path || '') + '</code></div>';
+					if (step.item_alias) {
+						summaryHtml += '<div class="synapse-admin-text-xs synapse-admin-mb-xs"><strong>Alias item</strong> : <code>' + esc(step.item_alias) + '</code></div>';
+					}
+					if (step.max_iterations) {
+						summaryHtml += '<div class="synapse-admin-text-xs synapse-admin-mb-xs"><strong>Max itérations</strong> : ' + step.max_iterations + '</div>';
+					}
+					const tpl = step.step || {};
+					const tplAgent = tpl.agent_name ? ' → <code>' + esc(tpl.agent_name) + '</code>' : '';
+					summaryHtml += '<div class="synapse-admin-text-xs"><strong>Step template</strong> : <code>' + esc(tpl.name || '?') + '</code> (' + esc(tpl.type || 'agent') + ')' + tplAgent + '</div>';
+				} else if (stepType === 'sub_workflow') {
+					summaryHtml += '<div class="synapse-admin-text-xs"><strong>Workflow délégué</strong> : <code>' + esc(step.workflow_key || '') + '</code></div>';
+				}
+
+				summaryHtml += '</div>';
+				summary.innerHTML = '<i data-lucide="info"></i>' + summaryHtml;
+				body.appendChild(summary);
+				card.appendChild(body);
+				return card;
+			}
 
 			// Agent select
 			let agentHtml = '<div class="synapse-admin-form-group synapse-admin-mb-md">' +
