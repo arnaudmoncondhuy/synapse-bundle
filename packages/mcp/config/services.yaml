@@ -3,6 +3,7 @@ services:
     public: true
     arguments:
       - '@ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository'
+      - '@ArnaudMoncondhuy\SynapseCore\Agent\CodeAgentRegistry'
     tags:
       - { name: mcp.tool }
 
