@@ -164,7 +164,7 @@ class MemoryManager
             }
 
             // Déchiffrer si nécessaire avant d'envoyer à l'API d'embedding
-            if (null !== $this->encryptionService && $this->encryptionService->isEncrypted($content)) {
+            if ($this->encryptionService->isEncrypted($content)) {
                 $content = $this->encryptionService->decrypt($content);
             }
 
@@ -209,10 +209,7 @@ class MemoryManager
             $memory->setEmbedding($result['embeddings'][0]);
         }
 
-        $contentToStore = $newText;
-        if (null !== $this->encryptionService) {
-            $contentToStore = $this->encryptionService->encrypt($newText);
-        }
+        $contentToStore = $this->encryptionService->encrypt($newText);
 
         $memory->setContent($contentToStore);
 

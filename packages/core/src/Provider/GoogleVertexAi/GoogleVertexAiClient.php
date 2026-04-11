@@ -51,8 +51,8 @@ class GoogleVertexAiClient extends AbstractLlmClient implements EmbeddingClientI
         private readonly GoogleVertexAiAuthService $googleVertexAiAuthService,
         ConfigProviderInterface $configProvider,
         ModelCapabilityRegistry $capabilityRegistry,
-        private readonly ?SynapseProviderRepository $providerRepository = null,
         private readonly EncryptionServiceInterface $encryptionService,
+        private readonly ?SynapseProviderRepository $providerRepository = null,
     ) {
         parent::__construct($httpClient, $configProvider, $capabilityRegistry);
     }
@@ -526,12 +526,10 @@ class GoogleVertexAiClient extends AbstractLlmClient implements EmbeddingClientI
                 throw new \RuntimeException('Gemini provider has no credentials configured. Please add credentials in the admin panel.');
             }
             // Decrypt if encrypted
-            if (null !== $this->encryptionService) {
-                foreach (['service_account_json', 'private_key'] as $key) {
-                    $val = $rawCreds[$key] ?? null;
-                    if (is_string($val) && $this->encryptionService->isEncrypted($val)) {
-                        $rawCreds[$key] = $this->encryptionService->decrypt($val);
-                    }
+            foreach (['service_account_json', 'private_key'] as $key) {
+                $val = $rawCreds[$key] ?? null;
+                if (is_string($val) && $this->encryptionService->isEncrypted($val)) {
+                    $rawCreds[$key] = $this->encryptionService->decrypt($val);
                 }
             }
             $creds = $rawCreds;

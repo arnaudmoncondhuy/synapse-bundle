@@ -125,8 +125,8 @@ final class GoogleVertexAiSchemaConversionTest extends TestCase
             $this->createMock(GoogleVertexAiAuthService::class),
             $this->createMock(ConfigProviderInterface::class),
             $this->createMock(ModelCapabilityRegistry::class),
-            null,
             $encryption,
+            null,
         );
     }
 

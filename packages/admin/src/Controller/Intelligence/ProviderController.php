@@ -33,8 +33,8 @@ class ProviderController extends AbstractController
         private readonly EntityManagerInterface $em,
         private readonly LlmClientRegistry $clientRegistry,
         private readonly PermissionCheckerInterface $permissionChecker,
-        private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
         private readonly EncryptionServiceInterface $encryptionService,
+        private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
 
@@ -183,10 +183,6 @@ class ProviderController extends AbstractController
      */
     private function encryptCredentials(array $credentials): array
     {
-        if (null === $this->encryptionService) {
-            return $credentials;
-        }
-
         foreach (['api_key', 'service_account_json', 'private_key', 'token'] as $key) {
             $value = $credentials[$key] ?? null;
             if (is_string($value) && '' !== $value && !$this->encryptionService->isEncrypted($value)) {
@@ -207,10 +203,6 @@ class ProviderController extends AbstractController
      */
     private function decryptCredentials(array $credentials): array
     {
-        if (null === $this->encryptionService) {
-            return $credentials;
-        }
-
         foreach (['api_key', 'service_account_json', 'private_key', 'token'] as $key) {
             $value = $credentials[$key] ?? null;
             if (is_string($value) && '' !== $value && $this->encryptionService->isEncrypted($value)) {
