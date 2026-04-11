@@ -181,8 +181,14 @@ class ConversationManagerTest extends TestCase
 
     private function buildManager(?PermissionCheckerInterface $permissionChecker = null): ConversationManager
     {
+        $encryption = $this->createMock(\ArnaudMoncondhuy\SynapseCore\Contract\EncryptionServiceInterface::class);
+        $encryption->method('isEncrypted')->willReturn(false);
+        $encryption->method('encrypt')->willReturnArgument(0);
+        $encryption->method('decrypt')->willReturnArgument(0);
+
         return new ConversationManager(
             em: $this->em,
+            encryptionService: $encryption,
             conversationRepo: $this->repo,
             permissionChecker: $permissionChecker,
         );

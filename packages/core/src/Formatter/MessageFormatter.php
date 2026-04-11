@@ -26,7 +26,7 @@ class MessageFormatter implements MessageFormatterInterface
     private array $trailingGeneratedAttachments = [];
 
     public function __construct(
-        private ?EncryptionServiceInterface $encryptionService = null,
+        private EncryptionServiceInterface $encryptionService,
         private ?AttachmentStorageService $attachmentStorage = null,
         private ?EntityManagerInterface $em = null,
     ) {
@@ -50,13 +50,11 @@ class MessageFormatter implements MessageFormatterInterface
             if (is_array($entity)) {
                 if (isset($entity['role']) && (isset($entity['content']) || isset($entity['parts']))) {
                     $decrypted = $entity;
-                    if (null !== $this->encryptionService) {
-                        if (!empty($decrypted['content']) && is_string($decrypted['content']) && $this->encryptionService->isEncrypted($decrypted['content'])) {
-                            $decrypted['content'] = $this->encryptionService->decrypt($decrypted['content']);
-                        }
-                        if (isset($decrypted['parts'][0]['text']) && is_string($decrypted['parts'][0]['text']) && $this->encryptionService->isEncrypted($decrypted['parts'][0]['text'])) {
-                            $decrypted['parts'][0]['text'] = $this->encryptionService->decrypt($decrypted['parts'][0]['text']);
-                        }
+                    if (!empty($decrypted['content']) && is_string($decrypted['content']) && $this->encryptionService->isEncrypted($decrypted['content'])) {
+                        $decrypted['content'] = $this->encryptionService->decrypt($decrypted['content']);
+                    }
+                    if (isset($decrypted['parts'][0]['text']) && is_string($decrypted['parts'][0]['text']) && $this->encryptionService->isEncrypted($decrypted['parts'][0]['text'])) {
+                        $decrypted['parts'][0]['text'] = $this->encryptionService->decrypt($decrypted['parts'][0]['text']);
                     }
                     $messages[] = $decrypted;
                     continue;

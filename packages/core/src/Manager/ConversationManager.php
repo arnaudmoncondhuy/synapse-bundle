@@ -37,9 +37,9 @@ class ConversationManager
 
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly EncryptionServiceInterface $encryptionService,
         /** @var SynapseConversationRepository<SynapseConversation>|null */
         private readonly ?SynapseConversationRepository $conversationRepo = null,
-        private readonly ?EncryptionServiceInterface $encryptionService = null,
         private readonly ?PermissionCheckerInterface $permissionChecker = null,
         /** @var class-string<SynapseConversation>|null */
         private readonly ?string $conversationClass = null,
@@ -171,12 +171,8 @@ class ConversationManager
         }
         if (isset($metadata['metadata'])) {
             $metaDataToSave = $metadata['metadata'];
-            if (null !== $this->encryptionService) {
-                $encryptedMeta = $this->encryptionService->encrypt(json_encode($metaDataToSave, JSON_THROW_ON_ERROR));
-                $message->setMetadata(['_encrypted' => $encryptedMeta]);
-            } else {
-                $message->setMetadata($metaDataToSave);
-            }
+            $encryptedMeta = $this->encryptionService->encrypt(json_encode($metaDataToSave, JSON_THROW_ON_ERROR));
+            $message->setMetadata(['_encrypted' => $encryptedMeta]);
         }
 
         // Preset utilisé (pour analytics)
@@ -265,11 +261,9 @@ class ConversationManager
 
         // Déchiffrer les titres
         foreach ($conversations as $conversation) {
-            if (null !== $conversation->getTitle() && null !== $this->encryptionService) {
-                if ($this->encryptionService->isEncrypted($conversation->getTitle())) {
-                    $decrypted = $this->encryptionService->decrypt($conversation->getTitle());
-                    $conversation->setTitle($decrypted);
-                }
+            $title = $conversation->getTitle();
+            if (null !== $title && $this->encryptionService->isEncrypted($title)) {
+                $conversation->setTitle($this->encryptionService->decrypt($title));
             }
         }
 
@@ -329,17 +323,17 @@ class ConversationManager
 
         // Déchiffrer les contenus ou normaliser
         foreach ($messages as $message) {
-            if (null !== $this->encryptionService && $this->encryptionService->isEncrypted($message->getContent())) {
+            if ($this->encryptionService->isEncrypted($message->getContent())) {
                 $decrypted = $this->encryptionService->decrypt($message->getContent());
                 $message->setDecryptedContent($decrypted);
             } else {
-                // Fallback explicite pour les messages non chiffrés
+                // Fallback explicite pour les messages non chiffrés (legacy plaintext)
                 $message->setDecryptedContent($message->getContent());
             }
 
             // Déchiffrement des métadonnées
             $meta = $message->getMetadata();
-            if (isset($meta['_encrypted']) && is_string($meta['_encrypted']) && null !== $this->encryptionService) {
+            if (isset($meta['_encrypted']) && is_string($meta['_encrypted'])) {
                 try {
                     $decryptedMeta = json_decode($this->encryptionService->decrypt($meta['_encrypted']), true, 512, JSON_THROW_ON_ERROR);
                     /** @var array<string, mixed>|null $finalMeta */
@@ -490,10 +484,7 @@ class ConversationManager
      */
     private function setTitle(SynapseConversation $conversation, string $title): void
     {
-        if (null !== $this->encryptionService) {
-            $title = $this->encryptionService->encrypt($title);
-        }
-        $conversation->setTitle($title);
+        $conversation->setTitle($this->encryptionService->encrypt($title));
     }
 
     /**
@@ -502,11 +493,7 @@ class ConversationManager
     private function setMessageContent(SynapseMessage $message, string $content): void
     {
         $message->setDecryptedContent($content);
-
-        if (null !== $this->encryptionService) {
-            $content = $this->encryptionService->encrypt($content);
-        }
-        $message->setContent($content);
+        $message->setContent($this->encryptionService->encrypt($content));
     }
 
     /**

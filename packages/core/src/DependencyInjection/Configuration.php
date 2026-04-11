@@ -50,16 +50,19 @@ class Configuration implements ConfigurationInterface
             ->end()
 
             // ── Encryption ────────────────────────────────────────────────────
+            // Le chiffrement est OBLIGATOIRE depuis le chantier credentials-crypto
+            // (2026-04-11). Il n'existe plus de mode "pass-through" : tout hôte
+            // doit fournir une clé de chiffrement via %env(SYNAPSE_ENCRYPTION_KEY)%
+            // ou équivalent. Conséquence : les credentials LLM, les conversations,
+            // la mémoire utilisateur et le vector store sont chiffrés au repos
+            // sans jamais pouvoir être désactivés.
             ->arrayNode('encryption')
-            ->addDefaultsIfNotSet()
+            ->isRequired()
             ->children()
-            ->booleanNode('enabled')
-            ->defaultFalse()
-            ->info('Activer le chiffrement des conversations (libsodium AES-256-GCM)')
-            ->end()
             ->scalarNode('key')
-            ->defaultNull()
-            ->info('Clé de chiffrement (32 bytes, ex: %env(SYNAPSE_ENCRYPTION_KEY)%)')
+            ->isRequired()
+            ->cannotBeEmpty()
+            ->info('Clé de chiffrement (libsodium secretbox, 32 bytes ou base64:...). Obligatoire.')
             ->end()
             ->end()
             ->end()

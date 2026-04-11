@@ -24,7 +24,7 @@ class SynapseTwigExtension extends AbstractExtension
     public function __construct(
         private readonly ToneRegistry $toneRegistry,
         private readonly AgentRegistry $agentRegistry,
-        private readonly ?EncryptionServiceInterface $encryptionService = null,
+        private readonly EncryptionServiceInterface $encryptionService,
         private readonly ?\ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface $permissionChecker = null,
         private readonly ?ConfigProviderInterface $configProvider = null,
         private readonly ?ModelCapabilityRegistry $modelCapabilityRegistry = null,
@@ -112,8 +112,8 @@ class SynapseTwigExtension extends AbstractExtension
             return '';
         }
 
-        // 0. Déchiffrer automatiquement si le service est présent et le texte semble chiffré
-        if (null !== $this->encryptionService && $this->encryptionService->isEncrypted($text)) {
+        // 0. Déchiffrer automatiquement si le texte semble chiffré
+        if ($this->encryptionService->isEncrypted($text)) {
             try {
                 $text = $this->encryptionService->decrypt($text);
             } catch (\Throwable $e) {

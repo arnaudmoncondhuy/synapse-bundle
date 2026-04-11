@@ -146,11 +146,15 @@ class DatabaseConfigProviderTest extends TestCase
         $globalConfigRepo = $this->createStub(SynapseConfigRepository::class);
         $globalConfigRepo->method('getGlobalConfig')->willReturn($globalConfig);
 
+        $encryption = $this->createMock(EncryptionServiceInterface::class);
+        $encryption->method('isEncrypted')->willReturn(false);
+
         $provider = new DatabaseConfigProvider(
             presetRepo: $this->presetRepo,
             globalConfigRepo: $globalConfigRepo,
             providerRepo: $this->providerRepo,
             presetValidator: $this->buildPassingValidator(),
+            encryptionService: $encryption,
         );
 
         $config = $provider->getConfigForPreset($this->buildPreset());
@@ -222,14 +226,21 @@ class DatabaseConfigProviderTest extends TestCase
         $this->assertSame('plain-key', $config->providerCredentials['api_key']);
     }
 
-    public function testPassesThroughCredentialsWithoutEncryptionService(): void
+    public function testPassesThroughPlaintextCredentialsWithEncryptionService(): void
     {
+        // Legacy credentials non chiffrés : l'encryption service est toujours
+        // présent (obligatoire), mais il reconnaît via isEncrypted() qu'une
+        // valeur plaintext ne doit pas être déchiffrée → pass-through.
+        $encryption = $this->createMock(EncryptionServiceInterface::class);
+        $encryption->method('isEncrypted')->willReturn(false);
+        $encryption->expects($this->never())->method('decrypt');
+
         $synapseProvider = new SynapseProvider();
         $synapseProvider->setLabel('Gemini');
         $synapseProvider->setIsEnabled(true);
         $synapseProvider->setCredentials(['api_key' => 'plain-key']);
 
-        $config = $this->buildProvider($this->buildPassingValidator(), null, $synapseProvider)
+        $config = $this->buildProvider($this->buildPassingValidator(), $encryption, $synapseProvider)
             ->getConfigForPreset($this->buildPreset());
 
         $this->assertSame('plain-key', $config->providerCredentials['api_key']);
@@ -250,13 +261,20 @@ class DatabaseConfigProviderTest extends TestCase
             $providerRepo->method('findByName')->willReturn($providerForRepo);
         }
 
+        // L'encryption est obligatoire : si le test ne fournit rien,
+        // on monte un mock transparent (isEncrypted=false → pass-through).
+        if (null === $encryption) {
+            $encryption = $this->createMock(EncryptionServiceInterface::class);
+            $encryption->method('isEncrypted')->willReturn(false);
+        }
+
         return new DatabaseConfigProvider(
             presetRepo: $this->presetRepo,
             globalConfigRepo: $this->globalConfigRepo,
             providerRepo: $providerRepo,
             presetValidator: $presetValidator,
-            cache: null,
             encryptionService: $encryption,
+            cache: null,
         );
     }
 

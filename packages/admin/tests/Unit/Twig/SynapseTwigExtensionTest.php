@@ -23,6 +23,12 @@ class SynapseTwigExtensionTest extends TestCase
         ?ConfigProviderInterface $config = null,
         ?ModelCapabilityRegistry $capabilities = null,
     ): SynapseTwigExtension {
+        // L'encryption est obligatoire : fournir un mock transparent par défaut.
+        if (null === $encryption) {
+            $encryption = $this->createMock(EncryptionServiceInterface::class);
+            $encryption->method('isEncrypted')->willReturn(false);
+        }
+
         return new SynapseTwigExtension(
             $this->createStub(ToneRegistry::class),
             $this->createStub(AgentRegistry::class),

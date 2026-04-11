@@ -123,13 +123,10 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
         $container->setParameter('synapse.persistence.message_class', $config['persistence']['message_class']);
 
         // ── Encryption ────────────────────────────────────────────────────────
-        $encryptionEnabled = $config['encryption']['enabled'] ?? false;
-        $container->setParameter('synapse.encryption.enabled', $encryptionEnabled);
-        $container->setParameter('synapse.encryption.key', $config['encryption']['key'] ?? null);
-
-        if (!$encryptionEnabled) {
-            @trigger_error('Synapse: encryption is disabled — LLM credentials and conversations are stored in plaintext. Set synapse.encryption.enabled to true for production.', \E_USER_NOTICE);
-        }
+        // Obligatoire depuis le chantier credentials-crypto (2026-04-11).
+        // La Configuration force `encryption.key` à être renseignée, donc on
+        // peut compter sur sa présence ici. Plus de pass-through possible.
+        $container->setParameter('synapse.encryption.key', $config['encryption']['key']);
 
         // ── Security ──────────────────────────────────────────────────────────
         $container->setParameter('synapse.security.admin_role', $config['security']['admin_role'] ?? 'ROLE_ADMIN');
@@ -184,18 +181,19 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
         $container->setParameter('synapse.version', $version);
 
         // ── Encryption Service ────────────────────────────────────────────────
-        if ($config['encryption']['enabled']) {
-            $container
-                ->register('synapse.encryption_service', LibsodiumEncryptionService::class)
-                ->setArguments([$config['encryption']['key']])
-                ->setAutowired(true)
-                ->setPublic(false);
+        // Le service est TOUJOURS enregistré — la config garantit la présence
+        // d'une clé. Tous les services qui dépendent d'EncryptionServiceInterface
+        // peuvent donc déclarer leur dépendance comme non-nullable.
+        $container
+            ->register('synapse.encryption_service', LibsodiumEncryptionService::class)
+            ->setArguments([$config['encryption']['key']])
+            ->setAutowired(true)
+            ->setPublic(false);
 
-            $container->setAlias(
-                EncryptionServiceInterface::class,
-                'synapse.encryption_service'
-            );
-        }
+        $container->setAlias(
+            EncryptionServiceInterface::class,
+            'synapse.encryption_service'
+        );
 
         // ── Chargement des services ───────────────────────────────────────────
         $loader = new YamlFileLoader($container, new FileLocator(\dirname(__DIR__, 1).'/../config'));
@@ -237,10 +235,8 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
                 $managerDef->setArgument('$messageClass', $config['persistence']['message_class'] ?? null);
             }
 
-            // Explicitly set encryption service if enabled to avoid autowiring gaps for optional params
-            if ($config['encryption']['enabled']) {
-                $managerDef->setArgument('$encryptionService', new Reference(EncryptionServiceInterface::class));
-            }
+            // L'encryption est obligatoire, le service est toujours enregistré.
+            $managerDef->setArgument('$encryptionService', new Reference(EncryptionServiceInterface::class));
         }
 
         // ── Auto-configuration (Tags automatiques) ────────────────────────────
