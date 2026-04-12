@@ -110,6 +110,7 @@ class DebugController extends AbstractController
             'synapse_conversation',
             'synapse_vector_memory',
             'synapse_llm_call',
+            'synapse_code_execution',
             'synapse_debug_log',
         ];
 

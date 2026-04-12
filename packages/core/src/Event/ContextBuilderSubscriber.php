@@ -179,6 +179,29 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
             ? $options['_trailing_generated_attachments']
             : [];
 
+        // ── 5. Résoudre les outils AVANT d'injecter les attachments (nécessaire pour
+        //    savoir si code_execute est disponible → ne pas injecter le CSV inline).
+        $toolsOptionRaw = $options['tools'] ?? null;
+        /** @var list<string>|null $toolsOption */
+        $toolsOption = is_array($toolsOptionRaw) ? array_values(array_filter($toolsOptionRaw, 'is_string')) : (is_string($toolsOptionRaw) ? [$toolsOptionRaw] : null);
+        $toolsOverrideRaw = $options['tools_override'] ?? null;
+        /** @var list<string>|null $toolsOverride */
+        $toolsOverride = is_array($toolsOverrideRaw) ? array_values(array_filter($toolsOverrideRaw, 'is_string')) : null;
+
+        if (!$config->isFunctionCallingEnabled()) {
+            $toolDefinitions = [];
+        } elseif (null !== $toolsOverride) {
+            $filtered = $this->toolConfigService->filterToolNames($toolsOverride, true);
+            $toolDefinitions = $this->toolRegistry->getDefinitions($filtered);
+        } elseif (is_array($toolsOption)) {
+            $filtered = $this->toolConfigService->filterToolNames($toolsOption, false);
+            $toolDefinitions = $this->toolRegistry->getDefinitions($filtered);
+        } else {
+            $toolDefinitions = $this->toolRegistry->getDefinitions(
+                $this->toolConfigService->getDefaultExposedToolNames()
+            );
+        }
+
         if (!empty($attachments) || !empty($trailingGeneratedAttachments)) {
             $parts = [];
             if ('' !== $message) {
@@ -187,15 +210,31 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
             foreach ($trailingGeneratedAttachments as $attPart) {
                 $parts[] = $attPart;
             }
+            // Détecter si code_execute est disponible — si oui, les fichiers texte
+            // sont accessibles via le sandbox et ne doivent PAS être injectés inline
+            // (évite que le LLM recopie le contenu dans un function call malformé).
+            $hasCodeExecute = !empty($toolDefinitions) && \in_array('code_execute', array_column($toolDefinitions, 'name'), true);
+
             foreach ($attachments as $attachment) {
                 $mime = $attachment['mime_type'] ?? '';
                 if (str_starts_with($mime, 'text/') || 'application/json' === $mime) {
-                    // Fichier texte → injection comme contenu textuel (pas besoin de vision)
+                    $name = $attachment['name'] ?? 'fichier';
+
+                    // Si code_execute est disponible, ne pas injecter le contenu inline :
+                    // le fichier est dans le sandbox, le modèle doit utiliser open().
+                    if ($hasCodeExecute) {
+                        $parts[] = [
+                            'type' => 'text',
+                            'text' => "[Fichier joint : {$name} — disponible dans le sandbox Python, utilise code_execute avec open('{$name}') pour le lire]",
+                        ];
+                        continue;
+                    }
+
+                    // Pas de code_execute : injecter le contenu inline pour que le modèle puisse le lire
                     $textContent = base64_decode($attachment['data'] ?? '', true);
                     if (false === $textContent) {
                         continue;
                     }
-                    $name = $attachment['name'] ?? 'fichier';
                     if (\strlen($textContent) > 102400) {
                         $textContent = substr($textContent, 0, 102400)."\n...[tronqué, ".round(\strlen($textContent) / 1024).' Ko au total]';
                     }
@@ -217,29 +256,7 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
         }
 
         // System instruction is now the first message in contents (OpenAI canonical format)
-        $toolsOptionRaw = $options['tools'] ?? null;
-        /** @var list<string>|null $toolsOption */
-        $toolsOption = is_array($toolsOptionRaw) ? array_values(array_filter($toolsOptionRaw, 'is_string')) : (is_string($toolsOptionRaw) ? [$toolsOptionRaw] : null);
-        $toolsOverrideRaw = $options['tools_override'] ?? null;
-        /** @var list<string>|null $toolsOverride */
-        $toolsOverride = is_array($toolsOverrideRaw) ? array_values(array_filter($toolsOverrideRaw, 'is_string')) : null;
-
-        // Filtrage administratif (SynapseToolConfig) :
-        // - un agent ayant whitelisté des outils peut inclure des AGENT_ONLY ;
-        // - sinon, seuls les ACTIVE sont exposés (DISABLED et AGENT_ONLY exclus).
-        if (!$config->isFunctionCallingEnabled()) {
-            $toolDefinitions = [];
-        } elseif (null !== $toolsOverride) {
-            $filtered = $this->toolConfigService->filterToolNames($toolsOverride, true);
-            $toolDefinitions = $this->toolRegistry->getDefinitions($filtered);
-        } elseif (is_array($toolsOption)) {
-            $filtered = $this->toolConfigService->filterToolNames($toolsOption, false);
-            $toolDefinitions = $this->toolRegistry->getDefinitions($filtered);
-        } else {
-            $toolDefinitions = $this->toolRegistry->getDefinitions(
-                $this->toolConfigService->getDefaultExposedToolNames()
-            );
-        }
+        // ($toolDefinitions déjà résolu plus haut, avant l'injection des attachments)
 
         // Enrichir le system prompt avec la liste des fichiers disponibles dans le sandbox Python
         $fileNames = [];

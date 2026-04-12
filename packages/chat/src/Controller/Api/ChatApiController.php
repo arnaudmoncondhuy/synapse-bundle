@@ -238,8 +238,10 @@ class ChatApiController extends AbstractController
                     // Transparency sidebar: tool completed
                     $resultRaw = $e->getResult();
                     $resultPreview = \is_string($resultRaw) ? mb_substr($resultRaw, 0, 200) : mb_substr((string) json_encode($resultRaw, \JSON_UNESCAPED_UNICODE), 0, 200);
+                    $toolCallId = $e->getToolCallData()['id'] ?? null;
                     $sendEvent('tool_completed', [
                         'toolName' => $e->getToolName(),
+                        'toolCallId' => $toolCallId,
                         'resultPreview' => $resultPreview,
                     ]);
                 };
@@ -613,14 +615,17 @@ class ChatApiController extends AbstractController
                 } elseif (str_contains((string) $errorMessage, 'timeout') || str_contains((string) $errorMessage, 'Timeout')) {
                     $errorMessage = $this->translator ? $this->translator->trans('synapse.chat.api.error.timeout', [], 'synapse_chat') : "⏱️ Timeout : L'IA a mis trop de temps à répondre.";
                 } else {
-                    // Logger l'erreur complète côté serveur, ne jamais exposer de détails au client
-                    if ($this->getParameter('kernel.debug')) {
-                        error_log(sprintf('[Synapse] %s (%s:%d)', $e->getMessage(), $e->getFile(), $e->getLine()));
-                    }
                     $errorMessage = $this->translator ? $this->translator->trans('synapse.chat.api.error.system', [], 'synapse_chat') : '❌ Erreur système : Une erreur inattendue est survenue.';
                 }
 
-                $sendEvent('error', (string) $errorMessage);
+                // Toujours logger l'exception côté serveur (pas seulement en debug)
+                error_log(sprintf('[Synapse Chat] %s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine()));
+
+                try {
+                    $sendEvent('error', (string) $errorMessage);
+                } catch (\Throwable) {
+                    // Stream déjà fermé — l'erreur est loggée via error_log ci-dessus
+                }
             }
         });
 

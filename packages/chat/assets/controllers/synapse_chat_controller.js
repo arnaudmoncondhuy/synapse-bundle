@@ -195,10 +195,6 @@ export default class extends Controller {
     }
 
     renderConversations(conversations) {
-        console.log('[Synapse] renderConversations', conversations.length, 'targets:', {
-            list: this.hasConversationsListTarget,
-            empty: this.hasConversationsEmptyTarget
-        });
 
         if (conversations.length === 0) {
             if (this.hasConversationsEmptyTarget) this.conversationsEmptyTarget.classList.remove('synapse-hidden');
@@ -402,14 +398,19 @@ export default class extends Controller {
             });
 
             if (!response.ok) {
+                if (response.status === 403) {
+                    this._csrfToken = null;
+                }
                 const msg = response.status === 401 ? 'Session expirée. Rechargez la page.' : `Erreur serveur (${response.status}).`;
                 throw new Error(msg);
             }
 
+            if (!response.body) {
+                throw new Error('Réponse vide du serveur (pas de body).');
+            }
             await this._processStream(response.body.getReader());
 
         } catch (error) {
-            this.setLoading(false);
             this._markTransparencyError(error.message || 'Erreur réseau');
             this.addMessage('❌ ' + error.message, 'assistant');
             console.error('Erreur API Chat:', error);
@@ -436,7 +437,7 @@ export default class extends Controller {
                     this._markTransparencyError('Timeout — le serveur ne répond plus');
                     this.addMessage('⏱️ Le serveur ne répond plus (Timeout).', 'assistant');
                 }
-            }, 30000);
+            }, 60000);
         };
 
         resetTimeout();
@@ -459,6 +460,14 @@ export default class extends Controller {
                         if (this._handleStreamEvent(evt, state, timeoutId) === 'break') return;
                     } catch (e) { /* Ligne partielle */ }
                 }
+            }
+
+            // Traiter le buffer résiduel (défensif : si la dernière ligne n'a pas de \n)
+            if (buffer.trim().startsWith('{')) {
+                try {
+                    const evt = JSON.parse(buffer.trim());
+                    if (evt?.type) this._handleStreamEvent(evt, state, timeoutId);
+                } catch (e) { /* ligne incomplète, ignorée */ }
             }
 
             if (state.error) {
@@ -520,7 +529,27 @@ export default class extends Controller {
 
         if (payload?.conversation_id) this.updateUrlConversation(payload.conversation_id);
 
-        if (state.bubble && payload?.answer) {
+        // Détecter une réponse vide du LLM (thinking_tokens > 0 mais completion_tokens = 0)
+        const hasAnswer = payload?.answer && payload.answer !== '';
+        const hasAttachments = payload?.generated_attachments?.length > 0;
+        if (!hasAnswer && !hasAttachments && !state.text) {
+            this.addMessage('⚠️ Le modèle n\'a pas généré de réponse. Réessayez ou reformulez votre question.', 'assistant');
+            this._markTransparencyError('Réponse vide du modèle');
+            return;
+        }
+
+        // Détecter un multi-turn qui n'a rien ajouté de nouveau :
+        // la réponse finale est strictement identique au texte déjà affiché par streaming delta
+        // ET le texte streamé était non vide (pas un recovery qui a produit le texte via result)
+        const hadMultiTurn = this._turnCount > 0;
+        const deltaWasSubstantial = state.text && state.text.trim().length > 0;
+        const answerIdenticalToDelta = deltaWasSubstantial && hasAnswer && payload.answer.trim() === state.text.trim();
+        if (hadMultiTurn && !hasAnswer && !hasAttachments && deltaWasSubstantial) {
+            this.addMessage('⚠️ Le traitement n\'a pas pu aboutir après plusieurs tentatives. Consultez le panneau de transparence pour les détails.', 'assistant', { subtype: 'system_action' });
+            this._markTransparencyError('Multi-turn sans résultat supplémentaire');
+        }
+
+        if (state.bubble && hasAnswer) {
             state.bubble.innerHTML = this.parseMarkdown(payload.answer);
             if (this.debugValue && payload?.debug_id) {
                 const messageEl = state.bubble.closest('.synapse-chat-message');
@@ -529,8 +558,8 @@ export default class extends Controller {
                     this.addTransparencyButtonToMessage(messageEl, payload.message_id);
                 }
             }
-        } else if (!state.bubble && (payload?.answer || payload?.generated_attachments?.length > 0)) {
-            const displayText = payload?.answer && payload.answer !== '[image]' ? payload.answer : '';
+        } else if (!state.bubble && (hasAnswer || hasAttachments)) {
+            const displayText = hasAnswer && payload.answer !== '[image]' ? payload.answer : '';
             this.addMessage(displayText, 'assistant', { debug_id: payload.debug_id });
             const bubbles = this.messagesTarget.querySelectorAll('.synapse-chat-message--assistant .synapse-chat-bubble');
             state.bubble = bubbles[bubbles.length - 1];
@@ -731,6 +760,10 @@ export default class extends Controller {
         if (this.hasSubmitBtnTarget) this.submitBtnTarget.disabled = isLoading;
 
         if (isLoading) {
+            // Retirer l'ancien loading s'il existe (évite les doublons lors des multi-turn)
+            const existing = this.element.querySelector('#synapse-chat-loading-ind');
+            if (existing) existing.remove();
+
             const html = `
                 <div class="synapse-chat-message synapse-chat-message--assistant" id="synapse-chat-loading-ind">
                     <div class="synapse-chat-avatar synapse-chat-avatar--loading">
@@ -891,18 +924,22 @@ export default class extends Controller {
         const encart = lastMsg.querySelector('.synapse-chat-memory-encart');
 
         encart.querySelector('[data-action-type="reject"]').addEventListener('click', async () => {
-            lastMsg.remove();
             try {
                 const response = await fetch(this.memoryRejectUrlValue || '/synapse/api/memory/reject', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': await this.ensureCsrfToken() },
                     body: JSON.stringify({ fact: fact, conversation_id: conversationId })
                 });
+                if (!response.ok) throw new Error('Échec');
                 const data = await response.json();
+                lastMsg.remove();
                 if (data.feedback_message) {
                     this.addMessage(data.feedback_message, 'user', { subtype: 'system_action' });
                 }
-            } catch (e) { }
+            } catch (e) {
+                console.error('[Synapse] Erreur rejet mémoire', e);
+                encart.innerHTML = '<span style="color:#ef4444;">Erreur — réessayez.</span>';
+            }
         });
 
         const confirmFunc = async (scope) => {
@@ -1006,7 +1043,7 @@ export default class extends Controller {
         if (!text) return;
 
         input.disabled = true;
-        submitBtn.disabled = true;
+        if (submitBtn) submitBtn.disabled = true;
 
         try {
             const url = this.memoryManualUrlValue || '/synapse/api/memory/manual';
@@ -1019,13 +1056,13 @@ export default class extends Controller {
             if (!response.ok) throw new Error('Erreur ajout souvenir');
 
             input.value = '';
-            this.loadMemories(); // Rafraichissment de la liste complète
+            this.loadMemories();
         } catch (e) {
             console.error(e);
             alert("Erreur lors de l'enregistrement du fait.");
         } finally {
             input.disabled = false;
-            submitBtn.disabled = false;
+            if (submitBtn) submitBtn.disabled = false;
         }
     }
 
@@ -1043,7 +1080,7 @@ export default class extends Controller {
             item.remove();
 
             // Si la liste est vide après suppression, afficher le state empty
-            if (this.memoryListTarget.children.length === 0 && this.hasMemoryEmptyTarget) {
+            if (this.hasMemoryListTarget && this.memoryListTarget.children.length === 0 && this.hasMemoryEmptyTarget) {
                 this.memoryEmptyTarget.classList.remove('synapse-hidden');
             }
         } catch (e) {
@@ -1573,9 +1610,11 @@ export default class extends Controller {
 
         document.body.appendChild(modal);
 
-        const close = () => modal.remove();
+        const close = () => { modal.remove(); document.removeEventListener('keydown', onKey); };
+        const onKey = (e) => { if (e.key === 'Escape') close(); };
         modal.querySelector('.synapse-tp-popup__close')?.addEventListener('click', close);
         modal.querySelector('.synapse-tp-popup__backdrop')?.addEventListener('click', close);
+        document.addEventListener('keydown', onKey);
     }
 
     // ── Tool Calls ──────────────────────────────────────────────────────────
@@ -1610,8 +1649,13 @@ export default class extends Controller {
         const section = this._getSection('turns');
         if (!section) return;
 
-        // Find active tool call by name (toolCallId not available in completed event)
-        const activeTool = section.querySelector(`.synapse-tool-call--active`);
+        // Match by toolCallId parmi les actifs (préféré), ou fallback au premier actif.
+        // Note : Gemini peut réutiliser le même toolCallId sur plusieurs tours,
+        // donc on filtre sur --active pour ne pas re-matcher un tool déjà terminé.
+        const activeTool = payload.toolCallId
+            ? section.querySelector(`.synapse-tool-call--active[data-tool-call-id="${CSS.escape(payload.toolCallId)}"]`)
+              || section.querySelector('.synapse-tool-call--active')
+            : section.querySelector('.synapse-tool-call--active');
         if (activeTool) {
             activeTool.classList.remove('synapse-tool-call--active');
             activeTool.classList.add('synapse-tool-call--done');
@@ -1635,6 +1679,11 @@ export default class extends Controller {
         if (title) {
             title.textContent = `🔧 Outils · Tour ${this._turnCount}`;
         }
+
+        // Re-montrer le loading dans le chat principal pour que l'utilisateur
+        // sache que le LLM travaille encore (il avait été retiré au premier delta)
+        this.setLoading(true);
+        this.updateLoadingText(`Réflexion · tour ${this._turnCount + 1}`);
     }
 
     // ── RAG Context ─────────────────────────────────────────────────────────
