@@ -22,10 +22,13 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseRagSourceRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseToneRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 /**
  * Wizard de création d'agent — assistant guidé ou IA.
@@ -48,8 +51,68 @@ class AgentWizardController extends AbstractController
         private readonly PromptVersionRecorder $promptVersionRecorder,
         private readonly EntityManagerInterface $em,
         private readonly PermissionCheckerInterface $permissionChecker,
+        private readonly CacheInterface $cache,
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
+    }
+
+    #[Route('/generate/status/{cacheKey}', name: 'agents_wizard_generate_status', methods: ['GET'])]
+    public function wizardGenerateStatus(string $cacheKey): Response
+    {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
+        /** @var array{status: string, input: array, result: ?array, error: ?string}|null $data */
+        $data = $this->cache->get($cacheKey, fn () => null);
+
+        if (!$data) {
+            return new JsonResponse(['status' => 'not_found'], 404);
+        }
+
+        if ('pending' === $data['status']) {
+            set_time_limit(120);
+
+            try {
+                $aiDescription = (string) ($data['input']['ai_description'] ?? '');
+                $output = $this->architectAgent->call(Input::ofStructured([
+                    'action' => 'create_agent',
+                    'description' => $aiDescription,
+                ]));
+
+                $proposal = $output->getData();
+
+                if (isset($proposal['error'])) {
+                    $data['status'] = 'error';
+                    $data['error'] = $proposal['error'];
+                } else {
+                    $data['status'] = 'completed';
+                    $data['result'] = $proposal;
+                }
+            } catch (\Throwable $e) {
+                $data['status'] = 'error';
+                $data['error'] = $e->getMessage();
+            }
+
+            $this->cache->delete($cacheKey);
+            $this->cache->get($cacheKey, function (ItemInterface $item) use ($data): array {
+                $item->expiresAfter(3600);
+
+                return $data;
+            });
+        }
+
+        if ('completed' === $data['status'] && null !== $data['result']) {
+            $presetId = $data['input']['preset_id'] ?? null;
+
+            return $this->render('@Synapse/admin/intelligence/_agent_wizard_result.html.twig',
+                $this->getWizardResultData($data['result'], true, $presetId, ['function_calling']),
+            );
+        }
+
+        if ('error' === $data['status']) {
+            return new JsonResponse(['status' => 'error', 'error' => $data['error'] ?? 'Erreur inconnue']);
+        }
+
+        return new JsonResponse(['status' => $data['status']]);
     }
 
     #[Route('', name: 'agents_wizard', methods: ['GET'])]
@@ -73,29 +136,37 @@ class AgentWizardController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_wizard');
 
-        set_time_limit(120);
-
         $data = $request->request->all();
         $aiMode = !empty($data['ai_mode']);
         $aiDescription = (string) ($data['ai_description'] ?? '');
 
-        // Mode IA : déléguer à l'AgentArchitect
+        // Mode IA : async via cache + polling
         if ($aiMode && '' !== $aiDescription) {
-            try {
-                $output = $this->architectAgent->call(Input::ofStructured([
-                    'action' => 'create_agent',
-                    'description' => $aiDescription,
-                ]));
+            $cacheKey = 'synapse_wizard_agent_'.uniqid();
+            $this->cache->delete($cacheKey);
+            $this->cache->get($cacheKey, function (ItemInterface $item) use ($aiDescription, $data): array {
+                $item->expiresAfter(3600);
 
-                $proposal = $output->getData();
+                return [
+                    'status' => 'pending',
+                    'input' => [
+                        'ai_description' => $aiDescription,
+                        'preset_id' => $data['preset_id'] ?? null,
+                    ],
+                    'result' => null,
+                    'error' => null,
+                ];
+            });
 
-                if (isset($proposal['error'])) {
-                    $this->addFlash('warning', 'Mode IA : '.$proposal['error'].'. Basculement en mode guidé.');
-                } else {
-                    return $this->render('@Synapse/admin/intelligence/agent_wizard.html.twig',
-                        $this->getWizardResultData($proposal, true, $data['preset_id'] ?? null, ['function_calling']),
-                    );
-                }
+            return $this->render('@Synapse/admin/intelligence/agent_wizard.html.twig', [
+                'has_active_preset' => true,
+                'step' => 'waiting',
+                'status_url' => $this->generateUrl('synapse_admin_agents_wizard_generate_status', ['cacheKey' => $cacheKey]),
+            ]);
+        }
+
+        // Ce block est gardé pour compatibilité si le mode IA fallback
+        if (false) {
             } catch (\Throwable $e) {
                 $this->addFlash('warning', 'Mode IA indisponible : '.$e->getMessage().'. Basculement en mode guidé.');
             }

@@ -419,6 +419,54 @@ class ModelPresetController extends AbstractController
 
     // ─── Wizard ─────────────────────────────────────────────────────────────────
 
+    #[Route('/wizard/generate/status/{cacheKey}', name: 'presets_wizard_generate_status', methods: ['GET'])]
+    public function wizardGenerateStatus(string $cacheKey): Response
+    {
+        $this->denyAccessUnlessAdmin($this->permissionChecker);
+
+        /** @var array{status: string, input: array, result: ?array, error: ?string}|null $data */
+        $data = $this->cache->get($cacheKey, fn () => null);
+
+        if (!$data) {
+            return new JsonResponse(['status' => 'not_found'], 404);
+        }
+
+        // Premier poll : exécuter l'appel LLM
+        if ('pending' === $data['status']) {
+            set_time_limit(120);
+
+            try {
+                $aiDescription = $data['input']['ai_description'] ?? '';
+                $recommendation = $this->presetArchitect->generate((string) $aiDescription, requireLlm: true);
+
+                $data['status'] = 'completed';
+                $data['result'] = $recommendation->toArray();
+            } catch (\Throwable $e) {
+                $data['status'] = 'error';
+                $data['error'] = $e->getMessage();
+            }
+
+            $this->cache->delete($cacheKey);
+            $this->cache->get($cacheKey, function (ItemInterface $item) use ($data): array {
+                $item->expiresAfter(3600);
+
+                return $data;
+            });
+        }
+
+        if ('completed' === $data['status'] && null !== $data['result']) {
+            return $this->render('@Synapse/admin/intelligence/_preset_wizard_result.html.twig', [
+                'recommendation' => $data['result'],
+            ]);
+        }
+
+        if ('error' === $data['status']) {
+            return new JsonResponse(['status' => 'error', 'error' => $data['error'] ?? 'Erreur inconnue']);
+        }
+
+        return new JsonResponse(['status' => $data['status']]);
+    }
+
     #[Route('/wizard', name: 'presets_wizard', methods: ['GET'])]
     public function wizard(): Response
     {
@@ -436,8 +484,6 @@ class ModelPresetController extends AbstractController
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_wizard');
-        set_time_limit(120);
-
         $data = $request->request->all();
         $useCase = (string) ($data['use_case'] ?? 'conversation');
         $priority = (string) ($data['priority'] ?? 'balanced');
@@ -445,20 +491,21 @@ class ModelPresetController extends AbstractController
         $aiMode = !empty($data['ai_mode']);
         $aiDescription = (string) ($data['ai_description'] ?? '');
 
-        // Mode IA : déléguer au LLM
+        // Mode IA : async via cache + polling
         if ($aiMode && '' !== $aiDescription) {
-            try {
-                $recommendation = $this->presetGeneratorAgent->generate($aiDescription, requireLlm: true);
+            $cacheKey = 'synapse_wizard_preset_'.uniqid();
+            $this->cache->delete($cacheKey);
+            $this->cache->get($cacheKey, function (ItemInterface $item) use ($aiDescription): array {
+                $item->expiresAfter(3600);
 
-                return $this->render('@Synapse/admin/intelligence/preset_wizard.html.twig', [
-                    'has_active_preset' => true,
-                    'recommendation' => $recommendation->toArray(),
-                    'step' => 'result',
-                    'form_data' => $data,
-                ]);
-            } catch (\Throwable $e) {
-                $this->addFlash('warning', 'Mode IA indisponible : '.$e->getMessage().'. Basculement en mode guidé.');
-            }
+                return ['status' => 'pending', 'input' => ['ai_description' => $aiDescription], 'result' => null, 'error' => null];
+            });
+
+            return $this->render('@Synapse/admin/intelligence/preset_wizard.html.twig', [
+                'has_active_preset' => true,
+                'step' => 'waiting',
+                'status_url' => $this->generateUrl('synapse_admin_presets_wizard_generate_status', ['cacheKey' => $cacheKey]),
+            ]);
         }
 
         // Mode guidé : heuristique

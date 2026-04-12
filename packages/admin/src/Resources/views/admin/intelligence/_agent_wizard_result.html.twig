@@ -1,0 +1,117 @@
+{# Partial : résultat du wizard agent (utilisé en include et en polling async) #}
+
+<form action="{{ path('synapse_admin_agents_wizard_create') }}" method="POST" style="max-width: 900px;">
+	<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_wizard_create') }}">
+	<input type="hidden" name="llm_assisted" value="{{ llm_assisted ? '1' : '0' }}">
+
+	<div class="synapse-admin-card synapse-admin-card--success synapse-admin-mb-lg">
+		<div class="synapse-admin-card__header">
+			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+				<i data-lucide="check-circle-2"></i>
+			</div>
+			<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs">
+				<span class="synapse-admin-card__title">Agent généré</span>
+				<span class="synapse-admin-text-sm synapse-admin-text-muted">
+					{% if llm_assisted %}
+						<span class="synapse-admin-badge synapse-admin-badge--primary"><i data-lucide="sparkles" style="width: 12px; height: 12px;"></i> IA</span> Généré par l'IA
+					{% else %}
+						<span class="synapse-admin-badge synapse-admin-badge--info">Auto</span> Généré automatiquement
+					{% endif %}
+				</span>
+			</div>
+		</div>
+
+		<div class="synapse-admin-card__body">
+			<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-md" style="gap: 16px;">
+				<div>
+					<label class="synapse-admin-text-xs synapse-admin-text-muted">Emoji</label>
+					<input type="text" name="emoji" value="{{ proposal.emoji|default('🤖') }}" class="synapse-admin-input" style="width: 80px; font-size: 24px; text-align: center;">
+				</div>
+				<div>
+					<label class="synapse-admin-text-xs synapse-admin-text-muted">Nom</label>
+					<input type="text" name="name" value="{{ proposal.name|default('') }}" class="synapse-admin-input" required>
+				</div>
+			</div>
+			<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-md" style="gap: 16px;">
+				<div>
+					<label class="synapse-admin-text-xs synapse-admin-text-muted">Clé technique</label>
+					<input type="text" name="key" value="{{ proposal.key|default('') }}" class="synapse-admin-input synapse-admin-font-mono" required pattern="[a-z0-9_]+">
+				</div>
+				<div>
+					<label class="synapse-admin-text-xs synapse-admin-text-muted">Description</label>
+					<input type="text" name="description" value="{{ proposal.description|default('') }}" class="synapse-admin-input">
+				</div>
+			</div>
+
+			<div class="synapse-admin-mb-md">
+				<label class="synapse-admin-text-xs synapse-admin-text-muted">Prompt système <span class="synapse-admin-text-tertiary">(modifiable avant création)</span></label>
+				<textarea name="system_prompt" rows="12" class="synapse-admin-input synapse-admin-font-mono" style="width: 100%; line-height: 1.5;" required>{{ proposal.system_prompt|default('') }}</textarea>
+			</div>
+
+			<div class="synapse-admin-grid synapse-admin-grid--2" style="gap: 16px;">
+				<div>
+					<label class="synapse-admin-text-xs synapse-admin-text-muted">Preset LLM <span class="synapse-admin-text-tertiary">(optionnel)</span></label>
+					<select name="model_preset_id" class="synapse-admin-input">
+						<option value="">Utiliser le preset par défaut</option>
+						{% for p in presets %}
+							<option value="{{ p.id }}" {{ preset_id is defined and preset_id is not null and preset_id == p.id ? 'selected' : '' }}>
+								{{ p.name }} ({{ p.model }})
+							</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div>
+					<label class="synapse-admin-text-xs synapse-admin-text-muted">Ton <span class="synapse-admin-text-tertiary">(optionnel)</span></label>
+					<select name="tone_id" class="synapse-admin-input">
+						<option value="">Aucun ton spécifique</option>
+						{% for t in tones %}
+							<option value="{{ t.id }}">{{ t.name }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+		</div>
+
+		{# RGPD : note positive ou warning #}
+		{% if rgpd_note is defined and rgpd_note is not null %}
+			<div class="synapse-admin-p-md synapse-admin-mb-md" style="background: var(--sa-success-bg, #e8f5e9); border: 1px solid var(--sa-success-border, #4caf50); border-radius: var(--sa-radius-md);">
+				<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
+					<i data-lucide="shield-check" style="width: 18px; height: 18px; color: var(--sa-success, #2e7d32);"></i>
+					<span class="synapse-admin-text-sm">{{ rgpd_note }}</span>
+				</div>
+			</div>
+		{% elseif rgpd_warning is defined and rgpd_warning is not null %}
+			<div class="synapse-admin-p-md synapse-admin-mb-md" style="background: var(--sa-warning-bg, #fff8e1); border: 1px solid var(--sa-warning-border, #ffcc02); border-radius: var(--sa-radius-md);">
+				<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm synapse-admin-mb-xs">
+					<i data-lucide="shield-alert" style="width: 18px; height: 18px; color: var(--sa-warning, #e65100);"></i>
+					<strong class="synapse-admin-text-sm">Attention RGPD</strong>
+				</div>
+				<p class="synapse-admin-text-sm synapse-admin-mb-sm">{{ rgpd_warning }}</p>
+				<a href="{{ path('synapse_admin_presets_wizard') }}" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
+					<i data-lucide="wand-2"></i> Créer un preset avec un provider européen
+				</a>
+			</div>
+		{% endif %}
+
+		<div class="synapse-admin-card__footer">
+			<div class="synapse-admin-flex synapse-admin-gap-md">
+				<button type="submit" class="synapse-admin-btn synapse-admin-btn--outline">
+					<i data-lucide="plus"></i> Créer (inactif)
+				</button>
+				<button type="submit" name="activate" value="1" class="synapse-admin-btn synapse-admin-btn--primary">
+					<i data-lucide="zap"></i> Créer et activer
+				</button>
+				<a href="{{ path('synapse_admin_agents_wizard') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
+					<i data-lucide="arrow-left"></i> Recommencer
+				</a>
+			</div>
+		</div>
+	</div>
+
+	{% if llm_assisted and proposal.reasoning is defined %}
+		<div class="synapse-admin-p-md synapse-admin-mb-lg" style="background: var(--sa-bg-tertiary); border-radius: var(--sa-radius-md); max-width: 900px;">
+			<div class="synapse-admin-text-xs synapse-admin-text-muted synapse-admin-mb-xs"><i data-lucide="info" style="width: 14px; height: 14px; vertical-align: -2px;"></i> Raisonnement de l'IA</div>
+			<div class="synapse-admin-text-sm" style="white-space: pre-line;">{{ proposal.reasoning }}</div>
+		</div>
+	{% endif %}
+</form>

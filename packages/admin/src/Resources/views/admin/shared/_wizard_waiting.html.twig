@@ -1,0 +1,125 @@
+{#
+  Partial réutilisable : page d'attente pour les appels LLM asynchrones des wizards.
+
+  Variables requises :
+    - status_url    : URL du polling endpoint (GET)
+    - title         : titre affiché pendant l'attente (ex: "L'IA réfléchit...")
+    - subtitle      : sous-titre explicatif
+    - back_url      : URL de retour (bouton "Retour")
+
+  Variables optionnelles :
+    - fallback_url  : URL pour "Basculer en mode guidé" (affichée en cas d'erreur)
+    - max_polls     : nombre max de polls (défaut: 40 = 2 min)
+    - poll_interval : intervalle en ms (défaut: 3000)
+#}
+
+<div id="waiting-card" class="synapse-admin-card" style="max-width: 800px;">
+	<div class="synapse-admin-card__header">
+		<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
+			<i data-lucide="loader-2" style="animation: synapse-wizard-spin 1.5s linear infinite; display: inline-block;"></i>
+		</div>
+		<div>
+			<div class="synapse-admin-card__title" id="waiting-title">{{ title|default("Génération en cours...") }}</div>
+			<div class="synapse-admin-text-sm synapse-admin-text-muted" id="waiting-subtitle">
+				{{ subtitle|default("Cela peut prendre jusqu'à 2 minutes. Ne quittez pas cette page.") }}
+			</div>
+		</div>
+	</div>
+	<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+		<div style="position: relative; height: 4px; background: var(--sa-border); border-radius: 2px; overflow: hidden;" class="synapse-admin-mb-lg">
+			<div style="
+				position: absolute;
+				height: 100%;
+				width: 35%;
+				background: var(--sa-primary);
+				animation: synapse-wizard-indeterminate 2.1s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+			"></div>
+		</div>
+		<div class="synapse-admin-flex synapse-admin-gap-md">
+			<a href="{{ back_url }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+				<i data-lucide="arrow-left"></i> Retour
+			</a>
+		</div>
+	</div>
+</div>
+
+<div id="wizard-result-container"></div>
+
+<style>
+	@keyframes synapse-wizard-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+	@keyframes synapse-wizard-indeterminate {
+		0% { left: -35%; right: 100%; }
+		60% { left: 100%; right: -90%; }
+		100% { left: 100%; right: -90%; }
+	}
+</style>
+
+<script>
+	(function() {
+		var statusUrl = '{{ status_url|e('js') }}';
+		var fallbackUrl = '{{ (fallback_url is defined and fallback_url ? fallback_url : '')|e('js') }}';
+		var pollCount = 0;
+		var MAX_POLLS = {{ max_polls|default(40) }};
+		var POLL_INTERVAL = {{ poll_interval|default(3000) }};
+
+		function poll() {
+			fetch(statusUrl)
+				.then(function(r) {
+					// HTML = résultat prêt
+					if (r.headers.get('content-type') && r.headers.get('content-type').indexOf('text/html') !== -1) {
+						return r.text().then(function(html) {
+							document.getElementById('waiting-card').style.display = 'none';
+							document.getElementById('wizard-result-container').innerHTML = html;
+							if (typeof lucide !== 'undefined') lucide.createIcons();
+						});
+					}
+
+					// JSON = encore en cours ou erreur
+					return r.json().then(function(data) {
+						if (data.status === 'not_found') {
+							document.getElementById('waiting-subtitle').textContent =
+								'Session expirée. Veuillez relancer la génération.';
+							return;
+						}
+
+						if (data.status === 'error') {
+							document.getElementById('waiting-card').style.display = 'none';
+							var errorHtml = '<div class="synapse-admin-card" style="max-width: 800px;">'
+								+ '<div class="synapse-admin-card__header">'
+								+ '<div class="synapse-admin-card__header-icon" style="color: var(--sa-danger);"><i data-lucide="alert-triangle"></i></div>'
+								+ '<div><div class="synapse-admin-card__title">Erreur</div>'
+								+ '<div class="synapse-admin-text-sm synapse-admin-text-muted">' + (data.error || 'Erreur inconnue') + '</div></div></div>'
+								+ '<div class="synapse-admin-card__footer"><div class="synapse-admin-flex synapse-admin-gap-md">';
+							if (fallbackUrl) {
+								errorHtml += '<a href="' + fallbackUrl + '" class="synapse-admin-btn synapse-admin-btn--primary">'
+									+ '<i data-lucide="list-checks"></i> Basculer en mode guidé</a>';
+							}
+							errorHtml += '<a href="' + statusUrl.replace('/status/' + statusUrl.split('/status/')[1], '') + '" class="synapse-admin-btn synapse-admin-btn--ghost">'
+								+ '<i data-lucide="arrow-left"></i> Retour</a>'
+								+ '</div></div></div>';
+							document.getElementById('wizard-result-container').innerHTML = errorHtml;
+							if (typeof lucide !== 'undefined') lucide.createIcons();
+							return;
+						}
+
+						pollCount++;
+						if (pollCount < MAX_POLLS) {
+							setTimeout(poll, POLL_INTERVAL);
+						} else {
+							document.getElementById('waiting-title').textContent = 'Délai dépassé';
+							document.getElementById('waiting-subtitle').textContent =
+								'La génération prend trop de temps. Vérifiez les logs serveur ou réessayez.';
+						}
+					});
+				})
+				.catch(function() {
+					if (pollCount < MAX_POLLS) {
+						pollCount++;
+						setTimeout(poll, 5000);
+					}
+				});
+		}
+
+		document.addEventListener('DOMContentLoaded', function() { setTimeout(poll, 1000); });
+	})();
+</script>
