@@ -714,6 +714,7 @@
     padding: 0;
     flex: 1;
     min-width: 0;
+    overflow-x: auto;
 }
 
 .synapse-chat-debug-btn {
@@ -801,10 +802,6 @@
     margin: 1rem 0;
     font-size: 0.875rem;
     line-height: 1.4;
-}
-
-.synapse-chat-message--assistant .synapse-chat-bubble {
-    overflow-x: auto;
 }
 
 .synapse-chat-bubble thead th {
@@ -2192,9 +2189,8 @@
     padding: 8px 10px;
     border-radius: 6px;
     margin: 0 0 4px 0;
-    overflow-x: auto;
+    overflow: auto;
     max-height: 240px;
-    overflow-y: auto;
     white-space: pre-wrap;
     word-break: break-word;
     border: 1px solid #1e293b;
