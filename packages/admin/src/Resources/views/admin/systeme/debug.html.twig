@@ -162,7 +162,10 @@
 						{% for log in logs %}
 							<tr>
 								<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">
-									{{ log.debugId|slice(0, 8) }}…
+									{% if log.debugId starts with 'dbg_err_' %}
+										<span class="synapse-admin-badge synapse-admin-badge--danger" style="margin-right: 4px;">ERR</span>
+									{% endif %}
+									{{ log.debugId|slice(0, 12) }}…
 								</td>
 								<td>
 									{% if log.module %}

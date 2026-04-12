@@ -44,6 +44,25 @@
 		</div>
 	</div>
 
+	{# ── Bandeau d'erreur (logs dbg_err_) ─────────────────────────────────────── #}
+	{% if data.error is defined and data.error %}
+		<div style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 1px solid #fca5a5; border-radius: var(--synapse-admin-radius); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-start;">
+			<span style="font-size: 1.5rem; line-height: 1;">&#9888;</span>
+			<div style="flex: 1;">
+				<div style="font-weight: 600; color: #991b1b; margin-bottom: 0.25rem;">Erreur durant l'exécution</div>
+				<code style="display: block; background: #fff1f2; padding: 0.5rem 0.75rem; border-radius: 4px; font-size: 0.8rem; color: #be123c; word-break: break-all; margin-bottom: 0.5rem;">{{ data.error }}</code>
+				{% if data.error_class is defined and data.error_class %}
+					<div style="font-size: 0.75rem; color: #9f1239;">
+						<strong>Classe :</strong> {{ data.error_class }}
+						{% if data.error_file is defined and data.error_file %}
+							&middot; <strong>Fichier :</strong> {{ data.error_file }}
+						{% endif %}
+					</div>
+				{% endif %}
+			</div>
+		</div>
+	{% endif %}
+
 	{# ── Onglets de Navigation ────────────────────────────────────────────────── #}
 	<div class="synapse-admin-tabs-nav" style="display: flex; gap: 1rem; border-bottom: 1px solid var(--synapse-admin-border); margin-bottom: 2rem;">
 		<button class="synapse-admin-tab-btn active" data-tab="summary">
