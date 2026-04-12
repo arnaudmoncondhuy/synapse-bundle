@@ -165,13 +165,6 @@ class AgentWizardController extends AbstractController
             ]);
         }
 
-        // Ce block est gardé pour compatibilité si le mode IA fallback
-        if (false) {
-            } catch (\Throwable $e) {
-                $this->addFlash('warning', 'Mode IA indisponible : '.$e->getMessage().'. Basculement en mode guidé.');
-            }
-        }
-
         // Mode guidé : templates déterministes
         $useCase = (string) ($data['use_case'] ?? 'redaction');
         $capabilities = is_array($data['capabilities'] ?? null) ? $data['capabilities'] : [];
