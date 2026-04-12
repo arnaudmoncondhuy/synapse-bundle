@@ -146,6 +146,8 @@ class ConfigurationLlmController extends AbstractController
                 'caps' => $this->capabilityRegistry->getCapabilities($p->getModel()),
                 'isValid' => $this->presetValidator->isValid($p),
                 'invalidReason' => $this->presetValidator->getInvalidReason($p),
+                'canBeActivated' => $this->presetValidator->canBeActivated($p),
+                'cannotActivateReason' => $this->presetValidator->getCannotActivateReason($p),
                 'rgpd' => $this->rgpdEvaluator->evaluate($p),
             ],
             $allPresets

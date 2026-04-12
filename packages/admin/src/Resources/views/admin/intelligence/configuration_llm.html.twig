@@ -25,7 +25,11 @@
 			</p>
 		</div>
 		{% if tab == 'presets' %}
-			<div class="synapse-admin-page-header__actions">
+			<div class="synapse-admin-page-header__actions synapse-admin-flex synapse-admin-gap-sm">
+				<a href="{{ path('synapse_admin_presets_wizard') }}" class="synapse-admin-btn synapse-admin-btn--outline">
+					<i data-lucide="wand-2"></i>
+					Assistant
+				</a>
 				<a href="{{ path('synapse_admin_presets_new') }}" class="synapse-admin-btn synapse-admin-btn--primary">
 					<i data-lucide="plus"></i>
 					{{ 'synapse.admin.llm_config.action.new_preset'|trans(domain='synapse_admin') }}
@@ -322,7 +326,7 @@
 												<i data-lucide="eye" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.vision'|trans(domain='synapse_admin') }}"></i>
 											{% endif %}
 											{% if model.capabilities.supportsResponseSchema %}
-												<i data-lucide="braces" style="opacity:.35" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.jsonmode'|trans(domain='synapse_admin') }}"></i>
+												<i data-lucide="braces" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.jsonmode'|trans(domain='synapse_admin') }}"></i>
 											{% endif %}
 											{% if model.capabilities.supportsEmbedding %}
 												<i data-lucide="database" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.embedding'|trans(domain='synapse_admin') }}"></i>
@@ -439,6 +443,8 @@
 				{% set caps   = item.caps %}
 				{% set isValid = item['isValid'] %}
 				{% set invalidReason = item['invalidReason'] %}
+				{% set canBeActivated = item['canBeActivated'] %}
+				{% set cannotActivateReason = item['cannotActivateReason'] %}
 				{% set rgpd = item.rgpd %}
 				{% set rgpdStatusMap = {compliant: 'rgpd-compliant', tolerated: 'rgpd-tolerated', risk: 'rgpd-risk', danger: 'rgpd-danger', unknown: 'rgpd-unknown'} %}
 
@@ -501,7 +507,7 @@
 								<i data-lucide="eye" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.vision'|trans(domain='synapse_admin') }}"></i>
 							{% endif %}
 							{% if caps.supportsResponseSchema %}
-								<i data-lucide="braces" style="opacity:.35" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.jsonmode'|trans(domain='synapse_admin') }}"></i>
+								<i data-lucide="braces" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.jsonmode'|trans(domain='synapse_admin') }}"></i>
 							{% endif %}
 						</div>
 
@@ -539,10 +545,10 @@
 								</button>
 							</form>
 
-							{# Activer #}
+							{# Activer comme preset par défaut #}
 							<form action="{{ path('synapse_admin_presets_activate', {id: preset.id}) }}" method="POST" class="synapse-admin-form-inline">
 								<input type="hidden" name="_token" value="{{ csrf_token('synapse_preset_activate_' ~ preset.id) }}">
-								<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="{% if preset.isActive %}{{ 'synapse.admin.llm_config.preset.tooltip.already_active'|trans(domain='synapse_admin') }}{% elseif isValid %}{{ 'synapse.admin.agent.list.tooltip.enable'|trans(domain='synapse_admin') }}{% else %}{{ invalidReason }}{% endif %}" data-synapse-admin-tooltip-placement="top" {% if preset.isActive or not isValid %} disabled {% endif %}>
+								<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="{% if preset.isActive %}{{ 'synapse.admin.llm_config.preset.tooltip.already_active'|trans(domain='synapse_admin') }}{% elseif canBeActivated %}{{ 'synapse.admin.llm_config.preset.tooltip.activate'|trans({}, domain='synapse_admin') }}{% else %}{{ cannotActivateReason }}{% endif %}" data-synapse-admin-tooltip-placement="top" {% if preset.isActive or not canBeActivated %} disabled {% endif %}>
 									<i data-lucide="check-circle-2"></i>
 								</button>
 							</form>

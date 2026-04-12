@@ -14,6 +14,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseProvider;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseConfigRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseProviderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
@@ -45,12 +46,22 @@ class DatabaseConfigProviderTest extends TestCase
         $provider->setCredentials(['api_key' => 'key']);
         $validatorProviderRepo->method('findOneBy')->willReturn($provider);
 
+        $validatorModelRepo = $this->createStub(SynapseModelRepository::class);
+        $validatorModelRepo->method('findOneBy')->willReturn(null); // modèle non tracé → activé par défaut
+
         $capabilityRegistry = $this->createStub(ModelCapabilityRegistry::class);
         $capabilityRegistry->method('isKnownModel')->willReturn(true);
+        $capabilityRegistry->method('getCapabilities')->willReturn(
+            new \ArnaudMoncondhuy\SynapseCore\Shared\Model\ModelCapabilities(
+                model: 'test-model',
+                provider: 'test',
+                supportsTextGeneration: true,
+            )
+        );
 
         $em = $this->createStub(EntityManagerInterface::class);
 
-        return new PresetValidator($validatorProviderRepo, $capabilityRegistry, $em);
+        return new PresetValidator($validatorProviderRepo, $validatorModelRepo, $capabilityRegistry, $em);
     }
 
     /**
@@ -61,13 +72,16 @@ class DatabaseConfigProviderTest extends TestCase
         $validatorProviderRepo = $this->createStub(SynapseProviderRepository::class);
         $validatorProviderRepo->method('findOneBy')->willReturn(null); // provider introuvable
 
+        $validatorModelRepo = $this->createStub(SynapseModelRepository::class);
+        $validatorModelRepo->method('findOneBy')->willReturn(null);
+
         $capabilityRegistry = $this->createStub(ModelCapabilityRegistry::class);
         $capabilityRegistry->method('isKnownModel')->willReturn(false);
 
         $em = $this->createStub(EntityManagerInterface::class);
         $em->method('getRepository')->willReturn($this->createStub(\Doctrine\ORM\EntityRepository::class));
 
-        return new PresetValidator($validatorProviderRepo, $capabilityRegistry, $em);
+        return new PresetValidator($validatorProviderRepo, $validatorModelRepo, $capabilityRegistry, $em);
     }
 
     // -------------------------------------------------------------------------
