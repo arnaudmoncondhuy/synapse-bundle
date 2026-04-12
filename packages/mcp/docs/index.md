@@ -8,25 +8,33 @@ Le package `synapse-mcp` expose une interface **Model Context Protocol (MCP)** q
 
 | Outil | Description |
 |-------|-------------|
-| [`list_agents`](tools/list-agents.md) | Liste les agents disponibles (clé, nom, preset, outils, statut) |
+| [`list_agents`](tools/list-agents.md) | Liste les agents disponibles (DB + code, clé, nom, preset, outils, statut) |
 | [`list_presets`](tools/list-presets.md) | Liste les presets disponibles (provider, modèle, paramètres) |
+| [`list_models`](tools/list-models.md) | Liste tous les modèles LLM du catalogue, groupés par provider |
+| [`list_workflows`](tools/list-workflows.md) | Liste les workflows disponibles |
 
 ### Outils d'exécution
 
 | Outil | Description |
 |-------|-------------|
-| [`run_agent_test`](tools/run-agent-test.md) | Exécute un agent et retourne la réponse avec métriques |
+| [`run_agent_test`](tools/run-agent-test.md) | Exécute un agent (DB ou code) et retourne la réponse avec métriques |
 | [`run_workflow`](tools/run-workflow.md) | Exécute un workflow complet via `WorkflowRunner` |
 | [`inspect_agent_debug`](tools/inspect-agent-debug.md) | Inspecte un log de debug par `debugId` |
 | [`inspect_workflow_run`](tools/inspect-workflow-run.md) | Inspecte un run de workflow par `workflowRunId` |
 
-### Outils d'administration d'agents
+### Outils d'administration
 
 | Outil | Description |
 |-------|-------------|
 | [`update_agent_system_prompt`](tools/update-agent-system-prompt.md) | Propose une nouvelle version de prompt (HITL Guardrail #3) |
+| [`update_agent`](tools/update-agent.md) | Met à jour les métadonnées d'un agent (nom, description, preset, outils, statut) |
+| [`update_preset`](tools/update-preset.md) | Met à jour les paramètres d'un preset LLM |
+| [`update_workflow`](tools/update-workflow.md) | Met à jour la définition d'un workflow |
+| [`delete_agent`](tools/delete-agent.md) | Supprime un agent (avec vérification de dépendances) |
+| [`delete_preset`](tools/delete-preset.md) | Supprime un preset (avec vérification de dépendances) |
+| [`delete_workflow`](tools/delete-workflow.md) | Supprime un workflow (avec vérification de dépendances) |
 
-### Outils Sandbox (Phase 10)
+### Outils Sandbox
 
 Ces outils constituent le cycle de vie complet pour les tests autonomes :
 

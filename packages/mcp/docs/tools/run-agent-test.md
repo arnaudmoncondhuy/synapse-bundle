@@ -27,6 +27,7 @@ Requiert `PermissionCheckerInterface::canAccessAdmin() = true`.
   "status": "success",
   "agentKey": "support_client",
   "agentName": "Support Client",
+  "source": "db",
   "input": "Bonjour, j'ai un problème avec mon compte",
   "answer": "Bonjour ! Je suis là pour vous aider...",
   "model": "gemini-2.5-flash",
@@ -39,6 +40,8 @@ Requiert `PermissionCheckerInterface::canAccessAdmin() = true`.
   "timestamp": "2026-04-06T10:00:00+00:00"
 }
 ```
+
+Le champ `source` indique l'origine de l'agent : `"db"` (agent BDD) ou `"code"` (agent code PHP).
 
 ## Réponse (erreur)
 
@@ -53,10 +56,13 @@ Requiert `PermissionCheckerInterface::canAccessAdmin() = true`.
 
 ## Détails d'implémentation
 
-L'outil appelle directement `ChatService::ask()` avec les options `debug=true` et `streaming=false`. Le `debugId` retourné peut être inspecté via [`inspect_agent_debug`](inspect-agent-debug.md).
+L'outil résout l'agent dans cet ordre : BDD d'abord (`AgentRegistry`), puis agents code (`CodeAgentRegistry`). Il appelle ensuite `ChatService::ask()` avec les options `streaming=false`. Le `debugId` retourné peut être inspecté via [`inspect_agent_debug`](inspect-agent-debug.md).
 
-!!! note "Agents sandbox"
-    Cet outil utilise `AgentRegistry` (agents "config" en BDD via `findByKey()`), qui inclut les agents sandbox. Il est donc possible de tester un agent créé avec `create_sandbox_agent` via cet outil.
+!!! note "Agents sandbox et agents code"
+    Cet outil résout les deux types d'agents : agents "config" en BDD (y compris sandbox, via `findByKey()`) et agents "code" PHP (via `CodeAgentRegistry`). Il est possible de tester un agent créé avec `create_sandbox_agent` ou un agent code déclaré dans l'application hôte.
+
+!!! warning "Configuration DI du package MCP"
+    Le fichier `packages/mcp/config/services.yaml` doit déclarer `CodeAgentRegistry` comme argument de `RunAgentTestTool` pour que la résolution des agents code fonctionne. Vérifier que cette injection est présente dans votre installation.
 
 ## Voir aussi
 
