@@ -98,9 +98,9 @@ abstract class AbstractLlmClient implements LlmClientInterface
         $isQuota = str_contains($lowerMsg, 'quota') || str_contains($lowerMsg, 'credit balance');
 
         throw match (true) {
-            $statusCode === 401 || $statusCode === 403 => new LlmAuthenticationException($fullMsg, 0, $previous),
-            $statusCode === 429 => new LlmRateLimitException($fullMsg, 0, $previous),
-            $statusCode === 500 || $statusCode === 503 => new LlmServiceUnavailableException($fullMsg, 0, $previous),
+            401 === $statusCode || 403 === $statusCode => new LlmAuthenticationException($fullMsg, 0, $previous),
+            429 === $statusCode => new LlmRateLimitException($fullMsg, 0, $previous),
+            500 === $statusCode || 503 === $statusCode => new LlmServiceUnavailableException($fullMsg, 0, $previous),
             $isQuota => new LlmQuotaException($fullMsg, 0, $previous),
             default => new LlmException($fullMsg, 0, $previous),
         };

@@ -50,8 +50,8 @@ final readonly class ExecutionResult
      */
     /**
      * @param list<array{name: string, mime_type: string, data: string}> $outputFiles Fichiers générés par le code
-     *        dans le répertoire de sortie (_output/). Chaque entrée contient le nom, le type MIME et le contenu
-     *        base64-encodé. Vide si aucun fichier produit.
+     *                                                                                dans le répertoire de sortie (_output/). Chaque entrée contient le nom, le type MIME et le contenu
+     *                                                                                base64-encodé. Vide si aucun fichier produit.
      */
     public function __construct(
         public bool $success,

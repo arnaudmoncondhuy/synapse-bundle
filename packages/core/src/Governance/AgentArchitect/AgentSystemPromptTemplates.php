@@ -13,9 +13,9 @@ namespace ArnaudMoncondhuy\SynapseCore\Governance\AgentArchitect;
 final class AgentSystemPromptTemplates
 {
     /**
-     * @param string   $useCase      Cas d'usage : redaction, support, analyse, creatif, technique
+     * @param string $useCase Cas d'usage : redaction, support, analyse, creatif, technique
      * @param string[] $capabilities Capacités souhaitées : tools, rag, thinking
-     * @param string   $tone         Ton : professionnel, decontracte, pedagogique
+     * @param string $tone Ton : professionnel, decontracte, pedagogique
      *
      * @return array{key: string, name: string, emoji: string, description: string, system_prompt: string}
      */
@@ -217,7 +217,7 @@ SECTION;
         return match ($tone) {
             'decontracte' => "Adopte un ton amical, conversationnel et accessible. Utilise un langage simple et direct. Tu peux utiliser l'humour avec parcimonie quand c'est approprié. Tutoiement accepté si l'utilisateur tutoie.",
             'pedagogique' => "Adopte un ton pédagogique et patient. Explique les concepts étape par étape. Utilise des exemples concrets et des analogies pour rendre les idées accessibles. N'hésite pas à reformuler si une explication n'est pas comprise.",
-            default => "Adopte un ton professionnel, précis et structuré. Utilise un registre soutenu sans être ampoulé. Vouvoiement par défaut. Privilégie la clarté et la concision.", // professionnel
+            default => 'Adopte un ton professionnel, précis et structuré. Utilise un registre soutenu sans être ampoulé. Vouvoiement par défaut. Privilégie la clarté et la concision.', // professionnel
         };
     }
 

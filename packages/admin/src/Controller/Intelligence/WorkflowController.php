@@ -6,8 +6,8 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
-use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow;
 use ArnaudMoncondhuy\SynapseCore\Shared\Exception\CannotActivateException;
+use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRunRepository;

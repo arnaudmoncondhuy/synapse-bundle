@@ -20,8 +20,8 @@ namespace ArnaudMoncondhuy\SynapseCore\Shared\Model;
 final class DeactivationCascade
 {
     /**
-     * @param string[] $presets   Noms des presets désactivés
-     * @param string[] $agents    Noms des agents désactivés
+     * @param string[] $presets Noms des presets désactivés
+     * @param string[] $agents Noms des agents désactivés
      * @param string[] $workflows Noms des workflows désactivés
      */
     public function __construct(

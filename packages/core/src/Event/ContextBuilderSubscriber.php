@@ -272,8 +272,8 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
                 ."Les fichiers suivants sont dans le répertoire courant (cwd) du sandbox code_execute :\n"
                 .$fileList."\n\n"
                 ."IMPORTANT : lis-les directement avec open('nom_du_fichier.csv') (chemin relatif, PAS de /mnt/data/ ni de chemin absolu). "
-                ."Ne recopie JAMAIS le contenu du fichier dans le code Python. "
-                ."Pour générer des fichiers, utilise OUTPUT_DIR (pas /mnt/data/).";
+                .'Ne recopie JAMAIS le contenu du fichier dans le code Python. '
+                .'Pour générer des fichiers, utilise OUTPUT_DIR (pas /mnt/data/).';
         }
 
         $prompt = [

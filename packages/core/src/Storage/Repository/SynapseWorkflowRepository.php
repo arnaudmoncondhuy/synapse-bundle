@@ -34,10 +34,7 @@ class SynapseWorkflowRepository extends ServiceEntityRepository
     public function activate(SynapseWorkflow $workflow): void
     {
         if (!$this->workflowValidator->isValid($workflow)) {
-            throw new CannotActivateException(
-                $workflow->getName(),
-                $this->workflowValidator->getInvalidReason($workflow) ?? 'workflow invalide',
-            );
+            throw new CannotActivateException($workflow->getName(), $this->workflowValidator->getInvalidReason($workflow) ?? 'workflow invalide');
         }
 
         $workflow->setIsActive(true);

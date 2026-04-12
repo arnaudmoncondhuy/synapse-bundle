@@ -24,9 +24,9 @@ final class CandidateScanner
     /**
      * Scanne les modèles candidats pour un preset.
      *
-     * @param string|null $providerFilter    Filtrer par provider (ex: 'anthropic')
-     * @param string      $requiredCapability Capacité requise (ex: 'text_generation', 'embedding', 'image_generation')
-     * @param bool        $rgpdSensitive     Si true, exclut les modèles à risque RGPD (danger + risk). Ne garde que null (EU) et tolerated.
+     * @param string|null $providerFilter Filtrer par provider (ex: 'anthropic')
+     * @param string $requiredCapability Capacité requise (ex: 'text_generation', 'embedding', 'image_generation')
+     * @param bool $rgpdSensitive Si true, exclut les modèles à risque RGPD (danger + risk). Ne garde que null (EU) et tolerated.
      *
      * @return list<array{modelId: string, provider: string, providerLabel: string, capabilities: \ArnaudMoncondhuy\SynapseCore\Shared\Model\ModelCapabilities}>
      */

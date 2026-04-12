@@ -34,10 +34,7 @@ class SynapseAgentRepository extends ServiceEntityRepository
     public function activate(SynapseAgent $agent): void
     {
         if (!$this->agentValidator->isValid($agent)) {
-            throw new CannotActivateException(
-                $agent->getName(),
-                $this->agentValidator->getInvalidReason($agent) ?? 'agent invalide',
-            );
+            throw new CannotActivateException($agent->getName(), $this->agentValidator->getInvalidReason($agent) ?? 'agent invalide');
         }
 
         $agent->setIsActive(true);

@@ -79,10 +79,7 @@ class SynapseModelPresetRepository extends ServiceEntityRepository
     public function activate(SynapseModelPreset $preset): void
     {
         if (!$this->presetValidator->canBeActivated($preset)) {
-            throw new CannotActivateException(
-                $preset->getName(),
-                $this->presetValidator->getCannotActivateReason($preset) ?? 'preset invalide',
-            );
+            throw new CannotActivateException($preset->getName(), $this->presetValidator->getCannotActivateReason($preset) ?? 'preset invalide');
         }
 
         $em = $this->getEntityManager();

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 
-use ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\CandidateScanner;
-use ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\HeuristicRecommender;
-use ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\PresetArchitect;
 use ArnaudMoncondhuy\SynapseCore\Agent\PresetValidator\PresetValidatorAgent;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\DatabaseConfigProvider;
 use ArnaudMoncondhuy\SynapseCore\Engine\LlmClientRegistry;
 use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
+use ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\CandidateScanner;
+use ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\HeuristicRecommender;
+use ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\PresetArchitect;
 use ArnaudMoncondhuy\SynapseCore\PresetValidator;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\ModelRange;

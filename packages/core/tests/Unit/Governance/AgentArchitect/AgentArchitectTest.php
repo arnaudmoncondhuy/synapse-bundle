@@ -82,7 +82,7 @@ final class AgentArchitectTest extends TestCase
         $presetRepo = $this->createStub(SynapseModelPresetRepository::class);
         $presetRepo->method('findActive')->willReturn($preset);
 
-        $chatService = $this->createStub(\ArnaudMoncondhuy\SynapseCore\Engine\ChatService::class);
+        $chatService = $this->createStub(ChatService::class);
         $chatService->method('ask')->willReturn(['structured_output' => null, 'answer' => 'test']);
 
         $agent = $this->createAgent(

@@ -78,10 +78,7 @@ class PresetArchitect implements AgentInterface
         $candidates = $this->candidateScanner->scan($providerFilter);
 
         if ([] === $candidates) {
-            throw new \InvalidArgumentException(
-                'Aucun modèle éligible trouvé. Vérifiez qu\'au moins un provider est configuré '
-                .'avec un modèle text-generation actif et non déprécié.'
-            );
+            throw new \InvalidArgumentException('Aucun modèle éligible trouvé. Vérifiez qu\'au moins un provider est configuré avec un modèle text-generation actif et non déprécié.');
         }
 
         // Étape 2 : choix LLM ou heuristique
@@ -91,9 +88,7 @@ class PresetArchitect implements AgentInterface
         $presetEntity = $recommendation->toPresetEntity();
         if (!$this->presetValidator->isValid($presetEntity)) {
             $reason = $this->presetValidator->getInvalidReason($presetEntity);
-            throw new \RuntimeException(
-                sprintf('La recommandation générée est invalide : %s', $reason ?? 'raison inconnue')
-            );
+            throw new \RuntimeException(sprintf('La recommandation générée est invalide : %s', $reason ?? 'raison inconnue'));
         }
 
         return $recommendation;

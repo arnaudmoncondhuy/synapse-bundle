@@ -246,8 +246,8 @@ class AgentWizardController extends AbstractController
     /**
      * Construit les données template pour l'écran de résultat, incluant le warning RGPD.
      *
-     * @param array<string, mixed>  $proposal
-     * @param string[]              $requiredCapabilities Capabilities requises par l'agent (ex: ['function_calling', 'thinking'])
+     * @param array<string, mixed> $proposal
+     * @param string[] $requiredCapabilities Capabilities requises par l'agent (ex: ['function_calling', 'thinking'])
      *
      * @return array<string, mixed>
      */
