@@ -7,7 +7,6 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
-use ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry;
 use ArnaudMoncondhuy\SynapseCore\Governance\AgentArchitect\AgentArchitect;
 use ArnaudMoncondhuy\SynapseCore\Governance\AgentArchitect\AgentSystemPromptTemplates;
 use ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\CandidateScanner;
@@ -16,9 +15,7 @@ use ArnaudMoncondhuy\SynapseCore\Governance\PromptVersionRecorder;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\ModelRange;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
-use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseRagSourceRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseToneRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -39,11 +36,8 @@ class AgentWizardController extends AbstractController
     use AdminSecurityTrait;
 
     public function __construct(
-        private readonly SynapseAgentRepository $agentRepo,
         private readonly SynapseModelPresetRepository $presetRepo,
         private readonly SynapseToneRepository $toneRepo,
-        private readonly SynapseRagSourceRepository $ragSourceRepo,
-        private readonly ToolRegistry $toolRegistry,
         private readonly ModelCapabilityRegistry $capabilityRegistry,
         private readonly AgentArchitect $architectAgent,
         private readonly CandidateScanner $candidateScanner,
@@ -61,7 +55,7 @@ class AgentWizardController extends AbstractController
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
-        /** @var array{status: string, input: array, result: ?array, error: ?string}|null $data */
+        /** @var array{status: string, input: array<string, mixed>, result: ?array<string, mixed>, error: ?string}|null $data */
         $data = $this->cache->get($cacheKey, fn () => null);
 
         if (!$data) {
@@ -72,7 +66,8 @@ class AgentWizardController extends AbstractController
             set_time_limit(120);
 
             try {
-                $aiDescription = (string) ($data['input']['ai_description'] ?? '');
+                $aiDescriptionRaw = $data['input']['ai_description'] ?? '';
+                $aiDescription = is_string($aiDescriptionRaw) ? $aiDescriptionRaw : '';
                 $output = $this->architectAgent->call(Input::ofStructured([
                     'action' => 'create_agent',
                     'description' => $aiDescription,
@@ -93,10 +88,12 @@ class AgentWizardController extends AbstractController
             }
 
             $this->cache->delete($cacheKey);
-            $this->cache->get($cacheKey, function (ItemInterface $item) use ($data): array {
+            /** @var array<string, mixed> $finalData */
+            $finalData = $data;
+            $this->cache->get($cacheKey, function (ItemInterface $item) use ($finalData): array {
                 $item->expiresAfter(3600);
 
-                return $data;
+                return $finalData;
             });
         }
 
@@ -138,7 +135,8 @@ class AgentWizardController extends AbstractController
 
         $data = $request->request->all();
         $aiMode = !empty($data['ai_mode']);
-        $aiDescription = (string) ($data['ai_description'] ?? '');
+        $aiDescriptionRaw = $data['ai_description'] ?? '';
+        $aiDescription = is_string($aiDescriptionRaw) ? $aiDescriptionRaw : '';
 
         // Mode IA : async via cache + polling
         if ($aiMode && '' !== $aiDescription) {
@@ -166,9 +164,11 @@ class AgentWizardController extends AbstractController
         }
 
         // Mode guidé : templates déterministes
-        $useCase = (string) ($data['use_case'] ?? 'redaction');
+        $useCaseRaw = $data['use_case'] ?? 'redaction';
+        $useCase = is_string($useCaseRaw) ? $useCaseRaw : 'redaction';
         $capabilities = is_array($data['capabilities'] ?? null) ? $data['capabilities'] : [];
-        $tone = (string) ($data['tone'] ?? 'professionnel');
+        $toneRaw = $data['tone'] ?? 'professionnel';
+        $tone = is_string($toneRaw) ? $toneRaw : 'professionnel';
 
         $proposal = AgentSystemPromptTemplates::generate($useCase, $capabilities, $tone);
 
@@ -195,11 +195,11 @@ class AgentWizardController extends AbstractController
         $data = $request->request->all();
 
         $agent = new SynapseAgent();
-        $agent->setKey((string) ($data['key'] ?? ''));
-        $agent->setName((string) ($data['name'] ?? ''));
-        $agent->setEmoji((string) ($data['emoji'] ?? '🤖'));
-        $agent->setDescription((string) ($data['description'] ?? ''));
-        $agent->setSystemPrompt((string) ($data['system_prompt'] ?? ''));
+        $agent->setKey(is_string($data['key'] ?? null) ? $data['key'] : '');
+        $agent->setName(is_string($data['name'] ?? null) ? $data['name'] : '');
+        $agent->setEmoji(is_string($data['emoji'] ?? null) ? $data['emoji'] : '🤖');
+        $agent->setDescription(is_string($data['description'] ?? null) ? $data['description'] : '');
+        $agent->setSystemPrompt(is_string($data['system_prompt'] ?? null) ? $data['system_prompt'] : '');
         $agent->setIsBuiltin(false);
         $agent->setIsActive(!empty($data['activate']));
 
@@ -246,12 +246,10 @@ class AgentWizardController extends AbstractController
     /**
      * Construit les données template pour l'écran de résultat, incluant le warning RGPD.
      *
-     * @param array<string, mixed> $proposal
+     * @param array<string, mixed>  $proposal
+     * @param string[]              $requiredCapabilities Capabilities requises par l'agent (ex: ['function_calling', 'thinking'])
      *
      * @return array<string, mixed>
-     */
-    /**
-     * @param string[] $requiredCapabilities Capabilities requises par l'agent (ex: ['function_calling', 'thinking'])
      */
     private function getWizardResultData(array $proposal, bool $llmAssisted, mixed $presetId, array $requiredCapabilities = []): array
     {
@@ -298,7 +296,7 @@ class AgentWizardController extends AbstractController
                 } else {
                     $rgpdWarning = 'Aucun preset adapté. Créez un preset manuellement.';
                 }
-            } else {
+            } elseif (null !== $bestPreset) {
                 // Le meilleur preset est EU — parfait
                 $suggestedPresetId = $bestPreset->getId();
                 $rgpdNote = sprintf(

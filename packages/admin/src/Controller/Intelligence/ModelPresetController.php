@@ -424,7 +424,7 @@ class ModelPresetController extends AbstractController
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
-        /** @var array{status: string, input: array, result: ?array, error: ?string}|null $data */
+        /** @var array{status: string, input: array<string, mixed>, result: ?array<string, mixed>, error: ?string}|null $data */
         $data = $this->cache->get($cacheKey, fn () => null);
 
         if (!$data) {
@@ -436,8 +436,9 @@ class ModelPresetController extends AbstractController
             set_time_limit(120);
 
             try {
-                $aiDescription = $data['input']['ai_description'] ?? '';
-                $recommendation = $this->presetArchitect->generate((string) $aiDescription, requireLlm: true);
+                $aiDescriptionRaw = $data['input']['ai_description'] ?? '';
+                $aiDescription = is_string($aiDescriptionRaw) ? $aiDescriptionRaw : '';
+                $recommendation = $this->presetArchitect->generate($aiDescription, requireLlm: true);
 
                 $data['status'] = 'completed';
                 $data['result'] = $recommendation->toArray();
@@ -447,10 +448,12 @@ class ModelPresetController extends AbstractController
             }
 
             $this->cache->delete($cacheKey);
-            $this->cache->get($cacheKey, function (ItemInterface $item) use ($data): array {
+            /** @var array<string, mixed> $finalData */
+            $finalData = $data;
+            $this->cache->get($cacheKey, function (ItemInterface $item) use ($finalData): array {
                 $item->expiresAfter(3600);
 
-                return $data;
+                return $finalData;
             });
         }
 
@@ -485,11 +488,14 @@ class ModelPresetController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_wizard');
         $data = $request->request->all();
-        $useCase = (string) ($data['use_case'] ?? 'conversation');
-        $priority = (string) ($data['priority'] ?? 'balanced');
+        $useCaseRaw = $data['use_case'] ?? 'conversation';
+        $useCase = is_string($useCaseRaw) ? $useCaseRaw : 'conversation';
+        $priorityRaw = $data['priority'] ?? 'balanced';
+        $priority = is_string($priorityRaw) ? $priorityRaw : 'balanced';
         $rgpdSafe = !empty($data['rgpd_safe']);
         $aiMode = !empty($data['ai_mode']);
-        $aiDescription = (string) ($data['ai_description'] ?? '');
+        $aiDescriptionRaw = $data['ai_description'] ?? '';
+        $aiDescription = is_string($aiDescriptionRaw) ? $aiDescriptionRaw : '';
 
         // Mode IA : async via cache + polling
         if ($aiMode && '' !== $aiDescription) {
@@ -556,10 +562,10 @@ class ModelPresetController extends AbstractController
         $data = $request->request->all();
 
         $preset = new SynapseModelPreset();
-        $preset->setName((string) ($data['name'] ?? 'Preset généré'));
-        $preset->setKey((string) ($data['key'] ?? 'generated'));
-        $preset->setProviderName((string) ($data['provider'] ?? ''));
-        $preset->setModel((string) ($data['model'] ?? ''));
+        $preset->setName(is_string($data['name'] ?? null) ? $data['name'] : 'Preset généré');
+        $preset->setKey(is_string($data['key'] ?? null) ? $data['key'] : 'generated');
+        $preset->setProviderName(is_string($data['provider'] ?? null) ? $data['provider'] : '');
+        $preset->setModel(is_string($data['model'] ?? null) ? $data['model'] : '');
         $preset->setGenerationTemperature(is_numeric($data['temperature'] ?? null) ? (float) $data['temperature'] : 1.0);
         $preset->setGenerationTopP(is_numeric($data['top_p'] ?? null) ? (float) $data['top_p'] : 0.95);
         $preset->setGenerationTopK(is_numeric($data['top_k'] ?? null) ? (int) $data['top_k'] : null);
