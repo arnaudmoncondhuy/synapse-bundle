@@ -7,9 +7,11 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow;
+use ArnaudMoncondhuy\SynapseCore\Shared\Exception\CannotActivateException;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseWorkflowRunRepository;
+use ArnaudMoncondhuy\SynapseCore\WorkflowValidator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,11 +39,47 @@ class WorkflowController extends AbstractController
         private readonly SynapseWorkflowRepository $workflowRepo,
         private readonly SynapseWorkflowRunRepository $runRepo,
         private readonly SynapseAgentRepository $agentRepo,
+        private readonly WorkflowValidator $workflowValidator,
         private readonly EntityManagerInterface $em,
         private readonly PermissionCheckerInterface $permissionChecker,
         private readonly TranslatorInterface $translator,
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
+    }
+
+    /**
+     * Liste des agents sélectionnables dans le form d'édition :
+     * agents actifs uniquement. La vue peut ainsi empêcher l'admin
+     * d'ajouter une étape pointant vers un agent désactivé.
+     *
+     * @return array<int, \ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent>
+     */
+    private function getSelectableAgents(): array
+    {
+        return array_values(array_filter(
+            $this->agentRepo->findAllOrdered(),
+            fn ($a) => $a->isActive()
+        ));
+    }
+
+    /**
+     * 🛡️ Force le workflow à l'état inactif si au moins une de ses étapes
+     * pointe vers un agent introuvable ou désactivé.
+     */
+    private function enforceWorkflowValidityBeforeFlush(SynapseWorkflow $workflow): void
+    {
+        if ($this->workflowValidator->isValid($workflow)) {
+            return;
+        }
+
+        if ($workflow->isActive()) {
+            $workflow->setIsActive(false);
+            $this->addFlash('warning', sprintf(
+                'Le workflow « %s » a été forcé à l\'état inactif : %s',
+                $workflow->getName(),
+                $this->workflowValidator->getInvalidReason($workflow) ?? 'définition invalide'
+            ));
+        }
     }
 
     // ─── Index ─────────────────────────────────────────────────────────────────
@@ -52,6 +90,32 @@ class WorkflowController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
 
         $workflows = $this->workflowRepo->findAllOrdered();
+
+        // Réconciliation : le cascade de désactivation se déclenche à la
+        // TRANSITION (toggle agent, edit preset, etc.). Si un agent a été
+        // supprimé hors controller (DB directe, MCP, rename de clé, état
+        // historique), aucun trigger n'a pu marquer les workflows qui le
+        // référencent. On rattrape ici à chaque rendu de la liste.
+        $autoDeactivated = [];
+        foreach ($workflows as $workflow) {
+            if ($workflow->isActive() && !$this->workflowValidator->isValid($workflow)) {
+                $this->workflowRepo->deactivate($workflow);
+                $autoDeactivated[] = sprintf(
+                    '« %s » (%s)',
+                    $workflow->getName(),
+                    $this->workflowValidator->getInvalidReason($workflow) ?? 'workflow invalide',
+                );
+            }
+        }
+        if ([] !== $autoDeactivated) {
+            $this->em->wrapInTransaction(function (): void {
+                $this->em->flush();
+            });
+            $this->addFlash('warning', sprintf(
+                'Workflows automatiquement désactivés (référence cassée) : %s',
+                implode(', ', $autoDeactivated)
+            ));
+        }
 
         $runsCounts = [];
         foreach ($workflows as $workflow) {
@@ -80,8 +144,11 @@ class WorkflowController extends AbstractController
             $errors = $this->applyFormData($workflow, $request->request->all());
 
             if ([] === $errors) {
-                $this->em->persist($workflow);
-                $this->em->flush();
+                $this->enforceWorkflowValidityBeforeFlush($workflow);
+                $this->em->wrapInTransaction(function () use ($workflow): void {
+                    $this->em->persist($workflow);
+                    $this->em->flush();
+                });
 
                 $this->addFlash('success', $this->translator->trans('synapse.admin.workflow.flash.created', ['name' => $workflow->getName()], 'synapse_admin'));
 
@@ -94,7 +161,7 @@ class WorkflowController extends AbstractController
             'is_new' => true,
             'errors' => $errors,
             'runs' => [],
-            'agents' => $this->agentRepo->findAllOrdered(),
+            'agents' => $this->getSelectableAgents(),
         ]);
     }
 
@@ -112,7 +179,10 @@ class WorkflowController extends AbstractController
             $errors = $this->applyFormData($workflow, $request->request->all());
 
             if ([] === $errors) {
-                $this->em->flush();
+                $this->enforceWorkflowValidityBeforeFlush($workflow);
+                $this->em->wrapInTransaction(function (): void {
+                    $this->em->flush();
+                });
 
                 $this->addFlash('success', $this->translator->trans('synapse.admin.workflow.flash.updated', ['name' => $workflow->getName()], 'synapse_admin'));
 
@@ -127,7 +197,7 @@ class WorkflowController extends AbstractController
             'is_new' => false,
             'errors' => $errors,
             'runs' => $runs,
-            'agents' => $this->agentRepo->findAllOrdered(),
+            'agents' => $this->getSelectableAgents(),
         ]);
     }
 
@@ -156,8 +226,23 @@ class WorkflowController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_workflow_toggle_'.$workflow->getId());
 
-        $workflow->setIsActive(!$workflow->isActive());
-        $this->em->flush();
+        // Lifecycle centralisé dans le repo : validation (activate) ou état
+        // final (deactivate — feuille de la chaîne ici). Enveloppé dans une
+        // transaction pour rester atomique.
+        try {
+            $this->em->wrapInTransaction(function () use ($workflow): void {
+                if ($workflow->isActive()) {
+                    $this->workflowRepo->deactivate($workflow);
+                } else {
+                    $this->workflowRepo->activate($workflow);
+                }
+                $this->em->flush();
+            });
+        } catch (CannotActivateException $e) {
+            $this->addFlash('error', $e->getMessage());
+
+            return $this->redirectToRoute('synapse_admin_workflows');
+        }
 
         $stateKey = $workflow->isActive() ? 'synapse.admin.workflow.flash.enabled' : 'synapse.admin.workflow.flash.disabled';
         $this->addFlash('success', $this->translator->trans($stateKey, ['name' => $workflow->getName()], 'synapse_admin'));

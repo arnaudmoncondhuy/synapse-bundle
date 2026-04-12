@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 
 use ArnaudMoncondhuy\SynapseCore\Agent\CodeAgentRegistry;
+use ArnaudMoncondhuy\SynapseCore\AgentValidator;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
+use ArnaudMoncondhuy\SynapseCore\PresetValidator;
+use ArnaudMoncondhuy\SynapseCore\Shared\Exception\CannotActivateException;
+use ArnaudMoncondhuy\SynapseCore\Shared\Model\DeactivationCascade;
 use ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry;
 use ArnaudMoncondhuy\SynapseCore\Governance\PromptVersionRecorder;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
@@ -58,8 +62,85 @@ class AgentController extends AbstractController
         private readonly SynapseWorkflowRepository $workflowRepo,
         private readonly TranslatorInterface $translator,
         private readonly CodeAgentRegistry $codeAgentRegistry,
+        private readonly AgentValidator $agentValidator,
+        private readonly PresetValidator $presetValidator,
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
+    }
+
+    /**
+     * 🛡️ Force la désactivation de l'agent si son preset explicite est invalide,
+     * quel que soit l'état du checkbox `is_active` du formulaire. Sans ce garde
+     * fou, l'admin pourrait activer un agent via le form edit alors que son
+     * preset sous-jacent pointe vers un modèle/provider désactivé.
+     */
+    private function enforceAgentValidityBeforeFlush(SynapseAgent $agent): void
+    {
+        if ($this->agentValidator->isValid($agent)) {
+            return;
+        }
+
+        if ($agent->isActive()) {
+            $agent->setIsActive(false);
+            $this->addFlash('warning', sprintf(
+                'L\'agent « %s » a été forcé à l\'état inactif : %s',
+                $agent->getName(),
+                $this->agentValidator->getInvalidReason($agent) ?? 'preset invalide'
+            ));
+        }
+    }
+
+    /**
+     * Ruissellement : propage la désactivation d'un agent vers ses workflows
+     * si l'agent est (ou vient d'être rendu) inactif. Renvoie le cascade pour
+     * que le caller puisse l'afficher APRÈS la transaction.
+     */
+    private function cascadeAgentDeactivation(SynapseAgent $agent): DeactivationCascade
+    {
+        if ($agent->isActive()) {
+            return DeactivationCascade::empty();
+        }
+
+        return $this->agentRepo->deactivate($agent);
+    }
+
+    private function flashCascade(DeactivationCascade $cascade, string $because = ''): void
+    {
+        $suffix = '' !== $because ? ' '.$because : '';
+        if (!empty($cascade->agents)) {
+            $this->addFlash('warning', sprintf('Agents désactivés%s : %s', $suffix, implode(', ', $cascade->agents)));
+        }
+        if (!empty($cascade->workflows)) {
+            $this->addFlash('warning', sprintf('Workflows désactivés%s : %s', $suffix, implode(', ', $cascade->workflows)));
+        }
+    }
+
+    /**
+     * Retourne uniquement les presets actuellement valides (provider configuré,
+     * modèle activé, etc.). Utilisé pour peupler les dropdowns de l'édition
+     * d'agent — on ne veut pas que l'admin puisse assigner un agent à un preset
+     * cassé.
+     *
+     * @return array<int, \ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset>
+     */
+    private function getSelectablePresets(?SynapseAgent $currentAgent = null): array
+    {
+        $result = [];
+        foreach ($this->presetRepo->findAll() as $preset) {
+            if ($this->presetValidator->isValid($preset)) {
+                $result[] = $preset;
+            }
+        }
+
+        // En édition, on conserve le preset actuellement sélectionné même s'il est
+        // invalide — pour que l'admin puisse le voir/choisir d'en changer sans que
+        // la dropdown ne se retrouve « vide » sur un agent hérité d'un état cassé.
+        $currentPreset = $currentAgent?->getModelPreset();
+        if (null !== $currentPreset && !$this->presetValidator->isValid($currentPreset)) {
+            $result[] = $currentPreset;
+        }
+
+        return $result;
     }
 
     // ─── Index ─────────────────────────────────────────────────────────────────
@@ -113,26 +194,35 @@ class AgentController extends AbstractController
         if ($request->isMethod('POST')) {
             $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_edit');
             $this->applyFormData($agent, $request->request->all());
-            $this->em->persist($agent);
-            $this->em->flush();
+            $this->enforceAgentValidityBeforeFlush($agent);
 
-            // Garde-fou #1 : snapshot initial du prompt (création = version 1).
-            // Le flush ci-dessus garantit que l'agent a un ID avant la requête DQL du recorder.
-            $this->promptVersionRecorder->snapshot(
-                $agent,
-                $agent->getSystemPrompt(),
-                'human:'.$this->resolveAdminIdentifier(),
-                $this->extractVersionReason($request),
-            );
+            // Tout le save + cascade + snapshot du prompt dans une seule
+            // transaction : si un élément rate, rien n'est flushé.
+            $cascade = $this->em->wrapInTransaction(function () use ($agent, $request): DeactivationCascade {
+                $result = $this->cascadeAgentDeactivation($agent);
+                $this->em->persist($agent);
+                $this->em->flush();
 
-            $this->em->flush();
+                // Garde-fou #1 : snapshot initial du prompt (création = version 1).
+                // Le flush ci-dessus garantit que l'agent a un ID avant la requête DQL du recorder.
+                $this->promptVersionRecorder->snapshot(
+                    $agent,
+                    $agent->getSystemPrompt(),
+                    'human:'.$this->resolveAdminIdentifier(),
+                    $this->extractVersionReason($request),
+                );
+                $this->em->flush();
 
+                return $result;
+            });
+
+            $this->flashCascade($cascade, sprintf('à la suite de la désactivation de l\'agent « %s »', $agent->getName()));
             $this->addFlash('success', $this->translator->trans('synapse.admin.agent.flash.created', ['name' => $agent->getName()], 'synapse_admin'));
 
             return $this->redirectToRoute('synapse_admin_agents');
         }
 
-        $presets = $this->presetRepo->findAll();
+        $presets = $this->getSelectablePresets();
         $tones = $this->toneRepo->findAllOrdered();
         $availableTools = array_map(fn ($tool) => [
             'name' => $tool->getName(),
@@ -163,25 +253,32 @@ class AgentController extends AbstractController
         if ($request->isMethod('POST')) {
             $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_edit');
             $this->applyFormData($agent, $request->request->all());
+            $this->enforceAgentValidityBeforeFlush($agent);
 
-            // Garde-fou #1 : snapshot du prompt s'il a effectivement changé.
-            // Le recorder applique l'idempotence — pas de pollution si le save
-            // du formulaire ne touche pas au prompt.
-            $this->promptVersionRecorder->snapshot(
-                $agent,
-                $agent->getSystemPrompt(),
-                'human:'.$this->resolveAdminIdentifier(),
-                $this->extractVersionReason($request),
-            );
+            $cascade = $this->em->wrapInTransaction(function () use ($agent, $request): DeactivationCascade {
+                $result = $this->cascadeAgentDeactivation($agent);
 
-            $this->em->flush();
+                // Garde-fou #1 : snapshot du prompt s'il a effectivement changé.
+                // Le recorder applique l'idempotence — pas de pollution si le save
+                // du formulaire ne touche pas au prompt.
+                $this->promptVersionRecorder->snapshot(
+                    $agent,
+                    $agent->getSystemPrompt(),
+                    'human:'.$this->resolveAdminIdentifier(),
+                    $this->extractVersionReason($request),
+                );
+                $this->em->flush();
 
+                return $result;
+            });
+
+            $this->flashCascade($cascade, sprintf('à la suite de la désactivation de l\'agent « %s »', $agent->getName()));
             $this->addFlash('success', $this->translator->trans('synapse.admin.agent.flash.updated', ['name' => $agent->getName()], 'synapse_admin'));
 
             return $this->redirectToRoute('synapse_admin_agents');
         }
 
-        $presets = $this->presetRepo->findAll();
+        $presets = $this->getSelectablePresets($agent);
         $tones = $this->toneRepo->findAllOrdered();
         $agentLimits = $this->spendingLimitRepo->findForAgent((int) $agent->getId());
         $spendingLimit = $agentLimits[0] ?? null;
@@ -279,8 +376,29 @@ class AgentController extends AbstractController
         $this->denyAccessUnlessAdmin($this->permissionChecker);
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_agent_toggle_'.$agent->getId());
 
-        $agent->setIsActive(!$agent->isActive());
-        $this->em->flush();
+        // La logique de lifecycle (validation, cascade) est centralisée dans
+        // les méthodes activate() / deactivate() du repo.
+        // L'ensemble est encapsulé dans une transaction pour rester atomique :
+        // si la cascade échoue, rien n'est flushé.
+        try {
+            $cascade = $this->em->wrapInTransaction(function () use ($agent): DeactivationCascade {
+                $result = DeactivationCascade::empty();
+                if ($agent->isActive()) {
+                    $result = $this->agentRepo->deactivate($agent);
+                } else {
+                    $this->agentRepo->activate($agent);
+                }
+                $this->em->flush();
+
+                return $result;
+            });
+        } catch (CannotActivateException $e) {
+            $this->addFlash('error', $e->getMessage());
+
+            return $this->redirectToRoute('synapse_admin_agents');
+        }
+
+        $this->flashCascade($cascade, sprintf('à la suite de la désactivation de l\'agent « %s »', $agent->getName()));
 
         $stateKey = $agent->isActive() ? 'synapse.admin.agent.flash.enabled' : 'synapse.admin.agent.flash.disabled';
         $this->addFlash('success', $this->translator->trans($stateKey, ['name' => $agent->getName()], 'synapse_admin'));
@@ -417,18 +535,20 @@ class AgentController extends AbstractController
             return $this->redirectToRoute('synapse_admin_agents');
         }
 
-        $referencingWorkflows = $this->findWorkflowsReferencingAgent($agent->getKey());
-        if ([] !== $referencingWorkflows) {
-            $names = implode(', ', array_map(fn ($w) => $w->getName(), $referencingWorkflows));
-            $this->addFlash('error', $this->translator->trans('synapse.admin.agent.flash.delete_used_in_workflow', ['name' => $agent->getName(), 'workflows' => $names], 'synapse_admin'));
-
-            return $this->redirectToRoute('synapse_admin_agents');
-        }
-
+        // Cascade : avant de supprimer l'agent, on désactive les workflows
+        // qui le référencent. Même principe que la cascade sur désactivation,
+        // mais déclenchée par la suppression définitive de l'entité.
         $name = $agent->getName();
-        $this->em->remove($agent);
-        $this->em->flush();
+        $agentKey = $agent->getKey();
+        $cascade = $this->em->wrapInTransaction(function () use ($agent, $agentKey): DeactivationCascade {
+            $result = $this->workflowRepo->deactivateAllByAgentKey($agentKey);
+            $this->em->remove($agent);
+            $this->em->flush();
 
+            return $result;
+        });
+
+        $this->flashCascade($cascade, sprintf('à la suite de la suppression de l\'agent « %s »', $name));
         $this->addFlash('success', $this->translator->trans('synapse.admin.agent.flash.deleted', ['name' => $name], 'synapse_admin'));
 
         return $this->redirectToRoute('synapse_admin_agents');
@@ -565,29 +685,6 @@ class AgentController extends AbstractController
         $trimmed = trim($raw);
 
         return '' === $trimmed ? null : $trimmed;
-    }
-
-    /**
-     * Retourne les workflows actifs dont la définition référence un agent donné.
-     *
-     * @return array<int, \ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseWorkflow>
-     */
-    private function findWorkflowsReferencingAgent(string $agentKey): array
-    {
-        $workflows = $this->workflowRepo->findAllOrdered();
-        $result = [];
-
-        foreach ($workflows as $workflow) {
-            $steps = $workflow->getDefinition()['steps'] ?? [];
-            foreach ($steps as $step) {
-                if (($step['agent_name'] ?? null) === $agentKey) {
-                    $result[] = $workflow;
-                    break;
-                }
-            }
-        }
-
-        return $result;
     }
 
     /**

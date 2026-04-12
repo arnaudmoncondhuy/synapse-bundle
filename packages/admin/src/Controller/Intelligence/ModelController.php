@@ -7,7 +7,9 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
+use ArnaudMoncondhuy\SynapseCore\Shared\Model\DeactivationCascade;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModel;
+use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,11 +29,32 @@ class ModelController extends AbstractController
 
     public function __construct(
         private readonly SynapseModelRepository $modelRepo,
+        private readonly SynapseModelPresetRepository $presetRepo,
         private readonly ModelCapabilityRegistry $capabilityRegistry,
         private readonly EntityManagerInterface $em,
         private readonly PermissionCheckerInterface $permissionChecker,
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
+    }
+
+    /**
+     * Affiche un flash warning pour chaque niveau non-vide d'un cascade.
+     * Le paramètre $because permet de contextualiser le déclencheur (ex:
+     * « à la suite de la désactivation du modèle X ») pour que l'admin
+     * comprenne pourquoi des entités ont été impactées.
+     */
+    private function flashCascade(DeactivationCascade $cascade, string $because = ''): void
+    {
+        $suffix = '' !== $because ? ' '.$because : '';
+        if (!empty($cascade->presets)) {
+            $this->addFlash('warning', sprintf('Presets désactivés%s : %s', $suffix, implode(', ', $cascade->presets)));
+        }
+        if (!empty($cascade->agents)) {
+            $this->addFlash('warning', sprintf('Agents désactivés%s : %s', $suffix, implode(', ', $cascade->agents)));
+        }
+        if (!empty($cascade->workflows)) {
+            $this->addFlash('warning', sprintf('Workflows désactivés%s : %s', $suffix, implode(', ', $cascade->workflows)));
+        }
     }
 
     /**
@@ -56,7 +79,26 @@ class ModelController extends AbstractController
         }
 
         $model->setIsEnabled(!$model->isEnabled());
-        $this->em->flush();
+
+        // 🛡️ Quand on désactive un modèle, on délègue **entièrement** la
+        // propagation au preset repo. Il se charge des presets, qui se
+        // chargent eux-mêmes des agents, qui se chargent eux-mêmes des
+        // workflows. Ce contrôleur ne connaît donc QUE le niveau n+1 (preset).
+        //
+        // Tout est encapsulé dans une transaction pour que la désactivation
+        // du modèle + sa cascade soient atomiques.
+        $cascade = $this->em->wrapInTransaction(function () use ($model, $modelId): DeactivationCascade {
+            $cascade = DeactivationCascade::empty();
+            if (!$model->isEnabled()) {
+                $cascade = $this->presetRepo->deactivateAllByModel(
+                    $model->getProviderName(),
+                    $modelId,
+                );
+            }
+            $this->em->flush();
+
+            return $cascade;
+        });
 
         if ($request->isXmlHttpRequest()) {
             $newToken = $this->csrfTokenManager?->getToken('synapse_model_toggle_'.$modelId)->getValue();
@@ -65,11 +107,15 @@ class ModelController extends AbstractController
                 'enabled' => $model->isEnabled(),
                 'modelId' => $modelId,
                 'token' => $newToken,
+                'deactivated_presets' => $cascade->presets,
+                'deactivated_agents' => $cascade->agents,
+                'deactivated_workflows' => $cascade->workflows,
             ]);
         }
 
         $status = $model->isEnabled() ? 'activé' : 'désactivé';
         $this->addFlash('success', sprintf('Le modèle "%s" a été %s.', $modelId, $status));
+        $this->flashCascade($cascade, sprintf('à la suite de la désactivation du modèle « %s »', $modelId));
 
         return $this->redirectToRoute('synapse_admin_configuration_llm', ['tab' => 'modeles']);
     }
