@@ -388,8 +388,10 @@ class ChatApiController extends AbstractController
                     $typedOptions['stateless'] = (bool) $options['stateless'];
                 }
                 $typedOptions['debug'] = (bool) $options['debug'];
-                if (null !== $conversationId) {
-                    $typedOptions['conversation_id'] = $conversationId;
+                // Utiliser l'ID de la conversation réelle (peut avoir été créée en amont)
+                $effectiveConversationId = $conversation?->getId() ?? $conversationId;
+                if (null !== $effectiveConversationId && '' !== $effectiveConversationId) {
+                    $typedOptions['conversation_id'] = $effectiveConversationId;
                 }
                 if (isset($options['user_id']) && is_string($options['user_id'])) {
                     $typedOptions['user_id'] = $options['user_id'];
@@ -514,6 +516,10 @@ class ChatApiController extends AbstractController
                         $generatedAttachments = is_array($result['generated_attachments'] ?? null) ? $result['generated_attachments'] : [];
                         $answerText = ('' !== $result['answer']) ? $result['answer'] : ($hasGeneratedAttachments ? '[image]' : '');
                         $modelMessage = $this->conversationManager->saveMessage($conversation, MessageRole::MODEL, $answerText, $metadata, $callId, $generatedAttachments);
+
+                        // Exposer l'ID du message créé pour permettre au front de cibler les actions
+                        // par message (notamment le bouton "Replay transparence").
+                        $result['message_id'] = $modelMessage->getId();
 
                         // Inclure les UUIDs des images générées dans le résultat (pour affichage front)
                         if (!empty($generatedAttachments)) {

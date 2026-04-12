@@ -73,12 +73,19 @@ final class HttpCodeExecutor implements CodeExecutorInterface
         }
 
         try {
+            $payload = [
+                'code' => $code,
+                'language' => $language,
+                'timeout_s' => $timeout,
+            ];
+
+            // Fichiers pré-stagés dans le sandbox (provenant de CodeExecuteTool)
+            if (!empty($inputs['files']) && \is_array($inputs['files'])) {
+                $payload['files'] = $inputs['files'];
+            }
+
             $response = $this->httpClient->request('POST', $this->sandboxUrl.'/execute', [
-                'json' => [
-                    'code' => $code,
-                    'language' => $language,
-                    'timeout_s' => $timeout,
-                ],
+                'json' => $payload,
                 // Le timeout HTTP doit être légèrement supérieur au timeout
                 // d'exécution pour laisser le sandbox rapatrier stdout/stderr
                 // et renvoyer sa réponse.
@@ -97,6 +104,15 @@ final class HttpCodeExecutor implements CodeExecutorInterface
             );
         }
 
+        // Filtrer les output_files pour ne garder que les entrées valides
+        $outputFiles = \is_array($data['output_files'] ?? null)
+            ? array_values(array_filter(
+                $data['output_files'],
+                fn ($f) => \is_array($f) && isset($f['name'], $f['mime_type'], $f['data'])
+                    && \is_string($f['name']) && \is_string($f['mime_type']) && \is_string($f['data']),
+            ))
+            : [];
+
         return new ExecutionResult(
             success: (bool) ($data['success'] ?? false),
             stdout: is_string($data['stdout'] ?? null) ? $data['stdout'] : '',
@@ -105,6 +121,7 @@ final class HttpCodeExecutor implements CodeExecutorInterface
             durationMs: is_int($data['duration_ms'] ?? null) ? $data['duration_ms'] : 0,
             errorType: is_string($data['error_type'] ?? null) ? $data['error_type'] : null,
             errorMessage: is_string($data['error_message'] ?? null) ? $data['error_message'] : null,
+            outputFiles: $outputFiles,
         );
     }
 

@@ -411,7 +411,9 @@ class ConversationManager
 
             if ($forDisplay) {
                 // For Twig: return plain text content + attachments array for display
+                // L'ID est exposé pour permettre des actions par message (ex: replay transparence).
                 $entry = [
+                    'id' => $msg->getId(),
                     'role' => $role,
                     'content' => $textContent,
                     'metadata' => $metadata,
@@ -455,6 +457,36 @@ class ConversationManager
     public function getAttachmentsByMessageId(string $messageId): array
     {
         return $this->em->getRepository(SynapseMessageAttachment::class)->findBy(['messageId' => $messageId]);
+    }
+
+    /**
+     * Retourne tous les attachments d'une conversation (tous messages confondus).
+     *
+     * @return SynapseMessageAttachment[]
+     */
+    public function getAttachmentsByConversationId(string $conversationId): array
+    {
+        $messageClass = $this->getMessageClass();
+
+        // Requête DQL : récupère les IDs des messages de la conversation, puis les attachments
+        $qb = $this->em->createQueryBuilder();
+        $messageIds = $qb->select('m.id')
+            ->from($messageClass, 'm')
+            ->where('m.conversation = :convId')
+            ->setParameter('convId', $conversationId)
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        if (empty($messageIds)) {
+            return [];
+        }
+
+        return $this->em->getRepository(SynapseMessageAttachment::class)
+            ->createQueryBuilder('a')
+            ->where('a.messageId IN (:ids)')
+            ->setParameter('ids', $messageIds)
+            ->getQuery()
+            ->getResult();
     }
 
     /**

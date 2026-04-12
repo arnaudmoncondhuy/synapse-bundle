@@ -147,6 +147,37 @@ class SynapseTwigExtension extends AbstractExtension
         );
         $html = (string) preg_replace('/`([^`]+)`/u', '<code>$1</code>', $html);
 
+        // 5bis. Tableaux Markdown (| col1 | col2 | ... avec ligne séparateur |---|---|)
+        $html = (string) preg_replace_callback(
+            '/(?:^|\n)((?:\|[^\n]+\|\s*\n)*\|[^\n]+\|)/m',
+            function ($matches) {
+                $lines = array_filter(explode("\n", trim($matches[1])), fn ($l) => '' !== trim($l));
+                if (\count($lines) < 2) {
+                    return $matches[0];
+                }
+
+                $parseLine = fn (string $line): array => array_map('trim', array_filter(explode('|', $line), fn ($c, $k) => '' !== $c || ($k > 0 && $k < \count(explode('|', $line)) - 1), ARRAY_FILTER_USE_BOTH));
+
+                $headerCells = $parseLine(array_shift($lines));
+                // Vérifier que la 2e ligne est un séparateur (|---|---|)
+                $separator = array_shift($lines);
+                if (null === $separator || !preg_match('/^\|[\s\-:|]+\|$/', trim($separator))) {
+                    return $matches[0]; // Pas un vrai tableau
+                }
+
+                $thead = '<thead><tr>'.implode('', array_map(fn ($c) => '<th>'.$c.'</th>', $headerCells)).'</tr></thead>';
+                $tbody = '<tbody>';
+                foreach ($lines as $line) {
+                    $cells = $parseLine($line);
+                    $tbody .= '<tr>'.implode('', array_map(fn ($c) => '<td>'.$c.'</td>', $cells)).'</tr>';
+                }
+                $tbody .= '</tbody>';
+
+                return '<table>'.$thead.$tbody.'</table>';
+            },
+            $html
+        );
+
         // 6. Blocs de boutons consécutifs
         $html = (string) preg_replace_callback(
             '/(?:<a class="synapse-btn-action"[^>]*>.*?<\/a>\s*(\r\n|\r|\n)?\s*){2,}/s',

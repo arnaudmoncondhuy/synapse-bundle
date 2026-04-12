@@ -7,6 +7,9 @@ namespace ArnaudMoncondhuy\SynapseCore\Tool;
 use ArnaudMoncondhuy\SynapseCore\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\CodeExecutorInterface;
 use ArnaudMoncondhuy\SynapseCore\Event\SynapseCodeExecutedEvent;
+use ArnaudMoncondhuy\SynapseCore\Manager\ConversationManager;
+use ArnaudMoncondhuy\SynapseCore\Service\AttachmentStorageService;
+use ArnaudMoncondhuy\SynapseCore\Service\ConversationContextHolder;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseCodeExecution;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
@@ -37,10 +40,15 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 #[Autoconfigure(tags: ['synapse.tool'])]
 class CodeExecuteTool implements AiToolInterface
 {
+    private const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB par fichier
+
     public function __construct(
         private readonly CodeExecutorInterface $executor,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly EntityManagerInterface $entityManager,
+        private readonly ?ConversationContextHolder $conversationContextHolder = null,
+        private readonly ?ConversationManager $conversationManager = null,
+        private readonly ?AttachmentStorageService $attachmentStorage = null,
     ) {
     }
 
@@ -60,7 +68,16 @@ class CodeExecuteTool implements AiToolInterface
             .'et la valeur retournée. Utilise cet outil quand tu dois faire des calculs non-triviaux, '
             .'manipuler des données tabulaires (CSV, JSON), parser du texte avec des regex, ou quand '
             .'écrire un script est plus fiable que de raisonner le résultat toi-même. Le code s\'exécute '
-            .'dans un sandbox sans accès réseau par défaut.';
+            .'dans un sandbox sans accès réseau. Seule la bibliothèque standard Python est disponible '
+            .'(csv, json, re, math, collections, itertools, etc.). N\'utilise PAS de librairies tierces '
+            .'(pas de pandas, numpy, requests, etc.). '
+            .'Quand tu présentes des résultats tabulaires à l\'utilisateur, formate-les en tableau Markdown. '
+            .'IMPORTANT — Génération de fichiers : quand l\'utilisateur demande un fichier (CSV, Excel, rapport, export, etc.), '
+            .'tu DOIS l\'écrire dans le répertoire OUTPUT_DIR pour qu\'il soit proposé en téléchargement. '
+            .'OUTPUT_DIR est une variable Python DÉJÀ DÉFINIE dans l\'environnement (valeur: "_output"). '
+            .'Ne la redéfinis PAS. N\'utilise PAS /mnt/data/ ni aucun chemin absolu — le filesystem est read-only sauf OUTPUT_DIR. '
+            .'Exemple correct : import os; os.makedirs(OUTPUT_DIR, exist_ok=True); '
+            .'f = open(os.path.join(OUTPUT_DIR, "rapport.csv"), "w")';
     }
 
     public function getInputSchema(): array
@@ -98,8 +115,33 @@ class CodeExecuteTool implements AiToolInterface
             ? $parameters['language']
             : 'python';
 
-        $result = $this->executor->execute($code, $language);
+        // Collecter les fichiers uploadés dans la conversation pour les pré-stager dans le sandbox
+        $files = $this->collectConversationFiles();
+
+        $result = $this->executor->execute($code, $language, ['files' => $files]);
         $resultArray = $result->toArray();
+
+        // Déposer les artefacts de sortie dans le context holder pour le pipeline generated_attachments.
+        // Le base64 ne doit PAS aller dans le tool result (gaspillage de tokens) — seulement les métadonnées.
+        if (!empty($result->outputFiles) && null !== $this->conversationContextHolder) {
+            $artifacts = [];
+            foreach ($result->outputFiles as $file) {
+                $artifacts[] = [
+                    'mime_type' => $file['mime_type'],
+                    'data' => $file['data'],
+                    'name' => $file['name'],
+                ];
+            }
+            $this->conversationContextHolder->addGeneratedArtifacts($artifacts);
+
+            // Métadonnées pour le LLM (noms et types seulement, pas le contenu)
+            $resultArray['generated_files'] = array_map(
+                fn (array $f) => ['name' => $f['name'], 'mime_type' => $f['mime_type']],
+                $result->outputFiles,
+            );
+        }
+        // Retirer output_files du result array envoyé au LLM (le base64 est dans le context holder)
+        unset($resultArray['output_files']);
 
         // Audit trail persistant : stocke l'exécution dans `synapse_code_execution`
         // pour audit a posteriori. Try/catch pour que l'audit ne bloque JAMAIS
@@ -133,5 +175,58 @@ class CodeExecuteTool implements AiToolInterface
         ));
 
         return $resultArray;
+    }
+
+    /**
+     * Collecte les fichiers uploadés dans la conversation courante pour le pré-staging sandbox.
+     *
+     * @return list<array{name: string, content_base64: string}>
+     */
+    private function collectConversationFiles(): array
+    {
+        if (null === $this->conversationContextHolder) {
+            return [];
+        }
+
+        $files = [];
+
+        // 1. Attachments bruts du message courant (pas encore en base)
+        foreach ($this->conversationContextHolder->getAttachments() as $att) {
+            $name = $att['name'] ?? 'file';
+            $data = $att['data'] ?? '';
+            if ('' === $data) {
+                continue;
+            }
+            $decoded = base64_decode($data, true);
+            if (false === $decoded || \strlen($decoded) > self::MAX_FILE_SIZE) {
+                continue;
+            }
+            $files[] = [
+                'name' => $name,
+                'content_base64' => $data,
+            ];
+        }
+
+        // 2. Attachments des messages précédents (déjà persistés en base)
+        $conversationId = $this->conversationContextHolder->getConversationId();
+        if (null !== $conversationId && '' !== $conversationId && null !== $this->conversationManager && null !== $this->attachmentStorage) {
+            try {
+                $dbAttachments = $this->conversationManager->getAttachmentsByConversationId($conversationId);
+                foreach ($dbAttachments as $att) {
+                    $path = $this->attachmentStorage->getAbsolutePath($att);
+                    if (!file_exists($path) || filesize($path) > self::MAX_FILE_SIZE) {
+                        continue;
+                    }
+                    $files[] = [
+                        'name' => $att->getOriginalName() ?? basename($path),
+                        'content_base64' => base64_encode((string) file_get_contents($path)),
+                    ];
+                }
+            } catch (\Throwable) {
+                // Best-effort — DB down = on continue sans les fichiers historiques
+            }
+        }
+
+        return $files;
     }
 }

@@ -48,6 +48,11 @@ final readonly class ExecutionResult
      *                               `PythonSyntaxError`, `BackendUnavailable`)
      * @param string|null $errorMessage message d'erreur lisible
      */
+    /**
+     * @param list<array{name: string, mime_type: string, data: string}> $outputFiles Fichiers générés par le code
+     *        dans le répertoire de sortie (_output/). Chaque entrée contient le nom, le type MIME et le contenu
+     *        base64-encodé. Vide si aucun fichier produit.
+     */
     public function __construct(
         public bool $success,
         public string $stdout = '',
@@ -56,6 +61,7 @@ final readonly class ExecutionResult
         public int $durationMs = 0,
         public ?string $errorType = null,
         public ?string $errorMessage = null,
+        public array $outputFiles = [],
     ) {
     }
 
@@ -98,6 +104,7 @@ final readonly class ExecutionResult
             'duration_ms' => $this->durationMs,
             'error_type' => $this->errorType,
             'error_message' => $this->errorMessage,
+            'output_files' => $this->outputFiles,
         ];
     }
 }

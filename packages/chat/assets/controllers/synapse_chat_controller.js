@@ -38,6 +38,7 @@ export default class extends Controller {
         memoryUpdateUrlTemplate: String,
         conversationsUrl: String,
         debugUrlTemplate: String,
+        transparencyUrlTemplate: String,
         currentConversationId: String,
         debug: { type: Boolean, default: false },
         supportsVision: { type: Boolean, default: false },
@@ -522,13 +523,21 @@ export default class extends Controller {
         if (state.bubble && payload?.answer) {
             state.bubble.innerHTML = this.parseMarkdown(payload.answer);
             if (this.debugValue && payload?.debug_id) {
-                this.addDebugButtonToMessage(state.bubble.closest('.synapse-chat-message'), payload.debug_id);
+                const messageEl = state.bubble.closest('.synapse-chat-message');
+                this.addDebugButtonToMessage(messageEl, payload.debug_id);
+                if (payload?.message_id) {
+                    this.addTransparencyButtonToMessage(messageEl, payload.message_id);
+                }
             }
         } else if (!state.bubble && (payload?.answer || payload?.generated_attachments?.length > 0)) {
             const displayText = payload?.answer && payload.answer !== '[image]' ? payload.answer : '';
             this.addMessage(displayText, 'assistant', { debug_id: payload.debug_id });
             const bubbles = this.messagesTarget.querySelectorAll('.synapse-chat-message--assistant .synapse-chat-bubble');
             state.bubble = bubbles[bubbles.length - 1];
+            if (this.debugValue && payload?.message_id) {
+                const messageEl = state.bubble?.closest('.synapse-chat-message');
+                if (messageEl) this.addTransparencyButtonToMessage(messageEl, payload.message_id);
+            }
         }
 
         if (state.bubble && payload?.generated_attachments?.length > 0) {
@@ -567,10 +576,17 @@ export default class extends Controller {
         this.fileInputTarget.value = ''; // Reset pour permettre de re-sélectionner le même fichier
 
         const allowed = this.acceptedMimeTypesValue;
+        const extMimeMap = { csv: 'text/csv', json: 'application/json', md: 'text/markdown', txt: 'text/plain' };
         for (const file of files) {
-            if (allowed.length > 0 && !allowed.includes(file.type)) continue;
+            // Fallback MIME par extension si le navigateur ne reconnaît pas le type (courant pour CSV)
+            let fileType = file.type;
+            if (!fileType && file.name) {
+                const ext = file.name.split('.').pop()?.toLowerCase();
+                fileType = extMimeMap[ext] || '';
+            }
+            if (allowed.length > 0 && !allowed.includes(fileType)) continue;
             const data = await this.fileToBase64(file);
-            this.pendingFiles.push({ mime_type: file.type, data, name: file.name });
+            this.pendingFiles.push({ mime_type: fileType, data, name: file.name });
         }
         this.renderFilePreview();
     }
@@ -748,12 +764,96 @@ export default class extends Controller {
         contentArea.insertAdjacentHTML('beforeend', btnHtml);
     }
 
+    addTransparencyButtonToMessage(messageElement, messageId) {
+        if (!messageElement || !messageId || !this.debugValue) return;
+
+        const contentArea = messageElement.querySelector('.synapse-chat-message__content');
+        if (!contentArea || contentArea.querySelector('.synapse-chat-transparency-btn')) return;
+
+        const btnHtml = `
+            <button type="button" class="synapse-chat-debug-btn synapse-chat-transparency-btn" data-action="click->${this.identifier}#showTransparency" data-message-id="${messageId}" title="Rejouer la transparence">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
+            </button>
+        `;
+        contentArea.insertAdjacentHTML('beforeend', btnHtml);
+    }
+
     showDebug(event) {
         const debugId = event.currentTarget.dataset.debugId;
         if (!debugId || !this.hasDebugUrlTemplateValue) return;
 
         const url = this.debugUrlTemplateValue.replace('DEBUG_ID', debugId);
         window.open(url, '_blank');
+    }
+
+    /**
+     * Rejoue le contenu de la sidebar Transparence pour un message assistant passé.
+     * Fetch l'API qui reconstruit les events depuis SynapseDebugLog (pas de duplication
+     * de stockage), puis dispatche chaque event vers les méthodes render* existantes.
+     */
+    async showTransparency(event) {
+        const messageId = event.currentTarget.dataset.messageId;
+        if (!messageId || !this.hasTransparencyUrlTemplateValue) return;
+
+        const conversationId = this.currentConversationIdValue;
+        if (!conversationId) return;
+
+        const url = this.transparencyUrlTemplateValue
+            .replace('CONV_ID', encodeURIComponent(conversationId))
+            .replace('MSG_ID', encodeURIComponent(messageId));
+
+        let data;
+        try {
+            const res = await fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+            if (!res.ok) {
+                console.warn('[Synapse] Impossible de charger la transparence', res.status);
+                return;
+            }
+            data = await res.json();
+        } catch (err) {
+            console.error('[Synapse] Erreur fetch transparence', err);
+            return;
+        }
+
+        // Reset puis ouvrir le panneau, sinon les anciens events resteraient affichés
+        this.closeTransparencyPanel();
+        this._ensureTransparencyPanel();
+        this._markTransparencyReplay();
+
+        const events = Array.isArray(data?.events) ? data.events : [];
+        for (const ev of events) {
+            this._dispatchTransparencyEvent(ev?.type, ev?.payload);
+        }
+    }
+
+    /**
+     * Dispatche un event de transparence (rejoué) vers la méthode render* correspondante.
+     * Utilise les MÊMES méthodes que le streaming live → aucun code de rendu dupliqué.
+     */
+    _dispatchTransparencyEvent(type, payload) {
+        if (!type || !payload) return;
+        switch (type) {
+            case 'thinking_delta':         return this.renderThinkingDelta?.(payload);
+            case 'tool_started':           return this.renderToolStarted?.(payload);
+            case 'tool_completed':         return this.renderToolCompleted?.(payload);
+            case 'turn_iteration':         return this.renderTurnIteration?.(payload);
+            case 'rag_context':            return this.renderRagContext?.(payload);
+            case 'memory_recalled':        return this.renderMemoryRecalled?.(payload);
+            case 'code_execution':         return this.renderCodeExecution?.(payload);
+            case 'workflow_step_started':  return this.renderWorkflowStepStarted?.(payload);
+            case 'workflow_step':          return this.renderWorkflowStepCompleted?.(payload);
+            case 'usage_update':           return this.renderUsageUpdate?.(payload);
+        }
+    }
+
+    /**
+     * Marque la sidebar de transparence comme étant en mode "replay" (titre dédié).
+     * Permet à l'utilisateur de distinguer un replay d'un streaming live.
+     */
+    _markTransparencyReplay() {
+        if (!this.hasAsideTarget) return;
+        const titleEl = this.asideTarget.querySelector('.synapse-transparency-header__title');
+        if (titleEl) titleEl.textContent = 'Transparence · Replay';
     }
 
 
@@ -1144,6 +1244,16 @@ export default class extends Controller {
         // Basic markup
         html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>');
         html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>').replace(/`([^`]+)`/g, '<code>$1</code>');
+        // Markdown tables
+        html = html.replace(/((?:^|\n)\|[^\n]+\|\s*\n\|[\s\-:|]+\|\s*\n(?:\|[^\n]+\|(?:\s*\n)?)+)/gm, match => {
+            const lines = match.trim().split('\n').filter(l => l.trim());
+            if (lines.length < 2) return match;
+            const parseRow = line => line.split('|').slice(1, -1).map(c => c.trim());
+            const headers = parseRow(lines[0]);
+            const thead = '<thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead>';
+            const rows = lines.slice(2).map(line => '<tr>' + parseRow(line).map(c => `<td>${c}</td>`).join('') + '</tr>').join('');
+            return `<table>${thead}<tbody>${rows}</tbody></table>`;
+        });
         html = html.replace(/\n/g, '<br>');
         return html;
     }
@@ -1243,6 +1353,7 @@ export default class extends Controller {
             aside.classList.add('synapse-chat-aside--open');
             this._transparencyThinkingText = '';
             aside.innerHTML = `
+                <div class="synapse-chat-aside__resizer" role="separator" aria-orientation="vertical" aria-label="Redimensionner le panneau" title="Glissez pour redimensionner"></div>
                 <div class="synapse-transparency-header">
                     <div class="synapse-transparency-header__icon">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 6v6l4 2"/></svg>
@@ -1267,6 +1378,10 @@ export default class extends Controller {
                 this.closeTransparencyPanel();
             });
 
+            // Restaurer la largeur sauvegardée + brancher le resizer drag
+            this._restoreAsideWidth();
+            this._initAsideResizer();
+
             // Restaurer les artefacts accumulés de la conversation
             if (this._allArtifacts && this._allArtifacts.length > 0) {
                 this._renderArtifactsSection();
@@ -1274,6 +1389,72 @@ export default class extends Controller {
         }
 
         return aside;
+    }
+
+    /**
+     * Restaure la largeur du panneau de transparence depuis localStorage.
+     * Min 280px, max 50% de la largeur de la fenêtre. Ignoré en mobile.
+     */
+    _restoreAsideWidth() {
+        if (!this.hasAsideTarget) return;
+        if (window.innerWidth <= 768) return; // en mobile le panneau est en overlay
+        const saved = parseInt(localStorage.getItem('synapse-chat-aside-width') || '', 10);
+        if (!Number.isFinite(saved) || saved <= 0) return;
+        const min = 280;
+        const max = Math.floor(window.innerWidth * 0.5);
+        const clamped = Math.max(min, Math.min(max, saved));
+        this.asideTarget.style.width = clamped + 'px';
+    }
+
+    /**
+     * Active le drag sur la poignée de redimensionnement du panneau de transparence.
+     * Contraintes : min 280px, max 50% de la largeur de la fenêtre.
+     * La valeur est persistée dans localStorage.
+     */
+    _initAsideResizer() {
+        if (!this.hasAsideTarget) return;
+        const aside = this.asideTarget;
+        const resizer = aside.querySelector('.synapse-chat-aside__resizer');
+        if (!resizer) return;
+
+        const onPointerDown = (e) => {
+            if (window.innerWidth <= 768) return; // pas de resize en mobile
+            e.preventDefault();
+            const startX = e.clientX;
+            const startWidth = aside.getBoundingClientRect().width;
+            const min = 280;
+            const max = Math.floor(window.innerWidth * 0.5);
+
+            aside.classList.add('synapse-chat-aside--resizing');
+            document.body.style.userSelect = 'none';
+            document.body.style.cursor = 'col-resize';
+
+            const onMove = (ev) => {
+                // La sidebar est collée à droite : on grandit quand la souris va vers la gauche
+                const delta = startX - ev.clientX;
+                let next = startWidth + delta;
+                if (next < min) next = min;
+                if (next > max) next = max;
+                aside.style.width = next + 'px';
+            };
+
+            const onUp = () => {
+                document.removeEventListener('pointermove', onMove);
+                document.removeEventListener('pointerup', onUp);
+                aside.classList.remove('synapse-chat-aside--resizing');
+                document.body.style.userSelect = '';
+                document.body.style.cursor = '';
+                const finalWidth = parseInt(aside.style.width, 10);
+                if (Number.isFinite(finalWidth) && finalWidth > 0) {
+                    localStorage.setItem('synapse-chat-aside-width', String(finalWidth));
+                }
+            };
+
+            document.addEventListener('pointermove', onMove);
+            document.addEventListener('pointerup', onUp);
+        };
+
+        resizer.addEventListener('pointerdown', onPointerDown);
     }
 
     /**
@@ -1301,6 +1482,7 @@ export default class extends Controller {
     closeTransparencyPanel() {
         if (!this.hasAsideTarget) return;
         this.asideTarget.classList.remove('synapse-chat-aside--open');
+        this.asideTarget.style.width = ''; // retombe sur la règle CSS (width: 0)
         this.asideTarget.innerHTML = '';
         this._transparencyThinkingText = '';
         this._turnCount = 0;
@@ -1733,7 +1915,10 @@ export default class extends Controller {
         const statusLabel = success ? 'OK' : (errorType || 'Erreur');
 
         const card = document.createElement('div');
-        card.className = `synapse-code-exec ${statusClass} synapse-code-exec--appear`;
+        card.className = `synapse-code-exec ${statusClass} synapse-code-exec--appear synapse-tp-clickable`;
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('title', 'Cliquer pour agrandir');
         card.innerHTML = `
             <div class="synapse-code-exec__header">
                 <span class="synapse-code-exec__status">${statusIcon} ${escapeHtml(statusLabel)}</span>
@@ -1746,10 +1931,81 @@ export default class extends Controller {
             ${returnValueStr !== null ? `<div class="synapse-code-exec__label">return</div><pre class="synapse-code-exec__return">${escapeHtml(returnValueStr)}</pre>` : ''}
             ${errorMessage ? `<div class="synapse-code-exec__error">${escapeHtml(errorMessage)}</div>` : ''}
         `;
+
+        const openPopup = () => this._showCodeExecPopup({
+            code,
+            language: payload.language || 'python',
+            success,
+            statusLabel,
+            durationMs,
+            stdout,
+            stderr,
+            returnValueStr,
+            errorMessage,
+        });
+        card.addEventListener('click', openPopup);
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openPopup();
+            }
+        });
+
         container.appendChild(card);
         requestAnimationFrame(() => card.classList.add('synapse-code-exec--visible'));
 
         this.asideTarget.scrollTop = this.asideTarget.scrollHeight;
+    }
+
+    /**
+     * Ouvre une popup agrandie avec le détail complet d'une exécution de code
+     * (source, stdout, stderr, valeur de retour, erreur).
+     */
+    _showCodeExecPopup({ code, language, success, statusLabel, durationMs, stdout, stderr, returnValueStr, errorMessage }) {
+        document.querySelector('.synapse-tp-popup')?.remove();
+
+        const statusIcon = success ? '✓' : '✗';
+        const statusClass = success ? 'synapse-code-exec--ok' : 'synapse-code-exec--fail';
+
+        const modal = document.createElement('div');
+        modal.className = 'synapse-tp-popup synapse-tp-popup--code';
+        modal.innerHTML = `
+            <div class="synapse-tp-popup__backdrop"></div>
+            <div class="synapse-tp-popup__content synapse-tp-popup__content--wide">
+                <div class="synapse-tp-popup__header">
+                    <span class="synapse-tp-popup__title">🐍 Code exécuté — ${escapeHtml(language)}</span>
+                    <button type="button" class="synapse-tp-popup__close" aria-label="Fermer">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </button>
+                </div>
+                <div class="synapse-tp-popup__body synapse-tp-popup__body--code">
+                    <div class="synapse-code-exec ${statusClass}" style="opacity:1;transform:none;margin:0;">
+                        <div class="synapse-code-exec__header">
+                            <span class="synapse-code-exec__status">${statusIcon} ${escapeHtml(statusLabel)}</span>
+                            <span class="synapse-code-exec__lang">${escapeHtml(language)}</span>
+                            ${durationMs > 0 ? `<span class="synapse-code-exec__duration">${durationMs} ms</span>` : ''}
+                        </div>
+                        <div class="synapse-code-exec__label">source</div>
+                        <pre class="synapse-code-exec__code synapse-code-exec__code--full"><code>${escapeHtml(code)}</code></pre>
+                        ${stdout ? `<div class="synapse-code-exec__label">stdout</div><pre class="synapse-code-exec__stdout synapse-code-exec__code--full">${escapeHtml(stdout)}</pre>` : ''}
+                        ${stderr ? `<div class="synapse-code-exec__label">stderr</div><pre class="synapse-code-exec__stderr synapse-code-exec__code--full">${escapeHtml(stderr)}</pre>` : ''}
+                        ${returnValueStr !== null ? `<div class="synapse-code-exec__label">return</div><pre class="synapse-code-exec__return synapse-code-exec__code--full">${escapeHtml(returnValueStr)}</pre>` : ''}
+                        ${errorMessage ? `<div class="synapse-code-exec__error">${escapeHtml(errorMessage)}</div>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const close = () => {
+            modal.remove();
+            document.removeEventListener('keydown', onKey);
+        };
+        const onKey = (e) => { if (e.key === 'Escape') close(); };
+        modal.querySelector('.synapse-tp-popup__close')?.addEventListener('click', close);
+        modal.querySelector('.synapse-tp-popup__backdrop')?.addEventListener('click', close);
+        document.addEventListener('keydown', onKey);
     }
 
 }

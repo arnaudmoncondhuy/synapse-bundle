@@ -199,10 +199,23 @@ class MessageFormatter implements MessageFormatterInterface
                 continue;
             }
             $path = $this->attachmentStorage->getAbsolutePath($att);
-            if (file_exists($path)) {
+            if (!file_exists($path)) {
+                continue;
+            }
+            $mime = $att->getMimeType();
+            if (str_starts_with($mime, 'text/') || 'application/json' === $mime) {
+                $textContent = (string) file_get_contents($path);
+                if (\strlen($textContent) > 102400) {
+                    $textContent = substr($textContent, 0, 102400)."\n...[tronqué]";
+                }
+                $parts[] = [
+                    'type' => 'text',
+                    'text' => "--- Fichier : {$att->getDisplayName()} ---\n{$textContent}\n--- Fin fichier ---",
+                ];
+            } else {
                 $parts[] = [
                     'type' => 'image_url',
-                    'image_url' => ['url' => 'data:'.$att->getMimeType().';base64,'.base64_encode((string) file_get_contents($path))],
+                    'image_url' => ['url' => 'data:'.$mime.';base64,'.base64_encode((string) file_get_contents($path))],
                 ];
             }
         }
