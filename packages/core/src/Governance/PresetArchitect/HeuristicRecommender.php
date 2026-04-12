@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ArnaudMoncondhuy\SynapseCore\Agent\PresetGenerator;
+namespace ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect;
 
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\ModelRange;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\ModelCapabilities;

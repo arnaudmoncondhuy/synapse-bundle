@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ArnaudMoncondhuy\SynapseCore\Agent\PresetGenerator;
+namespace ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect;
 
 use ArnaudMoncondhuy\SynapseCore\Agent\Input;
 use ArnaudMoncondhuy\SynapseCore\Agent\Output;
@@ -19,7 +19,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository
  *
  * En first-boot (aucun preset existant), seule l'heuristique est utilisée.
  */
-class PresetGeneratorAgent implements AgentInterface
+class PresetArchitect implements AgentInterface
 {
     public function __construct(
         private readonly CandidateScanner $candidateScanner,

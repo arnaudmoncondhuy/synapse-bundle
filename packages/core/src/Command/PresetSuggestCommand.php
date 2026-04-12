@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\Command;
 
-use ArnaudMoncondhuy\SynapseCore\Agent\PresetGenerator\PresetGeneratorAgent;
+use ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\PresetArchitect;
 use ArnaudMoncondhuy\SynapseCore\Shared\Exception\CannotActivateException;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseModelPresetRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -32,7 +32,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class PresetSuggestCommand extends Command
 {
     public function __construct(
-        private readonly PresetGeneratorAgent $generatorAgent,
+        private readonly PresetArchitect $generatorAgent,
         private readonly SynapseModelPresetRepository $presetRepo,
         private readonly EntityManagerInterface $em,
     ) {
@@ -131,7 +131,7 @@ HELP);
         return Command::SUCCESS;
     }
 
-    private function renderRecommendation(SymfonyStyle $io, \ArnaudMoncondhuy\SynapseCore\Agent\PresetGenerator\PresetRecommendation $recommendation): void
+    private function renderRecommendation(SymfonyStyle $io, \ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\PresetRecommendation $recommendation): void
     {
         $io->section('Recommandation');
 

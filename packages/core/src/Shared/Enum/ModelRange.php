@@ -7,7 +7,7 @@ namespace ArnaudMoncondhuy\SynapseCore\Shared\Enum;
 /**
  * Positionnement d'un modèle LLM dans la gamme de son provider.
  *
- * Utilisé par le {@see \ArnaudMoncondhuy\SynapseCore\Agent\PresetGenerator\HeuristicRecommender}
+ * Utilisé par le {@see \ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\HeuristicRecommender}
  * pour choisir un modèle adapté lors de la génération automatique de preset,
  * et par l'admin pour afficher le positionnement d'un modèle.
  */

@@ -42,7 +42,47 @@
 	</div>
 	<style>@keyframes synapse-spin { to { transform: rotate(360deg); } }</style>
 
-	{% if step is defined and step == 'result' and recommendation is defined %}
+	{% if step is defined and step == 'created' %}
+		{# ══════════════════════════════════════════════════════════════════════════ #}
+		{# CROSS-LINK : Preset créé → proposer de créer un agent                    #}
+		{# ══════════════════════════════════════════════════════════════════════════ #}
+
+		<div style="max-width: 800px;">
+			<div class="synapse-admin-card synapse-admin-card--success synapse-admin-mb-lg">
+				<div class="synapse-admin-card__header">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+						<i data-lucide="check-circle-2"></i>
+					</div>
+					<span class="synapse-admin-card__title">Preset « {{ created_preset_name }} » créé avec succès</span>
+				</div>
+			</div>
+
+			<div class="synapse-admin-card">
+				<div class="synapse-admin-card__header">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+						<i data-lucide="target"></i>
+					</div>
+					<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs">
+						<span class="synapse-admin-card__title">Voulez-vous créer un agent avec ce preset ?</span>
+						<span class="synapse-admin-text-sm synapse-admin-text-muted">
+							Un agent combine un preset LLM avec un prompt système dédié pour une tâche spécifique.
+						</span>
+					</div>
+				</div>
+				<div class="synapse-admin-card__footer">
+					<div class="synapse-admin-flex synapse-admin-gap-md">
+						<a href="{{ path('synapse_admin_agents_wizard', {preset_id: created_preset_id}) }}" class="synapse-admin-btn synapse-admin-btn--primary">
+							<i data-lucide="wand-2"></i> Oui, créer un agent
+						</a>
+						<a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-btn synapse-admin-btn--ghost">
+							Non merci
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	{% elseif step is defined and step == 'result' and recommendation is defined %}
 		{# ══════════════════════════════════════════════════════════════════════════ #}
 		{# RÉSULTAT                                                                  #}
 		{# ══════════════════════════════════════════════════════════════════════════ #}

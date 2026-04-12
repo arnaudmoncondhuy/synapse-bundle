@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseAdmin\Controller\Intelligence;
 
-use ArnaudMoncondhuy\SynapseCore\Agent\PresetGenerator\CandidateScanner;
-use ArnaudMoncondhuy\SynapseCore\Agent\PresetGenerator\HeuristicRecommender;
-use ArnaudMoncondhuy\SynapseCore\Agent\PresetGenerator\PresetGeneratorAgent;
+use ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\CandidateScanner;
+use ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\HeuristicRecommender;
+use ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\PresetArchitect;
 use ArnaudMoncondhuy\SynapseCore\Agent\PresetValidator\PresetValidatorAgent;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
 use ArnaudMoncondhuy\SynapseCore\DatabaseConfigProvider;
@@ -59,7 +59,7 @@ class ModelPresetController extends AbstractController
         private readonly PresetValidator $presetValidator,
         private readonly CandidateScanner $candidateScanner,
         private readonly HeuristicRecommender $heuristicRecommender,
-        private readonly PresetGeneratorAgent $presetGeneratorAgent,
+        private readonly PresetArchitect $presetArchitect,
         private readonly ?CsrfTokenManagerInterface $csrfTokenManager = null,
     ) {
     }
@@ -436,6 +436,7 @@ class ModelPresetController extends AbstractController
     {
         $this->denyAccessUnlessAdmin($this->permissionChecker);
         $this->validateCsrfToken($request, $this->csrfTokenManager, 'synapse_preset_wizard');
+        set_time_limit(120);
 
         $data = $request->request->all();
         $useCase = (string) ($data['use_case'] ?? 'conversation');
@@ -544,7 +545,12 @@ class ModelPresetController extends AbstractController
             $this->addFlash('success', sprintf('Preset « %s » créé avec succès.', $preset->getName()));
         }
 
-        return $this->redirectToRoute('synapse_admin_configuration_llm', ['tab' => 'presets']);
+        return $this->render('@Synapse/admin/intelligence/preset_wizard.html.twig', [
+            'has_active_preset' => true,
+            'step' => 'created',
+            'created_preset_id' => $preset->getId(),
+            'created_preset_name' => $preset->getName(),
+        ]);
     }
 
     /**

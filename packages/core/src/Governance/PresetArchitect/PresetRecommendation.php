@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace ArnaudMoncondhuy\SynapseCore\Agent\PresetGenerator;
+namespace ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect;
 
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\ModelRange;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset;
 
 /**
- * Recommandation immutable produite par le PresetGeneratorAgent.
+ * Recommandation immutable produite par le PresetArchitect.
  *
  * Contient toutes les informations nécessaires pour créer un {@see SynapseModelPreset},
  * plus une justification en langage naturel et l'indication du mode de génération.

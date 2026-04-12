@@ -1,0 +1,434 @@
+{% extends '@Synapse/admin/layout/base.html.twig' %}
+
+{% block admin_page_title %}Assistant Agent | Intelligence | Administration Synapse{% endblock %}
+
+{% block admin_breadcrumb %}
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-topbar__breadcrumb">Agents</a>
+	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+	<span class="synapse-admin-topbar__current">Assistant</span>
+{% endblock %}
+
+{% block admin_content %}
+
+	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
+	<div class="synapse-admin-page-header">
+		<div class="synapse-admin-page-header__info">
+			<h1 class="synapse-admin-page-title">
+				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+					<i data-lucide="wand-2"></i>
+				</span>
+				Assistant de création d'agent
+			</h1>
+			<p class="synapse-admin-page-subtitle">
+				Décrivez ce que votre agent doit faire, on génère le prompt système pour vous.
+			</p>
+		</div>
+	</div>
+
+	{# ── Écran de chargement ──────────────────────────────────────────────────── #}
+	<div id="wizard-loading" style="display: none;">
+		<div style="display: flex; align-items: center; justify-content: center; min-height: 50vh;">
+			<div style="text-align: center;">
+				<div class="synapse-admin-mb-lg">
+					<div style="width: 48px; height: 48px; border: 4px solid var(--sa-border); border-top-color: var(--sa-primary); border-radius: 50%; animation: synapse-spin 0.8s linear infinite; margin: 0 auto;"></div>
+				</div>
+				<h2 class="synapse-admin-text-lg synapse-admin-mb-sm" style="font-weight: 600;" id="loading-title">Génération en cours...</h2>
+				<p class="synapse-admin-text-sm synapse-admin-text-muted" id="loading-subtitle">Création du prompt système adapté à vos besoins.</p>
+			</div>
+		</div>
+	</div>
+	<style>@keyframes synapse-spin { to { transform: rotate(360deg); } }</style>
+
+	{% if step is defined and step == 'result' and proposal is defined %}
+		{# ══════════════════════════════════════════════════════════════════════════ #}
+		{# RÉSULTAT                                                                  #}
+		{# ══════════════════════════════════════════════════════════════════════════ #}
+
+		<form action="{{ path('synapse_admin_agents_wizard_create') }}" method="POST" style="max-width: 900px;">
+			<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_wizard_create') }}">
+			<input type="hidden" name="llm_assisted" value="{{ llm_assisted ? '1' : '0' }}">
+
+			{# Card identité #}
+			<div class="synapse-admin-card synapse-admin-card--success synapse-admin-mb-lg">
+				<div class="synapse-admin-card__header">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+						<i data-lucide="check-circle-2"></i>
+					</div>
+					<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs">
+						<span class="synapse-admin-card__title">Agent généré</span>
+						<span class="synapse-admin-text-sm synapse-admin-text-muted">
+							{% if llm_assisted %}
+								<span class="synapse-admin-badge synapse-admin-badge--primary"><i data-lucide="sparkles" style="width: 12px; height: 12px;"></i> IA</span> Généré par l'IA
+							{% else %}
+								<span class="synapse-admin-badge synapse-admin-badge--info">Auto</span> Généré automatiquement
+							{% endif %}
+						</span>
+					</div>
+				</div>
+
+				<div class="synapse-admin-card__body">
+					<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-md" style="gap: 16px;">
+						<div>
+							<label class="synapse-admin-text-xs synapse-admin-text-muted">Emoji</label>
+							<input type="text" name="emoji" value="{{ proposal.emoji|default('🤖') }}" class="synapse-admin-input" style="width: 80px; font-size: 24px; text-align: center;">
+						</div>
+						<div>
+							<label class="synapse-admin-text-xs synapse-admin-text-muted">Nom</label>
+							<input type="text" name="name" value="{{ proposal.name|default('') }}" class="synapse-admin-input" required>
+						</div>
+					</div>
+					<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-md" style="gap: 16px;">
+						<div>
+							<label class="synapse-admin-text-xs synapse-admin-text-muted">Clé technique</label>
+							<input type="text" name="key" value="{{ proposal.key|default('') }}" class="synapse-admin-input synapse-admin-font-mono" required pattern="[a-z0-9_]+">
+						</div>
+						<div>
+							<label class="synapse-admin-text-xs synapse-admin-text-muted">Description</label>
+							<input type="text" name="description" value="{{ proposal.description|default('') }}" class="synapse-admin-input">
+						</div>
+					</div>
+
+					{# Prompt système — éditable #}
+					<div class="synapse-admin-mb-md">
+						<label class="synapse-admin-text-xs synapse-admin-text-muted">Prompt système <span class="synapse-admin-text-tertiary">(modifiable avant création)</span></label>
+						<textarea name="system_prompt" rows="12" class="synapse-admin-input synapse-admin-font-mono" style="width: 100%; line-height: 1.5;" required>{{ proposal.system_prompt|default('') }}</textarea>
+					</div>
+
+					{# Preset et Ton #}
+					<div class="synapse-admin-grid synapse-admin-grid--2" style="gap: 16px;">
+						<div>
+							<label class="synapse-admin-text-xs synapse-admin-text-muted">Preset LLM <span class="synapse-admin-text-tertiary">(optionnel)</span></label>
+							<select name="model_preset_id" class="synapse-admin-input">
+								<option value="">Utiliser le preset par défaut</option>
+								{% for p in presets %}
+									<option value="{{ p.id }}" {{ preset_id is defined and preset_id is not null and preset_id == p.id ? 'selected' : '' }}>
+										{{ p.name }} ({{ p.model }})
+									</option>
+								{% endfor %}
+							</select>
+						</div>
+						<div>
+							<label class="synapse-admin-text-xs synapse-admin-text-muted">Ton <span class="synapse-admin-text-tertiary">(optionnel)</span></label>
+							<select name="tone_id" class="synapse-admin-input">
+								<option value="">Aucun ton spécifique</option>
+								{% for t in tones %}
+									<option value="{{ t.id }}">{{ t.name }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+				</div>
+
+				{# RGPD : note positive ou warning #}
+				{% if rgpd_note is defined and rgpd_note is not null %}
+					<div class="synapse-admin-p-md synapse-admin-mb-md" style="background: var(--sa-success-bg, #e8f5e9); border: 1px solid var(--sa-success-border, #4caf50); border-radius: var(--sa-radius-md);">
+						<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
+							<i data-lucide="shield-check" style="width: 18px; height: 18px; color: var(--sa-success, #2e7d32);"></i>
+							<span class="synapse-admin-text-sm">{{ rgpd_note }}</span>
+						</div>
+					</div>
+				{% elseif rgpd_warning is defined and rgpd_warning is not null %}
+					<div class="synapse-admin-p-md synapse-admin-mb-md" style="background: var(--sa-warning-bg, #fff8e1); border: 1px solid var(--sa-warning-border, #ffcc02); border-radius: var(--sa-radius-md);">
+						<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm synapse-admin-mb-xs">
+							<i data-lucide="shield-alert" style="width: 18px; height: 18px; color: var(--sa-warning, #e65100);"></i>
+							<strong class="synapse-admin-text-sm">Attention RGPD</strong>
+						</div>
+						<p class="synapse-admin-text-sm synapse-admin-mb-sm">{{ rgpd_warning }}</p>
+						<a href="{{ path('synapse_admin_presets_wizard') }}" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
+							<i data-lucide="wand-2"></i> Créer un preset avec un provider européen
+						</a>
+					</div>
+				{% endif %}
+
+				<div class="synapse-admin-card__footer">
+					<div class="synapse-admin-flex synapse-admin-gap-md">
+						<button type="submit" class="synapse-admin-btn synapse-admin-btn--outline">
+							<i data-lucide="plus"></i> Créer (inactif)
+						</button>
+						<button type="submit" name="activate" value="1" class="synapse-admin-btn synapse-admin-btn--primary">
+							<i data-lucide="zap"></i> Créer et activer
+						</button>
+						<a href="{{ path('synapse_admin_agents_wizard') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
+							<i data-lucide="arrow-left"></i> Recommencer
+						</a>
+					</div>
+				</div>
+			</div>
+
+			{% if llm_assisted and proposal.reasoning is defined %}
+				<div class="synapse-admin-p-md synapse-admin-mb-lg" style="background: var(--sa-bg-tertiary); border-radius: var(--sa-radius-md); max-width: 900px;">
+					<div class="synapse-admin-text-xs synapse-admin-text-muted synapse-admin-mb-xs"><i data-lucide="info" style="width: 14px; height: 14px; vertical-align: -2px;"></i> Raisonnement de l'IA</div>
+					<div class="synapse-admin-text-sm" style="white-space: pre-line;">{{ proposal.reasoning }}</div>
+				</div>
+			{% endif %}
+		</form>
+
+	{% else %}
+		{# ══════════════════════════════════════════════════════════════════════════ #}
+		{# FORMULAIRE                                                                #}
+		{# ══════════════════════════════════════════════════════════════════════════ #}
+
+		<form action="{{ path('synapse_admin_agents_wizard_generate') }}" method="POST" id="wizard-form" style="max-width: 800px;">
+			<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_wizard') }}">
+			{% if preset_id is defined and preset_id is not null %}
+				<input type="hidden" name="preset_id" value="{{ preset_id }}">
+			{% endif %}
+
+			{# ── Choix du mode ───────────────────────────────────────────────────── #}
+			<div class="synapse-admin-card synapse-admin-mb-lg">
+				<div class="synapse-admin-card__header">
+					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+						<i data-lucide="compass"></i>
+					</div>
+					<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs">
+						<span class="synapse-admin-card__title">Comment voulez-vous procéder ?</span>
+						<span class="synapse-admin-text-sm synapse-admin-text-muted">Choisissez le mode qui vous convient</span>
+					</div>
+				</div>
+				<div class="synapse-admin-card__body">
+					<div class="synapse-admin-grid synapse-admin-grid--2" style="gap: 12px;">
+						<label class="synapse-admin-card synapse-admin-card--hover" style="cursor: pointer; padding: 20px;" data-wizard-mode>
+							<input type="radio" name="wizard_mode" value="guided" style="display: none;">
+							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-md">
+								<div class="synapse-admin-kpi__icon--primary" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: var(--sa-radius-md); flex-shrink: 0;">
+									<i data-lucide="list-checks" style="width: 24px; height: 24px;"></i>
+								</div>
+								<div>
+									<div class="synapse-admin-text-sm" style="font-weight: 700;">Mode guidé</div>
+									<div class="synapse-admin-text-xs synapse-admin-text-muted">Répondez à quelques questions et on génère le prompt pour vous</div>
+								</div>
+							</div>
+						</label>
+
+						<label class="synapse-admin-card synapse-admin-card--hover" style="cursor: pointer; padding: 20px; {{ not has_active_preset ? 'opacity: 0.5; pointer-events: none;' : '' }}" data-wizard-mode>
+							<input type="radio" name="wizard_mode" value="ai" style="display: none;" {{ not has_active_preset ? 'disabled' : '' }}>
+							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-md">
+								<div class="synapse-admin-kpi__icon--primary" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: var(--sa-radius-md); flex-shrink: 0;">
+									<i data-lucide="sparkles" style="width: 24px; height: 24px;"></i>
+								</div>
+								<div>
+									<div class="synapse-admin-text-sm" style="font-weight: 700;">Mode IA</div>
+									<div class="synapse-admin-text-xs synapse-admin-text-muted">
+										{% if has_active_preset %}
+											Décrivez votre besoin, l'IA génère le prompt système
+										{% else %}
+											Nécessite un preset actif — utilisez d'abord le mode guidé
+										{% endif %}
+									</div>
+								</div>
+							</div>
+						</label>
+					</div>
+				</div>
+			</div>
+
+			{# ── Section Mode IA ─────────────────────────────────────────────────── #}
+			<div id="section-ai" style="display: none;">
+				<div class="synapse-admin-card synapse-admin-mb-lg">
+					<div class="synapse-admin-card__header">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+							<i data-lucide="sparkles"></i>
+						</div>
+						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs">
+							<span class="synapse-admin-card__title">Décrivez votre agent</span>
+							<span class="synapse-admin-text-sm synapse-admin-text-muted">Expliquez ce que l'agent doit faire, comment il doit se comporter</span>
+						</div>
+					</div>
+					<div class="synapse-admin-card__body">
+						<textarea name="ai_description" rows="4" class="synapse-admin-input" placeholder="Ex : Un agent qui rédige des comptes rendus de réunion à partir de notes brutes. Il doit structurer le document avec un résumé, les décisions prises et les actions à suivre." style="width: 100%;"></textarea>
+						<input type="hidden" name="ai_mode" value="">
+					</div>
+				</div>
+			</div>
+
+			{# ── Section Mode Guidé ──────────────────────────────────────────────── #}
+			<div id="section-guided" style="display: none;">
+
+				{# Type d'agent #}
+				<div class="synapse-admin-card synapse-admin-mb-lg">
+					<div class="synapse-admin-card__header">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+							<i data-lucide="target"></i>
+						</div>
+						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs">
+							<span class="synapse-admin-card__title">Quel type d'agent ?</span>
+							<span class="synapse-admin-text-sm synapse-admin-text-muted">Choisissez la spécialité principale</span>
+						</div>
+					</div>
+					<div class="synapse-admin-card__body">
+						<div class="synapse-admin-grid synapse-admin-grid--2" style="gap: 12px;">
+							{% set useCases = [
+								{value: 'redaction', icon: 'file-text', label: 'Rédaction', desc: 'Rapports, comptes rendus, emails, synthèses'},
+								{value: 'support', icon: 'headphones', label: 'Support client', desc: 'FAQ, tickets, diagnostic, accompagnement'},
+								{value: 'analyse', icon: 'bar-chart-2', label: 'Analyse', desc: 'Documents, données, tendances, extraction'},
+								{value: 'creatif', icon: 'palette', label: 'Créatif', desc: 'Contenu original, brainstorming, idéation'},
+								{value: 'technique', icon: 'code-2', label: 'Technique', desc: 'Code, debug, documentation, architecture'},
+							] %}
+							{% for uc in useCases %}
+								<label class="synapse-admin-card synapse-admin-card--hover" style="cursor: pointer; padding: 16px;" data-wizard-choice="usecase">
+									<input type="radio" name="use_case" value="{{ uc.value }}" {{ uc.value == 'redaction' ? 'checked' : '' }} style="display: none;">
+									<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-md">
+										<div class="synapse-admin-kpi__icon--primary" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: var(--sa-radius-md); flex-shrink: 0;">
+											<i data-lucide="{{ uc.icon }}"></i>
+										</div>
+										<div>
+											<div class="synapse-admin-text-sm" style="font-weight: 600;">{{ uc.label }}</div>
+											<div class="synapse-admin-text-xs synapse-admin-text-muted">{{ uc.desc }}</div>
+										</div>
+									</div>
+								</label>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+
+				{# Capacités #}
+				<div class="synapse-admin-card synapse-admin-mb-lg">
+					<div class="synapse-admin-card__header">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+							<i data-lucide="puzzle"></i>
+						</div>
+						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs">
+							<span class="synapse-admin-card__title">De quoi a-t-il besoin ?</span>
+							<span class="synapse-admin-text-sm synapse-admin-text-muted">Cochez les capacités utiles (optionnel)</span>
+						</div>
+					</div>
+					<div class="synapse-admin-card__body">
+						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-md">
+							{% set caps = [
+								{value: 'tools', icon: 'wrench', label: 'Outils (function calling)', desc: "L'agent peut utiliser des outils automatiques (recherche, calcul, API...)"},
+								{value: 'rag', icon: 'file-search', label: 'Documents (RAG)', desc: "L'agent peut consulter une base de documents pour enrichir ses réponses"},
+								{value: 'thinking', icon: 'brain', label: 'Réflexion approfondie', desc: "L'agent utilise le mode thinking pour les problèmes complexes"},
+							] %}
+							{% for cap in caps %}
+								<label class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm" style="cursor: pointer;">
+									<input type="checkbox" name="capabilities[]" value="{{ cap.value }}" class="synapse-admin-checkbox">
+									<i data-lucide="{{ cap.icon }}" style="width: 18px; height: 18px; flex-shrink: 0;" class="synapse-admin-text-muted"></i>
+									<div>
+										<span class="synapse-admin-text-sm" style="font-weight: 500;">{{ cap.label }}</span>
+										<div class="synapse-admin-text-xs synapse-admin-text-muted">{{ cap.desc }}</div>
+									</div>
+								</label>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+
+				{# Ton #}
+				<div class="synapse-admin-card synapse-admin-mb-lg">
+					<div class="synapse-admin-card__header">
+						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+							<i data-lucide="mic"></i>
+						</div>
+						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs">
+							<span class="synapse-admin-card__title">Quel ton ?</span>
+							<span class="synapse-admin-text-sm synapse-admin-text-muted">Le style de communication de l'agent</span>
+						</div>
+					</div>
+					<div class="synapse-admin-card__body">
+						<div class="synapse-admin-flex synapse-admin-gap-md" style="flex-wrap: wrap;">
+							{% set toneOptions = [
+								{value: 'professionnel', icon: 'briefcase', label: 'Professionnel', desc: 'Formel, précis, structuré'},
+								{value: 'decontracte', icon: 'smile', label: 'Décontracté', desc: 'Amical, accessible, conversationnel'},
+								{value: 'pedagogique', icon: 'graduation-cap', label: 'Pédagogique', desc: 'Patient, explicatif, étape par étape'},
+							] %}
+							{% for t in toneOptions %}
+								<label class="synapse-admin-card synapse-admin-card--hover" style="cursor: pointer; padding: 12px 16px; flex: 1; min-width: 200px; {{ t.value == 'professionnel' ? 'outline: 2px solid var(--sa-primary);' : '' }}" data-wizard-choice="tone">
+									<input type="radio" name="tone" value="{{ t.value }}" {{ t.value == 'professionnel' ? 'checked' : '' }} style="display: none;">
+									<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-sm">
+										<i data-lucide="{{ t.icon }}" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+										<div>
+											<div class="synapse-admin-text-sm" style="font-weight: 600;">{{ t.label }}</div>
+											<div class="synapse-admin-text-xs synapse-admin-text-muted">{{ t.desc }}</div>
+										</div>
+									</div>
+								</label>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+
+			</div>
+
+			{# ── Boutons ─────────────────────────────────────────────────────────── #}
+			<div id="section-submit" class="synapse-admin-flex synapse-admin-gap-md" style="display: none;">
+				<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
+					<i data-lucide="wand-2"></i> Générer l'agent
+				</button>
+				<a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
+					Annuler
+				</a>
+			</div>
+		</form>
+
+	{% endif %}
+
+	{# ── JavaScript ────────────────────────────────────────────────────────── #}
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			var sectionGuided = document.getElementById('section-guided');
+			var sectionAi = document.getElementById('section-ai');
+			var sectionSubmit = document.getElementById('section-submit');
+
+			// Mode toggle
+			document.querySelectorAll('[data-wizard-mode]').forEach(function(label) {
+				label.querySelector('input').addEventListener('change', function() {
+					document.querySelectorAll('[data-wizard-mode]').forEach(function(l) {
+						l.style.outline = 'none';
+					});
+					if (this.checked) {
+						label.style.outline = '2px solid var(--sa-primary)';
+					}
+					sectionSubmit.style.display = 'flex';
+
+					if (this.value === 'ai') {
+						sectionGuided.style.display = 'none';
+						sectionAi.style.display = 'block';
+						sectionAi.querySelector('[name="ai_mode"]').value = '1';
+					} else {
+						sectionGuided.style.display = 'block';
+						sectionAi.style.display = 'none';
+						sectionAi.querySelector('[name="ai_mode"]').value = '';
+					}
+				});
+			});
+
+			// Card radio choices
+			document.querySelectorAll('[data-wizard-choice]').forEach(function(label) {
+				label.querySelector('input').addEventListener('change', function() {
+					var group = label.getAttribute('data-wizard-choice');
+					document.querySelectorAll('[data-wizard-choice="' + group + '"]').forEach(function(l) {
+						l.style.outline = 'none';
+					});
+					if (this.checked) {
+						label.style.outline = '2px solid var(--sa-primary)';
+					}
+				});
+			});
+
+			// Loading screen
+			var wizardForm = document.getElementById('wizard-form');
+			var wizardLoading = document.getElementById('wizard-loading');
+			if (wizardForm && wizardLoading) {
+				wizardForm.addEventListener('submit', function() {
+					var isAi = wizardForm.querySelector('[name="wizard_mode"]:checked');
+					var loadingTitle = document.getElementById('loading-title');
+					var loadingSub = document.getElementById('loading-subtitle');
+
+					if (isAi && isAi.value === 'ai') {
+						loadingTitle.textContent = "L'IA conçoit votre agent...";
+						loadingSub.textContent = 'Génération du prompt système, du nom et de la description. Cela peut prendre quelques secondes.';
+					} else {
+						loadingTitle.textContent = 'Génération en cours...';
+						loadingSub.textContent = "Construction du prompt système à partir de vos choix.";
+					}
+
+					wizardForm.style.display = 'none';
+					wizardLoading.style.display = 'block';
+				});
+			}
+		});
+	</script>
+
+{% endblock %}

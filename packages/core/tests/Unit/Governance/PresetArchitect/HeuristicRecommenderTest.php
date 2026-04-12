@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ArnaudMoncondhuy\SynapseCore\Tests\Unit\Agent\PresetGenerator;
+namespace ArnaudMoncondhuy\SynapseCore\Tests\Unit\Governance\PresetArchitect;
 
-use ArnaudMoncondhuy\SynapseCore\Agent\PresetGenerator\HeuristicRecommender;
+use ArnaudMoncondhuy\SynapseCore\Governance\PresetArchitect\HeuristicRecommender;
 use ArnaudMoncondhuy\SynapseCore\Shared\Enum\ModelRange;
 use ArnaudMoncondhuy\SynapseCore\Shared\Model\ModelCapabilities;
 use PHPUnit\Framework\TestCase;

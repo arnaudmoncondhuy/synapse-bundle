@@ -24,7 +24,11 @@
 				{{ 'synapse.admin.agent.list.usage_tip'|trans(domain='synapse_admin')|safe_html }}
 			</p>
 		</div>
-		<div class="synapse-admin-page-header__actions">
+		<div class="synapse-admin-page-header__actions synapse-admin-flex synapse-admin-gap-sm">
+			<a href="{{ path('synapse_admin_agents_wizard') }}" class="synapse-admin-btn synapse-admin-btn--outline">
+				<i data-lucide="wand-2"></i>
+				Assistant
+			</a>
 			<a href="{{ path('synapse_admin_agents_new') }}" class="synapse-admin-btn synapse-admin-btn--primary">
 				<i data-lucide="plus"></i>
 				{{ 'synapse.admin.agent.list.action.new'|trans(domain='synapse_admin') }}
