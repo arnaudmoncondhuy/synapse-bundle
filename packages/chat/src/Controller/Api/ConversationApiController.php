@@ -225,7 +225,7 @@ class ConversationApiController extends AbstractController
      */
     private function buildTransparencyEvents(SynapseDebugLog $log): array
     {
-        $data = $log->getData() ?? [];
+        $data = $log->getData();
         $events = [];
 
         // 1. RAG sources consultées

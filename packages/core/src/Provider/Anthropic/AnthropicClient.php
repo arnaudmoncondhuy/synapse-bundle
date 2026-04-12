@@ -122,6 +122,15 @@ class AnthropicClient extends AbstractLlmClient implements RgpdAwareInterface
             $rawApiChunks = [];
             $streamingComplete = false;
 
+            // Vérifier le status code avant de streamer — sur une 4xx/5xx,
+            // le body d'erreur est lisible ici (avant que le buffer ne soit consommé).
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 400) {
+                $errorBody = $response->getContent(false);
+                $message = $this->parseErrorBody($errorBody, "HTTP {$statusCode}");
+                $this->throwClassifiedException($statusCode, $message);
+            }
+
             foreach ($this->httpClient->stream($response) as $chunk) {
                 if ($streamingComplete) {
                     break;

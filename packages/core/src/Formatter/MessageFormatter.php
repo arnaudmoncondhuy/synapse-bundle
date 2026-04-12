@@ -117,7 +117,7 @@ class MessageFormatter implements MessageFormatterInterface
      * Retourne les pièces jointes générées du dernier message [image] non injectées dans un user suivant.
      * À appeler après entitiesToApiFormat() pour les injecter dans le message courant.
      *
-     * @return list<array{type: string, image_url: array{url: string}}>
+     * @return list<array{type: string, image_url?: array{url: string}, text?: string}>
      */
     public function getAndClearTrailingAttachments(): array
     {
@@ -189,7 +189,7 @@ class MessageFormatter implements MessageFormatterInterface
      *
      * @param SynapseMessageAttachment[] $attachments
      *
-     * @return list<array{type: string, image_url: array{url: string}}>
+     * @return list<array{type: string, image_url?: array{url: string}, text?: string}>
      */
     private function loadAttachmentParts(array $attachments): array
     {

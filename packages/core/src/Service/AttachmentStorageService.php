@@ -52,12 +52,10 @@ class AttachmentStorageService
      * Store a base64-encoded attachment as a file and return the attachment entity.
      *
      * @param array{mime_type: string, data: string, name?: string} $attachment
-     *
-     * @throws \InvalidArgumentException if MIME type is not allowed or content doesn't match
-     */
-    /**
      * @param bool $skipContentValidation Passer true pour les fichiers générés par le sandbox (le MIME
      *                                    détecté par finfo peut diverger de mimetypes.guess_type côté Python)
+     *
+     * @throws \InvalidArgumentException if MIME type is not allowed or content doesn't match
      */
     public function store(array $attachment, string $messageId, string $conversationId, bool $skipContentValidation = false): SynapseMessageAttachment
     {

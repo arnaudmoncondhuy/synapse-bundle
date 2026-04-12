@@ -171,7 +171,7 @@ class ContextBuilderSubscriber implements EventSubscriberInterface
         // Filtrer les attachments par types supportés par le modèle (images nécessitent vision, texte est universel)
         $allAttachments = $event->getAttachments();
         $attachments = !empty($acceptedMimes)
-            ? array_values(array_filter($allAttachments, fn ($a) => \in_array($a['mime_type'] ?? '', $acceptedMimes, true)))
+            ? array_values(array_filter($allAttachments, fn ($a) => \in_array($a['mime_type'], $acceptedMimes, true)))
             : $allAttachments;
 
         // Récupérer les pièces jointes générées précédemment (trailing) à injecter dans le message courant

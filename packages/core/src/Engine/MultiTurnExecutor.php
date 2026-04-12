@@ -247,15 +247,11 @@ class MultiTurnExecutor
     }
 
     /**
-     * Extrait le contenu du dernier message role=tool dans le prompt.
-     * Utilisé pour récupérer le résultat de code_execute lors d'un recovery MALFORMED.
-     *
-     * @param array<string, mixed> $prompt
-     */
-    /**
      * Extrait un texte lisible du dernier résultat tool dans le prompt.
      * Pour code_execute, le content est un JSON {success, stdout, return_value, ...}.
      * On extrait stdout > return_value > content brut, dans cet ordre.
+     *
+     * @param array<string, mixed> $prompt
      */
     private function extractLastToolResult(array $prompt): string
     {

@@ -92,7 +92,7 @@ final readonly class ExecutionResult
     /**
      * Sérialisation sous forme tableau pour JSON/persistance.
      *
-     * @return array{success: bool, stdout: string, stderr: string, return_value: mixed, duration_ms: int, error_type: string|null, error_message: string|null}
+     * @return array{success: bool, stdout: string, stderr: string, return_value: mixed, duration_ms: int, error_type: string|null, error_message: string|null, output_files: list<array{name: string, mime_type: string, data: string}>}
      */
     public function toArray(): array
     {
