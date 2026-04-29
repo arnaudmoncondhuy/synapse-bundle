@@ -6,6 +6,7 @@ namespace ArnaudMoncondhuy\SynapseAdmin\Tests\Unit\Controller;
 
 use ArnaudMoncondhuy\SynapseAdmin\Controller\DashboardController;
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
+use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseLlmCallRepository;
@@ -62,6 +63,8 @@ class DashboardControllerTest extends TestCase
         $toolRegistry = $this->createMock(ToolRegistry::class);
         $toolRegistry->method('getTools')->willReturn([]);
 
+        $modelCapabilityRegistry = $this->createMock(ModelCapabilityRegistry::class);
+
         return new DashboardController(
             permissionChecker: $permissionChecker,
             tokenUsageRepo: $tokenUsageRepo,
@@ -71,6 +74,7 @@ class DashboardControllerTest extends TestCase
             agentRepo: $agentRepo,
             spendingAlertRepo: $spendingAlertRepo,
             toolRegistry: $toolRegistry,
+            modelCapabilityRegistry: $modelCapabilityRegistry,
         );
     }
 

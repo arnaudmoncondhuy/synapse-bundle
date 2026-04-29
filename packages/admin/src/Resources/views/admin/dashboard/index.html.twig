@@ -44,6 +44,45 @@
 </div>
 {% endif %}
 
+{# ── Bandeau déprécation modèles (J-30) ───────────────────────────────────── #}
+{% if deprecation_warnings is defined and deprecation_warnings is not empty %}
+<div class="synapse-admin-card synapse-admin-card--{% if deprecation_warnings|filter(w => w.expired)|length > 0 %}danger{% else %}warning{% endif %} synapse-admin-mb-lg">
+    <div class="synapse-admin-card__body">
+        <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+            <i data-lucide="alert-triangle" style="flex-shrink:0;margin-top:0.15rem;"></i>
+            <div style="flex:1;">
+                <div style="font-weight:600;margin-bottom:0.5rem;">
+                    {{ 'synapse.admin.dashboard.deprecation.title'|trans(domain='synapse_admin') }}
+                </div>
+                <ul style="margin:0;padding-left:1.25rem;font-size:0.9rem;line-height:1.6;">
+                    {% for w in deprecation_warnings %}
+                        <li>
+                            <strong>{{ w.preset_name }}</strong>
+                            <span style="color:var(--synapse-admin-text-secondary);">— {{ w.provider }} / {{ w.model }}</span>
+                            {% if w.expired %}
+                                · <span style="color:var(--synapse-admin-danger);font-weight:500;">
+                                    {{ 'synapse.admin.dashboard.deprecation.expired'|trans({'date': w.deprecated_at}, 'synapse_admin') }}
+                                </span>
+                            {% else %}
+                                · <span style="color:var(--synapse-admin-warning);font-weight:500;">
+                                    {{ 'synapse.admin.dashboard.deprecation.upcoming'|trans({'date': w.deprecated_at, 'days': w.days_left}, 'synapse_admin') }}
+                                </span>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div style="margin-top:0.75rem;">
+                    <a href="{{ path('synapse_admin_configuration_llm', {tab: 'presets'}) }}" class="synapse-admin-btn synapse-admin-btn--sm synapse-admin-btn--outline">
+                        <i data-lucide="arrow-right"></i>
+                        {{ 'synapse.admin.dashboard.deprecation.action'|trans(domain='synapse_admin') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {# ── En-tête ──────────────────────────────────────────────────────────────── #}
 <div class="synapse-admin-page-header synapse-admin-mb-xl">
     <div class="synapse-admin-page-header__info">

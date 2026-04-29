@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseAdmin\Controller;
 
 use ArnaudMoncondhuy\SynapseCore\Contract\PermissionCheckerInterface;
+use ArnaudMoncondhuy\SynapseCore\Engine\ModelCapabilityRegistry;
 use ArnaudMoncondhuy\SynapseCore\Engine\ToolRegistry;
 use ArnaudMoncondhuy\SynapseCore\Security\AdminSecurityTrait;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\SynapseAgentRepository;
@@ -34,6 +35,7 @@ class DashboardController extends AbstractController
         private readonly SynapseAgentRepository $agentRepo,
         private readonly SynapseSpendingLimitLogRepository $spendingAlertRepo,
         private readonly ToolRegistry $toolRegistry,
+        private readonly ModelCapabilityRegistry $modelCapabilityRegistry,
     ) {
     }
 
@@ -72,6 +74,9 @@ class DashboardController extends AbstractController
         $tools = $this->toolRegistry->getTools();
         $presets = $this->presetRepo->findAllPresets();
 
+        // ── Alertes déprécation modèles (J-30) ───────────────────────────────
+        $deprecationWarnings = $this->collectDeprecationWarnings($presets, $now);
+
         return $this->render('@Synapse/admin/dashboard/index.html.twig', [
             // État du système
             'system' => [
@@ -97,6 +102,51 @@ class DashboardController extends AbstractController
                 'presets_total' => count($presets),
                 'memories_total' => $this->vectorMemoryRepo->count([]),
             ],
+            // Alertes déprécation
+            'deprecation_warnings' => $deprecationWarnings,
         ]);
+    }
+
+    /**
+     * Identifie les presets pointant vers un modèle déjà déprécié ou qui le sera dans <= 30 jours.
+     *
+     * @param array<\ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseModelPreset> $presets
+     *
+     * @return list<array{preset_id: ?int, preset_name: string, provider: string, model: string, deprecated_at: string, days_left: int, expired: bool}>
+     */
+    private function collectDeprecationWarnings(array $presets, \DateTimeImmutable $now): array
+    {
+        $threshold = $now->modify('+30 days');
+        $warnings = [];
+
+        foreach ($presets as $preset) {
+            $caps = $this->modelCapabilityRegistry->getCapabilities($preset->getModel());
+            if (null === $caps->deprecatedAt) {
+                continue;
+            }
+            $deprecation = \DateTimeImmutable::createFromFormat('Y-m-d', $caps->deprecatedAt);
+            if (!$deprecation) {
+                continue;
+            }
+            if ($deprecation > $threshold) {
+                continue;
+            }
+
+            $daysLeft = (int) $now->diff($deprecation)->format('%r%a');
+
+            $warnings[] = [
+                'preset_id' => $preset->getId(),
+                'preset_name' => $preset->getName(),
+                'provider' => $preset->getProviderName(),
+                'model' => $preset->getModel(),
+                'deprecated_at' => $caps->deprecatedAt,
+                'days_left' => $daysLeft,
+                'expired' => $daysLeft < 0,
+            ];
+        }
+
+        usort($warnings, fn ($a, $b) => $a['days_left'] <=> $b['days_left']);
+
+        return $warnings;
     }
 }

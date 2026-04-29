@@ -58,6 +58,11 @@ synapse.admin.dashboard.kpi.incomplete: "Incomplète"
 synapse.admin.dashboard.kpi.create_preset: "Créer un Model Preset"
 synapse.admin.dashboard.kpi.config_provider: "Configurer provider"
 
+synapse.admin.dashboard.deprecation.title: "Modèles bientôt dépréciés"
+synapse.admin.dashboard.deprecation.upcoming: "déprécié le {date} ({days, plural, one {# jour} other {# jours}} restants)"
+synapse.admin.dashboard.deprecation.expired: "déprécié depuis le {date} — migration urgente"
+synapse.admin.dashboard.deprecation.action: "Gérer les presets"
+
 synapse.admin.dashboard.chart.tokens_30d.title: "Activité tokens (30 jours)"
 synapse.admin.dashboard.chart.tokens_30d.subtitle: "Consommation quotidienne"
 synapse.admin.dashboard.chart.tokens_activity.title: "Activité tokens"
