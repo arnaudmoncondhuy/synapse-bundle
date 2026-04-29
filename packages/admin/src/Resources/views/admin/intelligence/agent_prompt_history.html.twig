@@ -1,167 +1,167 @@
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
-{% block admin_page_title %}{{ 'synapse.admin.agent.prompt_history.page_title'|trans({'name': agent.name}, domain='synapse_admin') }}{% endblock %}
+{% block admin_page_title %}{{ 'synapse.admin.agent.prompt_history.page_title'|trans({name: agent.name}, domain: 'synapse_admin') }}{% endblock %}
 
 {% block admin_breadcrumb %}
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.intelligence'|trans(domain='synapse_admin') }}</a>
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.agents'|trans(domain='synapse_admin') }}</a>
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="{{ path('synapse_admin_agents_edit', {id: agent.id}) }}" class="synapse-admin-topbar__breadcrumb">{{ agent.name }}</a>
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<span class="synapse-admin-current">{{ 'synapse.admin.agent.prompt_history.breadcrumb'|trans(domain='synapse_admin') }}</span>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.intelligence'|trans(domain: 'synapse_admin') }}</a>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.agents'|trans(domain: 'synapse_admin') }}</a>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <a href="{{ path('synapse_admin_agents_edit', {id: agent.id}) }}" class="synapse-admin-topbar__breadcrumb">{{ agent.name }}</a>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <span class="synapse-admin-current">{{ 'synapse.admin.agent.prompt_history.breadcrumb'|trans(domain: 'synapse_admin') }}</span>
 {% endblock %}
 
 {% block admin_content %}
 
-	<div class="synapse-admin-page-header">
-		<div class="synapse-admin-page-header__info">
-			<h1 class="synapse-admin-page-title">
-				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
-					<i data-lucide="history"></i>
-				</span>
-				{{ 'synapse.admin.agent.prompt_history.title'|trans({'name': agent.name}, domain='synapse_admin') }}
-			</h1>
-			<p class="synapse-admin-page-subtitle">
-				{{ 'synapse.admin.agent.prompt_history.subtitle'|trans(domain='synapse_admin') }}
-			</p>
-		</div>
-		<div class="synapse-admin-page-header__actions">
-			<a href="{{ path('synapse_admin_agents_edit', {id: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
-				<i data-lucide="arrow-left"></i>
-				{{ 'synapse.admin.agent.prompt_history.action.back'|trans(domain='synapse_admin') }}
-			</a>
-		</div>
-	</div>
+    <div class="synapse-admin-page-header">
+        <div class="synapse-admin-page-header__info">
+            <h1 class="synapse-admin-page-title">
+                <span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+                    <i data-lucide="history"></i>
+                </span>
+                {{ 'synapse.admin.agent.prompt_history.title'|trans({name: agent.name}, domain: 'synapse_admin') }}
+            </h1>
+            <p class="synapse-admin-page-subtitle">
+                {{ 'synapse.admin.agent.prompt_history.subtitle'|trans(domain: 'synapse_admin') }}
+            </p>
+        </div>
+        <div class="synapse-admin-page-header__actions">
+            <a href="{{ path('synapse_admin_agents_edit', {id: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+                <i data-lucide="arrow-left"></i>
+                {{ 'synapse.admin.agent.prompt_history.action.back'|trans(domain: 'synapse_admin') }}
+            </a>
+        </div>
+    </div>
 
-	<div class="synapse-admin-card">
-		<div class="synapse-admin-card__header">
-			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
-				<i data-lucide="file-clock"></i>
-			</div>
-			<div>
-				<div class="synapse-admin-card__title">{{ 'synapse.admin.agent.prompt_history.card.title'|trans(domain='synapse_admin') }}</div>
-				<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.prompt_history.card.subtitle'|trans({'count': versions|length}, domain='synapse_admin') }}</div>
-			</div>
-		</div>
-		<div class="synapse-admin-card__body synapse-admin-card__body--compact">
+    <div class="synapse-admin-card">
+        <div class="synapse-admin-card__header">
+            <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+                <i data-lucide="file-clock"></i>
+            </div>
+            <div>
+                <div class="synapse-admin-card__title">{{ 'synapse.admin.agent.prompt_history.card.title'|trans(domain: 'synapse_admin') }}</div>
+                <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.prompt_history.card.subtitle'|trans({count: versions|length}, domain: 'synapse_admin') }}</div>
+            </div>
+        </div>
+        <div class="synapse-admin-card__body synapse-admin-card__body--compact">
 
-			{% if versions is empty %}
-				<div class="synapse-admin-empty-state">
-					<i data-lucide="file-clock" class="synapse-admin-empty-state__icon"></i>
-					<p class="synapse-admin-empty-state__title">{{ 'synapse.admin.agent.prompt_history.empty.title'|trans(domain='synapse_admin') }}</p>
-					<p class="synapse-admin-empty-state__subtitle">{{ 'synapse.admin.agent.prompt_history.empty.subtitle'|trans(domain='synapse_admin') }}</p>
-				</div>
-			{% else %}
-				<div class="synapse-admin-prompt-history">
-					{% for version in versions %}
-						<details class="synapse-admin-prompt-history__item{% if version.isActive %} synapse-admin-prompt-history__item--active{% endif %}">
-							<summary class="synapse-admin-prompt-history__summary">
-								<div class="synapse-admin-prompt-history__meta">
-									<span class="synapse-admin-prompt-history__id">#{{ version.id }}</span>
-									{% if version.isActive %}
-										<span class="synapse-admin-badge synapse-admin-badge--success">
-											<i data-lucide="check-circle"></i>
-											{{ 'synapse.admin.agent.prompt_history.badge.active'|trans(domain='synapse_admin') }}
-										</span>
-									{% endif %}
-									{% if version.status is not null %}
-										{% if version.status.value == 'pending' %}
-											<span class="synapse-admin-badge synapse-admin-badge--warning">
-												<i data-lucide="clock"></i>
-												{{ 'synapse.admin.agent.prompt_history.badge.pending'|trans(domain='synapse_admin') }}
-											</span>
-										{% elseif version.status.value == 'approved' %}
-											<span class="synapse-admin-badge synapse-admin-badge--info">
-												<i data-lucide="shield-check"></i>
-												{{ 'synapse.admin.agent.prompt_history.badge.approved'|trans(domain='synapse_admin') }}
-											</span>
-										{% elseif version.status.value == 'rejected' %}
-											<span class="synapse-admin-badge synapse-admin-badge--danger">
-												<i data-lucide="x-circle"></i>
-												{{ 'synapse.admin.agent.prompt_history.badge.rejected'|trans(domain='synapse_admin') }}
-											</span>
-										{% endif %}
-									{% endif %}
-									{% if version.hasJudgment %}
-										{% set judgment_variant = version.judgmentScore >= 7 ? 'success' : (version.judgmentScore >= 4 ? 'warning' : 'danger') %}
-										<span class="synapse-admin-badge synapse-admin-badge--{{ judgment_variant }}" title="{{ version.judgmentRationale }}">
-											<i data-lucide="gauge"></i>
-											{{ 'synapse.admin.agent.prompt_history.badge.judge_score'|trans({'score': version.judgmentScore|number_format(1)}, domain='synapse_admin') }}
-										</span>
-									{% endif %}
-									<span class="synapse-admin-prompt-history__author">
-										<i data-lucide="user"></i>
-										{{ version.changedBy }}
-									</span>
-									<span class="synapse-admin-prompt-history__date">
-										<i data-lucide="clock"></i>
-										{{ version.createdAt|date('d/m/Y H:i:s') }}
-									</span>
-								</div>
-								{% if version.reason %}
-									<div class="synapse-admin-prompt-history__reason">
-										<i data-lucide="message-square"></i>
-										{{ version.reason }}
-									</div>
-								{% endif %}
-							</summary>
-							<div class="synapse-admin-prompt-history__body">
-								{% if version.hasJudgment %}
-									<div class="synapse-admin-callout synapse-admin-callout--info">
-										<div class="synapse-admin-callout__header">
-											<i data-lucide="gauge"></i>
-											<strong>{{ 'synapse.admin.agent.prompt_history.judge.title'|trans({'score': version.judgmentScore|number_format(1)}, domain='synapse_admin') }}</strong>
-											{% if version.judgedBy %}
-												<span class="synapse-admin-prompt-history__judged-by">{{ version.judgedBy }}</span>
-											{% endif %}
-										</div>
-										<p class="synapse-admin-callout__body">{{ version.judgmentRationale }}</p>
-									</div>
-								{% endif %}
-								<pre class="synapse-admin-prompt-history__content">{{ version.systemPrompt }}</pre>
-								{% if version.reviewedBy %}
-									<p class="synapse-admin-prompt-history__reviewed-by">
-										<i data-lucide="user-check"></i>
-										{{ 'synapse.admin.agent.prompt_history.reviewed_by'|trans({'reviewer': version.reviewedBy, 'date': version.reviewedAt|date('d/m/Y H:i')}, domain='synapse_admin') }}
-									</p>
-								{% endif %}
-								{% if version.status is not null and version.status.value == 'pending' %}
-									<div class="synapse-admin-prompt-history__hitl-actions">
-										<form method="post" action="{{ path('synapse_admin_agents_prompt_approve', {id: agent.id, versionId: version.id}) }}" onsubmit="return confirm('{{ 'synapse.admin.agent.prompt_history.action.approve_confirm'|trans(domain='synapse_admin') }}');">
-											<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_prompt_approve_' ~ agent.id) }}">
-											<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
-												<i data-lucide="check"></i>
-												{{ 'synapse.admin.agent.prompt_history.action.approve'|trans(domain='synapse_admin') }}
-											</button>
-										</form>
-										<form method="post" action="{{ path('synapse_admin_agents_prompt_reject', {id: agent.id, versionId: version.id}) }}" onsubmit="return confirm('{{ 'synapse.admin.agent.prompt_history.action.reject_confirm'|trans(domain='synapse_admin') }}');">
-											<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_prompt_reject_' ~ agent.id) }}">
-											<label class="synapse-admin-form__label" for="rejection_reason_{{ version.id }}">{{ 'synapse.admin.agent.prompt_history.rejection_reason.label'|trans(domain='synapse_admin') }}</label>
-											<input type="text" name="rejection_reason" id="rejection_reason_{{ version.id }}" class="synapse-admin-form__input">
-											<button type="submit" class="synapse-admin-btn synapse-admin-btn--danger synapse-admin-btn--sm">
-												<i data-lucide="x"></i>
-												{{ 'synapse.admin.agent.prompt_history.action.reject'|trans(domain='synapse_admin') }}
-											</button>
-										</form>
-									</div>
-								{% elseif not version.isActive and (version.status is null or version.status.value != 'rejected') %}
-									<form method="post" action="{{ path('synapse_admin_agents_prompt_restore', {id: agent.id, versionId: version.id}) }}" onsubmit="return confirm('{{ 'synapse.admin.agent.prompt_history.action.restore_confirm'|trans(domain='synapse_admin') }}');">
-										<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_prompt_restore_' ~ agent.id) }}">
-										<button type="submit" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
-											<i data-lucide="rotate-ccw"></i>
-											{{ 'synapse.admin.agent.prompt_history.action.restore'|trans(domain='synapse_admin') }}
-										</button>
-									</form>
-								{% endif %}
-							</div>
-						</details>
-					{% endfor %}
-				</div>
-			{% endif %}
+            {% if versions is empty %}
+                <div class="synapse-admin-empty-state">
+                    <i data-lucide="file-clock" class="synapse-admin-empty-state__icon"></i>
+                    <p class="synapse-admin-empty-state__title">{{ 'synapse.admin.agent.prompt_history.empty.title'|trans(domain: 'synapse_admin') }}</p>
+                    <p class="synapse-admin-empty-state__subtitle">{{ 'synapse.admin.agent.prompt_history.empty.subtitle'|trans(domain: 'synapse_admin') }}</p>
+                </div>
+            {% else %}
+                <div class="synapse-admin-prompt-history">
+                    {% for version in versions %}
+                        <details class="synapse-admin-prompt-history__item{% if version.isActive %} synapse-admin-prompt-history__item--active{% endif %}">
+                            <summary class="synapse-admin-prompt-history__summary">
+                                <div class="synapse-admin-prompt-history__meta">
+                                    <span class="synapse-admin-prompt-history__id">#{{ version.id }}</span>
+                                    {% if version.isActive %}
+                                        <span class="synapse-admin-badge synapse-admin-badge--success">
+                                            <i data-lucide="check-circle"></i>
+                                            {{ 'synapse.admin.agent.prompt_history.badge.active'|trans(domain: 'synapse_admin') }}
+                                        </span>
+                                    {% endif %}
+                                    {% if version.status is not null %}
+                                        {% if version.status.value == 'pending' %}
+                                            <span class="synapse-admin-badge synapse-admin-badge--warning">
+                                                <i data-lucide="clock"></i>
+                                                {{ 'synapse.admin.agent.prompt_history.badge.pending'|trans(domain: 'synapse_admin') }}
+                                            </span>
+                                        {% elseif version.status.value == 'approved' %}
+                                            <span class="synapse-admin-badge synapse-admin-badge--info">
+                                                <i data-lucide="shield-check"></i>
+                                                {{ 'synapse.admin.agent.prompt_history.badge.approved'|trans(domain: 'synapse_admin') }}
+                                            </span>
+                                        {% elseif version.status.value == 'rejected' %}
+                                            <span class="synapse-admin-badge synapse-admin-badge--danger">
+                                                <i data-lucide="x-circle"></i>
+                                                {{ 'synapse.admin.agent.prompt_history.badge.rejected'|trans(domain: 'synapse_admin') }}
+                                            </span>
+                                        {% endif %}
+                                    {% endif %}
+                                    {% if version.hasJudgment %}
+                                        {% set judgment_variant = version.judgmentScore >= 7 ? 'success' : (version.judgmentScore >= 4 ? 'warning' : 'danger') %}
+                                        <span class="synapse-admin-badge synapse-admin-badge--{{ judgment_variant }}" title="{{ version.judgmentRationale }}">
+                                            <i data-lucide="gauge"></i>
+                                            {{ 'synapse.admin.agent.prompt_history.badge.judge_score'|trans({score: version.judgmentScore|number_format(1)}, domain: 'synapse_admin') }}
+                                        </span>
+                                    {% endif %}
+                                    <span class="synapse-admin-prompt-history__author">
+                                        <i data-lucide="user"></i>
+                                        {{ version.changedBy }}
+                                    </span>
+                                    <span class="synapse-admin-prompt-history__date">
+                                        <i data-lucide="clock"></i>
+                                        {{ version.createdAt|date('d/m/Y H:i:s') }}
+                                    </span>
+                                </div>
+                                {% if version.reason %}
+                                    <div class="synapse-admin-prompt-history__reason">
+                                        <i data-lucide="message-square"></i>
+                                        {{ version.reason }}
+                                    </div>
+                                {% endif %}
+                            </summary>
+                            <div class="synapse-admin-prompt-history__body">
+                                {% if version.hasJudgment %}
+                                    <div class="synapse-admin-callout synapse-admin-callout--info">
+                                        <div class="synapse-admin-callout__header">
+                                            <i data-lucide="gauge"></i>
+                                            <strong>{{ 'synapse.admin.agent.prompt_history.judge.title'|trans({score: version.judgmentScore|number_format(1)}, domain: 'synapse_admin') }}</strong>
+                                            {% if version.judgedBy %}
+                                                <span class="synapse-admin-prompt-history__judged-by">{{ version.judgedBy }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="synapse-admin-callout__body">{{ version.judgmentRationale }}</p>
+                                    </div>
+                                {% endif %}
+                                <pre class="synapse-admin-prompt-history__content">{{ version.systemPrompt }}</pre>
+                                {% if version.reviewedBy %}
+                                    <p class="synapse-admin-prompt-history__reviewed-by">
+                                        <i data-lucide="user-check"></i>
+                                        {{ 'synapse.admin.agent.prompt_history.reviewed_by'|trans({reviewer: version.reviewedBy, date: version.reviewedAt|date('d/m/Y H:i')}, domain: 'synapse_admin') }}
+                                    </p>
+                                {% endif %}
+                                {% if version.status is not null and version.status.value == 'pending' %}
+                                    <div class="synapse-admin-prompt-history__hitl-actions">
+                                        <form method="post" action="{{ path('synapse_admin_agents_prompt_approve', {id: agent.id, versionId: version.id}) }}" onsubmit="return confirm('{{ 'synapse.admin.agent.prompt_history.action.approve_confirm'|trans(domain: 'synapse_admin') }}');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_prompt_approve_' ~ agent.id) }}">
+                                            <button type="submit" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+                                                <i data-lucide="check"></i>
+                                                {{ 'synapse.admin.agent.prompt_history.action.approve'|trans(domain: 'synapse_admin') }}
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{{ path('synapse_admin_agents_prompt_reject', {id: agent.id, versionId: version.id}) }}" onsubmit="return confirm('{{ 'synapse.admin.agent.prompt_history.action.reject_confirm'|trans(domain: 'synapse_admin') }}');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_prompt_reject_' ~ agent.id) }}">
+                                            <label class="synapse-admin-form__label" for="rejection_reason_{{ version.id }}">{{ 'synapse.admin.agent.prompt_history.rejection_reason.label'|trans(domain: 'synapse_admin') }}</label>
+                                            <input type="text" name="rejection_reason" id="rejection_reason_{{ version.id }}" class="synapse-admin-form__input">
+                                            <button type="submit" class="synapse-admin-btn synapse-admin-btn--danger synapse-admin-btn--sm">
+                                                <i data-lucide="x"></i>
+                                                {{ 'synapse.admin.agent.prompt_history.action.reject'|trans(domain: 'synapse_admin') }}
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% elseif not version.isActive and (version.status is null or version.status.value != 'rejected') %}
+                                    <form method="post" action="{{ path('synapse_admin_agents_prompt_restore', {id: agent.id, versionId: version.id}) }}" onsubmit="return confirm('{{ 'synapse.admin.agent.prompt_history.action.restore_confirm'|trans(domain: 'synapse_admin') }}');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_prompt_restore_' ~ agent.id) }}">
+                                        <button type="submit" class="synapse-admin-btn synapse-admin-btn--outline synapse-admin-btn--sm">
+                                            <i data-lucide="rotate-ccw"></i>
+                                            {{ 'synapse.admin.agent.prompt_history.action.restore'|trans(domain: 'synapse_admin') }}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </details>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-		</div>
-	</div>
+        </div>
+    </div>
 
 {% endblock %}

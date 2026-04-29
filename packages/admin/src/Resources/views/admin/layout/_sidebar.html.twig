@@ -11,7 +11,7 @@
 #}
 {% set route = app.request.attributes.get('_route') %}
 
-<aside class="synapse-admin-sidebar" role="navigation" aria-label="{{ 'synapse.admin.sidebar.aria.navigation'|trans(domain='synapse_admin') }}">
+<aside class="synapse-admin-sidebar" role="navigation" aria-label="{{ 'synapse.admin.sidebar.aria.navigation'|trans(domain: 'synapse_admin') }}">
 
     {# ── Marque ────────────────────────────────────────────────────────── #}
     <a href="{{ path('synapse_admin_dashboard') }}" class="synapse-admin-brand">
@@ -22,162 +22,161 @@
     </a>
 
     {# ── Navigation ────────────────────────────────────────────────────── #}
-    <nav class="synapse-admin-nav" aria-label="{{ 'synapse.admin.sidebar.aria.menu'|trans(domain='synapse_admin') }}">
+    <nav class="synapse-admin-nav" aria-label="{{ 'synapse.admin.sidebar.aria.menu'|trans(domain: 'synapse_admin') }}">
 
         {# ── Tableau de bord ──────────────────────────────────────────── #}
         <div class="synapse-admin-nav__group">
             <a href="{{ path('synapse_admin_dashboard') }}"
                class="synapse-admin-nav__link {% if route == 'synapse_admin_dashboard' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="layout-dashboard"></i></span>
-                {{ 'synapse.admin.sidebar.dashboard'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.dashboard'|trans(domain: 'synapse_admin') }}
             </a>
         </div>
 
         {# ─────────────────────────────────────────────────────────────── #}
-        {# 🧠 INTELLIGENCE                                                 #}
+        {# 🧠 INTELLIGENCE #}
         {# ─────────────────────────────────────────────────────────────── #}
-        <div class="synapse-admin-nav__section">🧠 {{ 'synapse.admin.sidebar.section.intelligence'|trans(domain='synapse_admin') }}</div>
+        <div class="synapse-admin-nav__section">🧠 {{ 'synapse.admin.sidebar.section.intelligence'|trans(domain: 'synapse_admin') }}</div>
         <div class="synapse-admin-nav__group">
 
             {# Configuration LLM — hub onglets (fournisseurs + modèles + presets) #}
             <a href="{{ path('synapse_admin_configuration_llm') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_configuration_llm' or route starts with 'synapse_admin_providers' or route starts with 'synapse_admin_models' or route starts with 'synapse_admin_presets' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="settings-2"></i></span>
-                {{ 'synapse.admin.sidebar.llm_config'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.llm_config'|trans(domain: 'synapse_admin') }}
             </a>
 
             {# Agents (ex Missions) #}
             <a href="{{ path('synapse_admin_agents') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_agents' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="bot"></i></span>
-                {{ 'synapse.admin.sidebar.agents'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.agents'|trans(domain: 'synapse_admin') }}
             </a>
 
             {# Workflows (Phase 7 — stockage/admin ; moteur Phase 8) #}
             <a href="{{ path('synapse_admin_workflows') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_workflows' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="workflow"></i></span>
-                {{ 'synapse.admin.sidebar.workflows'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.workflows'|trans(domain: 'synapse_admin') }}
             </a>
 
             <a href="{{ path('synapse_admin_tools') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_tools' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="wrench"></i></span>
-                {{ 'synapse.admin.sidebar.tools'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.tools'|trans(domain: 'synapse_admin') }}
             </a>
 
             {# Personnalité (ex Tons de réponse) #}
             <a href="{{ path('synapse_admin_tones') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_tones' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="mic-2"></i></span>
-                {{ 'synapse.admin.sidebar.tones'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.tones'|trans(domain: 'synapse_admin') }}
             </a>
 
             <a href="{{ path('synapse_admin_settings') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_settings' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="settings"></i></span>
-                {{ 'synapse.admin.sidebar.global_config'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.global_config'|trans(domain: 'synapse_admin') }}
             </a>
 
         </div>
 
-
         {# ─────────────────────────────────────────────────────────────── #}
-        {# 🧩 BASE DE CONNAISSANCE                                         #}
+        {# 🧩 BASE DE CONNAISSANCE #}
         {# ─────────────────────────────────────────────────────────────── #}
-        <div class="synapse-admin-nav__section">🧩 {{ 'synapse.admin.sidebar.section.knowledge'|trans(domain='synapse_admin') }}</div>
+        <div class="synapse-admin-nav__section">🧩 {{ 'synapse.admin.sidebar.section.knowledge'|trans(domain: 'synapse_admin') }}</div>
         <div class="synapse-admin-nav__group">
 
             <a href="{{ path('synapse_admin_embeddings') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_embeddings' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="database-zap"></i></span>
-                {{ 'synapse.admin.sidebar.embeddings'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.embeddings'|trans(domain: 'synapse_admin') }}
             </a>
 
             <a href="{{ path('synapse_admin_rag_sources') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_rag_sources' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="database"></i></span>
-                {{ 'synapse.admin.sidebar.rag_sources'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.rag_sources'|trans(domain: 'synapse_admin') }}
             </a>
 
         </div>
 
         {# ─────────────────────────────────────────────────────────────── #}
-        {# 📈 MONITORING                                                   #}
+        {# 📈 MONITORING #}
         {# ─────────────────────────────────────────────────────────────── #}
-        <div class="synapse-admin-nav__section">📈 {{ 'synapse.admin.sidebar.section.monitoring'|trans(domain='synapse_admin') }}</div>
+        <div class="synapse-admin-nav__section">📈 {{ 'synapse.admin.sidebar.section.monitoring'|trans(domain: 'synapse_admin') }}</div>
         <div class="synapse-admin-nav__group">
 
             <a href="{{ path('synapse_admin_analytics') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_analytics' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="bar-chart-3"></i></span>
-                {{ 'synapse.admin.sidebar.analytics'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.analytics'|trans(domain: 'synapse_admin') }}
             </a>
 
             <a href="{{ path('synapse_admin_quotas') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_quotas' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="gauge"></i></span>
-                {{ 'synapse.admin.sidebar.quotas'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.quotas'|trans(domain: 'synapse_admin') }}
             </a>
 
             <a href="{{ path('synapse_admin_spending_alerts') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_spending_alerts' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="triangle-alert"></i></span>
-                {{ 'synapse.admin.sidebar.spending_alerts'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.spending_alerts'|trans(domain: 'synapse_admin') }}
             </a>
 
             <a href="{{ path('synapse_admin_export') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_export' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="download"></i></span>
-                {{ 'synapse.admin.sidebar.export'|trans(domain='synapse_admin') }}
-                <span class="synapse-admin-nav__badge">{{ 'synapse.admin.common.soon'|trans(domain='synapse_admin') }}</span>
+                {{ 'synapse.admin.sidebar.export'|trans(domain: 'synapse_admin') }}
+                <span class="synapse-admin-nav__badge">{{ 'synapse.admin.common.soon'|trans(domain: 'synapse_admin') }}</span>
             </a>
 
         </div>
 
         {# ─────────────────────────────────────────────────────────────── #}
-        {# 🔒 SÉCURITÉ                                                     #}
+        {# 🔒 SÉCURITÉ #}
         {# ─────────────────────────────────────────────────────────────── #}
-        <div class="synapse-admin-nav__section">🔒 {{ 'synapse.admin.sidebar.section.security'|trans(domain='synapse_admin') }}</div>
+        <div class="synapse-admin-nav__section">🔒 {{ 'synapse.admin.sidebar.section.security'|trans(domain: 'synapse_admin') }}</div>
         <div class="synapse-admin-nav__group">
 
             <a href="{{ path('synapse_admin_audit') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_audit' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="scroll-text"></i></span>
-                {{ 'synapse.admin.sidebar.audit'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.audit'|trans(domain: 'synapse_admin') }}
             </a>
 
 <a href="{{ path('synapse_admin_gdpr') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_gdpr' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="shield-check"></i></span>
-                {{ 'synapse.admin.sidebar.gdpr'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.gdpr'|trans(domain: 'synapse_admin') }}
             </a>
 
         </div>
 
         {# ─────────────────────────────────────────────────────────────── #}
-        {# ⚙️ SYSTÈME                                                      #}
+        {# ⚙️ SYSTÈME #}
         {# ─────────────────────────────────────────────────────────────── #}
-        <div class="synapse-admin-nav__section">⚙️ {{ 'synapse.admin.sidebar.section.system'|trans(domain='synapse_admin') }}</div>
+        <div class="synapse-admin-nav__section">⚙️ {{ 'synapse.admin.sidebar.section.system'|trans(domain: 'synapse_admin') }}</div>
         <div class="synapse-admin-nav__group">
 
             <a href="{{ path('synapse_admin_debug') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_debug' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="bug"></i></span>
-                {{ 'synapse.admin.sidebar.debug'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.debug'|trans(domain: 'synapse_admin') }}
             </a>
 
             <a href="{{ path('synapse_admin_health') }}"
                class="synapse-admin-nav__link {% if route starts with 'synapse_admin_health' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="heart-pulse"></i></span>
-                {{ 'synapse.admin.sidebar.health'|trans(domain='synapse_admin') }}
-                <span class="synapse-admin-nav__badge">{{ 'synapse.admin.common.soon'|trans(domain='synapse_admin') }}</span>
+                {{ 'synapse.admin.sidebar.health'|trans(domain: 'synapse_admin') }}
+                <span class="synapse-admin-nav__badge">{{ 'synapse.admin.common.soon'|trans(domain: 'synapse_admin') }}</span>
             </a>
 
             <a href="{{ path('synapse_admin_about') }}"
                class="synapse-admin-nav__link {% if route == 'synapse_admin_about' %}is-active{% endif %}">
                 <span class="synapse-admin-nav__icon"><i data-lucide="info"></i></span>
-                {{ 'synapse.admin.sidebar.about'|trans(domain='synapse_admin') }}
+                {{ 'synapse.admin.sidebar.about'|trans(domain: 'synapse_admin') }}
             </a>
 
         </div>

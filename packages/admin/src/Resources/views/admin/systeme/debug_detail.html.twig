@@ -4,937 +4,936 @@
 {% endblock %}
 
 {% block admin_breadcrumb %}
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="#" class="synapse-admin-topbar__breadcrumb">Système</a>
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="{{ path('synapse_admin_debug') }}" class="synapse-admin-topbar__breadcrumb">Debug LLM</a>
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<span class="synapse-admin-topbar__current">{{ id|slice(0, 8) }}…</span>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <a href="#" class="synapse-admin-topbar__breadcrumb">Système</a>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <a href="{{ path('synapse_admin_debug') }}" class="synapse-admin-topbar__breadcrumb">Debug LLM</a>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <span class="synapse-admin-topbar__current">{{ id|slice(0, 8) }}…</span>
 {% endblock %}
 
 {% block admin_content %}
 
-	{% set data = debug.data ?? {} %}
-	{% set config = data.config ?? {} %}
-	{% set preset_config = data.preset_config ?? {} %}
-	{% set history = data.history ?? [] %}
-	{% set turns = data.turns ?? [] %}
+    {% set data = debug.data ?? {} %}
+    {% set config = data.config ?? {} %}
+    {% set preset_config = data.preset_config ?? {} %}
+    {% set history = data.history ?? [] %}
+    {% set turns = data.turns ?? [] %}
 
-	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
-	<div class="synapse-admin-page-header">
-		<div class="synapse-admin-page-header__info">
-			<h1 class="synapse-admin-page-title">
-				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--info">
-					<i data-lucide="microscope"></i>
-				</span>
-				Détail du log de debug
-			</h1>
-			<p class="synapse-admin-page-subtitle">
-				ID:
-				<code class="synapse-admin-text-xs">{{ id }}</code>
-				• Date:
-				{{ debug.created_at is defined ? debug.created_at|date('d/m/Y H:i:s') : 'Inconnue' }}
-			</p>
-		</div>
-		<div class="synapse-admin-page-header__actions">
-			<a href="{{ path('synapse_admin_debug') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
-				<i data-lucide="arrow-left"></i>
-				Retour aux logs
-			</a>
-		</div>
-	</div>
+    {# ── En-tête ──────────────────────────────────────────────────────────────── #}
+    <div class="synapse-admin-page-header">
+        <div class="synapse-admin-page-header__info">
+            <h1 class="synapse-admin-page-title">
+                <span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--info">
+                    <i data-lucide="microscope"></i>
+                </span>
+                Détail du log de debug
+            </h1>
+            <p class="synapse-admin-page-subtitle">
+                ID:
+                <code class="synapse-admin-text-xs">{{ id }}</code>
+                • Date:
+                {{ debug.created_at is defined ? debug.created_at|date('d/m/Y H:i:s') : 'Inconnue' }}
+            </p>
+        </div>
+        <div class="synapse-admin-page-header__actions">
+            <a href="{{ path('synapse_admin_debug') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
+                <i data-lucide="arrow-left"></i>
+                Retour aux logs
+            </a>
+        </div>
+    </div>
 
-	{# ── Bandeau d'erreur (logs dbg_err_) ─────────────────────────────────────── #}
-	{% if data.error is defined and data.error %}
-		<div style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 1px solid #fca5a5; border-radius: var(--synapse-admin-radius); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-start;">
-			<span style="font-size: 1.5rem; line-height: 1;">&#9888;</span>
-			<div style="flex: 1;">
-				<div style="font-weight: 600; color: #991b1b; margin-bottom: 0.25rem;">Erreur durant l'exécution</div>
-				<code style="display: block; background: #fff1f2; padding: 0.5rem 0.75rem; border-radius: 4px; font-size: 0.8rem; color: #be123c; word-break: break-all; margin-bottom: 0.5rem;">{{ data.error }}</code>
-				{% if data.error_class is defined and data.error_class %}
-					<div style="font-size: 0.75rem; color: #9f1239;">
-						<strong>Classe :</strong> {{ data.error_class }}
-						{% if data.error_file is defined and data.error_file %}
-							&middot; <strong>Fichier :</strong> {{ data.error_file }}
-						{% endif %}
-					</div>
-				{% endif %}
-			</div>
-		</div>
-	{% endif %}
+    {# ── Bandeau d'erreur (logs dbg_err_) ─────────────────────────────────────── #}
+    {% if data.error is defined and data.error %}
+        <div style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 1px solid #fca5a5; border-radius: var(--synapse-admin-radius); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-start;">
+            <span style="font-size: 1.5rem; line-height: 1;">&#9888;</span>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; color: #991b1b; margin-bottom: 0.25rem;">Erreur durant l'exécution</div>
+                <code style="display: block; background: #fff1f2; padding: 0.5rem 0.75rem; border-radius: 4px; font-size: 0.8rem; color: #be123c; word-break: break-all; margin-bottom: 0.5rem;">{{ data.error }}</code>
+                {% if data.error_class is defined and data.error_class %}
+                    <div style="font-size: 0.75rem; color: #9f1239;">
+                        <strong>Classe :</strong> {{ data.error_class }}
+                        {% if data.error_file is defined and data.error_file %}
+                            &middot; <strong>Fichier :</strong> {{ data.error_file }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 
-	{# ── Onglets de Navigation ────────────────────────────────────────────────── #}
-	<div class="synapse-admin-tabs-nav" style="display: flex; gap: 1rem; border-bottom: 1px solid var(--synapse-admin-border); margin-bottom: 2rem;">
-		<button class="synapse-admin-tab-btn active" data-tab="summary">
-			<i data-lucide="layout-dashboard" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
-			Résumé & Paramètres
-		</button>
-		<button class="synapse-admin-tab-btn" data-tab="timeline">
-			<i data-lucide="clock" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
-			Timeline & Perf
-		</button>
-		<button class="synapse-admin-tab-btn" data-tab="history">
-			<i data-lucide="message-square" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
-			Historique & Tours
-		</button>
-		<button class="synapse-admin-tab-btn" data-tab="memory">
-			<i data-lucide="brain" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
-			Contexte & Mémoire
-		</button>
-		<button class="synapse-admin-tab-btn" data-tab="tools">
-			<i data-lucide="wrench" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
-			Outils (Tools)
-		</button>
-		<button class="synapse-admin-tab-btn" data-tab="raw">
-			<i data-lucide="file-json" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
-			Brut (Raw Data)
-		</button>
-	</div>
+    {# ── Onglets de Navigation ────────────────────────────────────────────────── #}
+    <div class="synapse-admin-tabs-nav" style="display: flex; gap: 1rem; border-bottom: 1px solid var(--synapse-admin-border); margin-bottom: 2rem;">
+        <button class="synapse-admin-tab-btn active" data-tab="summary">
+            <i data-lucide="layout-dashboard" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+            Résumé & Paramètres
+        </button>
+        <button class="synapse-admin-tab-btn" data-tab="timeline">
+            <i data-lucide="clock" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+            Timeline & Perf
+        </button>
+        <button class="synapse-admin-tab-btn" data-tab="history">
+            <i data-lucide="message-square" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+            Historique & Tours
+        </button>
+        <button class="synapse-admin-tab-btn" data-tab="memory">
+            <i data-lucide="brain" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+            Contexte & Mémoire
+        </button>
+        <button class="synapse-admin-tab-btn" data-tab="tools">
+            <i data-lucide="wrench" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+            Outils (Tools)
+        </button>
+        <button class="synapse-admin-tab-btn" data-tab="raw">
+            <i data-lucide="file-json" style="width: 1rem; height: 1rem; margin-right: 0.5rem;"></i>
+            Brut (Raw Data)
+        </button>
+    </div>
 
-	<div
-		class="synapse-admin-tabs-content">
+    <div
+        class="synapse-admin-tabs-content">
 
-		{# TAB 1: RÉSUMÉ & PARAMÈTRES (SUMMARY) #}
-		<div
-			class="synapse-admin-tab-pane active" id="tab-summary">
-			{# ── Tokens & coûts : source unique SynapseLlmCall ── #}
-			{% if llm_call is defined and llm_call is not null %}
-				{% set lc_prompt = llm_call.promptTokens %}
-				{% set lc_completion = llm_call.completionTokens %}
-				{% set lc_thinking = llm_call.thinkingTokens %}
-				{% set lc_image = llm_call.imageCompletionTokens %}
-				{% set lc_total = llm_call.totalTokens %}
-				{% set lc_cost = llm_call.costModelCurrency %}
-				{% set lc_cost_ref = llm_call.costReference %}
-				{% set lc_pricing_in = llm_call.pricingInput %}
-				{% set lc_pricing_out = llm_call.pricingOutput %}
-				{% set lc_pricing_out_image = llm_call.pricingOutputImage %}
-				{% set lc_currency = llm_call.pricingCurrency ?? 'USD' %}
-			{% else %}
-				{% set usage = data.usage ?? {} %}
-				{% set lc_prompt = usage.prompt_tokens ?? 0 %}
-				{% set lc_completion = usage.completion_tokens ?? 0 %}
-				{% set lc_thinking = usage.thinking_tokens ?? 0 %}
-				{% set lc_image = usage.image_completion_tokens ?? 0 %}
-				{% set lc_total = usage.total_tokens ?? 0 %}
-				{% set lc_cost = data.estimated_cost ?? null %}
-				{% set lc_cost_ref = null %}
-				{% set lc_pricing_in = preset_config.pricing_input ?? null %}
-				{% set lc_pricing_out = preset_config.pricing_output ?? null %}
-				{% set lc_pricing_out_image = null %}
-				{% set lc_currency = 'USD' %}
-			{% endif %}
+        {# TAB 1: RÉSUMÉ & PARAMÈTRES (SUMMARY) #}
+        <div
+            class="synapse-admin-tab-pane active" id="tab-summary">
+            {# ── Tokens & coûts : source unique SynapseLlmCall ── #}
+            {% if llm_call is defined and llm_call is not null %}
+                {% set lc_prompt = llm_call.promptTokens %}
+                {% set lc_completion = llm_call.completionTokens %}
+                {% set lc_thinking = llm_call.thinkingTokens %}
+                {% set lc_image = llm_call.imageCompletionTokens %}
+                {% set lc_total = llm_call.totalTokens %}
+                {% set lc_cost = llm_call.costModelCurrency %}
+                {% set lc_cost_ref = llm_call.costReference %}
+                {% set lc_pricing_in = llm_call.pricingInput %}
+                {% set lc_pricing_out = llm_call.pricingOutput %}
+                {% set lc_pricing_out_image = llm_call.pricingOutputImage %}
+                {% set lc_currency = llm_call.pricingCurrency ?? 'USD' %}
+            {% else %}
+                {% set usage = data.usage ?? {} %}
+                {% set lc_prompt = usage.prompt_tokens ?? 0 %}
+                {% set lc_completion = usage.completion_tokens ?? 0 %}
+                {% set lc_thinking = usage.thinking_tokens ?? 0 %}
+                {% set lc_image = usage.image_completion_tokens ?? 0 %}
+                {% set lc_total = usage.total_tokens ?? 0 %}
+                {% set lc_cost = data.estimated_cost ?? null %}
+                {% set lc_cost_ref = null %}
+                {% set lc_pricing_in = preset_config.pricing_input ?? null %}
+                {% set lc_pricing_out = preset_config.pricing_output ?? null %}
+                {% set lc_pricing_out_image = null %}
+                {% set lc_currency = 'USD' %}
+            {% endif %}
 
-			{# ── KPIs Global ── #}
-			<div class="synapse-admin-grid synapse-admin-grid--4 synapse-admin-mb-xl">
-				<div class="synapse-admin-card synapse-admin-card--hover">
-					<div class="synapse-admin-kpi">
-						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--neutral">
-							<i data-lucide="cpu"></i>
-						</div>
-						<div class="synapse-admin-kpi__body">
-							<div class="synapse-admin-kpi__label">Modèle</div>
-							<div class="synapse-admin-kpi__value" style="font-size: 0.85rem; word-break: break-all;">{{ data.model ?? preset_config.model ?? '—' }}</div>
-							<div class="synapse-admin-kpi__sub" style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.25rem;">
-								<span class="synapse-admin-badge synapse-admin-badge--neutral" style="font-size: 0.65rem;">{{ data.provider ?? preset_config.provider ?? '—' }}</span>
-								{% if preset_config.preset_name ?? false %}
-									<span class="synapse-admin-badge synapse-admin-badge--info" style="font-size: 0.65rem;">{{ preset_config.preset_name }}</span>
-								{% endif %}
-							</div>
-						</div>
-					</div>
-				</div>
+            {# ── KPIs Global ── #}
+            <div class="synapse-admin-grid synapse-admin-grid--4 synapse-admin-mb-xl">
+                <div class="synapse-admin-card synapse-admin-card--hover">
+                    <div class="synapse-admin-kpi">
+                        <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--neutral">
+                            <i data-lucide="cpu"></i>
+                        </div>
+                        <div class="synapse-admin-kpi__body">
+                            <div class="synapse-admin-kpi__label">Modèle</div>
+                            <div class="synapse-admin-kpi__value" style="font-size: 0.85rem; word-break: break-all;">{{ data.model ?? preset_config.model ?? '—' }}</div>
+                            <div class="synapse-admin-kpi__sub" style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.25rem;">
+                                <span class="synapse-admin-badge synapse-admin-badge--neutral" style="font-size: 0.65rem;">{{ data.provider ?? preset_config.provider ?? '—' }}</span>
+                                {% if preset_config.preset_name ?? false %}
+                                    <span class="synapse-admin-badge synapse-admin-badge--info" style="font-size: 0.65rem;">{{ preset_config.preset_name }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-				<div class="synapse-admin-card synapse-admin-card--hover">
-					<div class="synapse-admin-kpi">
-						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--neutral">
-							<i data-lucide="coins"></i>
-						</div>
-						<div class="synapse-admin-kpi__body">
-							<div class="synapse-admin-kpi__label">Tokens</div>
-							<div class="synapse-admin-kpi__value">{{ lc_total|number_format(0, '', ' ') }}</div>
-							<div class="synapse-admin-kpi__sub">
-								Prompt: {{ lc_prompt|number_format(0, '', ' ') }}
-								| Texte: {{ lc_completion|number_format(0, '', ' ') }}
-								{% if lc_image > 0 %}
-									| Image: {{ lc_image|number_format(0, '', ' ') }}
-								{% endif %}
-							</div>
-						</div>
-					</div>
-				</div>
+                <div class="synapse-admin-card synapse-admin-card--hover">
+                    <div class="synapse-admin-kpi">
+                        <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--neutral">
+                            <i data-lucide="coins"></i>
+                        </div>
+                        <div class="synapse-admin-kpi__body">
+                            <div class="synapse-admin-kpi__label">Tokens</div>
+                            <div class="synapse-admin-kpi__value">{{ lc_total|number_format(0, '', ' ') }}</div>
+                            <div class="synapse-admin-kpi__sub">
+                                Prompt: {{ lc_prompt|number_format(0, '', ' ') }}
+                                | Texte: {{ lc_completion|number_format(0, '', ' ') }}
+                                {% if lc_image > 0 %}
+                                    | Image: {{ lc_image|number_format(0, '', ' ') }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-				<div class="synapse-admin-card synapse-admin-card--hover">
-					<div class="synapse-admin-kpi">
-						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ lc_thinking > 0 ? 'info' : 'neutral' }}">
-							<i data-lucide="brain"></i>
-						</div>
-						<div class="synapse-admin-kpi__body">
-							<div class="synapse-admin-kpi__label">Tokens de réflexion</div>
-							<div class="synapse-admin-kpi__value">{{ lc_thinking|number_format(0, '', ' ') }}</div>
-							<div class="synapse-admin-kpi__sub">
-								{% if preset_config.thinking_enabled ?? false %}
-									Activé (Budget: {{ preset_config.thinking_budget ?? 'auto' }})
-								{% else %}
-									Désactivé
-								{% endif %}
-							</div>
-						</div>
-					</div>
-				</div>
+                <div class="synapse-admin-card synapse-admin-card--hover">
+                    <div class="synapse-admin-kpi">
+                        <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ lc_thinking > 0 ? 'info' : 'neutral' }}">
+                            <i data-lucide="brain"></i>
+                        </div>
+                        <div class="synapse-admin-kpi__body">
+                            <div class="synapse-admin-kpi__label">Tokens de réflexion</div>
+                            <div class="synapse-admin-kpi__value">{{ lc_thinking|number_format(0, '', ' ') }}</div>
+                            <div class="synapse-admin-kpi__sub">
+                                {% if preset_config.thinking_enabled ?? false %}
+                                    Activé (Budget: {{ preset_config.thinking_budget ?? 'auto' }})
+                                {% else %}
+                                    Désactivé
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-				<div class="synapse-admin-card synapse-admin-card--hover">
-					<div class="synapse-admin-kpi">
-						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--neutral">
-							<i data-lucide="timer"></i>
-						</div>
-						<div class="synapse-admin-kpi__body">
-							<div class="synapse-admin-kpi__label">Durée Totale</div>
-							<div class="synapse-admin-kpi__value">{{ data.timings.total_ms ?? 0 }} ms</div>
-							<div class="synapse-admin-kpi__sub">{{ ((data.timings.total_ms ?? 0) / 1000)|number_format(2) }} s</div>
-						</div>
-					</div>
-				</div>
-			</div>
+                <div class="synapse-admin-card synapse-admin-card--hover">
+                    <div class="synapse-admin-kpi">
+                        <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--neutral">
+                            <i data-lucide="timer"></i>
+                        </div>
+                        <div class="synapse-admin-kpi__body">
+                            <div class="synapse-admin-kpi__label">Durée Totale</div>
+                            <div class="synapse-admin-kpi__value">{{ data.timings.total_ms ?? 0 }} ms</div>
+                            <div class="synapse-admin-kpi__sub">{{ ((data.timings.total_ms ?? 0) / 1000)|number_format(2) }} s</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-			{# ── KPIs : Agent / Ton / Coût ── #}
-			<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
-				<div class="synapse-admin-card synapse-admin-card--hover">
-					<div class="synapse-admin-kpi">
-						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (preset_config.agent_id ?? false) ? 'primary' : 'neutral' }}">
-							<i data-lucide="bot"></i>
-						</div>
-						<div class="synapse-admin-kpi__body">
-							<div class="synapse-admin-kpi__label">Agent</div>
-							{% if preset_config.agent_name ?? false %}
-								<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ preset_config.agent_emoji ?? '' }} {{ preset_config.agent_name }}</div>
-								<div class="synapse-admin-kpi__sub">ID #{{ preset_config.agent_id }}</div>
-							{% else %}
-								<div class="synapse-admin-kpi__value synapse-admin-text-sm synapse-admin-text-muted">Aucun</div>
-								<div class="synapse-admin-kpi__sub">Preset global par défaut</div>
-							{% endif %}
-						</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card synapse-admin-card--hover">
-					<div class="synapse-admin-kpi">
-						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (preset_config.active_tone ?? false) ? 'info' : 'neutral' }}">
-							<i data-lucide="sparkles"></i>
-						</div>
-						<div class="synapse-admin-kpi__body">
-							<div class="synapse-admin-kpi__label">Ton</div>
-							<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ preset_config.active_tone ?? 'Normal' }}</div>
-							<div class="synapse-admin-kpi__sub">{{ (preset_config.active_tone ?? false) ? 'Personnalité appliquée' : 'Par défaut' }}</div>
-						</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card synapse-admin-card--hover">
-					<div class="synapse-admin-kpi">
-						<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ lc_cost ? 'warning' : 'neutral' }}">
-							<i data-lucide="circle-dollar-sign"></i>
-						</div>
-						<div class="synapse-admin-kpi__body">
-							<div class="synapse-admin-kpi__label">Coût estimé</div>
-							{% if lc_cost %}
-								<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ lc_cost|number_format(6) }} {{ lc_currency }}</div>
-								<div class="synapse-admin-kpi__sub">
-									In: {{ lc_pricing_in ?? '?' }}/M · Out: {{ lc_pricing_out ?? '?' }}/M
-									{% if lc_pricing_out_image %}
-										· Img: {{ lc_pricing_out_image }}/M
-									{% endif %}
-								</div>
-							{% else %}
-								<div class="synapse-admin-kpi__value synapse-admin-text-sm synapse-admin-text-muted">—</div>
-								<div class="synapse-admin-kpi__sub">Pricing non configuré</div>
-							{% endif %}
-						</div>
-					</div>
-				</div>
-			</div>
+            {# ── KPIs : Agent / Ton / Coût ── #}
+            <div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-xl">
+                <div class="synapse-admin-card synapse-admin-card--hover">
+                    <div class="synapse-admin-kpi">
+                        <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (preset_config.agent_id ?? false) ? 'primary' : 'neutral' }}">
+                            <i data-lucide="bot"></i>
+                        </div>
+                        <div class="synapse-admin-kpi__body">
+                            <div class="synapse-admin-kpi__label">Agent</div>
+                            {% if preset_config.agent_name ?? false %}
+                                <div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ preset_config.agent_emoji ?? '' }} {{ preset_config.agent_name }}</div>
+                                <div class="synapse-admin-kpi__sub">ID #{{ preset_config.agent_id }}</div>
+                            {% else %}
+                                <div class="synapse-admin-kpi__value synapse-admin-text-sm synapse-admin-text-muted">Aucun</div>
+                                <div class="synapse-admin-kpi__sub">Preset global par défaut</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card synapse-admin-card--hover">
+                    <div class="synapse-admin-kpi">
+                        <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ (preset_config.active_tone ?? false) ? 'info' : 'neutral' }}">
+                            <i data-lucide="sparkles"></i>
+                        </div>
+                        <div class="synapse-admin-kpi__body">
+                            <div class="synapse-admin-kpi__label">Ton</div>
+                            <div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ preset_config.active_tone ?? 'Normal' }}</div>
+                            <div class="synapse-admin-kpi__sub">{{ (preset_config.active_tone ?? false) ? 'Personnalité appliquée' : 'Par défaut' }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card synapse-admin-card--hover">
+                    <div class="synapse-admin-kpi">
+                        <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--{{ lc_cost ? 'warning' : 'neutral' }}">
+                            <i data-lucide="circle-dollar-sign"></i>
+                        </div>
+                        <div class="synapse-admin-kpi__body">
+                            <div class="synapse-admin-kpi__label">Coût estimé</div>
+                            {% if lc_cost %}
+                                <div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ lc_cost|number_format(6) }} {{ lc_currency }}</div>
+                                <div class="synapse-admin-kpi__sub">
+                                    In: {{ lc_pricing_in ?? '?' }}/M · Out: {{ lc_pricing_out ?? '?' }}/M
+                                    {% if lc_pricing_out_image %}
+                                        · Img: {{ lc_pricing_out_image }}/M
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="synapse-admin-kpi__value synapse-admin-text-sm synapse-admin-text-muted">—</div>
+                                <div class="synapse-admin-kpi__sub">Pricing non configuré</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-			<div class="synapse-admin-layout">
-				<div class="synapse-admin-layout__main">
-					{# Prompt Système #}
-					{% if data.system_prompt ?? false %}
-						<div class="synapse-admin-card synapse-admin-mb-xl">
-							<div class="synapse-admin-card__header">
-								<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
-									<i data-lucide="terminal"></i>
-								</div>
-								<div>
-									<div class="synapse-admin-card__title">Prompt Système (Injecté)</div>
-									<div class="synapse-admin-card__subtitle">Instructions de base fournies au LLM</div>
-								</div>
-							</div>
-							<div class="synapse-admin-card__body">
-								<pre class="synapse-admin-code-block" style="white-space: pre-wrap;">{{ data.system_prompt }}</pre>
-							</div>
-						</div>
-					{% endif %}
-				</div>
-				<div class="synapse-admin-layout__sidebar">
-					{# Configuration #}
-					<div class="synapse-admin-card synapse-admin-mb-xl">
-						<div class="synapse-admin-card__header" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border);">
-							<div class="synapse-admin-card__title" style="font-size: 1rem;">Core & Sécurité</div>
-						</div>
-						<div class="synapse-admin-card__body" style="padding: 0;">
-							<ul style="list-style: none; padding: 0; margin: 0;">
-								<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
-									<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Preset</span>
-									<span style="font-weight: 500;">{{ preset_config.preset_name ?? '—' }}</span>
-								</li>
-								<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
-									<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Agent</span>
-									<span style="font-weight: 500;">{% if preset_config.agent_name ?? false %}{{ preset_config.agent_emoji ?? '' }}
-										{{ preset_config.agent_name }}{% else %}<span class="synapse-admin-text-muted">Aucun</span>{% endif %}</span>
-								</li>
-								<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
-									<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Ton</span>
-									<span style="font-weight: 500; font-family: monospace;">{{ preset_config.active_tone ?? 'Normal' }}</span>
-								</li>
-							</ul>
-						</div>
-					</div>
+            <div class="synapse-admin-layout">
+                <div class="synapse-admin-layout__main">
+                    {# Prompt Système #}
+                    {% if data.system_prompt ?? false %}
+                        <div class="synapse-admin-card synapse-admin-mb-xl">
+                            <div class="synapse-admin-card__header">
+                                <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
+                                    <i data-lucide="terminal"></i>
+                                </div>
+                                <div>
+                                    <div class="synapse-admin-card__title">Prompt Système (Injecté)</div>
+                                    <div class="synapse-admin-card__subtitle">Instructions de base fournies au LLM</div>
+                                </div>
+                            </div>
+                            <div class="synapse-admin-card__body">
+                                <pre class="synapse-admin-code-block" style="white-space: pre-wrap;">{{ data.system_prompt }}</pre>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="synapse-admin-layout__sidebar">
+                    {# Configuration #}
+                    <div class="synapse-admin-card synapse-admin-mb-xl">
+                        <div class="synapse-admin-card__header" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border);">
+                            <div class="synapse-admin-card__title" style="font-size: 1rem;">Core & Sécurité</div>
+                        </div>
+                        <div class="synapse-admin-card__body" style="padding: 0;">
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                <li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Preset</span>
+                                    <span style="font-weight: 500;">{{ preset_config.preset_name ?? '—' }}</span>
+                                </li>
+                                <li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Agent</span>
+                                    <span style="font-weight: 500;">{% if preset_config.agent_name ?? false %}{{ preset_config.agent_emoji ?? '' }}
+                                        {{ preset_config.agent_name }}{% else %}<span class="synapse-admin-text-muted">Aucun</span>{% endif %}</span>
+                                </li>
+                                <li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Ton</span>
+                                    <span style="font-weight: 500; font-family: monospace;">{{ preset_config.active_tone ?? 'Normal' }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
 
-					{# Paramètres de génération #}
-					<div class="synapse-admin-card synapse-admin-mb-xl">
-						<div class="synapse-admin-card__header" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border);">
-							<div class="synapse-admin-card__title" style="font-size: 1rem;">Génération & Samplers</div>
-						</div>
-						<div class="synapse-admin-card__body" style="padding: 0;">
-							<ul style="list-style: none; padding: 0; margin: 0;">
-								<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
-									<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Température</span>
-									<span style="font-weight: 500; font-family: monospace;">{{ preset_config.temperature ?? 'Par défaut' }}</span>
-								</li>
-								<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
-									<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Top P</span>
-									<span style="font-weight: 500; font-family: monospace;">{{ preset_config.top_p ?? 'Par défaut' }}</span>
-								</li>
-								<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
-									<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Top K</span>
-									<span style="font-weight: 500; font-family: monospace;">{{ preset_config.top_k ?? 'Par défaut' }}</span>
-								</li>
-								<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
-									<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Max Tokens</span>
-									<span style="font-weight: 500; font-family: monospace;">{{ preset_config.max_output_tokens ?? 'Par défaut' }}</span>
-								</li>
-								<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
-									<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Réflexion interne</span>
-									<span>
-										{% if preset_config.thinking_enabled ?? false %}
-											<span class="synapse-admin-badge synapse-admin-badge--success">Activé</span>
-										{% else %}
-											<span class="synapse-admin-badge synapse-admin-badge--neutral">Désactivé</span>
-										{% endif %}
-									</span>
-								</li>
-								{% if preset_config.thinking_enabled ?? false %}
-									<li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
-										<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Budget Réflexion</span>
-										<span style="font-weight: 500; font-family: monospace;">{{ preset_config.thinking_budget ?? 'Automatique' }}</span>
-									</li>
-								{% endif %}
-								<li style="padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center;">
-									<span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Streaming</span>
-									<span>
-										{% if preset_config.streaming_enabled ?? false %}
-											<span class="synapse-admin-badge synapse-admin-badge--success">Oui</span>
-										{% else %}
-											<span class="synapse-admin-badge synapse-admin-badge--neutral">Non</span>
-										{% endif %}
-									</span>
-								</li>
-							</ul>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+                    {# Paramètres de génération #}
+                    <div class="synapse-admin-card synapse-admin-mb-xl">
+                        <div class="synapse-admin-card__header" style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--synapse-admin-border);">
+                            <div class="synapse-admin-card__title" style="font-size: 1rem;">Génération & Samplers</div>
+                        </div>
+                        <div class="synapse-admin-card__body" style="padding: 0;">
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                <li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Température</span>
+                                    <span style="font-weight: 500; font-family: monospace;">{{ preset_config.temperature ?? 'Par défaut' }}</span>
+                                </li>
+                                <li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Top P</span>
+                                    <span style="font-weight: 500; font-family: monospace;">{{ preset_config.top_p ?? 'Par défaut' }}</span>
+                                </li>
+                                <li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Top K</span>
+                                    <span style="font-weight: 500; font-family: monospace;">{{ preset_config.top_k ?? 'Par défaut' }}</span>
+                                </li>
+                                <li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Max Tokens</span>
+                                    <span style="font-weight: 500; font-family: monospace;">{{ preset_config.max_output_tokens ?? 'Par défaut' }}</span>
+                                </li>
+                                <li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Réflexion interne</span>
+                                    <span>
+                                        {% if preset_config.thinking_enabled ?? false %}
+                                            <span class="synapse-admin-badge synapse-admin-badge--success">Activé</span>
+                                        {% else %}
+                                            <span class="synapse-admin-badge synapse-admin-badge--neutral">Désactivé</span>
+                                        {% endif %}
+                                    </span>
+                                </li>
+                                {% if preset_config.thinking_enabled ?? false %}
+                                    <li style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Budget Réflexion</span>
+                                        <span style="font-weight: 500; font-family: monospace;">{{ preset_config.thinking_budget ?? 'Automatique' }}</span>
+                                    </li>
+                                {% endif %}
+                                <li style="padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color: var(--synapse-admin-text-secondary); font-size: 0.875rem;">Streaming</span>
+                                    <span>
+                                        {% if preset_config.streaming_enabled ?? false %}
+                                            <span class="synapse-admin-badge synapse-admin-badge--success">Oui</span>
+                                        {% else %}
+                                            <span class="synapse-admin-badge synapse-admin-badge--neutral">Non</span>
+                                        {% endif %}
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-		{# TAB 2: TIMELINE & PERFORMANCES #}
-		<div class="synapse-admin-tab-pane" id="tab-timeline" style="display: none;">
-			<div class="synapse-admin-card synapse-admin-mb-xl">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
-						<i data-lucide="activity"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">Timeline d'Exécution</div>
-						<div class="synapse-admin-card__subtitle">Analyse des temps de réponse (Latences backend & réseau)</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body">
-					{% if data.timings.steps ?? false %}
-						<div class="synapse-admin-timeline" style="position: relative; padding-left: 2rem; border-left: 2px solid var(--synapse-admin-border); margin: 2rem 0;">
-							{% for step in data.timings.steps %}
-								<div class="synapse-admin-timeline-item" style="position: relative; margin-bottom: 2rem;">
-									<div class="synapse-admin-timeline-dot" style="position: absolute; left: -2.45rem; top: 0; width: 14px; height: 14px; border-radius: 50%; background-color: var(--synapse-admin-primary); border: 3px solid var(--synapse-admin-bg);"></div>
-									<div class="synapse-admin-timeline-content" style="background: var(--synapse-admin-bg-hover); padding: 1rem; border-radius: var(--synapse-admin-radius); display: flex; justify-content: space-between; align-items: center;">
-										<div>
-											<strong style="color: var(--synapse-admin-text); display: block;">{{ step.name }}</strong>
-											{% if step.description is defined %}
-												<div class="synapse-admin-text-muted" style="font-size: 0.85rem; margin-top: 0.25rem;">{{ step.description }}</div>
-											{% endif %}
-											{% if step.turn > 0 %}
-												<span class="synapse-admin-text-xs synapse-admin-text-muted" style="display: block; margin-top: 0.25rem;">Passage #{{ step.turn }}</span>
-											{% endif %}
-										</div>
-										<div class="synapse-admin-badge synapse-admin-badge--{{ step.duration_ms > 2000 ? 'warning' : 'success' }}" style="font-family: monospace; font-size: 1rem;">
-											{{ step.duration_ms }}
-											ms
-										</div>
-									</div>
-								</div>
-							{% endfor %}
-							{# Final Dot #}
-							<div class="synapse-admin-timeline-item" style="position: relative;">
-								<div class="synapse-admin-timeline-dot" style="position: absolute; left: -2.45rem; top: 0; width: 14px; height: 14px; border-radius: 50%; background-color: var(--synapse-admin-success); border: 3px solid var(--synapse-admin-bg);"></div>
-								<div class="synapse-admin-timeline-content" style="padding-left: 1rem;">
-									<strong style="color: var(--synapse-admin-success);">Cycle terminé en
-										{{ data.timings.total_ms ?? 0 }}
-										ms</strong>
-								</div>
-							</div>
-						</div>
-					{% else %}
-						<p class="synapse-admin-text-muted">Aucune donnée temporelle. Vérifiez vos capteurs dans ChatService.</p>
-					{% endif %}
-				</div>
-			</div>
-		</div>
+        {# TAB 2: TIMELINE & PERFORMANCES #}
+        <div class="synapse-admin-tab-pane" id="tab-timeline" style="display: none;">
+            <div class="synapse-admin-card synapse-admin-mb-xl">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
+                        <i data-lucide="activity"></i>
+                    </div>
+                    <div>
+                        <div class="synapse-admin-card__title">Timeline d'Exécution</div>
+                        <div class="synapse-admin-card__subtitle">Analyse des temps de réponse (Latences backend & réseau)</div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card__body">
+                    {% if data.timings.steps ?? false %}
+                        <div class="synapse-admin-timeline" style="position: relative; padding-left: 2rem; border-left: 2px solid var(--synapse-admin-border); margin: 2rem 0;">
+                            {% for step in data.timings.steps %}
+                                <div class="synapse-admin-timeline-item" style="position: relative; margin-bottom: 2rem;">
+                                    <div class="synapse-admin-timeline-dot" style="position: absolute; left: -2.45rem; top: 0; width: 14px; height: 14px; border-radius: 50%; background-color: var(--synapse-admin-primary); border: 3px solid var(--synapse-admin-bg);"></div>
+                                    <div class="synapse-admin-timeline-content" style="background: var(--synapse-admin-bg-hover); padding: 1rem; border-radius: var(--synapse-admin-radius); display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <strong style="color: var(--synapse-admin-text); display: block;">{{ step.name }}</strong>
+                                            {% if step.description is defined %}
+                                                <div class="synapse-admin-text-muted" style="font-size: 0.85rem; margin-top: 0.25rem;">{{ step.description }}</div>
+                                            {% endif %}
+                                            {% if step.turn > 0 %}
+                                                <span class="synapse-admin-text-xs synapse-admin-text-muted" style="display: block; margin-top: 0.25rem;">Passage #{{ step.turn }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="synapse-admin-badge synapse-admin-badge--{{ step.duration_ms > 2000 ? 'warning' : 'success' }}" style="font-family: monospace; font-size: 1rem;">
+                                            {{ step.duration_ms }}
+                                            ms
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            {# Final Dot #}
+                            <div class="synapse-admin-timeline-item" style="position: relative;">
+                                <div class="synapse-admin-timeline-dot" style="position: absolute; left: -2.45rem; top: 0; width: 14px; height: 14px; border-radius: 50%; background-color: var(--synapse-admin-success); border: 3px solid var(--synapse-admin-bg);"></div>
+                                <div class="synapse-admin-timeline-content" style="padding-left: 1rem;">
+                                    <strong style="color: var(--synapse-admin-success);">Cycle terminé en
+                                        {{ data.timings.total_ms ?? 0 }}
+                                        ms</strong>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="synapse-admin-text-muted">Aucune donnée temporelle. Vérifiez vos capteurs dans ChatService.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
 
-		{# TAB 3: HISTORIQUE ET TOURS (HISTORY) #}
-		<div
-			class="synapse-admin-tab-pane" id="tab-history" style="display: none;">
+        {# TAB 3: HISTORIQUE ET TOURS (HISTORY) #}
+        <div
+            class="synapse-admin-tab-pane" id="tab-history" style="display: none;">
 
-			{# Section 1: History / System Prompt Sent #}
-			{% if data.history ?? false %}
-				<h2 class="synapse-admin-page-title" style="font-size: 1.25rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-					<i data-lucide="database" style="color: var(--synapse-admin-text-muted);"></i>
-					Contexte Initial Envoyé (Prompt)
-				</h2>
+            {# Section 1: History / System Prompt Sent #}
+            {% if data.history ?? false %}
+                <h2 class="synapse-admin-page-title" style="font-size: 1.25rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="database" style="color: var(--synapse-admin-text-muted);"></i>
+                    Contexte Initial Envoyé (Prompt)
+                </h2>
 
-				<div class="synapse-admin-card synapse-admin-mb-xl">
-					<div class="synapse-admin-card__body" style="display: flex; flex-direction: column; gap: 1rem;">
-						{% for msg in data.history %}
-							{% set roleColor = 'var(--synapse-admin-border)' %}
-							{% set roleBg = 'var(--synapse-admin-bg)' %}
-							{% set roleIcon = 'message-square' %}
-							{% set roleLabel = msg.role %}
+                <div class="synapse-admin-card synapse-admin-mb-xl">
+                    <div class="synapse-admin-card__body" style="display: flex; flex-direction: column; gap: 1rem;">
+                        {% for msg in data.history %}
+                            {% set roleColor = 'var(--synapse-admin-border)' %}
+                            {% set roleBg = 'var(--synapse-admin-bg)' %}
+                            {% set roleIcon = 'message-square' %}
+                            {% set roleLabel = msg.role %}
 
-							{% if msg.role == 'system' %}
-								{% set roleColor = 'var(--synapse-admin-neutral)' %}
-								{% set roleBg = 'var(--synapse-admin-bg-hover)' %}
-								{% set roleIcon = 'settings' %}
-								{% set roleLabel = 'Système' %}
-							{% elseif msg.role == 'user' %}
-								{% set roleColor = 'var(--synapse-admin-primary)' %}
-								{% set roleBg = 'rgba(var(--synapse-admin-primary-rgb), 0.05)' %}
-								{% set roleIcon = 'user' %}
-								{% set roleLabel = 'Utilisateur' %}
-							{% elseif msg.role == 'assistant' or msg.role == 'model' %}
-								{% set roleColor = 'var(--synapse-admin-brand)' %}
-								{% set roleBg = 'rgba(var(--synapse-admin-brand-rgb), 0.05)' %}
-								{% set roleIcon = 'bot' %}
-								{% set roleLabel = 'Assistant' %}
-							{% endif %}
+                            {% if msg.role == 'system' %}
+                                {% set roleColor = 'var(--synapse-admin-neutral)' %}
+                                {% set roleBg = 'var(--synapse-admin-bg-hover)' %}
+                                {% set roleIcon = 'settings' %}
+                                {% set roleLabel = 'Système' %}
+                            {% elseif msg.role == 'user' %}
+                                {% set roleColor = 'var(--synapse-admin-primary)' %}
+                                {% set roleBg = 'rgba(var(--synapse-admin-primary-rgb), 0.05)' %}
+                                {% set roleIcon = 'user' %}
+                                {% set roleLabel = 'Utilisateur' %}
+                            {% elseif msg.role == 'assistant' or msg.role == 'model' %}
+                                {% set roleColor = 'var(--synapse-admin-brand)' %}
+                                {% set roleBg = 'rgba(var(--synapse-admin-brand-rgb), 0.05)' %}
+                                {% set roleIcon = 'bot' %}
+                                {% set roleLabel = 'Assistant' %}
+                            {% endif %}
 
-							<div style="border-left: 4px solid {{ roleColor }}; background-color: {{ roleBg }}; padding: 1rem; border-radius: 0 var(--synapse-admin-radius) var(--synapse-admin-radius) 0;">
-								<div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; color: {{ roleColor }}; text-transform: uppercase; letter-spacing: 0.05em;">
-									<i data-lucide="{{ roleIcon }}" style="width: 1rem; height: 1rem;"></i>
-									{{ roleLabel }}
-								</div>
+                            <div style="border-left: 4px solid {{ roleColor }}; background-color: {{ roleBg }}; padding: 1rem; border-radius: 0 var(--synapse-admin-radius) var(--synapse-admin-radius) 0;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; color: {{ roleColor }}; text-transform: uppercase; letter-spacing: 0.05em;">
+                                    <i data-lucide="{{ roleIcon }}" style="width: 1rem; height: 1rem;"></i>
+                                    {{ roleLabel }}
+                                </div>
 
-								{% if msg.content is iterable %}
-									{# Parts array representation (multipart format) #}
-									<div style="font-size: 0.9rem; color: var(--synapse-admin-text); line-height: 1.5;">
-										{% for part in msg.content %}
-											{% if part.type is defined and part.type == 'text' %}
-												<div style="white-space: pre-wrap;">{{ part.text }}</div>
-											{% elseif part.type is defined and part.type == 'image_url' %}
-												{% set _dataUri = part.image_url.url %}
-												{% set _mime = _dataUri starts with 'data:' ? (_dataUri|split(';')|first|slice(5)) : 'unknown' %}
-												<div style="margin: 8px 0;">
-													{% include '@SynapseCore/components/_attachment_badge.html.twig' with {
-														mime_type: _mime,
-														url: _dataUri,
-														mode: 'inline'
-													} only %}
-												</div>
-											{% elseif part.text is defined %}
-												<div style="white-space: pre-wrap;">{{ part.text }}</div>
-											{% elseif part.functionCall is defined %}
-												<span class="synapse-admin-badge synapse-admin-badge--warning">Appel d'outil:
-													{{ part.functionCall.name }}</span>
-											{% endif %}
-										{% endfor %}
-									</div>
-								{% else %}
-									{# Standard string representation (OpenAI, etc.) #}
-									<div style="font-size: 0.9rem; color: var(--synapse-admin-text); white-space: pre-wrap; line-height: 1.5;">{{ msg.content }}</div>
-								{% endif %}
-							</div>
-						{% endfor %}
-					</div>
-				</div>
-			{% endif %}
+                                {% if msg.content is iterable %}
+                                    {# Parts array representation (multipart format) #}
+                                    <div style="font-size: 0.9rem; color: var(--synapse-admin-text); line-height: 1.5;">
+                                        {% for part in msg.content %}
+                                            {% if part.type is defined and part.type == 'text' %}
+                                                <div style="white-space: pre-wrap;">{{ part.text }}</div>
+                                            {% elseif part.type is defined and part.type == 'image_url' %}
+                                                {% set _dataUri = part.image_url.url %}
+                                                {% set _mime = _dataUri starts with 'data:' ? (_dataUri|split(';')|first|slice(5)) : 'unknown' %}
+                                                <div style="margin: 8px 0;">
+                                                    {{ include('@SynapseCore/components/_attachment_badge.html.twig', {
+                                                        mime_type: _mime,
+                                                        url: _dataUri,
+                                                        mode: 'inline',
+                                                    }, false) }}
+                                                </div>
+                                            {% elseif part.text is defined %}
+                                                <div style="white-space: pre-wrap;">{{ part.text }}</div>
+                                            {% elseif part.functionCall is defined %}
+                                                <span class="synapse-admin-badge synapse-admin-badge--warning">Appel d'outil:
+                                                    {{ part.functionCall.name }}</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {# Standard string representation (OpenAI, etc.) #}
+                                    <div style="font-size: 0.9rem; color: var(--synapse-admin-text); white-space: pre-wrap; line-height: 1.5;">{{ msg.content }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
 
-			{# Section 2: Generation Turns #}
-			<h2 class="synapse-admin-page-title" style="font-size: 1.25rem; margin-top: 2rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-				<i data-lucide="message-circle" style="color: var(--synapse-admin-text-muted);"></i>
-				Tours d'exécution LLM (Itérations)
-			</h2>
+            {# Section 2: Generation Turns #}
+            <h2 class="synapse-admin-page-title" style="font-size: 1.25rem; margin-top: 2rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="message-circle" style="color: var(--synapse-admin-text-muted);"></i>
+                Tours d'exécution LLM (Itérations)
+            </h2>
 
-			{% if turns|length == 0 %}
-				<div class="synapse-admin-card">
-					<div class="synapse-admin-empty">
-						<div class="synapse-admin-empty__icon">
-							<i data-lucide="message-square-dashed"></i>
-						</div>
-						<div class="synapse-admin-empty__title">Aucun tour enregistré</div>
-					</div>
-				</div>
-			{% else %}
-				{% for i, turn in turns %}
-					<div class="synapse-admin-card synapse-admin-mb-xl">
-						<div class="synapse-admin-card__header">
-							<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--{{ turn.thinking ? 'info' : 'success' }}">
-								<i data-lucide="corner-down-right"></i>
-							</div>
-							<div>
-								<div class="synapse-admin-card__title">Tour #{{ turn.turn ?? i }}</div>
-								<div class="synapse-admin-card__subtitle">
-									{% if turn.usage.total_tokens ?? false %}
-										{{ turn.usage.total_tokens }}
-										tokens générés
-																																																																						({{ turn.usage.prompt_tokens ?? 0 }}
-										prompt,
-										{{ turn.usage.completion_tokens ?? 0 }}
-										complétion,
-										{{ turn.usage.thinking_tokens ?? 0 }}
-										réflexion)
-									{% else %}
-										Détails de génération
-									{% endif %}
-								</div>
-							</div>
-						</div>
-						<div class="synapse-admin-card__body" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            {% if turns|length == 0 %}
+                <div class="synapse-admin-card">
+                    <div class="synapse-admin-empty">
+                        <div class="synapse-admin-empty__icon">
+                            <i data-lucide="message-square-dashed"></i>
+                        </div>
+                        <div class="synapse-admin-empty__title">Aucun tour enregistré</div>
+                    </div>
+                </div>
+            {% else %}
+                {% for i, turn in turns %}
+                    <div class="synapse-admin-card synapse-admin-mb-xl">
+                        <div class="synapse-admin-card__header">
+                            <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--{{ turn.thinking ? 'info' : 'success' }}">
+                                <i data-lucide="corner-down-right"></i>
+                            </div>
+                            <div>
+                                <div class="synapse-admin-card__title">Tour #{{ turn.turn ?? i }}</div>
+                                <div class="synapse-admin-card__subtitle">
+                                    {% if turn.usage.total_tokens ?? false %}
+                                        {{ turn.usage.total_tokens }}
+                                        tokens générés
+                                                                                                                                                                                                                                                                                        ({{ turn.usage.prompt_tokens ?? 0 }}
+                                        prompt,
+                                        {{ turn.usage.completion_tokens ?? 0 }}
+                                        complétion,
+                                        {{ turn.usage.thinking_tokens ?? 0 }}
+                                        réflexion)
+                                    {% else %}
+                                        Détails de génération
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="synapse-admin-card__body" style="display: flex; flex-direction: column; gap: 1.5rem;">
 
-							{% if turn.thinking ?? false %}
-								<div>
-									<h4 style="font-size: 0.875rem; font-weight: 600; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-										<i data-lucide="brain" style="width: 1rem; height: 1rem;"></i>
-										Thinking (Réflexion interne)
-									</h4>
-									<div style="background-color: var(--synapse-admin-bg-hover); padding: 1rem; border-radius: var(--synapse-admin-radius); border-left: 3px solid var(--synapse-admin-info); color: var(--synapse-admin-text-secondary); font-size: 0.875rem; white-space: pre-wrap; font-family: monospace;">{{ turn.thinking }}</div>
-								</div>
-							{% endif %}
+                            {% if turn.thinking ?? false %}
+                                <div>
+                                    <h4 style="font-size: 0.875rem; font-weight: 600; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        <i data-lucide="brain" style="width: 1rem; height: 1rem;"></i>
+                                        Thinking (Réflexion interne)
+                                    </h4>
+                                    <div style="background-color: var(--synapse-admin-bg-hover); padding: 1rem; border-radius: var(--synapse-admin-radius); border-left: 3px solid var(--synapse-admin-info); color: var(--synapse-admin-text-secondary); font-size: 0.875rem; white-space: pre-wrap; font-family: monospace;">{{ turn.thinking }}</div>
+                                </div>
+                            {% endif %}
 
-							{% if turn.text ?? false %}
-								<div>
-									<h4 style="font-size: 0.875rem; font-weight: 600; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-										<i data-lucide="message-square" style="width: 1rem; height: 1rem;"></i>
-										Réponse (Texte)
-									</h4>
-									<div style="padding: 1rem; border: 1px solid var(--synapse-admin-border); border-radius: var(--synapse-admin-radius); white-space: pre-wrap;">{{ turn.text }}</div>
-								</div>
-							{% endif %}
+                            {% if turn.text ?? false %}
+                                <div>
+                                    <h4 style="font-size: 0.875rem; font-weight: 600; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        <i data-lucide="message-square" style="width: 1rem; height: 1rem;"></i>
+                                        Réponse (Texte)
+                                    </h4>
+                                    <div style="padding: 1rem; border: 1px solid var(--synapse-admin-border); border-radius: var(--synapse-admin-radius); white-space: pre-wrap;">{{ turn.text }}</div>
+                                </div>
+                            {% endif %}
 
-							{% if turn.function_calls ?? false %}
-								<div>
-									<h4 style="font-size: 0.875rem; font-weight: 600; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-										<i data-lucide="tool" style="width: 1rem; height: 1rem;"></i>
-										Appels d'outils demandés
-									</h4>
-									{% for fc in turn.function_calls %}
-										<div style="background-color: var(--synapse-admin-bg); border: 1px solid var(--synapse-admin-border); border-radius: var(--synapse-admin-radius); margin-bottom: 0.5rem;">
-											<div style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); font-weight: 600; font-family: monospace; background-color: var(--synapse-admin-bg-hover);">
-												{{ fc.name }}()
-											</div>
-											<div style="padding: 1rem;">
-												<pre class="synapse-admin-code-block" style="margin: 0;">{{ fc.args|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
-											</div>
-										</div>
-									{% endfor %}
-								</div>
-							{% endif %}
+                            {% if turn.function_calls ?? false %}
+                                <div>
+                                    <h4 style="font-size: 0.875rem; font-weight: 600; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        <i data-lucide="tool" style="width: 1rem; height: 1rem;"></i>
+                                        Appels d'outils demandés
+                                    </h4>
+                                    {% for fc in turn.function_calls %}
+                                        <div style="background-color: var(--synapse-admin-bg); border: 1px solid var(--synapse-admin-border); border-radius: var(--synapse-admin-radius); margin-bottom: 0.5rem;">
+                                            <div style="padding: 0.5rem 1rem; border-bottom: 1px solid var(--synapse-admin-border); font-weight: 600; font-family: monospace; background-color: var(--synapse-admin-bg-hover);">
+                                                {{ fc.name }}()
+                                            </div>
+                                            <div style="padding: 1rem;">
+                                                <pre class="synapse-admin-code-block" style="margin: 0;">{{ fc.args|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
 
-						</div>
-					</div>
-				{% endfor %}
-			{% endif %}
-		</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
 
-		{# TAB 4: MÉMOIRE ET CONTEXTE (MEMORY) #}
-		<div class="synapse-admin-tab-pane" id="tab-memory" style="display: none;">
-			{% set memoryMatching = null %}
-			{% if data.prompt_metadata ?? false and data.prompt_metadata.memory_matching is defined %}
-				{% set memoryMatching = data.prompt_metadata.memory_matching %}
-			{% endif %}
+        {# TAB 4: MÉMOIRE ET CONTEXTE (MEMORY) #}
+        <div class="synapse-admin-tab-pane" id="tab-memory" style="display: none;">
+            {% set memoryMatching = null %}
+            {% if data.prompt_metadata ?? false and data.prompt_metadata.memory_matching is defined %}
+                {% set memoryMatching = data.prompt_metadata.memory_matching %}
+            {% endif %}
 
-			{% if memoryMatching is not null %}
-				<div class="synapse-admin-card synapse-admin-mb-xl">
-					<div class="synapse-admin-card__header">
-						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
-							<i data-lucide="brain"></i>
-						</div>
-						<div>
-							<div class="synapse-admin-card__title">Analyses de Mémoire Vectorielle</div>
-							<div class="synapse-admin-card__subtitle">Rappel (PgVector ou PHP) calculé avant l'envoi du prompt</div>
-						</div>
-					</div>
-					<div class="synapse-admin-card__body">
-						{% if memoryMatching.error ?? false %}
-							<div style="background-color: var(--synapse-admin-error); color: white; padding: 1rem; border-radius: var(--synapse-admin-radius); margin-bottom: 1rem;">
-								<strong>Erreur lors du rappel partiel :</strong><br>
-								{{ memoryMatching.error }}
-							</div>
-						{% endif %}
+            {% if memoryMatching is not null %}
+                <div class="synapse-admin-card synapse-admin-mb-xl">
+                    <div class="synapse-admin-card__header">
+                        <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
+                            <i data-lucide="brain"></i>
+                        </div>
+                        <div>
+                            <div class="synapse-admin-card__title">Analyses de Mémoire Vectorielle</div>
+                            <div class="synapse-admin-card__subtitle">Rappel (PgVector ou PHP) calculé avant l'envoi du prompt</div>
+                        </div>
+                    </div>
+                    <div class="synapse-admin-card__body">
+                        {% if memoryMatching.error ?? false %}
+                            <div style="background-color: var(--synapse-admin-error); color: white; padding: 1rem; border-radius: var(--synapse-admin-radius); margin-bottom: 1rem;">
+                                <strong>Erreur lors du rappel partiel :</strong><br>
+                                {{ memoryMatching.error }}
+                            </div>
+                        {% endif %}
 
-						{% if memoryMatching.found > 0 %}
-							<div style="margin-bottom: 1rem;">
-								<strong>{{ memoryMatching.found }}</strong>
-								souvenir(s) trouvé(s) en base, 
-																																																                                dont
-								<strong>{{ memoryMatching.relevant }}</strong>
-								dépassent le seuil de pertinence strict ({{ memoryMatching.threshold }}).
-							</div>
-							<div style="display: flex; flex-direction: column; gap: 0.5rem;">
-								{% for mem in memoryMatching.details %}
-									<div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background-color: var(--synapse-admin-bg-hover); border-left: 3px solid {{ mem.score >= memoryMatching.threshold ? 'var(--synapse-admin-info)' : 'var(--synapse-admin-border)' }};">
-										<span style="font-size: 0.875rem; color: {{ mem.score >= memoryMatching.threshold ? 'var(--synapse-admin-text)' : 'var(--synapse-admin-text-muted)' }};">{{ mem.content }}</span>
-										<span class="synapse-admin-badge synapse-admin-badge--{{ mem.score >= memoryMatching.threshold ? 'success' : 'neutral' }}">Score:
-											{{ mem.score|number_format(2) }}</span>
-									</div>
-								{% endfor %}
-							</div>
-						{% else %}
-							<p class="synapse-admin-text-muted m-0">Aucun souvenir pertinent trouvé dans l'historique utilisateur pour ce message.</p>
-						{% endif %}
-					</div>
-				</div>
-			{% else %}
-				<div class="synapse-admin-card">
-					<div class="synapse-admin-empty">
-						<div class="synapse-admin-empty__icon">
-							<i data-lucide="brain"></i>
-						</div>
-						<div class="synapse-admin-empty__title">Aucune injection mémorielle</div>
-					</div>
-				</div>
-			{% endif %}
+                        {% if memoryMatching.found > 0 %}
+                            <div style="margin-bottom: 1rem;">
+                                <strong>{{ memoryMatching.found }}</strong>
+                                souvenir(s) trouvé(s) en base,
+                                                                                                                                                                                                                                dont
+                                <strong>{{ memoryMatching.relevant }}</strong>
+                                dépassent le seuil de pertinence strict ({{ memoryMatching.threshold }}).
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                {% for mem in memoryMatching.details %}
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background-color: var(--synapse-admin-bg-hover); border-left: 3px solid {{ mem.score >= memoryMatching.threshold ? 'var(--synapse-admin-info)' : 'var(--synapse-admin-border)' }};">
+                                        <span style="font-size: 0.875rem; color: {{ mem.score >= memoryMatching.threshold ? 'var(--synapse-admin-text)' : 'var(--synapse-admin-text-muted)' }};">{{ mem.content }}</span>
+                                        <span class="synapse-admin-badge synapse-admin-badge--{{ mem.score >= memoryMatching.threshold ? 'success' : 'neutral' }}">Score:
+                                            {{ mem.score|number_format(2) }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="synapse-admin-text-muted m-0">Aucun souvenir pertinent trouvé dans l'historique utilisateur pour ce message.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="synapse-admin-card">
+                    <div class="synapse-admin-empty">
+                        <div class="synapse-admin-empty__icon">
+                            <i data-lucide="brain"></i>
+                        </div>
+                        <div class="synapse-admin-empty__title">Aucune injection mémorielle</div>
+                    </div>
+                </div>
+            {% endif %}
 
-			{# ── Section RAG ── #}
-			{% set ragMatching = null %}
-			{% if data.prompt_metadata ?? false and data.prompt_metadata.rag_matching is defined %}
-				{% set ragMatching = data.prompt_metadata.rag_matching %}
-			{% endif %}
+            {# ── Section RAG ── #}
+            {% set ragMatching = null %}
+            {% if data.prompt_metadata ?? false and data.prompt_metadata.rag_matching is defined %}
+                {% set ragMatching = data.prompt_metadata.rag_matching %}
+            {% endif %}
 
-			{% if ragMatching is not null %}
-				<div class="synapse-admin-card synapse-admin-mb-xl">
-					<div class="synapse-admin-card__header">
-						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
-							<i data-lucide="database"></i>
-						</div>
-						<div>
-							<div class="synapse-admin-card__title">Base de Connaissance (RAG)</div>
-							<div class="synapse-admin-card__subtitle">
-								Recherche sémantique dans les sources documentaires
-								{% if ragMatching.agent ?? false %}
-									<span class="synapse-admin-badge synapse-admin-badge--neutral" style="margin-left: 0.5rem;">{{ ragMatching.agent }}</span>
-								{% endif %}
-							</div>
-						</div>
-					</div>
-					<div class="synapse-admin-card__body">
-						{% if ragMatching.error ?? false %}
-							<div style="background-color: var(--synapse-admin-error); color: white; padding: 1rem; border-radius: var(--synapse-admin-radius); margin-bottom: 1rem;">
-								<strong>Erreur lors de la recherche RAG :</strong><br>{{ ragMatching.error }}
-							</div>
-						{% endif %}
+            {% if ragMatching is not null %}
+                <div class="synapse-admin-card synapse-admin-mb-xl">
+                    <div class="synapse-admin-card__header">
+                        <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
+                            <i data-lucide="database"></i>
+                        </div>
+                        <div>
+                            <div class="synapse-admin-card__title">Base de Connaissance (RAG)</div>
+                            <div class="synapse-admin-card__subtitle">
+                                Recherche sémantique dans les sources documentaires
+                                {% if ragMatching.agent ?? false %}
+                                    <span class="synapse-admin-badge synapse-admin-badge--neutral" style="margin-left: 0.5rem;">{{ ragMatching.agent }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="synapse-admin-card__body">
+                        {% if ragMatching.error ?? false %}
+                            <div style="background-color: var(--synapse-admin-error); color: white; padding: 1rem; border-radius: var(--synapse-admin-radius); margin-bottom: 1rem;">
+                                <strong>Erreur lors de la recherche RAG :</strong><br>{{ ragMatching.error }}
+                            </div>
+                        {% endif %}
 
-						{% if ragMatching.sources_queried ?? false %}
-							<div style="margin-bottom: 1rem; display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;">
-								<span style="font-size: 0.8rem; color: var(--synapse-admin-text-muted);">Sources interrogées :</span>
-								{% for slug in ragMatching.sources_queried %}
-									<span class="synapse-admin-badge synapse-admin-badge--info">{{ slug }}</span>
-								{% endfor %}
-							</div>
-						{% endif %}
+                        {% if ragMatching.sources_queried ?? false %}
+                            <div style="margin-bottom: 1rem; display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;">
+                                <span style="font-size: 0.8rem; color: var(--synapse-admin-text-muted);">Sources interrogées :</span>
+                                {% for slug in ragMatching.sources_queried %}
+                                    <span class="synapse-admin-badge synapse-admin-badge--info">{{ slug }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
 
-						{% if (ragMatching.found ?? 0) > 0 %}
-							<div style="margin-bottom: 1rem;">
-								<strong>{{ ragMatching.found }}</strong> chunk(s) trouvé(s),
-								dont <strong>{{ ragMatching.details|length }}</strong> injecté(s) dans le prompt
-								(seuil&nbsp;: {{ ragMatching.threshold }}).
-							</div>
-							<div style="display: flex; flex-direction: column; gap: 0.5rem;">
-								{% for chunk in ragMatching.details %}
-									<div style="padding: 0.75rem; background-color: var(--synapse-admin-bg-hover); border-left: 3px solid {{ chunk.score >= ragMatching.threshold ? 'var(--synapse-admin-success)' : 'var(--synapse-admin-border)' }}; border-radius: 0 var(--synapse-admin-radius) var(--synapse-admin-radius) 0;">
-										<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
-											<span style="font-size: 0.875rem; color: var(--synapse-admin-text); flex: 1;">{{ chunk.content }}</span>
-											<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; flex-shrink: 0;">
-												<span class="synapse-admin-badge synapse-admin-badge--{{ chunk.score >= ragMatching.threshold ? 'success' : 'neutral' }}">Score&nbsp;: {{ chunk.score|number_format(3) }}</span>
-												{% if chunk.source ?? false %}
-													<span class="synapse-admin-badge synapse-admin-badge--info" style="font-size: 0.7rem;">{{ chunk.source }}</span>
-												{% endif %}
-											</div>
-										</div>
-									</div>
-								{% endfor %}
-							</div>
-						{% else %}
-							<p class="synapse-admin-text-muted m-0">
-								Aucun chunk pertinent trouvé{% if (ragMatching.sources_queried ?? [])|length > 0 %} dans {{ ragMatching.sources_queried|length }} source(s) (seuil&nbsp;: {{ ragMatching.threshold }}){% endif %}.
-							</p>
-						{% endif %}
-					</div>
-				</div>
-			{% endif %}
-		</div>
+                        {% if (ragMatching.found ?? 0) > 0 %}
+                            <div style="margin-bottom: 1rem;">
+                                <strong>{{ ragMatching.found }}</strong> chunk(s) trouvé(s),
+                                dont <strong>{{ ragMatching.details|length }}</strong> injecté(s) dans le prompt
+                                (seuil&nbsp;: {{ ragMatching.threshold }}).
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                {% for chunk in ragMatching.details %}
+                                    <div style="padding: 0.75rem; background-color: var(--synapse-admin-bg-hover); border-left: 3px solid {{ chunk.score >= ragMatching.threshold ? 'var(--synapse-admin-success)' : 'var(--synapse-admin-border)' }}; border-radius: 0 var(--synapse-admin-radius) var(--synapse-admin-radius) 0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;">
+                                            <span style="font-size: 0.875rem; color: var(--synapse-admin-text); flex: 1;">{{ chunk.content }}</span>
+                                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; flex-shrink: 0;">
+                                                <span class="synapse-admin-badge synapse-admin-badge--{{ chunk.score >= ragMatching.threshold ? 'success' : 'neutral' }}">Score&nbsp;: {{ chunk.score|number_format(3) }}</span>
+                                                {% if chunk.source ?? false %}
+                                                    <span class="synapse-admin-badge synapse-admin-badge--info" style="font-size: 0.7rem;">{{ chunk.source }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="synapse-admin-text-muted m-0">
+                                Aucun chunk pertinent trouvé{% if (ragMatching.sources_queried ?? [])|length > 0 %} dans {{ ragMatching.sources_queried|length }} source(s) (seuil&nbsp;: {{ ragMatching.threshold }}){% endif %}.
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
 
-		{# TAB 5: OUTILS & REQUÊTES (TOOLS) #}
-		<div
-			class="synapse-admin-tab-pane" id="tab-tools" style="display: none;">
-			{# Outils proposés #}
-			{% if data.tool_definitions ?? false %}
-				<div class="synapse-admin-card synapse-admin-mb-xl">
-					<div class="synapse-admin-card__header">
-						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
-							<i data-lucide="wrench"></i>
-						</div>
-						<div>
-							<div class="synapse-admin-card__title">Outils Inscrits ({{ data.tool_definitions|length }})</div>
-							<div class="synapse-admin-card__subtitle">Définitions JSON Schema exposées au modèle</div>
-						</div>
-					</div>
-					<div class="synapse-admin-card__body">
-						<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1rem; max-height: 600px; overflow-y: auto;">
-							{% for tool in data.tool_definitions %}
-								<div style="background-color: var(--synapse-admin-bg-hover); border: 1px solid var(--synapse-admin-border); border-radius: var(--synapse-admin-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
-									<div style="display: flex; align-items: flex-start; gap: 0.75rem;">
-										<div style="background-color: var(--synapse-bg-highlight); color: var(--synapse-admin-primary); padding: 0.5rem; border-radius: 8px;">
-											<i data-lucide="wrench" style="width: 1.25rem; height: 1.25rem;"></i>
-										</div>
-										<div>
-											<strong style="color: var(--synapse-admin-text); display: block; font-size: 1rem; font-family: monospace;">{{ tool.name }}</strong>
-											<p style="color: var(--synapse-admin-text-secondary); font-size: 0.85rem; margin: 0.25rem 0 0 0; line-height: 1.4;">{{ tool.description }}</p>
-										</div>
-									</div>
+        {# TAB 5: OUTILS & REQUÊTES (TOOLS) #}
+        <div
+            class="synapse-admin-tab-pane" id="tab-tools" style="display: none;">
+            {# Outils proposés #}
+            {% if data.tool_definitions ?? false %}
+                <div class="synapse-admin-card synapse-admin-mb-xl">
+                    <div class="synapse-admin-card__header">
+                        <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
+                            <i data-lucide="wrench"></i>
+                        </div>
+                        <div>
+                            <div class="synapse-admin-card__title">Outils Inscrits ({{ data.tool_definitions|length }})</div>
+                            <div class="synapse-admin-card__subtitle">Définitions JSON Schema exposées au modèle</div>
+                        </div>
+                    </div>
+                    <div class="synapse-admin-card__body">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1rem; max-height: 600px; overflow-y: auto;">
+                            {% for tool in data.tool_definitions %}
+                                <div style="background-color: var(--synapse-admin-bg-hover); border: 1px solid var(--synapse-admin-border); border-radius: var(--synapse-admin-radius); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                                    <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                                        <div style="background-color: var(--synapse-bg-highlight); color: var(--synapse-admin-primary); padding: 0.5rem; border-radius: 8px;">
+                                            <i data-lucide="wrench" style="width: 1.25rem; height: 1.25rem;"></i>
+                                        </div>
+                                        <div>
+                                            <strong style="color: var(--synapse-admin-text); display: block; font-size: 1rem; font-family: monospace;">{{ tool.name }}</strong>
+                                            <p style="color: var(--synapse-admin-text-secondary); font-size: 0.85rem; margin: 0.25rem 0 0 0; line-height: 1.4;">{{ tool.description }}</p>
+                                        </div>
+                                    </div>
 
-									{% if tool.parameters.properties is defined and tool.parameters.properties|length > 0 %}
-										<div style="margin-top: 0.5rem; border-top: 1px dashed var(--synapse-admin-border); padding-top: 0.75rem;">
-											<h5 style="font-size: 0.75rem; text-transform: uppercase; color: var(--synapse-admin-text-muted); margin-bottom: 0.5rem; letter-spacing: 0.05em;">Paramètres acceptés</h5>
-											<ul style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
-												{% for propName, propDetails in tool.parameters.properties %}
-													<li style="display: flex; flex-direction: column; gap: 0.25rem; background-color: var(--synapse-admin-bg); padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--synapse-admin-border-light);">
-														<div style="display: flex; justify-content: space-between; align-items: center;">
-															<code style="font-weight: 600; color: var(--synapse-admin-text); font-size: 0.85rem;">{{ propName }}</code>
-															<div style="display: flex; gap: 0.5rem;">
-																{% if tool.parameters.required is defined and propName in tool.parameters.required %}
-																	<span class="synapse-admin-badge synapse-admin-badge--warning" style="font-size: 0.7rem; padding: 0.1rem 0.3rem;">Requis</span>
-																{% endif %}
-																<span class="synapse-admin-badge synapse-admin-badge--neutral" style="font-size: 0.7rem; padding: 0.1rem 0.3rem;">{{ propDetails.type|default('string') }}</span>
-															</div>
-														</div>
-														{% if propDetails.description is defined %}
-															<div style="font-size: 0.8rem; color: var(--synapse-admin-text-muted);">{{ propDetails.description }}</div>
-														{% endif %}
-													</li>
-												{% endfor %}
-											</ul>
-										</div>
-									{% else %}
-										<div style="margin-top: 0.5rem; border-top: 1px dashed var(--synapse-admin-border); padding-top: 0.75rem;">
-											<span class="synapse-admin-text-muted" style="font-size: 0.8rem; font-style: italic;">Aucun paramètre requis.</span>
-										</div>
-									{% endif %}
-								</div>
-							{% endfor %}
-						</div>
-					</div>
-				</div>
-			{% endif %}
+                                    {% if tool.parameters.properties is defined and tool.parameters.properties|length > 0 %}
+                                        <div style="margin-top: 0.5rem; border-top: 1px dashed var(--synapse-admin-border); padding-top: 0.75rem;">
+                                            <h5 style="font-size: 0.75rem; text-transform: uppercase; color: var(--synapse-admin-text-muted); margin-bottom: 0.5rem; letter-spacing: 0.05em;">Paramètres acceptés</h5>
+                                            <ul style="list-style-type: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                                                {% for propName, propDetails in tool.parameters.properties %}
+                                                    <li style="display: flex; flex-direction: column; gap: 0.25rem; background-color: var(--synapse-admin-bg); padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--synapse-admin-border-light);">
+                                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                            <code style="font-weight: 600; color: var(--synapse-admin-text); font-size: 0.85rem;">{{ propName }}</code>
+                                                            <div style="display: flex; gap: 0.5rem;">
+                                                                {% if tool.parameters.required is defined and propName in tool.parameters.required %}
+                                                                    <span class="synapse-admin-badge synapse-admin-badge--warning" style="font-size: 0.7rem; padding: 0.1rem 0.3rem;">Requis</span>
+                                                                {% endif %}
+                                                                <span class="synapse-admin-badge synapse-admin-badge--neutral" style="font-size: 0.7rem; padding: 0.1rem 0.3rem;">{{ propDetails.type|default('string') }}</span>
+                                                            </div>
+                                                        </div>
+                                                        {% if propDetails.description is defined %}
+                                                            <div style="font-size: 0.8rem; color: var(--synapse-admin-text-muted);">{{ propDetails.description }}</div>
+                                                        {% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% else %}
+                                        <div style="margin-top: 0.5rem; border-top: 1px dashed var(--synapse-admin-border); padding-top: 0.75rem;">
+                                            <span class="synapse-admin-text-muted" style="font-size: 0.8rem; font-style: italic;">Aucun paramètre requis.</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
 
-			{# Outils Utilisés et Répondus #}
-			{% if data.tool_usage ?? false %}
-				<h2 class="synapse-admin-page-title" style="font-size: 1.25rem; margin-bottom: 1rem;">
-					Fonctions exécutées (Résultats retournés)
-				</h2>
-				{% for usage in data.tool_usage %}
-					<div class="synapse-admin-card synapse-admin-mb-xl">
-						<div class="synapse-admin-card__header">
-							<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
-								<i data-lucide="check-circle-2"></i>
-							</div>
-							<div>
-								<div class="synapse-admin-card__title">
-									<code style="font-size: 1rem;">{{ usage.tool_name }}()</code>
-								</div>
-								<div class="synapse-admin-card__subtitle">Outil exécuté par Synapse (Call ID:
-									{{ usage.tool_call_id }})</div>
-							</div>
-						</div>
-						<div class="synapse-admin-card__body" style="display: flex; flex-direction: column; gap: 1rem;">
-							<div>
-								<h5 style="font-size: 0.75rem; text-transform: uppercase; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; letter-spacing: 0.05em;">Paramètres (Args)</h5>
-								<pre class="synapse-admin-code-block">{{ usage.tool_args|default('{}') }}</pre>
-							</div>
-							<div>
-								<h5 style="font-size: 0.75rem; text-transform: uppercase; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; letter-spacing: 0.05em;">Résultat retourné au LLM</h5>
-								<pre class="synapse-admin-code-block">{{ usage.tool_result|default('{}') }}</pre>
-							</div>
-						</div>
-					</div>
-				{% endfor %}
-			{% endif %}
-		</div>
+            {# Outils Utilisés et Répondus #}
+            {% if data.tool_usage ?? false %}
+                <h2 class="synapse-admin-page-title" style="font-size: 1.25rem; margin-bottom: 1rem;">
+                    Fonctions exécutées (Résultats retournés)
+                </h2>
+                {% for usage in data.tool_usage %}
+                    <div class="synapse-admin-card synapse-admin-mb-xl">
+                        <div class="synapse-admin-card__header">
+                            <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
+                                <i data-lucide="check-circle-2"></i>
+                            </div>
+                            <div>
+                                <div class="synapse-admin-card__title">
+                                    <code style="font-size: 1rem;">{{ usage.tool_name }}()</code>
+                                </div>
+                                <div class="synapse-admin-card__subtitle">Outil exécuté par Synapse (Call ID:
+                                    {{ usage.tool_call_id }})</div>
+                            </div>
+                        </div>
+                        <div class="synapse-admin-card__body" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div>
+                                <h5 style="font-size: 0.75rem; text-transform: uppercase; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; letter-spacing: 0.05em;">Paramètres (Args)</h5>
+                                <pre class="synapse-admin-code-block">{{ usage.tool_args|default('{}') }}</pre>
+                            </div>
+                            <div>
+                                <h5 style="font-size: 0.75rem; text-transform: uppercase; color: var(--synapse-admin-text-secondary); margin-bottom: 0.5rem; letter-spacing: 0.05em;">Résultat retourné au LLM</h5>
+                                <pre class="synapse-admin-code-block">{{ usage.tool_result|default('{}') }}</pre>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
 
-		{# TAB 6: DATA BRUTES (RAW JSON) #}
-		<div
-			class="synapse-admin-tab-pane" id="tab-raw" style="display: none;">
-			{# 1. Requête Sortante #}
-			<div class="synapse-admin-card synapse-admin-mb-xl">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
-						<i data-lucide="send"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">Requête HTTP Sortante (Payload)</div>
-						<div class="synapse-admin-card__subtitle">Corps JSON brut envoyé au Provider LLM</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body">
-					{% if data.raw_request_body ?? false %}
-						<pre class="synapse-admin-code-block" style="font-size: 0.75rem; max-height: 400px; overflow-y: auto;">{{ data.raw_request_body|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
-					{% else %}
-						<p class="synapse-admin-text-muted m-0">Requête masquée ou non capturée pour ce provider.</p>
-					{% endif %}
-				</div>
-			</div>
+        {# TAB 6: DATA BRUTES (RAW JSON) #}
+        <div
+            class="synapse-admin-tab-pane" id="tab-raw" style="display: none;">
+            {# 1. Requête Sortante #}
+            <div class="synapse-admin-card synapse-admin-mb-xl">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
+                        <i data-lucide="send"></i>
+                    </div>
+                    <div>
+                        <div class="synapse-admin-card__title">Requête HTTP Sortante (Payload)</div>
+                        <div class="synapse-admin-card__subtitle">Corps JSON brut envoyé au Provider LLM</div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card__body">
+                    {% if data.raw_request_body ?? false %}
+                        <pre class="synapse-admin-code-block" style="font-size: 0.75rem; max-height: 400px; overflow-y: auto;">{{ data.raw_request_body|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+                    {% else %}
+                        <p class="synapse-admin-text-muted m-0">Requête masquée ou non capturée pour ce provider.</p>
+                    {% endif %}
+                </div>
+            </div>
 
-			{# 2. Réponse Entrante #}
-			<div class="synapse-admin-card synapse-admin-mb-xl">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--success">
-						<i data-lucide="download"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">Réponse HTTP Entrante</div>
-						<div class="synapse-admin-card__subtitle">Données brutes reçues du serveur (Response Body)</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body">
-					{% if data.raw_api_response ?? false %}
-						<pre class="synapse-admin-code-block" style="font-size: 0.75rem; max-height: 400px; overflow-y: auto;">{{ data.raw_api_response|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
-					{% elseif data.raw_api_chunks ?? false %}
-						<p class="synapse-admin-text-muted mb-2">Mode Streaming : Accumulation des chunks bruts.</p>
-						<pre class="synapse-admin-code-block" style="font-size: 0.75rem; max-height: 400px; overflow-y: auto;">{{ data.raw_api_chunks|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
-					{% else %}
-						<p class="synapse-admin-text-muted m-0">Réponse masquée ou non capturée.</p>
-					{% endif %}
-				</div>
-			</div>
+            {# 2. Réponse Entrante #}
+            <div class="synapse-admin-card synapse-admin-mb-xl">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--success">
+                        <i data-lucide="download"></i>
+                    </div>
+                    <div>
+                        <div class="synapse-admin-card__title">Réponse HTTP Entrante</div>
+                        <div class="synapse-admin-card__subtitle">Données brutes reçues du serveur (Response Body)</div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card__body">
+                    {% if data.raw_api_response ?? false %}
+                        <pre class="synapse-admin-code-block" style="font-size: 0.75rem; max-height: 400px; overflow-y: auto;">{{ data.raw_api_response|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+                    {% elseif data.raw_api_chunks ?? false %}
+                        <p class="synapse-admin-text-muted mb-2">Mode Streaming : Accumulation des chunks bruts.</p>
+                        <pre class="synapse-admin-code-block" style="font-size: 0.75rem; max-height: 400px; overflow-y: auto;">{{ data.raw_api_chunks|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+                    {% else %}
+                        <p class="synapse-admin-text-muted m-0">Réponse masquée ou non capturée.</p>
+                    {% endif %}
+                </div>
+            </div>
 
-			{# 3. Full Payload (Collapsible) #}
-			<details style="cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">
-				<summary style="font-size: 0.85rem; color: var(--synapse-admin-text-secondary); margin-bottom: 1rem; list-style: none; display: flex; align-items: center; gap: 0.5rem;">
-					<i data-lucide="chevron-right" style="width: 1rem;"></i>
-					Débogage interne : Voir l'objet Synapse complet (Debug Item)
-				</summary>
-				<div class="synapse-admin-card">
-					<div class="synapse-admin-card__body">
-						<pre class="synapse-admin-code-block" style="font-size: 0.75rem; max-height: 400px; overflow-y: auto;">{{ data|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
-					</div>
-				</div>
-			</details>
-		</div>
+            {# 3. Full Payload (Collapsible) #}
+            <details style="cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">
+                <summary style="font-size: 0.85rem; color: var(--synapse-admin-text-secondary); margin-bottom: 1rem; list-style: none; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="chevron-right" style="width: 1rem;"></i>
+                    Débogage interne : Voir l'objet Synapse complet (Debug Item)
+                </summary>
+                <div class="synapse-admin-card">
+                    <div class="synapse-admin-card__body">
+                        <pre class="synapse-admin-code-block" style="font-size: 0.75rem; max-height: 400px; overflow-y: auto;">{{ data|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+                    </div>
+                </div>
+            </details>
+        </div>
 
-	</div>
+    </div>
 
-	{# ── Arborescence agent (appels enfants déclenchés par ce log) ──────────── #}
-	{% if children is defined and children|length > 0 %}
-		<div class="synapse-admin-card synapse-admin-mt-lg">
-			<div class="synapse-admin-card__header">
-				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
-					<i data-lucide="git-branch"></i>
-				</div>
-				<div>
-					<div class="synapse-admin-card__title">Appels enfants ({{ children|length }})</div>
-					<div class="synapse-admin-card__subtitle">Cet agent a invoqué d'autres agents pendant son exécution. Chaque ligne ci-dessous est un appel LLM descendant.</div>
-				</div>
-			</div>
-			<div class="synapse-admin-table-container">
-				<table class="synapse-admin-table">
-					<thead>
-						<tr>
-							<th>ID</th>
-							<th>Profondeur</th>
-							<th>Origine</th>
-							<th>Modèle</th>
-							<th>Tokens</th>
-							<th>Date</th>
-							<th class="synapse-admin-table__cell--actions">Détail</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for child in children %}
-							<tr>
-								<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">{{ child.debugId|slice(0, 8) }}…</td>
-								<td><span class="synapse-admin-badge synapse-admin-badge--neutral">{{ child.depth }}</span></td>
-								<td><span class="synapse-admin-badge synapse-admin-badge--info">{{ child.origin }}</span></td>
-								<td class="synapse-admin-table__cell--mono synapse-admin-text-xs">{{ child.model ?? '—' }}</td>
-								<td class="synapse-admin-table__cell--mono">{{ child.totalTokens ?? '—' }}</td>
-								<td class="synapse-admin-table__cell--muted">{{ child.createdAt|date('d/m H:i:s') }}</td>
-								<td class="synapse-admin-table__cell--actions">
-									<a href="{{ path('synapse_debug_show', {id: child.debugId}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon">
-										<i data-lucide="external-link"></i>
-									</a>
-								</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	{% endif %}
+    {# ── Arborescence agent (appels enfants déclenchés par ce log) ──────────── #}
+    {% if children is defined and children|length > 0 %}
+        <div class="synapse-admin-card synapse-admin-mt-lg">
+            <div class="synapse-admin-card__header">
+                <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info">
+                    <i data-lucide="git-branch"></i>
+                </div>
+                <div>
+                    <div class="synapse-admin-card__title">Appels enfants ({{ children|length }})</div>
+                    <div class="synapse-admin-card__subtitle">Cet agent a invoqué d'autres agents pendant son exécution. Chaque ligne ci-dessous est un appel LLM descendant.</div>
+                </div>
+            </div>
+            <div class="synapse-admin-table-container">
+                <table class="synapse-admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Profondeur</th>
+                            <th>Origine</th>
+                            <th>Modèle</th>
+                            <th>Tokens</th>
+                            <th>Date</th>
+                            <th class="synapse-admin-table__cell--actions">Détail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for child in children %}
+                            <tr>
+                                <td class="synapse-admin-table__cell--mono synapse-admin-text-xs">{{ child.debugId|slice(0, 8) }}…</td>
+                                <td><span class="synapse-admin-badge synapse-admin-badge--neutral">{{ child.depth }}</span></td>
+                                <td><span class="synapse-admin-badge synapse-admin-badge--info">{{ child.origin }}</span></td>
+                                <td class="synapse-admin-table__cell--mono synapse-admin-text-xs">{{ child.model ?? '—' }}</td>
+                                <td class="synapse-admin-table__cell--mono">{{ child.totalTokens ?? '—' }}</td>
+                                <td class="synapse-admin-table__cell--muted">{{ child.createdAt|date('d/m H:i:s') }}</td>
+                                <td class="synapse-admin-table__cell--actions">
+                                    <a href="{{ path('synapse_debug_show', {id: child.debugId}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm synapse-admin-btn--icon">
+                                        <i data-lucide="external-link"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
 
-	{# Script JS pour naviguer entre les onglets #}
-	{# Script JS pour naviguer entre les onglets #}
-	<script>
-		const initDebugTabs = () => {
-			const buttons = document.querySelectorAll('.synapse-admin-tab-btn');
-			const panes = document.querySelectorAll('.synapse-admin-tab-pane');
+    {# Script JS pour naviguer entre les onglets #}
+    {# Script JS pour naviguer entre les onglets #}
+    <script>
+        const initDebugTabs = () => {
+            const buttons = document.querySelectorAll('.synapse-admin-tab-btn');
+            const panes = document.querySelectorAll('.synapse-admin-tab-pane');
 
-			if (buttons.length === 0) return;
+            if (buttons.length === 0) return;
 
-			buttons.forEach(button => {
-				button.addEventListener('click', () => {
-					// Remove active class from all
-					buttons.forEach(btn => btn.classList.remove('active'));
-					panes.forEach(pane => pane.style.display = 'none');
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all
+                    buttons.forEach(btn => btn.classList.remove('active'));
+                    panes.forEach(pane => pane.style.display = 'none');
 
-					// Add active class to clicked button and show pane
-					button.classList.add('active');
-					const targetId = 'tab-' + button.getAttribute('data-tab');
-					const targetPane = document.getElementById(targetId);
-					if (targetPane) {
-						targetPane.style.display = 'block';
-						// Trigger lucide icons if needed
-						if (window.lucide) {
-							window.lucide.createIcons();
-						}
-					}
-				});
-			});
-		};
+                    // Add active class to clicked button and show pane
+                    button.classList.add('active');
+                    const targetId = 'tab-' + button.getAttribute('data-tab');
+                    const targetPane = document.getElementById(targetId);
+                    if (targetPane) {
+                        targetPane.style.display = 'block';
+                        // Trigger lucide icons if needed
+                        if (window.lucide) {
+                            window.lucide.createIcons();
+                        }
+                    }
+                });
+            });
+        };
 
-		document.addEventListener('DOMContentLoaded', initDebugTabs);
-		document.addEventListener('turbo:load', initDebugTabs);
-	</script>
+        document.addEventListener('DOMContentLoaded', initDebugTabs);
+        document.addEventListener('turbo:load', initDebugTabs);
+    </script>
 
 {% endblock %}
- 

@@ -180,10 +180,10 @@
                                     <td class="synapse-admin-table__cell--mono">{{ log.scopeId }}</td>
                                     <td>
                                         {% set period_labels = {
-                                            'sliding_day': 'Glissant 4h',
-                                            'sliding_month': 'Glissant 30j',
-                                            'calendar_day': 'Jour cal.',
-                                            'calendar_month': 'Mois cal.'
+                                            sliding_day: 'Glissant 4h',
+                                            sliding_month: 'Glissant 30j',
+                                            calendar_day: 'Jour cal.',
+                                            calendar_month: 'Mois cal.',
                                         } %}
                                         {{ period_labels[log.period.value] ?? log.period.value }}
                                     </td>

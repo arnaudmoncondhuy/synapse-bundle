@@ -3,7 +3,7 @@
     Affiche les messages flash Symfony dans des toasts glassmorphism.
 #}
 {% set flashes_success = app.flashes('success') %}
-{% set flashes_error   = app.flashes('error') %}
+{% set flashes_error = app.flashes('error') %}
 {% set flashes_warning = app.flashes('warning') %}
 
 {% if flashes_success or flashes_error or flashes_warning %}

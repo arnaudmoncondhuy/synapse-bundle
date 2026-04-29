@@ -1,274 +1,274 @@
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
 {% block admin_page_title %}
-	{{ is_new ? 'synapse.admin.rag.edit.page_title.new'|trans(domain='synapse_admin') : 'synapse.admin.rag.edit.page_title.edit'|trans({'name': source.name}, domain='synapse_admin') }}
+    {{ is_new ? 'synapse.admin.rag.edit.page_title.new'|trans(domain: 'synapse_admin') : 'synapse.admin.rag.edit.page_title.edit'|trans({name: source.name}, domain: 'synapse_admin') }}
 {% endblock %}
 
 {% block admin_breadcrumb %}
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.memory'|trans(domain='synapse_admin') }}</a>
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="{{ path('synapse_admin_rag_sources') }}" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.rag_sources'|trans(domain='synapse_admin') }}</a>
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<span class="synapse-admin-topbar__current">{{ is_new ? 'synapse.admin.common.new'|trans(domain='synapse_admin') : source.name }}</span>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.memory'|trans(domain: 'synapse_admin') }}</a>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <a href="{{ path('synapse_admin_rag_sources') }}" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.rag_sources'|trans(domain: 'synapse_admin') }}</a>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <span class="synapse-admin-topbar__current">{{ is_new ? 'synapse.admin.common.new'|trans(domain: 'synapse_admin') : source.name }}</span>
 {% endblock %}
 
 {% block admin_content %}
 
-	<div class="synapse-admin-page-header">
-		<div class="synapse-admin-page-header__info">
-			<h1 class="synapse-admin-page-title">
-				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
-					<i data-lucide="database"></i>
-				</span>
-				{{ is_new ? 'synapse.admin.rag.edit.title.new'|trans(domain='synapse_admin') : 'synapse.admin.rag.edit.title.edit'|trans({'name': source.name}, domain='synapse_admin') }}
-			</h1>
-		</div>
-		<div class="synapse-admin-page-header__actions">
-			<a href="{{ path('synapse_admin_rag_sources') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
-				<i data-lucide="x"></i>
-				{{ 'synapse.admin.common.cancel'|trans(domain='synapse_admin') }}
-			</a>
-			<button type="submit" form="rag-source-form" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
-				<i data-lucide="save"></i>
-				{{ is_new ? 'synapse.admin.rag.edit.action.create'|trans(domain='synapse_admin') : 'synapse.admin.rag.edit.action.save'|trans(domain='synapse_admin') }}
-			</button>
-		</div>
-	</div>
+    <div class="synapse-admin-page-header">
+        <div class="synapse-admin-page-header__info">
+            <h1 class="synapse-admin-page-title">
+                <span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+                    <i data-lucide="database"></i>
+                </span>
+                {{ is_new ? 'synapse.admin.rag.edit.title.new'|trans(domain: 'synapse_admin') : 'synapse.admin.rag.edit.title.edit'|trans({name: source.name}, domain: 'synapse_admin') }}
+            </h1>
+        </div>
+        <div class="synapse-admin-page-header__actions">
+            <a href="{{ path('synapse_admin_rag_sources') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+                <i data-lucide="x"></i>
+                {{ 'synapse.admin.common.cancel'|trans(domain: 'synapse_admin') }}
+            </a>
+            <button type="submit" form="rag-source-form" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+                <i data-lucide="save"></i>
+                {{ is_new ? 'synapse.admin.rag.edit.action.create'|trans(domain: 'synapse_admin') : 'synapse.admin.rag.edit.action.save'|trans(domain: 'synapse_admin') }}
+            </button>
+        </div>
+    </div>
 
-	<form id="rag-source-form" method="post" action="{{ is_new ? path('synapse_admin_rag_sources_new') : path('synapse_admin_rag_sources_edit', {id: source.id}) }}">
-		<input type="hidden" name="_token" value="{{ csrf_token('synapse_rag_source_edit') }}">
+    <form id="rag-source-form" method="post" action="{{ is_new ? path('synapse_admin_rag_sources_new') : path('synapse_admin_rag_sources_edit', {id: source.id}) }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('synapse_rag_source_edit') }}">
 
-		{# ── Identification ────────────────────────────────────────────────────── #}
-		<div class="synapse-admin-card synapse-admin-mb-lg">
-			<div class="synapse-admin-card__header">
-				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
-					<i data-lucide="tag"></i>
-				</div>
-				<div>
-					<div class="synapse-admin-card__title">{{ 'synapse.admin.rag.edit.section.id.title'|trans(domain='synapse_admin') }}</div>
-					<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.rag.edit.section.id.subtitle'|trans(domain='synapse_admin') }}</div>
-				</div>
-			</div>
-			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-				<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-md">
-					<div class="synapse-admin-form-group">
-						<label class="synapse-admin-label" for="rag-name">
-							{{ 'synapse.admin.rag.edit.label.name'|trans(domain='synapse_admin') }} <span class="synapse-admin-required">*</span>
-						</label>
-						<input type="text" id="rag-name" name="name" value="{{ source.name }}"
-							class="synapse-admin-input" required placeholder="{{ 'synapse.admin.rag.edit.placeholder.name'|trans(domain='synapse_admin') }}">
-					</div>
-					<div class="synapse-admin-form-group">
-						<label class="synapse-admin-label" for="rag-slug">
-							{{ 'synapse.admin.rag.edit.label.slug'|trans(domain='synapse_admin') }} <span class="synapse-admin-required">*</span>
-						</label>
-						<input type="text" id="rag-slug" name="slug" value="{{ source.slug }}"
-							class="synapse-admin-input synapse-admin-font-mono" required
-							placeholder="ex: drive_partage" pattern="[a-z0-9_]+"
-							title="{{ 'synapse.admin.rag.edit.slug_pattern'|trans(domain='synapse_admin') }}">
-					</div>
-				</div>
+        {# ── Identification ────────────────────────────────────────────────────── #}
+        <div class="synapse-admin-card synapse-admin-mb-lg">
+            <div class="synapse-admin-card__header">
+                <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+                    <i data-lucide="tag"></i>
+                </div>
+                <div>
+                    <div class="synapse-admin-card__title">{{ 'synapse.admin.rag.edit.section.id.title'|trans(domain: 'synapse_admin') }}</div>
+                    <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.rag.edit.section.id.subtitle'|trans(domain: 'synapse_admin') }}</div>
+                </div>
+            </div>
+            <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+                <div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-md">
+                    <div class="synapse-admin-form-group">
+                        <label class="synapse-admin-label" for="rag-name">
+                            {{ 'synapse.admin.rag.edit.label.name'|trans(domain: 'synapse_admin') }} <span class="synapse-admin-required">*</span>
+                        </label>
+                        <input type="text" id="rag-name" name="name" value="{{ source.name }}"
+                            class="synapse-admin-input" required placeholder="{{ 'synapse.admin.rag.edit.placeholder.name'|trans(domain: 'synapse_admin') }}">
+                    </div>
+                    <div class="synapse-admin-form-group">
+                        <label class="synapse-admin-label" for="rag-slug">
+                            {{ 'synapse.admin.rag.edit.label.slug'|trans(domain: 'synapse_admin') }} <span class="synapse-admin-required">*</span>
+                        </label>
+                        <input type="text" id="rag-slug" name="slug" value="{{ source.slug }}"
+                            class="synapse-admin-input synapse-admin-font-mono" required
+                            placeholder="ex: drive_partage" pattern="[a-z0-9_]+"
+                            title="{{ 'synapse.admin.rag.edit.slug_pattern'|trans(domain: 'synapse_admin') }}">
+                    </div>
+                </div>
 
-				<div class="synapse-admin-form-group synapse-admin-mb-md">
-					<label class="synapse-admin-label" for="rag-description">{{ 'synapse.admin.rag.edit.label.description'|trans(domain='synapse_admin') }}</label>
-					<textarea id="rag-description" name="description" class="synapse-admin-input synapse-admin-textarea" rows="3"
-						placeholder="{{ 'synapse.admin.rag.edit.placeholder.description'|trans(domain='synapse_admin') }}">{{ source.description }}</textarea>
-					<p class="synapse-admin-help-text">{{ 'synapse.admin.rag.edit.help.description'|trans(domain='synapse_admin') }}</p>
-				</div>
+                <div class="synapse-admin-form-group synapse-admin-mb-md">
+                    <label class="synapse-admin-label" for="rag-description">{{ 'synapse.admin.rag.edit.label.description'|trans(domain: 'synapse_admin') }}</label>
+                    <textarea id="rag-description" name="description" class="synapse-admin-input synapse-admin-textarea" rows="3"
+                        placeholder="{{ 'synapse.admin.rag.edit.placeholder.description'|trans(domain: 'synapse_admin') }}">{{ source.description }}</textarea>
+                    <p class="synapse-admin-help-text">{{ 'synapse.admin.rag.edit.help.description'|trans(domain: 'synapse_admin') }}</p>
+                </div>
 
-				<div class="synapse-admin-form-group">
-					<label class="synapse-admin-toggle">
-						<input type="checkbox" name="is_active" {{ source.isActive ? 'checked' : '' }}>
-						<span class="synapse-admin-toggle__slider"></span>
-						<span class="synapse-admin-toggle__label">{{ 'synapse.admin.rag.edit.label.active'|trans(domain='synapse_admin') }}</span>
-					</label>
-				</div>
-			</div>
-		</div>
+                <div class="synapse-admin-form-group">
+                    <label class="synapse-admin-toggle">
+                        <input type="checkbox" name="is_active" {{ source.isActive ? 'checked' : '' }}>
+                        <span class="synapse-admin-toggle__slider"></span>
+                        <span class="synapse-admin-toggle__label">{{ 'synapse.admin.rag.edit.label.active'|trans(domain: 'synapse_admin') }}</span>
+                    </label>
+                </div>
+            </div>
+        </div>
 
-	</form>
+    </form>
 
-	{% if not is_new %}
+    {% if not is_new %}
 
-		{# ── Infos source ────────────────────────────────────────────────────── #}
-		<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-lg">
-			<div class="synapse-admin-card synapse-admin-card--hover">
-				<div class="synapse-admin-kpi">
-					<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary"><i data-lucide="file-text"></i></div>
-					<div class="synapse-admin-kpi__body">
-						<div class="synapse-admin-kpi__label">{{ 'synapse.admin.rag.edit.kpi.documents'|trans(domain='synapse_admin') }}</div>
-						<div class="synapse-admin-kpi__value">
-							<a href="{{ path('synapse_admin_rag_sources_documents', {id: source.id}) }}" class="synapse-admin-link">{{ source.documentCount }}</a>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="synapse-admin-card synapse-admin-card--hover">
-				<div class="synapse-admin-kpi">
-					<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--info"><i data-lucide="clock"></i></div>
-					<div class="synapse-admin-kpi__body">
-						<div class="synapse-admin-kpi__label">{{ 'synapse.admin.rag.edit.kpi.last_indexed'|trans(domain='synapse_admin') }}</div>
-						<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ source.lastIndexedAt ? source.lastIndexedAt|date('d/m/Y H:i') : '—' }}</div>
-					</div>
-				</div>
-			</div>
-			<div class="synapse-admin-card synapse-admin-card--hover">
-				<div class="synapse-admin-kpi">
-					<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--neutral"><i data-lucide="plug"></i></div>
-					<div class="synapse-admin-kpi__body">
-						<div class="synapse-admin-kpi__label">{{ 'synapse.admin.rag.edit.kpi.provider'|trans(domain='synapse_admin') }}</div>
-						<div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ has_provider ? 'synapse.admin.rag.edit.kpi.provider_yes'|trans(domain='synapse_admin') : 'synapse.admin.rag.edit.kpi.provider_no'|trans(domain='synapse_admin') }}</div>
-					</div>
-				</div>
-			</div>
-		</div>
+        {# ── Infos source ────────────────────────────────────────────────────── #}
+        <div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-lg">
+            <div class="synapse-admin-card synapse-admin-card--hover">
+                <div class="synapse-admin-kpi">
+                    <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary"><i data-lucide="file-text"></i></div>
+                    <div class="synapse-admin-kpi__body">
+                        <div class="synapse-admin-kpi__label">{{ 'synapse.admin.rag.edit.kpi.documents'|trans(domain: 'synapse_admin') }}</div>
+                        <div class="synapse-admin-kpi__value">
+                            <a href="{{ path('synapse_admin_rag_sources_documents', {id: source.id}) }}" class="synapse-admin-link">{{ source.documentCount }}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="synapse-admin-card synapse-admin-card--hover">
+                <div class="synapse-admin-kpi">
+                    <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--info"><i data-lucide="clock"></i></div>
+                    <div class="synapse-admin-kpi__body">
+                        <div class="synapse-admin-kpi__label">{{ 'synapse.admin.rag.edit.kpi.last_indexed'|trans(domain: 'synapse_admin') }}</div>
+                        <div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ source.lastIndexedAt ? source.lastIndexedAt|date('d/m/Y H:i') : '—' }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="synapse-admin-card synapse-admin-card--hover">
+                <div class="synapse-admin-kpi">
+                    <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--neutral"><i data-lucide="plug"></i></div>
+                    <div class="synapse-admin-kpi__body">
+                        <div class="synapse-admin-kpi__label">{{ 'synapse.admin.rag.edit.kpi.provider'|trans(domain: 'synapse_admin') }}</div>
+                        <div class="synapse-admin-kpi__value synapse-admin-text-sm">{{ has_provider ? 'synapse.admin.rag.edit.kpi.provider_yes'|trans(domain: 'synapse_admin') : 'synapse.admin.rag.edit.kpi.provider_no'|trans(domain: 'synapse_admin') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-		{# ── Réindexation ────────────────────────────────────────────────────── #}
-		{% if has_provider %}
-			<div class="synapse-admin-card synapse-admin-mb-lg" id="reindex-card"
-				data-indexing-status="{{ source.indexingStatus }}"
-				data-status-url="{{ path('synapse_admin_rag_sources_status', {id: source.id}) }}">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info"><i data-lucide="refresh-cw"></i></div>
-					<div>
-						<div class="synapse-admin-card__title">{{ 'synapse.admin.rag.edit.section.reindex.title'|trans(domain='synapse_admin') }}</div>
-						<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.rag.edit.section.reindex.subtitle'|trans(domain='synapse_admin') }}</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-					{% if source.indexingStatus == 'indexing' %}
-						<div style="margin-bottom: 1rem;">
-							<span class="synapse-admin-badge synapse-admin-badge--info" style="animation: pulse 1.5s ease-in-out infinite;">
-								⏳ Indexation en cours…
-							</span>
-							<div style="margin-top: 0.75rem; height: 6px; background: rgba(0,0,0,0.05); border-radius: 3px; overflow: hidden; max-width: 300px;">
-								<div id="synapse-progress-bar" style="height: 100%; background: var(--synapse-color-primary, #6366f1); width: 0%; transition: width 0.3s ease;"></div>
-							</div>
-							<div id="synapse-progress-text" style="font-size: 0.75rem; color: var(--synapse-color-muted, #888); margin-top: 0.4rem;">Initialisation…</div>
-							<div id="synapse-chunk-count" style="font-size: 0.75rem; margin-top: 0.2rem; font-weight: 600;">{{ source.documentCount }} chunks</div>
-						</div>
-					{% elseif source.indexingStatus == 'error' %}
-						<div class="synapse-admin-alert synapse-admin-alert--danger synapse-admin-mb-md">
-							<i data-lucide="alert-triangle"></i>
-							<span>Erreur : {{ source.lastError }}</span>
-						</div>
-					{% endif %}
-					<form method="post" action="{{ path('synapse_admin_rag_sources_reindex', {id: source.id}) }}">
-						<input type="hidden" name="_token" value="{{ csrf_token('synapse_rag_source_reindex_' ~ source.id) }}">
-						<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary"
-							{{ source.indexingStatus == 'indexing' ? 'disabled' : '' }}
-							{% if source.indexingStatus != 'indexing' %}onclick="return confirm('{{ 'synapse.admin.rag.edit.confirm_reindex'|trans(domain='synapse_admin')|escape('js') }}')"{% endif %}>
-							<i data-lucide="{{ source.indexingStatus == 'indexing' ? 'loader' : 'refresh-cw' }}"></i>
-							{{ source.indexingStatus == 'indexing' ? 'En cours…' : 'synapse.admin.rag.edit.action.reindex'|trans(domain='synapse_admin') }}
-						</button>
-					</form>
-				</div>
-			</div>
-		{% endif %}
+        {# ── Réindexation ────────────────────────────────────────────────────── #}
+        {% if has_provider %}
+            <div class="synapse-admin-card synapse-admin-mb-lg" id="reindex-card"
+                data-indexing-status="{{ source.indexingStatus }}"
+                data-status-url="{{ path('synapse_admin_rag_sources_status', {id: source.id}) }}">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--info"><i data-lucide="refresh-cw"></i></div>
+                    <div>
+                        <div class="synapse-admin-card__title">{{ 'synapse.admin.rag.edit.section.reindex.title'|trans(domain: 'synapse_admin') }}</div>
+                        <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.rag.edit.section.reindex.subtitle'|trans(domain: 'synapse_admin') }}</div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+                    {% if source.indexingStatus == 'indexing' %}
+                        <div style="margin-bottom: 1rem;">
+                            <span class="synapse-admin-badge synapse-admin-badge--info" style="animation: pulse 1.5s ease-in-out infinite;">
+                                ⏳ Indexation en cours…
+                            </span>
+                            <div style="margin-top: 0.75rem; height: 6px; background: rgba(0,0,0,0.05); border-radius: 3px; overflow: hidden; max-width: 300px;">
+                                <div id="synapse-progress-bar" style="height: 100%; background: var(--synapse-color-primary, #6366f1); width: 0%; transition: width 0.3s ease;"></div>
+                            </div>
+                            <div id="synapse-progress-text" style="font-size: 0.75rem; color: var(--synapse-color-muted, #888); margin-top: 0.4rem;">Initialisation…</div>
+                            <div id="synapse-chunk-count" style="font-size: 0.75rem; margin-top: 0.2rem; font-weight: 600;">{{ source.documentCount }} chunks</div>
+                        </div>
+                    {% elseif source.indexingStatus == 'error' %}
+                        <div class="synapse-admin-alert synapse-admin-alert--danger synapse-admin-mb-md">
+                            <i data-lucide="alert-triangle"></i>
+                            <span>Erreur : {{ source.lastError }}</span>
+                        </div>
+                    {% endif %}
+                    <form method="post" action="{{ path('synapse_admin_rag_sources_reindex', {id: source.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('synapse_rag_source_reindex_' ~ source.id) }}">
+                        <button type="submit" class="synapse-admin-btn synapse-admin-btn--primary"
+                            {{ source.indexingStatus == 'indexing' ? 'disabled' : '' }}
+                            {% if source.indexingStatus != 'indexing' %}onclick="return confirm('{{ 'synapse.admin.rag.edit.confirm_reindex'|trans(domain: 'synapse_admin')|escape('js') }}')"{% endif %}>
+                            <i data-lucide="{{ source.indexingStatus == 'indexing' ? 'loader' : 'refresh-cw' }}"></i>
+                            {{ source.indexingStatus == 'indexing' ? 'En cours…' : 'synapse.admin.rag.edit.action.reindex'|trans(domain: 'synapse_admin') }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
 
-		{# Polling temps réel #}
-		{% if source.indexingStatus == 'indexing' %}
-		<script>
-		(function () {
-			const card = document.getElementById('reindex-card');
-			if (!card || card.dataset.indexingStatus !== 'indexing') return;
+        {# Polling temps réel #}
+        {% if source.indexingStatus == 'indexing' %}
+        <script>
+        (function () {
+            const card = document.getElementById('reindex-card');
+            if (!card || card.dataset.indexingStatus !== 'indexing') return;
 
-			const statusUrl = card.dataset.statusUrl;
-			const bar = document.getElementById('synapse-progress-bar');
-			const text = document.getElementById('synapse-progress-text');
-			const chunkEl = document.getElementById('synapse-chunk-count');
+            const statusUrl = card.dataset.statusUrl;
+            const bar = document.getElementById('synapse-progress-bar');
+            const text = document.getElementById('synapse-progress-text');
+            const chunkEl = document.getElementById('synapse-chunk-count');
 
-			const interval = setInterval(async function () {
-				try {
-					const res = await fetch(statusUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-					if (!res.ok) return;
-					const data = await res.json();
+            const interval = setInterval(async function () {
+                try {
+                    const res = await fetch(statusUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    if (!res.ok) return;
+                    const data = await res.json();
 
-					if (chunkEl) chunkEl.textContent = data.documentCount + ' chunks';
+                    if (chunkEl) chunkEl.textContent = data.documentCount + ' chunks';
 
-					if (data.totalFiles > 0) {
-						const pct = Math.round((data.processedFiles / data.totalFiles) * 100);
-						if (bar) bar.style.width = pct + '%';
-						if (text) text.textContent = pct + '% (' + data.processedFiles + '/' + data.totalFiles + ' fichiers)';
-					} else if (text) {
-						text.textContent = 'Initialisation…';
-					}
+                    if (data.totalFiles > 0) {
+                        const pct = Math.round((data.processedFiles / data.totalFiles) * 100);
+                        if (bar) bar.style.width = pct + '%';
+                        if (text) text.textContent = pct + '% (' + data.processedFiles + '/' + data.totalFiles + ' fichiers)';
+                    } else if (text) {
+                        text.textContent = 'Initialisation…';
+                    }
 
-					if (data.status !== 'indexing') {
-						clearInterval(interval);
-						window.location.reload();
-					}
-				} catch (e) {}
-			}, 2000);
-		})();
-		</script>
-		{% endif %}
+                    if (data.status !== 'indexing') {
+                        clearInterval(interval);
+                        window.location.reload();
+                    }
+                } catch (e) {}
+            }, 2000);
+        })();
+        </script>
+        {% endif %}
 
-		{# ── Test recherche ──────────────────────────────────────────────────── #}
-		<div class="synapse-admin-card synapse-admin-mb-lg">
-			<div class="synapse-admin-card__header">
-				<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary"><i data-lucide="search"></i></div>
-				<div>
-					<div class="synapse-admin-card__title">{{ 'synapse.admin.rag.edit.section.search.title'|trans(domain='synapse_admin') }}</div>
-					<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.rag.edit.section.search.subtitle'|trans(domain='synapse_admin') }}</div>
-				</div>
-			</div>
-			<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-				<form method="post" action="{{ path('synapse_admin_rag_sources_search', {id: source.id}) }}">
-					<input type="hidden" name="_token" value="{{ csrf_token('synapse_rag_source_search_' ~ source.id) }}">
-					<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-mb-md">
-						<input type="text" name="query" class="synapse-admin-input" value="{{ search_query|default('') }}"
-							placeholder="{{ 'synapse.admin.rag.edit.placeholder.search'|trans(domain='synapse_admin') }}" required>
-						<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
-							<i data-lucide="search"></i>
-							{{ 'synapse.admin.rag.edit.action.search'|trans(domain='synapse_admin') }}
-						</button>
-					</div>
-				</form>
+        {# ── Test recherche ──────────────────────────────────────────────────── #}
+        <div class="synapse-admin-card synapse-admin-mb-lg">
+            <div class="synapse-admin-card__header">
+                <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary"><i data-lucide="search"></i></div>
+                <div>
+                    <div class="synapse-admin-card__title">{{ 'synapse.admin.rag.edit.section.search.title'|trans(domain: 'synapse_admin') }}</div>
+                    <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.rag.edit.section.search.subtitle'|trans(domain: 'synapse_admin') }}</div>
+                </div>
+            </div>
+            <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+                <form method="post" action="{{ path('synapse_admin_rag_sources_search', {id: source.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('synapse_rag_source_search_' ~ source.id) }}">
+                    <div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-mb-md">
+                        <input type="text" name="query" class="synapse-admin-input" value="{{ search_query|default('') }}"
+                            placeholder="{{ 'synapse.admin.rag.edit.placeholder.search'|trans(domain: 'synapse_admin') }}" required>
+                        <button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
+                            <i data-lucide="search"></i>
+                            {{ 'synapse.admin.rag.edit.action.search'|trans(domain: 'synapse_admin') }}
+                        </button>
+                    </div>
+                </form>
 
-				{% if search_error is defined and search_error %}
-					<div class="synapse-admin-alert synapse-admin-alert--danger synapse-admin-mb-md">
-						<i data-lucide="alert-triangle"></i>
-						<span>{{ search_error }}</span>
-					</div>
-				{% endif %}
+                {% if search_error is defined and search_error %}
+                    <div class="synapse-admin-alert synapse-admin-alert--danger synapse-admin-mb-md">
+                        <i data-lucide="alert-triangle"></i>
+                        <span>{{ search_error }}</span>
+                    </div>
+                {% endif %}
 
-				{% if search_results is defined and search_results|length > 0 %}
-					<div class="synapse-admin-table-container">
-						<table class="synapse-admin-table">
-							<thead>
-								<tr>
-									<th>Score</th>
-									<th>{{ 'synapse.admin.rag.edit.search.head.content'|trans(domain='synapse_admin') }}</th>
-									<th>{{ 'synapse.admin.rag.edit.search.head.identifier'|trans(domain='synapse_admin') }}</th>
-								</tr>
-							</thead>
-							<tbody>
-								{% for result in search_results %}
-									<tr>
-										<td>
-											<span class="synapse-admin-badge {{ result.score >= 0.7 ? 'synapse-admin-badge--success' : (result.score >= 0.4 ? 'synapse-admin-badge--info' : 'synapse-admin-badge--warning') }}">
-												{{ result.score|number_format(3) }}
-											</span>
-										</td>
-										<td>
-											<div class="synapse-admin-truncate" style="max-width: 500px;" data-synapse-admin-tooltip="{{ result.content|e('html_attr') }}">
-												{{ result.content|length > 120 ? result.content|slice(0, 120) ~ '…' : result.content }}
-											</div>
-										</td>
-										<td class="synapse-admin-font-mono synapse-admin-text-sm">{{ result.sourceIdentifier }}</td>
-									</tr>
-								{% endfor %}
-							</tbody>
-						</table>
-					</div>
-				{% elseif search_query is defined and search_query %}
-					<p class="synapse-admin-text-muted synapse-admin-text-sm">{{ 'synapse.admin.rag.edit.search.no_results'|trans(domain='synapse_admin') }}</p>
-				{% endif %}
-			</div>
-		</div>
+                {% if search_results is defined and search_results|length > 0 %}
+                    <div class="synapse-admin-table-container">
+                        <table class="synapse-admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Score</th>
+                                    <th>{{ 'synapse.admin.rag.edit.search.head.content'|trans(domain: 'synapse_admin') }}</th>
+                                    <th>{{ 'synapse.admin.rag.edit.search.head.identifier'|trans(domain: 'synapse_admin') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in search_results %}
+                                    <tr>
+                                        <td>
+                                            <span class="synapse-admin-badge {{ result.score >= 0.7 ? 'synapse-admin-badge--success' : (result.score >= 0.4 ? 'synapse-admin-badge--info' : 'synapse-admin-badge--warning') }}">
+                                                {{ result.score|number_format(3) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="synapse-admin-truncate" style="max-width: 500px;" data-synapse-admin-tooltip="{{ result.content|e('html_attr') }}">
+                                                {{ result.content|length > 120 ? result.content|slice(0, 120) ~ '…' : result.content }}
+                                            </div>
+                                        </td>
+                                        <td class="synapse-admin-font-mono synapse-admin-text-sm">{{ result.sourceIdentifier }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% elseif search_query is defined and search_query %}
+                    <p class="synapse-admin-text-muted synapse-admin-text-sm">{{ 'synapse.admin.rag.edit.search.no_results'|trans(domain: 'synapse_admin') }}</p>
+                {% endif %}
+            </div>
+        </div>
 
-	{% endif %}
+    {% endif %}
 
 {% endblock %}

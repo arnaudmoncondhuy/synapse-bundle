@@ -1,112 +1,111 @@
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
-{% block admin_page_title %}{{ 'synapse.admin.health.page_title'|trans(domain='synapse_admin') }}{% endblock %}
+{% block admin_page_title %}{{ 'synapse.admin.health.page_title'|trans(domain: 'synapse_admin') }}{% endblock %}
 
 {% block admin_breadcrumb %}
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.system'|trans(domain='synapse_admin') }}</a>
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<span class="synapse-admin-topbar__current">{{ 'synapse.admin.sidebar.health'|trans(domain='synapse_admin') }}</span>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.system'|trans(domain: 'synapse_admin') }}</a>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <span class="synapse-admin-topbar__current">{{ 'synapse.admin.sidebar.health'|trans(domain: 'synapse_admin') }}</span>
 {% endblock %}
 
 {% block admin_content %}
 
-	{# ── En-tête ──────────────────────────────────────────────────────────────── #}
-	<div class="synapse-admin-page-header">
-		<div class="synapse-admin-page-header__info">
-			<h1 class="synapse-admin-page-title">
-				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--{{ overall_status == 'ok' ? 'success' : (overall_status == 'warning' ? 'warning' : 'danger') }}">
-					<i data-lucide="activity"></i>
-				</span>
-				{{ 'synapse.admin.health.title'|trans(domain='synapse_admin') }}
-			</h1>
-			<p class="synapse-admin-page-subtitle">
-				{{ 'synapse.admin.health.subtitle'|trans(domain='synapse_admin') }}
-			</p>
-		</div>
-		<div class="synapse-admin-page-header__actions">
-			<span class="synapse-admin-badge synapse-admin-badge--{{ overall_status == 'ok' ? 'success' : (overall_status == 'warning' ? 'warning' : 'danger') }}">
-				<i data-lucide="{{ overall_status == 'ok' ? 'check-circle-2' : (overall_status == 'warning' ? 'alert-triangle' : 'x-circle') }}"></i>
-				{{ 'synapse.admin.health.overall_status'|trans(domain='synapse_admin') }} :
-				{{ ('synapse.admin.health.status.' ~ overall_status)|trans(domain='synapse_admin') }}
-			</span>
-		</div>
-	</div>
+    {# ── En-tête ──────────────────────────────────────────────────────────────── #}
+    <div class="synapse-admin-page-header">
+        <div class="synapse-admin-page-header__info">
+            <h1 class="synapse-admin-page-title">
+                <span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--{{ overall_status == 'ok' ? 'success' : (overall_status == 'warning' ? 'warning' : 'danger') }}">
+                    <i data-lucide="activity"></i>
+                </span>
+                {{ 'synapse.admin.health.title'|trans(domain: 'synapse_admin') }}
+            </h1>
+            <p class="synapse-admin-page-subtitle">
+                {{ 'synapse.admin.health.subtitle'|trans(domain: 'synapse_admin') }}
+            </p>
+        </div>
+        <div class="synapse-admin-page-header__actions">
+            <span class="synapse-admin-badge synapse-admin-badge--{{ overall_status == 'ok' ? 'success' : (overall_status == 'warning' ? 'warning' : 'danger') }}">
+                <i data-lucide="{{ overall_status == 'ok' ? 'check-circle-2' : (overall_status == 'warning' ? 'alert-triangle' : 'x-circle') }}"></i>
+                {{ 'synapse.admin.health.overall_status'|trans(domain: 'synapse_admin') }} :
+                {{ ('synapse.admin.health.status.' ~ overall_status)|trans(domain: 'synapse_admin') }}
+            </span>
+        </div>
+    </div>
 
-	{# ── Alerte si erreur ou warning ──────────────────────────────────────────── #}
-	{% if overall_status != 'ok' %}
-		<div class="synapse-admin-alert synapse-admin-alert--{{ overall_status == 'error' ? 'danger' : 'warning' }} synapse-admin-mb-xl">
-			<i data-lucide="{{ overall_status == 'error' ? 'x-circle' : 'alert-triangle' }}"></i>
-			<div>
-				{% if overall_status == 'error' %}
-					<strong>{{ 'synapse.admin.health.alert.error.title'|trans(domain='synapse_admin') }}</strong>
-					{{ 'synapse.admin.health.alert.error.subtitle'|trans(domain='synapse_admin') }}
-				{% else %}
-					<strong>{{ 'synapse.admin.health.alert.warning.title'|trans(domain='synapse_admin') }}</strong>
-					{{ 'synapse.admin.health.alert.warning.subtitle'|trans(domain='synapse_admin') }}
-				{% endif %}
-			</div>
-		</div>
-	{% endif %}
+    {# ── Alerte si erreur ou warning ──────────────────────────────────────────── #}
+    {% if overall_status != 'ok' %}
+        <div class="synapse-admin-alert synapse-admin-alert--{{ overall_status == 'error' ? 'danger' : 'warning' }} synapse-admin-mb-xl">
+            <i data-lucide="{{ overall_status == 'error' ? 'x-circle' : 'alert-triangle' }}"></i>
+            <div>
+                {% if overall_status == 'error' %}
+                    <strong>{{ 'synapse.admin.health.alert.error.title'|trans(domain: 'synapse_admin') }}</strong>
+                    {{ 'synapse.admin.health.alert.error.subtitle'|trans(domain: 'synapse_admin') }}
+                {% else %}
+                    <strong>{{ 'synapse.admin.health.alert.warning.title'|trans(domain: 'synapse_admin') }}</strong>
+                    {{ 'synapse.admin.health.alert.warning.subtitle'|trans(domain: 'synapse_admin') }}
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 
-	{# ── Checks en grille ─────────────────────────────────────────────────────── #}
-	<div class="synapse-admin-grid synapse-admin-grid--2">
+    {# ── Checks en grille ─────────────────────────────────────────────────────── #}
+    <div class="synapse-admin-grid synapse-admin-grid--2">
 
-		{% for key, check in checks %}
-			{% set cardVariant = check.status == 'ok' ? 'synapse-admin-card--success' : (check.status == 'warning' ? 'synapse-admin-card--warning' : 'synapse-admin-card--danger') %}
-			{% set iconVariant = check.status == 'ok' ? 'success' : (check.status == 'warning' ? 'warning' : 'danger') %}
-			{% set statusIcon  = check.status == 'ok' ? 'check-circle-2' : (check.status == 'warning' ? 'alert-triangle' : 'x-circle') %}
+        {% for key, check in checks %}
+            {% set cardVariant = check.status == 'ok' ? 'synapse-admin-card--success' : (check.status == 'warning' ? 'synapse-admin-card--warning' : 'synapse-admin-card--danger') %}
+            {% set iconVariant = check.status == 'ok' ? 'success' : (check.status == 'warning' ? 'warning' : 'danger') %}
+            {% set statusIcon = check.status == 'ok' ? 'check-circle-2' : (check.status == 'warning' ? 'alert-triangle' : 'x-circle') %}
 
-			<div class="synapse-admin-card synapse-admin-card--hover {{ cardVariant }}">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--{{ iconVariant }}">
-						<i data-lucide="{{ check.icon }}"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">{{ check.label }}</div>
-						<div class="synapse-admin-card__subtitle synapse-admin-font-mono synapse-admin-text-xs">{{ check.detail }}</div>
-					</div>
-					<div class="synapse-admin-card__header-actions">
-						<span class="synapse-admin-badge synapse-admin-badge--{{ check.status == 'ok' ? 'success' : (check.status == 'warning' ? 'warning' : 'danger') }}">
-							<i data-lucide="{{ statusIcon }}"></i>
-							{{ ('synapse.admin.health.status.' ~ check.status)|trans(domain='synapse_admin') }}
-						</span>
-					</div>
-				</div>
-			</div>
+            <div class="synapse-admin-card synapse-admin-card--hover {{ cardVariant }}">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--{{ iconVariant }}">
+                        <i data-lucide="{{ check.icon }}"></i>
+                    </div>
+                    <div>
+                        <div class="synapse-admin-card__title">{{ check.label }}</div>
+                        <div class="synapse-admin-card__subtitle synapse-admin-font-mono synapse-admin-text-xs">{{ check.detail }}</div>
+                    </div>
+                    <div class="synapse-admin-card__header-actions">
+                        <span class="synapse-admin-badge synapse-admin-badge--{{ check.status == 'ok' ? 'success' : (check.status == 'warning' ? 'warning' : 'danger') }}">
+                            <i data-lucide="{{ statusIcon }}"></i>
+                            {{ ('synapse.admin.health.status.' ~ check.status)|trans(domain: 'synapse_admin') }}
+                        </span>
+                    </div>
+                </div>
+            </div>
 
-		{% endfor %}
+        {% endfor %}
 
-	</div>
+    </div>
 
-	{# ── Infos techniques ─────────────────────────────────────────────────────── #}
-	<div class="synapse-admin-card synapse-admin-mt-xl">
-		<div class="synapse-admin-card__header">
-			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
-				<i data-lucide="info"></i>
-			</div>
-			<div>
-				<div class="synapse-admin-card__title">{{ 'synapse.admin.health.env.title'|trans(domain='synapse_admin') }}</div>
-				<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.health.env.subtitle'|trans(domain='synapse_admin') }}</div>
-			</div>
-		</div>
-		<div class="synapse-admin-card__body">
-			<div class="synapse-admin-grid synapse-admin-grid--3">
-				<div>
-					<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">{{ 'synapse.admin.health.env.php'|trans(domain='synapse_admin') }}</div>
-					<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ php_version }}</div>
-				</div>
-				<div>
-					<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">{{ 'synapse.admin.health.env.symfony'|trans(domain='synapse_admin') }}</div>
-					<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ symfony_version }}</div>
-				</div>
-				<div>
-					<div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">{{ 'synapse.admin.health.env.label'|trans(domain='synapse_admin') }}</div>
-					<div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ app.environment }}</div>
-				</div>
-			</div>
-		</div>
-	</div>
+    {# ── Infos techniques ─────────────────────────────────────────────────────── #}
+    <div class="synapse-admin-card synapse-admin-mt-xl">
+        <div class="synapse-admin-card__header">
+            <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral">
+                <i data-lucide="info"></i>
+            </div>
+            <div>
+                <div class="synapse-admin-card__title">{{ 'synapse.admin.health.env.title'|trans(domain: 'synapse_admin') }}</div>
+                <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.health.env.subtitle'|trans(domain: 'synapse_admin') }}</div>
+            </div>
+        </div>
+        <div class="synapse-admin-card__body">
+            <div class="synapse-admin-grid synapse-admin-grid--3">
+                <div>
+                    <div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">{{ 'synapse.admin.health.env.php'|trans(domain: 'synapse_admin') }}</div>
+                    <div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ php_version }}</div>
+                </div>
+                <div>
+                    <div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">{{ 'synapse.admin.health.env.symfony'|trans(domain: 'synapse_admin') }}</div>
+                    <div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ symfony_version }}</div>
+                </div>
+                <div>
+                    <div class="synapse-admin-text-xs synapse-admin-text-tertiary synapse-admin-font-bold">{{ 'synapse.admin.health.env.label'|trans(domain: 'synapse_admin') }}</div>
+                    <div class="synapse-admin-font-mono synapse-admin-text-sm synapse-admin-mt-sm">{{ app.environment }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}
- 

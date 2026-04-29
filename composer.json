@@ -19,16 +19,19 @@
         "arnaudmoncondhuy/synapse-admin": "@dev",
         "arnaudmoncondhuy/synapse-chat": "@dev",
         "arnaudmoncondhuy/synapse-core": "@dev",
+        "deptrac/deptrac": "^4.6",
         "doctrine/doctrine-fixtures-bundle": "^4.3",
         "friendsofphp/php-cs-fixer": "^3.93",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-symfony": "^2.0",
+        "rector/rector": "^2.3",
         "roave/security-advisories": "dev-latest",
         "symfony/process": "^8.0",
         "symfony/test-pack": "^1.2",
-        "symplify/monorepo-builder": "^12.0"
+        "symplify/monorepo-builder": "^12.0",
+        "vincentlanglet/twig-cs-fixer": "^3.14"
     },
     "autoload": {
         "psr-4": {

@@ -4,65 +4,65 @@
 {% endblock %}
 
 {% block admin_stylesheets %}
-	<style>
-		/* ── Pill de disponibilité (select coloré selon l'état courant) ────── */
-		.sv2-avail-form {
-			margin: 0;
-			display: inline-block;
-		}
-		.sv2-avail {
-			appearance: none;
-			-webkit-appearance: none;
-			border: 1.5px solid transparent;
-			border-radius: 999px;
-			padding: 0.375rem 2rem 0.375rem 0.875rem;
-			font-family: var(--synapse-admin-font-sans);
-			font-size: 0.8rem;
-			font-weight: 600;
-			line-height: 1;
-			cursor: pointer;
-			background-repeat: no-repeat;
-			background-position: right 0.625rem center;
-			background-size: 0.75rem;
-			transition: all var(--synapse-admin-transition-fast);
-		}
-		.sv2-avail:focus {
-			outline: none;
-			box-shadow: 0 0 0 3px var(--synapse-admin-primary-fade);
-		}
-		.sv2-avail option {
-			background: #fff;
-			color: var(--synapse-admin-text-primary);
-			font-weight: 500;
-		}
-		.sv2-avail[data-state="active"] {
-			background-color: #dcfce7;
-			color: #166534;
-			border-color: #86efac;
-			background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23166534' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
-		}
-		.sv2-avail[data-state="active"]:hover {
-			background-color: #bbf7d0;
-		}
-		.sv2-avail[data-state="agent_only"] {
-			background-color: #fef3c7;
-			color: #92400e;
-			border-color: #fcd34d;
-			background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2392400e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
-		}
-		.sv2-avail[data-state="agent_only"]:hover {
-			background-color: #fde68a;
-		}
-		.sv2-avail[data-state="disabled"] {
-			background-color: #fee2e2;
-			color: #991b1b;
-			border-color: #fca5a5;
-			background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23991b1b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
-		}
-		.sv2-avail[data-state="disabled"]:hover {
-			background-color: #fecaca;
-		}
-	</style>
+    <style>
+        /* ── Pill de disponibilité (select coloré selon l'état courant) ────── */
+        .sv2-avail-form {
+            margin: 0;
+            display: inline-block;
+        }
+        .sv2-avail {
+            appearance: none;
+            -webkit-appearance: none;
+            border: 1.5px solid transparent;
+            border-radius: 999px;
+            padding: 0.375rem 2rem 0.375rem 0.875rem;
+            font-family: var(--synapse-admin-font-sans);
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1;
+            cursor: pointer;
+            background-repeat: no-repeat;
+            background-position: right 0.625rem center;
+            background-size: 0.75rem;
+            transition: all var(--synapse-admin-transition-fast);
+        }
+        .sv2-avail:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--synapse-admin-primary-fade);
+        }
+        .sv2-avail option {
+            background: #fff;
+            color: var(--synapse-admin-text-primary);
+            font-weight: 500;
+        }
+        .sv2-avail[data-state="active"] {
+            background-color: #dcfce7;
+            color: #166534;
+            border-color: #86efac;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23166534' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+        }
+        .sv2-avail[data-state="active"]:hover {
+            background-color: #bbf7d0;
+        }
+        .sv2-avail[data-state="agent_only"] {
+            background-color: #fef3c7;
+            color: #92400e;
+            border-color: #fcd34d;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2392400e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+        }
+        .sv2-avail[data-state="agent_only"]:hover {
+            background-color: #fde68a;
+        }
+        .sv2-avail[data-state="disabled"] {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-color: #fca5a5;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23991b1b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+        }
+        .sv2-avail[data-state="disabled"]:hover {
+            background-color: #fecaca;
+        }
+    </style>
 {% endblock %}
 
 {# ──────────────────────────────────────────────────────────────────────────────
@@ -70,218 +70,218 @@
    Règle : toujours dans admin_breadcrumb, jamais dans admin_content
    ────────────────────────────────────────────────────────────────────────────── #}
 {% block admin_breadcrumb %}
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="#" class="synapse-admin-topbar__breadcrumb">Conversation</a>
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<span class="synapse-admin-topbar__current">Outils</span>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <a href="#" class="synapse-admin-topbar__breadcrumb">Conversation</a>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <span class="synapse-admin-topbar__current">Outils</span>
 {% endblock %}
 
 {% block admin_content %}
 
-	{# ──────────────────────────────────────────────────────────────────────────────
-	   EN-TÊTE
-	   ────────────────────────────────────────────────────────────────────────────── #}
-	<div class="synapse-admin-page-header">
-		<div class="synapse-admin-page-header__info">
-			<h1 class="synapse-admin-page-title">
-				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
-					<i data-lucide="wrench"></i>
-				</span>
-				Catalogue des Outils
-			</h1>
-			<p class="synapse-admin-page-subtitle">
-				Outils exposés à l'IA. Ces fonctions sont appelables par le modèle lors
-				            d'une conversation selon les autorisations configurées.
-			</p>
-		</div>
-		{# Pas d'action de page : les outils sont définis en code, pas dans l'UI #}
-	</div>
+    {# ──────────────────────────────────────────────────────────────────────────────
+       EN-TÊTE
+       ────────────────────────────────────────────────────────────────────────────── #}
+    <div class="synapse-admin-page-header">
+        <div class="synapse-admin-page-header__info">
+            <h1 class="synapse-admin-page-title">
+                <span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+                    <i data-lucide="wrench"></i>
+                </span>
+                Catalogue des Outils
+            </h1>
+            <p class="synapse-admin-page-subtitle">
+                Outils exposés à l'IA. Ces fonctions sont appelables par le modèle lors
+                            d'une conversation selon les autorisations configurées.
+            </p>
+        </div>
+        {# Pas d'action de page : les outils sont définis en code, pas dans l'UI #}
+    </div>
 
-	{# ──────────────────────────────────────────────────────────────────────────────
-	   STATS RAPIDES (section essentielle)
-	   ────────────────────────────────────────────────────────────────────────────── #}
-	<div class="synapse-admin-grid synapse-admin-grid--4 synapse-admin-mb-xl">
+    {# ──────────────────────────────────────────────────────────────────────────────
+       STATS RAPIDES (section essentielle)
+       ────────────────────────────────────────────────────────────────────────────── #}
+    <div class="synapse-admin-grid synapse-admin-grid--4 synapse-admin-mb-xl">
 
-		<div class="synapse-admin-card synapse-admin-card--hover">
-			<div class="synapse-admin-kpi">
-				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary">
-					<i data-lucide="wrench"></i>
-				</div>
-				<div class="synapse-admin-kpi__body">
-					<div class="synapse-admin-kpi__label">Outils enregistrés</div>
-					<div class="synapse-admin-kpi__value">{{ tools|length }}</div>
-					<div class="synapse-admin-kpi__sub">via ToolRegistry (code)</div>
-				</div>
-			</div>
-		</div>
+        <div class="synapse-admin-card synapse-admin-card--hover">
+            <div class="synapse-admin-kpi">
+                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--primary">
+                    <i data-lucide="wrench"></i>
+                </div>
+                <div class="synapse-admin-kpi__body">
+                    <div class="synapse-admin-kpi__label">Outils enregistrés</div>
+                    <div class="synapse-admin-kpi__value">{{ tools|length }}</div>
+                    <div class="synapse-admin-kpi__sub">via ToolRegistry (code)</div>
+                </div>
+            </div>
+        </div>
 
-		<div class="synapse-admin-card synapse-admin-card--hover">
-			<div class="synapse-admin-kpi">
-				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--success">
-					<i data-lucide="circle-check"></i>
-				</div>
-				<div class="synapse-admin-kpi__body">
-					<div class="synapse-admin-kpi__label">Actifs par défaut</div>
-					<div class="synapse-admin-kpi__value">{{ counts.active }}</div>
-					<div class="synapse-admin-kpi__sub">exposés dans toutes les conversations</div>
-				</div>
-			</div>
-		</div>
+        <div class="synapse-admin-card synapse-admin-card--hover">
+            <div class="synapse-admin-kpi">
+                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--success">
+                    <i data-lucide="circle-check"></i>
+                </div>
+                <div class="synapse-admin-kpi__body">
+                    <div class="synapse-admin-kpi__label">Actifs par défaut</div>
+                    <div class="synapse-admin-kpi__value">{{ counts.active }}</div>
+                    <div class="synapse-admin-kpi__sub">exposés dans toutes les conversations</div>
+                </div>
+            </div>
+        </div>
 
-		<div class="synapse-admin-card synapse-admin-card--hover">
-			<div class="synapse-admin-kpi">
-				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--warning">
-					<i data-lucide="user-check"></i>
-				</div>
-				<div class="synapse-admin-kpi__body">
-					<div class="synapse-admin-kpi__label">Sur agent autorisé</div>
-					<div class="synapse-admin-kpi__value">{{ counts.agent_only }}</div>
-					<div class="synapse-admin-kpi__sub">whitelist obligatoire côté agent</div>
-				</div>
-			</div>
-		</div>
+        <div class="synapse-admin-card synapse-admin-card--hover">
+            <div class="synapse-admin-kpi">
+                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--warning">
+                    <i data-lucide="user-check"></i>
+                </div>
+                <div class="synapse-admin-kpi__body">
+                    <div class="synapse-admin-kpi__label">Sur agent autorisé</div>
+                    <div class="synapse-admin-kpi__value">{{ counts.agent_only }}</div>
+                    <div class="synapse-admin-kpi__sub">whitelist obligatoire côté agent</div>
+                </div>
+            </div>
+        </div>
 
-		<div class="synapse-admin-card synapse-admin-card--hover">
-			<div class="synapse-admin-kpi">
-				<div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--danger">
-					<i data-lucide="circle-off"></i>
-				</div>
-				<div class="synapse-admin-kpi__body">
-					<div class="synapse-admin-kpi__label">Désactivés</div>
-					<div class="synapse-admin-kpi__value">{{ counts.disabled }}</div>
-					<div class="synapse-admin-kpi__sub">jamais exposés à l'IA</div>
-				</div>
-			</div>
-		</div>
+        <div class="synapse-admin-card synapse-admin-card--hover">
+            <div class="synapse-admin-kpi">
+                <div class="synapse-admin-kpi__icon synapse-admin-kpi__icon--danger">
+                    <i data-lucide="circle-off"></i>
+                </div>
+                <div class="synapse-admin-kpi__body">
+                    <div class="synapse-admin-kpi__label">Désactivés</div>
+                    <div class="synapse-admin-kpi__value">{{ counts.disabled }}</div>
+                    <div class="synapse-admin-kpi__sub">jamais exposés à l'IA</div>
+                </div>
+            </div>
+        </div>
 
-	</div>
+    </div>
 
-	{# ──────────────────────────────────────────────────────────────────────────────
-	   TABLEAU DES OUTILS
-	   Pattern tableau : synapse-admin-card > synapse-admin-table-container > synapse-admin-table
-	   Règle : synapse-admin-table-cell-label pour Nom + sous-titre (class PHP)
-	   ────────────────────────────────────────────────────────────────────────────── #}
-	<div class="synapse-admin-card">
-		<div class="synapse-admin-card__header">
-			<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
-				<i data-lucide="list"></i>
-			</div>
-			<div>
-				<div class="synapse-admin-card__title">Outils disponibles</div>
-				<div class="synapse-admin-card__subtitle">
-					Enregistrés via le service
-					<code>ToolRegistry</code>
-				</div>
-			</div>
-		</div>
+    {# ──────────────────────────────────────────────────────────────────────────────
+       TABLEAU DES OUTILS
+       Pattern tableau : synapse-admin-card > synapse-admin-table-container > synapse-admin-table
+       Règle : synapse-admin-table-cell-label pour Nom + sous-titre (class PHP)
+       ────────────────────────────────────────────────────────────────────────────── #}
+    <div class="synapse-admin-card">
+        <div class="synapse-admin-card__header">
+            <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+                <i data-lucide="list"></i>
+            </div>
+            <div>
+                <div class="synapse-admin-card__title">Outils disponibles</div>
+                <div class="synapse-admin-card__subtitle">
+                    Enregistrés via le service
+                    <code>ToolRegistry</code>
+                </div>
+            </div>
+        </div>
 
-		<div class="synapse-admin-table-container">
-			<table class="synapse-admin-table">
-				<thead>
-					<tr>
-						<th>Outil</th>
-						<th>Description</th>
-						<th>Implémentation</th>
-						<th>Disponibilité</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for tool in tools %}
-						<tr>
+        <div class="synapse-admin-table-container">
+            <table class="synapse-admin-table">
+                <thead>
+                    <tr>
+                        <th>Outil</th>
+                        <th>Description</th>
+                        <th>Implémentation</th>
+                        <th>Disponibilité</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tool in tools %}
+                        <tr>
 
-							{# ── Nom de l'outil ──────────────────────────────── #}
-							<td>
-								<div class="synapse-admin-table-cell-label">
-									<div class="synapse-admin-table-cell-label__icon synapse-admin-kpi__icon--primary">
-										<i data-lucide="wrench"></i>
-									</div>
-									<div>
-										<div class="synapse-admin-table-cell-label__title">{{ tool.label }}</div>
-										<div class="synapse-admin-table-cell-label__sub synapse-admin-font-mono">
-											{{ tool.name }}
-										</div>
-									</div>
-								</div>
-							</td>
+                            {# ── Nom de l'outil ──────────────────────────────── #}
+                            <td>
+                                <div class="synapse-admin-table-cell-label">
+                                    <div class="synapse-admin-table-cell-label__icon synapse-admin-kpi__icon--primary">
+                                        <i data-lucide="wrench"></i>
+                                    </div>
+                                    <div>
+                                        <div class="synapse-admin-table-cell-label__title">{{ tool.label }}</div>
+                                        <div class="synapse-admin-table-cell-label__sub synapse-admin-font-mono">
+                                            {{ tool.name }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
 
-							{# ── Description ─────────────────────────────────── #}
-							<td class="synapse-admin-table__cell--muted">
-								{{ tool.description|length > 120
+                            {# ── Description ─────────────────────────────────── #}
+                            <td class="synapse-admin-table__cell--muted">
+                                {{ tool.description|length > 120
                                 ? tool.description|slice(0, 120) ~ ' …'
                                 : tool.description }}
-							</td>
+                            </td>
 
-							{# ── Classe PHP ──────────────────────────────────── #}
-							<td>
-								{# Afficher uniquement le nom court de la classe (sans namespace) #}
-								{% set classParts = tool.class|split('\\') %}
-								<span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="{{ tool.class }}">
-									<i data-lucide="code-2"></i>
-									{{ classParts|last }}
-								</span>
-							</td>
+                            {# ── Classe PHP ──────────────────────────────────── #}
+                            <td>
+                                {# Afficher uniquement le nom court de la classe (sans namespace) #}
+                                {% set classParts = tool.class|split('\\') %}
+                                <span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="{{ tool.class }}">
+                                    <i data-lucide="code-2"></i>
+                                    {{ classParts|last }}
+                                </span>
+                            </td>
 
-							{# ── Disponibilité — 3 états configurables ──────── #}
-							<td>
-								<form method="post" action="{{ path('synapse_admin_tools_set_availability', {toolName: tool.name}) }}" class="sv2-avail-form">
-									<input type="hidden" name="_csrf_token" value="{{ csrf_token('synapse_tool_availability_' ~ tool.name) }}">
-									<select
-										name="availability"
-										class="sv2-avail"
-										data-state="{{ tool.availability.value }}"
-										onchange="this.form.submit()"
-										title="{{ tool.availability.description }}">
-										{% for option in availabilities %}
-											<option value="{{ option.value }}" {% if option == tool.availability %}selected{% endif %}>
-												{{ option.label }}
-											</option>
-										{% endfor %}
-									</select>
-								</form>
-							</td>
+                            {# ── Disponibilité — 3 états configurables ──────── #}
+                            <td>
+                                <form method="post" action="{{ path('synapse_admin_tools_set_availability', {toolName: tool.name}) }}" class="sv2-avail-form">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('synapse_tool_availability_' ~ tool.name) }}">
+                                    <select
+                                        name="availability"
+                                        class="sv2-avail"
+                                        data-state="{{ tool.availability.value }}"
+                                        onchange="this.form.submit()"
+                                        title="{{ tool.availability.description }}">
+                                        {% for option in availabilities %}
+                                            <option value="{{ option.value }}" {% if option == tool.availability %}selected{% endif %}>
+                                                {{ option.label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                            </td>
 
-						</tr>
-					{% else %}
-						<tr>
-							<td colspan="4">
-								<div class="synapse-admin-empty">
-									<div class="synapse-admin-empty__icon">
-										<i data-lucide="wrench"></i>
-									</div>
-									<div class="synapse-admin-empty__title">Aucun outil enregistré</div>
-									<p class="synapse-admin-empty__description">
-										Implémentez des classes
-										<code>ToolInterface</code>
-										et
-										                                    déclarez-les comme services pour qu'elles apparaissent ici.
-									</p>
-								</div>
-							</td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
-	</div>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4">
+                                <div class="synapse-admin-empty">
+                                    <div class="synapse-admin-empty__icon">
+                                        <i data-lucide="wrench"></i>
+                                    </div>
+                                    <div class="synapse-admin-empty__title">Aucun outil enregistré</div>
+                                    <p class="synapse-admin-empty__description">
+                                        Implémentez des classes
+                                        <code>ToolInterface</code>
+                                        et
+                                                                            déclarez-les comme services pour qu'elles apparaissent ici.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-	{# ──────────────────────────────────────────────────────────────────────────────
-	   NOTE INFORMATIVE — Composant synapse-admin-alert
-	   Utilisé pour les informations contextuelles non critiques
-	   ────────────────────────────────────────────────────────────────────────────── #}
-	{% if tools is not empty %}
-		<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mt-xl">
-			<i data-lucide="info"></i>
-			<div>
-				<strong>Trois niveaux de disponibilité</strong>
-				<ul style="margin: 0.5rem 0 0 1rem; padding: 0;">
-					<li><strong>Actif</strong> — exposé à l'IA dans toutes les conversations (comportement par défaut).</li>
-					<li><strong>Uniquement sur agent autorisé</strong> — exposé seulement si un agent le whiteliste explicitement via sa liste d'outils autorisés. Idéal pour les outils sensibles (ex :
-						<code>code_execute</code>) que l'on ne veut activer que pour des agents précis.</li>
-					<li><strong>Désactivé</strong> — jamais exposé à l'IA, même si un agent tente de le whitelister.</li>
-				</ul>
-				Les outils sont définis en code via <code>ToolRegistry</code> : cette page synchronise automatiquement la base à chaque visite (ajouts / suppressions).
-			</div>
-		</div>
-	{% endif %}
+    {# ──────────────────────────────────────────────────────────────────────────────
+       NOTE INFORMATIVE — Composant synapse-admin-alert
+       Utilisé pour les informations contextuelles non critiques
+       ────────────────────────────────────────────────────────────────────────────── #}
+    {% if tools is not empty %}
+        <div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mt-xl">
+            <i data-lucide="info"></i>
+            <div>
+                <strong>Trois niveaux de disponibilité</strong>
+                <ul style="margin: 0.5rem 0 0 1rem; padding: 0;">
+                    <li><strong>Actif</strong> — exposé à l'IA dans toutes les conversations (comportement par défaut).</li>
+                    <li><strong>Uniquement sur agent autorisé</strong> — exposé seulement si un agent le whiteliste explicitement via sa liste d'outils autorisés. Idéal pour les outils sensibles (ex :
+                        <code>code_execute</code>) que l'on ne veut activer que pour des agents précis.</li>
+                    <li><strong>Désactivé</strong> — jamais exposé à l'IA, même si un agent tente de le whitelister.</li>
+                </ul>
+                Les outils sont définis en code via <code>ToolRegistry</code> : cette page synchronise automatiquement la base à chaque visite (ajouts / suppressions).
+            </div>
+        </div>
+    {% endif %}
 
 {% endblock %}

@@ -1,88 +1,88 @@
 {# Partial : résultat du preset wizard (utilisé en include et en polling async) #}
 
 <div class="synapse-admin-card synapse-admin-card--success" style="max-width: 800px;">
-	<div class="synapse-admin-card__header">
-		<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
-			<i data-lucide="check-circle-2"></i>
-		</div>
-		<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs">
-			<span class="synapse-admin-card__title">Recommandation</span>
-			<span class="synapse-admin-text-sm synapse-admin-text-muted">
-				{% if recommendation.llm_assisted %}
-					<span class="synapse-admin-badge synapse-admin-badge--primary"><i data-lucide="sparkles" style="width: 12px; height: 12px;"></i> IA</span> Recommandation assistée par IA
-				{% else %}
-					<span class="synapse-admin-badge synapse-admin-badge--info">Auto</span> Recommandation automatique
-				{% endif %}
-			</span>
-		</div>
-	</div>
+    <div class="synapse-admin-card__header">
+        <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+            <i data-lucide="check-circle-2"></i>
+        </div>
+        <div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs">
+            <span class="synapse-admin-card__title">Recommandation</span>
+            <span class="synapse-admin-text-sm synapse-admin-text-muted">
+                {% if recommendation.llm_assisted %}
+                    <span class="synapse-admin-badge synapse-admin-badge--primary"><i data-lucide="sparkles" style="width: 12px; height: 12px;"></i> IA</span> Recommandation assistée par IA
+                {% else %}
+                    <span class="synapse-admin-badge synapse-admin-badge--info">Auto</span> Recommandation automatique
+                {% endif %}
+            </span>
+        </div>
+    </div>
 
-	<div class="synapse-admin-card__body">
-		<table class="synapse-admin-table synapse-admin-table--compact" style="width: 100%;">
-			<tbody>
-				<tr><td class="synapse-admin-text-muted" style="width: 180px;">Nom</td><td><strong>{{ recommendation.suggested_name }}</strong></td></tr>
-				<tr><td class="synapse-admin-text-muted">Provider</td><td>{{ recommendation.provider }}</td></tr>
-				<tr><td class="synapse-admin-text-muted">Modèle</td><td><code>{{ recommendation.model }}</code></td></tr>
-				<tr><td class="synapse-admin-text-muted">Gamme</td><td>
-					{% set rangeBadge = {flagship: 'primary', balanced: 'info', fast: 'success', specialized: 'warning'} %}
-					<span class="synapse-admin-badge synapse-admin-badge--{{ rangeBadge[recommendation.range] ?? 'default' }}">{{ recommendation.range }}</span>
-				</td></tr>
-				<tr><td class="synapse-admin-text-muted">Température</td><td>{{ recommendation.temperature }}</td></tr>
-				<tr><td class="synapse-admin-text-muted">Top P</td><td>{{ recommendation.top_p }}</td></tr>
-				<tr><td class="synapse-admin-text-muted">Top K</td><td>{{ recommendation.top_k ?? '—' }}</td></tr>
-				<tr><td class="synapse-admin-text-muted">Streaming</td><td>{{ recommendation.streaming_enabled ? 'Oui' : 'Non' }}</td></tr>
-				{% if recommendation.provider_options and recommendation.provider_options.thinking is defined %}
-					<tr><td class="synapse-admin-text-muted">Thinking</td><td>Activé (budget : {{ recommendation.provider_options.thinking.budget_tokens }} tokens)</td></tr>
-				{% endif %}
-				{% if recommendation.rgpd_risk %}
-					<tr><td class="synapse-admin-text-muted">RGPD</td><td>
-						{% set rgpdBadge = {danger: 'danger', risk: 'warning', tolerated: 'info'} %}
-						<span class="synapse-admin-badge synapse-admin-badge--{{ rgpdBadge[recommendation.rgpd_risk] ?? 'default' }}">{{ recommendation.rgpd_risk }}</span>
-					</td></tr>
-				{% endif %}
-			</tbody>
-		</table>
+    <div class="synapse-admin-card__body">
+        <table class="synapse-admin-table synapse-admin-table--compact" style="width: 100%;">
+            <tbody>
+                <tr><td class="synapse-admin-text-muted" style="width: 180px;">Nom</td><td><strong>{{ recommendation.suggested_name }}</strong></td></tr>
+                <tr><td class="synapse-admin-text-muted">Provider</td><td>{{ recommendation.provider }}</td></tr>
+                <tr><td class="synapse-admin-text-muted">Modèle</td><td><code>{{ recommendation.model }}</code></td></tr>
+                <tr><td class="synapse-admin-text-muted">Gamme</td><td>
+                    {% set rangeBadge = {flagship: 'primary', balanced: 'info', fast: 'success', specialized: 'warning'} %}
+                    <span class="synapse-admin-badge synapse-admin-badge--{{ rangeBadge[recommendation.range] ?? 'default' }}">{{ recommendation.range }}</span>
+                </td></tr>
+                <tr><td class="synapse-admin-text-muted">Température</td><td>{{ recommendation.temperature }}</td></tr>
+                <tr><td class="synapse-admin-text-muted">Top P</td><td>{{ recommendation.top_p }}</td></tr>
+                <tr><td class="synapse-admin-text-muted">Top K</td><td>{{ recommendation.top_k ?? '—' }}</td></tr>
+                <tr><td class="synapse-admin-text-muted">Streaming</td><td>{{ recommendation.streaming_enabled ? 'Oui' : 'Non' }}</td></tr>
+                {% if recommendation.provider_options and recommendation.provider_options.thinking is defined %}
+                    <tr><td class="synapse-admin-text-muted">Thinking</td><td>Activé (budget : {{ recommendation.provider_options.thinking.budget_tokens }} tokens)</td></tr>
+                {% endif %}
+                {% if recommendation.rgpd_risk %}
+                    <tr><td class="synapse-admin-text-muted">RGPD</td><td>
+                        {% set rgpdBadge = {danger: 'danger', risk: 'warning', tolerated: 'info'} %}
+                        <span class="synapse-admin-badge synapse-admin-badge--{{ rgpdBadge[recommendation.rgpd_risk] ?? 'default' }}">{{ recommendation.rgpd_risk }}</span>
+                    </td></tr>
+                {% endif %}
+            </tbody>
+        </table>
 
-		<div class="synapse-admin-mt-md synapse-admin-p-md" style="background: var(--sa-bg-tertiary); border-radius: var(--sa-radius-md);">
-			<div class="synapse-admin-text-xs synapse-admin-text-muted synapse-admin-mb-xs"><i data-lucide="info" style="width: 14px; height: 14px; vertical-align: -2px;"></i> Justification</div>
-			<div class="synapse-admin-text-sm" style="white-space: pre-line;">{{ recommendation.justification }}</div>
-		</div>
-	</div>
+        <div class="synapse-admin-mt-md synapse-admin-p-md" style="background: var(--sa-bg-tertiary); border-radius: var(--sa-radius-md);">
+            <div class="synapse-admin-text-xs synapse-admin-text-muted synapse-admin-mb-xs"><i data-lucide="info" style="width: 14px; height: 14px; vertical-align: -2px;"></i> Justification</div>
+            <div class="synapse-admin-text-sm" style="white-space: pre-line;">{{ recommendation.justification }}</div>
+        </div>
+    </div>
 
-	<div class="synapse-admin-card__footer">
-		<div class="synapse-admin-flex synapse-admin-gap-md">
-			{% set hiddenFields %}
-				<input type="hidden" name="_token" value="{{ csrf_token('synapse_preset_wizard_create') }}">
-				<input type="hidden" name="name" value="{{ recommendation.suggested_name }}">
-				<input type="hidden" name="key" value="{{ recommendation.suggested_key }}">
-				<input type="hidden" name="provider" value="{{ recommendation.provider }}">
-				<input type="hidden" name="model" value="{{ recommendation.model }}">
-				<input type="hidden" name="temperature" value="{{ recommendation.temperature }}">
-				<input type="hidden" name="top_p" value="{{ recommendation.top_p }}">
-				{% if recommendation.top_k is not null %}<input type="hidden" name="top_k" value="{{ recommendation.top_k }}">{% endif %}
-				{% if recommendation.max_output_tokens is not null %}<input type="hidden" name="max_output_tokens" value="{{ recommendation.max_output_tokens }}">{% endif %}
-				{% if recommendation.streaming_enabled %}<input type="hidden" name="streaming_enabled" value="1">{% endif %}
-				{% if recommendation.provider_options %}<input type="hidden" name="provider_options" value="{{ recommendation.provider_options|json_encode }}">{% endif %}
-			{% endset %}
+    <div class="synapse-admin-card__footer">
+        <div class="synapse-admin-flex synapse-admin-gap-md">
+            {% set hiddenFields %}
+                <input type="hidden" name="_token" value="{{ csrf_token('synapse_preset_wizard_create') }}">
+                <input type="hidden" name="name" value="{{ recommendation.suggested_name }}">
+                <input type="hidden" name="key" value="{{ recommendation.suggested_key }}">
+                <input type="hidden" name="provider" value="{{ recommendation.provider }}">
+                <input type="hidden" name="model" value="{{ recommendation.model }}">
+                <input type="hidden" name="temperature" value="{{ recommendation.temperature }}">
+                <input type="hidden" name="top_p" value="{{ recommendation.top_p }}">
+                {% if recommendation.top_k is not null %}<input type="hidden" name="top_k" value="{{ recommendation.top_k }}">{% endif %}
+                {% if recommendation.max_output_tokens is not null %}<input type="hidden" name="max_output_tokens" value="{{ recommendation.max_output_tokens }}">{% endif %}
+                {% if recommendation.streaming_enabled %}<input type="hidden" name="streaming_enabled" value="1">{% endif %}
+                {% if recommendation.provider_options %}<input type="hidden" name="provider_options" value="{{ recommendation.provider_options|json_encode }}">{% endif %}
+            {% endset %}
 
-			<form action="{{ path('synapse_admin_presets_wizard_create') }}" method="POST">
-				{{ hiddenFields|raw }}
-				<button type="submit" class="synapse-admin-btn synapse-admin-btn--outline">
-					<i data-lucide="plus"></i> Créer (inactif)
-				</button>
-			</form>
+            <form action="{{ path('synapse_admin_presets_wizard_create') }}" method="POST">
+                {{ hiddenFields|raw }}
+                <button type="submit" class="synapse-admin-btn synapse-admin-btn--outline">
+                    <i data-lucide="plus"></i> Créer (inactif)
+                </button>
+            </form>
 
-			<form action="{{ path('synapse_admin_presets_wizard_create') }}" method="POST">
-				{{ hiddenFields|raw }}
-				<input type="hidden" name="activate" value="1">
-				<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
-					<i data-lucide="zap"></i> Créer et activer
-				</button>
-			</form>
+            <form action="{{ path('synapse_admin_presets_wizard_create') }}" method="POST">
+                {{ hiddenFields|raw }}
+                <input type="hidden" name="activate" value="1">
+                <button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
+                    <i data-lucide="zap"></i> Créer et activer
+                </button>
+            </form>
 
-			<a href="{{ path('synapse_admin_presets_wizard') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
-				<i data-lucide="arrow-left"></i> Recommencer
-			</a>
-		</div>
-	</div>
+            <a href="{{ path('synapse_admin_presets_wizard') }}" class="synapse-admin-btn synapse-admin-btn--ghost">
+                <i data-lucide="arrow-left"></i> Recommencer
+            </a>
+        </div>
+    </div>
 </div>

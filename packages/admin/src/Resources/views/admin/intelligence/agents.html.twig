@@ -1,256 +1,256 @@
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
-{% block admin_page_title %}{{ 'synapse.admin.agent.list.page_title'|trans(domain='synapse_admin') }}{% endblock %}
+{% block admin_page_title %}{{ 'synapse.admin.agent.list.page_title'|trans(domain: 'synapse_admin') }}{% endblock %}
 
 {% block admin_breadcrumb %}
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="{{ path('synapse_admin_providers') }}" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.intelligence'|trans(domain='synapse_admin') }}</a>
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<span class="synapse-admin-current">{{ 'synapse.admin.sidebar.agents'|trans(domain='synapse_admin') }}</span>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <a href="{{ path('synapse_admin_providers') }}" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.intelligence'|trans(domain: 'synapse_admin') }}</a>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <span class="synapse-admin-current">{{ 'synapse.admin.sidebar.agents'|trans(domain: 'synapse_admin') }}</span>
 {% endblock %}
 
 {% block admin_content %}
 
-	<div class="synapse-admin-page-header">
-		<div class="synapse-admin-page-header__info">
-			<h1 class="synapse-admin-page-title">
-				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
-					<i data-lucide="target"></i>
-				</span>
-				{{ 'synapse.admin.agent.list.title'|trans(domain='synapse_admin') }}
-			</h1>
-			<p class="synapse-admin-page-subtitle">
-				{{ 'synapse.admin.agent.list.subtitle'|trans(domain='synapse_admin') }}
-				{{ 'synapse.admin.agent.list.usage_tip'|trans(domain='synapse_admin')|safe_html }}
-			</p>
-		</div>
-		<div class="synapse-admin-page-header__actions synapse-admin-flex synapse-admin-gap-sm">
-			<a href="{{ path('synapse_admin_agents_wizard') }}" class="synapse-admin-btn synapse-admin-btn--outline">
-				<i data-lucide="wand-2"></i>
-				Assistant
-			</a>
-			<a href="{{ path('synapse_admin_agents_new') }}" class="synapse-admin-btn synapse-admin-btn--primary">
-				<i data-lucide="plus"></i>
-				{{ 'synapse.admin.agent.list.action.new'|trans(domain='synapse_admin') }}
-			</a>
-		</div>
-	</div>
+    <div class="synapse-admin-page-header">
+        <div class="synapse-admin-page-header__info">
+            <h1 class="synapse-admin-page-title">
+                <span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+                    <i data-lucide="target"></i>
+                </span>
+                {{ 'synapse.admin.agent.list.title'|trans(domain: 'synapse_admin') }}
+            </h1>
+            <p class="synapse-admin-page-subtitle">
+                {{ 'synapse.admin.agent.list.subtitle'|trans(domain: 'synapse_admin') }}
+                {{ 'synapse.admin.agent.list.usage_tip'|trans(domain: 'synapse_admin')|safe_html }}
+            </p>
+        </div>
+        <div class="synapse-admin-page-header__actions synapse-admin-flex synapse-admin-gap-sm">
+            <a href="{{ path('synapse_admin_agents_wizard') }}" class="synapse-admin-btn synapse-admin-btn--outline">
+                <i data-lucide="wand-2"></i>
+                Assistant
+            </a>
+            <a href="{{ path('synapse_admin_agents_new') }}" class="synapse-admin-btn synapse-admin-btn--primary">
+                <i data-lucide="plus"></i>
+                {{ 'synapse.admin.agent.list.action.new'|trans(domain: 'synapse_admin') }}
+            </a>
+        </div>
+    </div>
 
-	<div class="synapse-admin-grid synapse-admin-grid--2">
-		{% for agent in agents %}
-			<div class="synapse-admin-card synapse-admin-card--hover {{ not agent.isActive ? 'synapse-admin-card--inactive' : '' }}">
+    <div class="synapse-admin-grid synapse-admin-grid--2">
+        {% for agent in agents %}
+            <div class="synapse-admin-card synapse-admin-card--hover {{ not agent.isActive ? 'synapse-admin-card--inactive' : '' }}">
 
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary" style="font-size: 1.5rem;">
-						{{ agent.emoji }}
-					</div>
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary" style="font-size: 1.5rem;">
+                        {{ agent.emoji }}
+                    </div>
 
-					<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
-						<span class="synapse-admin-card__title">{{ agent.name }}</span>
-						<div class="synapse-admin-text-sm synapse-admin-text-muted">
-							<code class="synapse-admin-font-mono" style="font-size: 0.75rem;">{{ agent.key }}</code>
-						</div>
-						{% set has_badges = agent.isBuiltin or not agent.isActive or (not agent.visibleInChat and agent.isActive) or agent_workflow_map[agent.key] is defined %}
-						{% if has_badges %}
-							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs" style="flex-wrap: wrap;">
-								{% if agent.isBuiltin %}
-									<span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.list.badge.builtin_tooltip'|trans(domain='synapse_admin') }}">
-										<i data-lucide="lock"></i>
-										{{ 'synapse.admin.agent.list.badge.builtin'|trans(domain='synapse_admin') }}
-									</span>
-								{% endif %}
-								{% if not agent.isActive %}
-									<span class="synapse-admin-badge synapse-admin-badge--warning">
-										<i data-lucide="eye-off"></i>
-										{{ 'synapse.admin.agent.list.badge.disabled'|trans(domain='synapse_admin') }}
-									</span>
-								{% endif %}
-								{% if not agent.visibleInChat and agent.isActive %}
-									<span class="synapse-admin-badge synapse-admin-badge--info">
-										<i data-lucide="eye-off"></i>
-										{{ 'synapse.admin.agent.list.badge.workflow_only'|trans(domain='synapse_admin') }}
-									</span>
-								{% endif %}
-								{% if agent_workflow_map[agent.key] is defined %}
-									{% for wname in agent_workflow_map[agent.key] %}
-										<span class="synapse-admin-badge synapse-admin-badge--primary" data-synapse-admin-tooltip="{{ wname }}">
-											<i data-lucide="workflow"></i>
-											{{ wname }}
-										</span>
-									{% endfor %}
-								{% endif %}
-							</div>
-						{% endif %}
-					</div>
-				</div>
+                    <div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+                        <span class="synapse-admin-card__title">{{ agent.name }}</span>
+                        <div class="synapse-admin-text-sm synapse-admin-text-muted">
+                            <code class="synapse-admin-font-mono" style="font-size: 0.75rem;">{{ agent.key }}</code>
+                        </div>
+                        {% set has_badges = agent.isBuiltin or not agent.isActive or (not agent.visibleInChat and agent.isActive) or agent_workflow_map[agent.key] is defined %}
+                        {% if has_badges %}
+                            <div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs" style="flex-wrap: wrap;">
+                                {% if agent.isBuiltin %}
+                                    <span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.list.badge.builtin_tooltip'|trans(domain: 'synapse_admin') }}">
+                                        <i data-lucide="lock"></i>
+                                        {{ 'synapse.admin.agent.list.badge.builtin'|trans(domain: 'synapse_admin') }}
+                                    </span>
+                                {% endif %}
+                                {% if not agent.isActive %}
+                                    <span class="synapse-admin-badge synapse-admin-badge--warning">
+                                        <i data-lucide="eye-off"></i>
+                                        {{ 'synapse.admin.agent.list.badge.disabled'|trans(domain: 'synapse_admin') }}
+                                    </span>
+                                {% endif %}
+                                {% if not agent.visibleInChat and agent.isActive %}
+                                    <span class="synapse-admin-badge synapse-admin-badge--info">
+                                        <i data-lucide="eye-off"></i>
+                                        {{ 'synapse.admin.agent.list.badge.workflow_only'|trans(domain: 'synapse_admin') }}
+                                    </span>
+                                {% endif %}
+                                {% if agent_workflow_map[agent.key] is defined %}
+                                    {% for wname in agent_workflow_map[agent.key] %}
+                                        <span class="synapse-admin-badge synapse-admin-badge--primary" data-synapse-admin-tooltip="{{ wname }}">
+                                            <i data-lucide="workflow"></i>
+                                            {{ wname }}
+                                        </span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
 
-				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-					<p class="synapse-admin-text-sm synapse-admin-text-muted synapse-admin-mb-md">{{ agent.description }}</p>
+                <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+                    <p class="synapse-admin-text-sm synapse-admin-text-muted synapse-admin-mb-md">{{ agent.description }}</p>
 
-					{% set agent_model = agent.modelPreset ? agent.modelPreset.model : default_preset_model %}
-					{% if agent_model %}
-						{% set caps = model_capabilities[agent_model] ?? null %}
-						{% if caps %}
-							<div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center synapse-admin-mb-md">
-								<span class="synapse-admin-text-xs synapse-admin-text-tertiary">{{ 'synapse.admin.llm_config.model.table.head.capabilities'|trans(domain='synapse_admin') }}</span>
-								{% if caps.supportsTextGeneration %}
-									<i data-lucide="message-square-text" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.textgen'|trans(domain='synapse_admin') }}"></i>
-								{% endif %}
-								{% if caps.supportsEmbedding %}
-									<i data-lucide="database" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.embedding'|trans(domain='synapse_admin') }}"></i>
-								{% endif %}
-								{% if caps.supportsImageGeneration %}
-									<i data-lucide="image" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.imagegen'|trans(domain='synapse_admin') }}"></i>
-								{% endif %}
-								{% if caps.supportsThinking %}
-									<i data-lucide="brain" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.thinking'|trans(domain='synapse_admin') }}"></i>
-								{% endif %}
-								{% if caps.supportsFunctionCalling %}
-									<i data-lucide="wrench" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.tools'|trans(domain='synapse_admin') }}"></i>
-								{% endif %}
-								{% if caps.supportsStreaming %}
-									<i data-lucide="activity" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.streaming'|trans(domain='synapse_admin') }}"></i>
-								{% endif %}
-								{% if caps.supportsVision %}
-									<i data-lucide="eye" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.vision'|trans(domain='synapse_admin') }}"></i>
-								{% endif %}
-							</div>
-						{% endif %}
-					{% endif %}
+                    {% set agent_model = agent.modelPreset ? agent.modelPreset.model : default_preset_model %}
+                    {% if agent_model %}
+                        {% set caps = model_capabilities[agent_model] ?? null %}
+                        {% if caps %}
+                            <div class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center synapse-admin-mb-md">
+                                <span class="synapse-admin-text-xs synapse-admin-text-tertiary">{{ 'synapse.admin.llm_config.model.table.head.capabilities'|trans(domain: 'synapse_admin') }}</span>
+                                {% if caps.supportsTextGeneration %}
+                                    <i data-lucide="message-square-text" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.textgen'|trans(domain: 'synapse_admin') }}"></i>
+                                {% endif %}
+                                {% if caps.supportsEmbedding %}
+                                    <i data-lucide="database" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.embedding'|trans(domain: 'synapse_admin') }}"></i>
+                                {% endif %}
+                                {% if caps.supportsImageGeneration %}
+                                    <i data-lucide="image" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.imagegen'|trans(domain: 'synapse_admin') }}"></i>
+                                {% endif %}
+                                {% if caps.supportsThinking %}
+                                    <i data-lucide="brain" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.thinking'|trans(domain: 'synapse_admin') }}"></i>
+                                {% endif %}
+                                {% if caps.supportsFunctionCalling %}
+                                    <i data-lucide="wrench" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.tools'|trans(domain: 'synapse_admin') }}"></i>
+                                {% endif %}
+                                {% if caps.supportsStreaming %}
+                                    <i data-lucide="activity" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.streaming'|trans(domain: 'synapse_admin') }}"></i>
+                                {% endif %}
+                                {% if caps.supportsVision %}
+                                    <i data-lucide="eye" class="synapse-admin-text-muted" data-synapse-admin-tooltip="{{ 'synapse.admin.llm_config.model.cap.vision'|trans(domain: 'synapse_admin') }}"></i>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endif %}
 
-					<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm synapse-admin-text-xs synapse-admin-text-muted">
-						{% if agent.modelPreset %}
-							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
-								<i data-lucide="cpu" style="width: 1rem; height: 1rem;"></i>
-								<span><strong>{{ 'synapse.admin.agent.list.label.model'|trans(domain='synapse_admin') }} :</strong> {{ agent.modelPreset.name }}</span>
-							</div>
-						{% endif %}
-						{% if agent.tone %}
-							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
-								<i data-lucide="mic-2" style="width: 1rem; height: 1rem;"></i>
-								<span><strong>{{ 'synapse.admin.agent.list.label.style'|trans(domain='synapse_admin') }} :</strong> {{ agent.tone.emoji }} {{ agent.tone.name }}</span>
-							</div>
-						{% endif %}
-						{% if agent.allowedToolNames|default([])|length > 0 %}
-							<div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
-								<i data-lucide="wrench" style="width: 1rem; height: 1rem;"></i>
-								<span><strong>{{ 'synapse.admin.agent.list.label.tools'|trans(domain='synapse_admin') }} :</strong> {{ 'synapse.admin.agent.list.tools_count'|trans({'count': agent.allowedToolNames|length}, domain='synapse_admin') }}</span>
-							</div>
-						{% endif %}
-					</div>
+                    <div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm synapse-admin-text-xs synapse-admin-text-muted">
+                        {% if agent.modelPreset %}
+                            <div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
+                                <i data-lucide="cpu" style="width: 1rem; height: 1rem;"></i>
+                                <span><strong>{{ 'synapse.admin.agent.list.label.model'|trans(domain: 'synapse_admin') }} :</strong> {{ agent.modelPreset.name }}</span>
+                            </div>
+                        {% endif %}
+                        {% if agent.tone %}
+                            <div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
+                                <i data-lucide="mic-2" style="width: 1rem; height: 1rem;"></i>
+                                <span><strong>{{ 'synapse.admin.agent.list.label.style'|trans(domain: 'synapse_admin') }} :</strong> {{ agent.tone.emoji }} {{ agent.tone.name }}</span>
+                            </div>
+                        {% endif %}
+                        {% if agent.allowedToolNames|default([])|length > 0 %}
+                            <div class="synapse-admin-flex synapse-admin-items-center synapse-admin-gap-xs">
+                                <i data-lucide="wrench" style="width: 1rem; height: 1rem;"></i>
+                                <span><strong>{{ 'synapse.admin.agent.list.label.tools'|trans(domain: 'synapse_admin') }} :</strong> {{ 'synapse.admin.agent.list.tools_count'|trans({count: agent.allowedToolNames|length}, domain: 'synapse_admin') }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
 
-					<details class="synapse-admin-collapsible" style="margin-top: 1rem;">
-						<summary class="synapse-admin-collapsible__summary">
-							<div class="synapse-admin-collapsible__icon">
-								<i data-lucide="file-text"></i>
-							</div>
-							<div class="synapse-admin-collapsible__title">
-								{{ 'synapse.admin.agent.list.label.system_prompt'|trans(domain='synapse_admin') }}
-								<div class="synapse-admin-collapsible__subtitle">
-									{{ agent.systemPrompt|slice(0, 60) ~ '…' }}
-								</div>
-							</div>
-							<i data-lucide="chevron-down" class="synapse-admin-collapsible__chevron"></i>
-						</summary>
-						<div class="synapse-admin-collapsible__content">
-							<p class="synapse-admin-text-sm synapse-admin-font-mono" style="white-space: pre-wrap; word-break: break-word;">{{ agent.systemPrompt }}</p>
-						</div>
-					</details>
-				</div>
+                    <details class="synapse-admin-collapsible" style="margin-top: 1rem;">
+                        <summary class="synapse-admin-collapsible__summary">
+                            <div class="synapse-admin-collapsible__icon">
+                                <i data-lucide="file-text"></i>
+                            </div>
+                            <div class="synapse-admin-collapsible__title">
+                                {{ 'synapse.admin.agent.list.label.system_prompt'|trans(domain: 'synapse_admin') }}
+                                <div class="synapse-admin-collapsible__subtitle">
+                                    {{ agent.systemPrompt|slice(0, 60) ~ '…' }}
+                                </div>
+                            </div>
+                            <i data-lucide="chevron-down" class="synapse-admin-collapsible__chevron"></i>
+                        </summary>
+                        <div class="synapse-admin-collapsible__content">
+                            <p class="synapse-admin-text-sm synapse-admin-font-mono" style="white-space: pre-wrap; word-break: break-word;">{{ agent.systemPrompt }}</p>
+                        </div>
+                    </details>
+                </div>
 
-				<div class="synapse-admin-card__footer">
-					<div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center">
+                <div class="synapse-admin-card__footer">
+                    <div class="synapse-admin-flex synapse-admin-gap-md synapse-admin-items-center">
 
-						{# Modifier #}
-						<a href="{{ path('synapse_admin_agents_edit', {id: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.list.tooltip.edit'|trans(domain='synapse_admin') }}">
-							<i data-lucide="edit-3"></i>
-						</a>
+                        {# Modifier #}
+                        <a href="{{ path('synapse_admin_agents_edit', {id: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.list.tooltip.edit'|trans(domain: 'synapse_admin') }}">
+                            <i data-lucide="edit-3"></i>
+                        </a>
 
-						{# Activer / Désactiver #}
-						<form action="{{ path('synapse_admin_agents_toggle', {id: agent.id}) }}" method="POST" class="synapse-admin-form-inline">
-							<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_toggle_' ~ agent.id) }}">
-							<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
-									data-synapse-admin-tooltip="{{ agent.isActive ? 'synapse.admin.agent.list.tooltip.disable'|trans(domain='synapse_admin') : 'synapse.admin.agent.list.tooltip.enable'|trans(domain='synapse_admin') }}">
-								{% if agent.isActive %}
-									<i data-lucide="eye-off"></i>
-								{% else %}
-									<i data-lucide="eye"></i>
-								{% endif %}
-							</button>
-						</form>
+                        {# Activer / Désactiver #}
+                        <form action="{{ path('synapse_admin_agents_toggle', {id: agent.id}) }}" method="POST" class="synapse-admin-form-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_toggle_' ~ agent.id) }}">
+                            <button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm"
+                                    data-synapse-admin-tooltip="{{ agent.isActive ? 'synapse.admin.agent.list.tooltip.disable'|trans(domain: 'synapse_admin') : 'synapse.admin.agent.list.tooltip.enable'|trans(domain: 'synapse_admin') }}">
+                                {% if agent.isActive %}
+                                    <i data-lucide="eye-off"></i>
+                                {% else %}
+                                    <i data-lucide="eye"></i>
+                                {% endif %}
+                            </button>
+                        </form>
 
-						{# Supprimer (masqué ou désactivé si builtin) #}
-						<form action="{{ path('synapse_admin_agents_delete', {id: agent.id}) }}" method="POST" class="synapse-admin-form-inline"
-							{% if not agent.isBuiltin %}onsubmit="return confirm('{{ 'synapse.admin.agent.list.confirm_delete'|trans({'name': agent.name}, domain='synapse_admin')|escape('js') }}')"{% endif %}>
-							<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_delete_' ~ agent.id) }}">
-							<button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm synapse-admin-text-danger"
-									data-synapse-admin-tooltip="{{ agent.isBuiltin ? 'synapse.admin.agent.list.tooltip.builtin_no_delete'|trans(domain='synapse_admin') : 'synapse.admin.agent.list.tooltip.delete'|trans(domain='synapse_admin') }}"
-									{% if agent.isBuiltin %}disabled{% endif %}>
-								<i data-lucide="trash-2"></i>
-							</button>
-						</form>
+                        {# Supprimer (masqué ou désactivé si builtin) #}
+                        <form action="{{ path('synapse_admin_agents_delete', {id: agent.id}) }}" method="POST" class="synapse-admin-form-inline"
+                            {% if not agent.isBuiltin %}onsubmit="return confirm('{{ 'synapse.admin.agent.list.confirm_delete'|trans({name: agent.name}, domain: 'synapse_admin')|escape('js') }}')"{% endif %}>
+                            <input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_delete_' ~ agent.id) }}">
+                            <button type="submit" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--icon synapse-admin-btn--sm synapse-admin-text-danger"
+                                    data-synapse-admin-tooltip="{{ agent.isBuiltin ? 'synapse.admin.agent.list.tooltip.builtin_no_delete'|trans(domain: 'synapse_admin') : 'synapse.admin.agent.list.tooltip.delete'|trans(domain: 'synapse_admin') }}"
+                                    {% if agent.isBuiltin %}disabled{% endif %}>
+                                <i data-lucide="trash-2"></i>
+                            </button>
+                        </form>
 
-					</div>
-				</div>
+                    </div>
+                </div>
 
-			</div>
-		{% else %}
-			<div class="synapse-admin-empty-state" style="grid-column: 1 / -1;">
-				<i data-lucide="target" class="synapse-admin-empty-state__icon"></i>
-				<p class="synapse-admin-empty-state__title">{{ 'synapse.admin.agent.list.empty.title'|trans(domain='synapse_admin') }}</p>
-				<p class="synapse-admin-empty-state__subtitle">{{ 'synapse.admin.agent.list.empty.subtitle'|trans(domain='synapse_admin') }}</p>
-				<a href="{{ path('synapse_admin_agents_new') }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-mt-md">
-					<i data-lucide="plus"></i>
-					{{ 'synapse.admin.agent.list.empty.action'|trans(domain='synapse_admin') }}
-				</a>
-			</div>
-		{% endfor %}
-	</div>
+            </div>
+        {% else %}
+            <div class="synapse-admin-empty-state" style="grid-column: 1 / -1;">
+                <i data-lucide="target" class="synapse-admin-empty-state__icon"></i>
+                <p class="synapse-admin-empty-state__title">{{ 'synapse.admin.agent.list.empty.title'|trans(domain: 'synapse_admin') }}</p>
+                <p class="synapse-admin-empty-state__subtitle">{{ 'synapse.admin.agent.list.empty.subtitle'|trans(domain: 'synapse_admin') }}</p>
+                <a href="{{ path('synapse_admin_agents_new') }}" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-mt-md">
+                    <i data-lucide="plus"></i>
+                    {{ 'synapse.admin.agent.list.empty.action'|trans(domain: 'synapse_admin') }}
+                </a>
+            </div>
+        {% endfor %}
+    </div>
 
-	{% if code_agents|length > 0 %}
-		<div class="synapse-admin-section-header" style="margin-top: 2.5rem; margin-bottom: 1rem;">
-			<h2 class="synapse-admin-section-title" style="font-size: 1rem; font-weight: 600; color: var(--synapse-admin-text-secondary, #6b7280);">
-				<i data-lucide="code-2" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.375rem;"></i>
-				{{ 'synapse.admin.agent.list.code_agents.section_title'|trans(domain='synapse_admin') }}
-			</h2>
-			<p class="synapse-admin-text-sm synapse-admin-text-muted" style="margin-top: 0.25rem;">
-				{{ 'synapse.admin.agent.list.code_agents.section_subtitle'|trans(domain='synapse_admin') }}
-			</p>
-		</div>
+    {% if code_agents|length > 0 %}
+        <div class="synapse-admin-section-header" style="margin-top: 2.5rem; margin-bottom: 1rem;">
+            <h2 class="synapse-admin-section-title" style="font-size: 1rem; font-weight: 600; color: var(--synapse-admin-text-secondary, #6b7280);">
+                <i data-lucide="code-2" style="width: 1rem; height: 1rem; vertical-align: middle; margin-right: 0.375rem;"></i>
+                {{ 'synapse.admin.agent.list.code_agents.section_title'|trans(domain: 'synapse_admin') }}
+            </h2>
+            <p class="synapse-admin-text-sm synapse-admin-text-muted" style="margin-top: 0.25rem;">
+                {{ 'synapse.admin.agent.list.code_agents.section_subtitle'|trans(domain: 'synapse_admin') }}
+            </p>
+        </div>
 
-		<div class="synapse-admin-grid synapse-admin-grid--2">
-			{% for agent in code_agents %}
-				<div class="synapse-admin-card" style="opacity: 0.85;">
-					<div class="synapse-admin-card__header">
-						<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral" style="font-size: 1.25rem;">
-							<i data-lucide="code-2"></i>
-						</div>
-						<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
-							<span class="synapse-admin-card__title">{{ agent.label }}</span>
-							<div class="synapse-admin-text-sm synapse-admin-text-muted">
-								<code class="synapse-admin-font-mono" style="font-size: 0.75rem;">{{ agent.name }}</code>
-							</div>
-							<div>
-								{% if agent.source == 'bundle' %}
-									<span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.list.code_agents.badge_bundle_tooltip'|trans(domain='synapse_admin') }}">
-										<i data-lucide="package"></i>
-										{{ 'synapse.admin.agent.list.code_agents.badge_bundle'|trans(domain='synapse_admin') }}
-									</span>
-								{% else %}
-									<span class="synapse-admin-badge synapse-admin-badge--primary" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.list.code_agents.badge_host_tooltip'|trans(domain='synapse_admin') }}">
-										<i data-lucide="code-2"></i>
-										{{ 'synapse.admin.agent.list.code_agents.badge_host'|trans(domain='synapse_admin') }}
-									</span>
-								{% endif %}
-							</div>
-						</div>
-					</div>
-					<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-						<p class="synapse-admin-text-sm synapse-admin-text-muted">{{ agent.description }}</p>
-					</div>
-				</div>
-			{% endfor %}
-		</div>
-	{% endif %}
+        <div class="synapse-admin-grid synapse-admin-grid--2">
+            {% for agent in code_agents %}
+                <div class="synapse-admin-card" style="opacity: 0.85;">
+                    <div class="synapse-admin-card__header">
+                        <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--neutral" style="font-size: 1.25rem;">
+                            <i data-lucide="code-2"></i>
+                        </div>
+                        <div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-sm">
+                            <span class="synapse-admin-card__title">{{ agent.label }}</span>
+                            <div class="synapse-admin-text-sm synapse-admin-text-muted">
+                                <code class="synapse-admin-font-mono" style="font-size: 0.75rem;">{{ agent.name }}</code>
+                            </div>
+                            <div>
+                                {% if agent.source == 'bundle' %}
+                                    <span class="synapse-admin-badge synapse-admin-badge--neutral" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.list.code_agents.badge_bundle_tooltip'|trans(domain: 'synapse_admin') }}">
+                                        <i data-lucide="package"></i>
+                                        {{ 'synapse.admin.agent.list.code_agents.badge_bundle'|trans(domain: 'synapse_admin') }}
+                                    </span>
+                                {% else %}
+                                    <span class="synapse-admin-badge synapse-admin-badge--primary" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.list.code_agents.badge_host_tooltip'|trans(domain: 'synapse_admin') }}">
+                                        <i data-lucide="code-2"></i>
+                                        {{ 'synapse.admin.agent.list.code_agents.badge_host'|trans(domain: 'synapse_admin') }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+                        <p class="synapse-admin-text-sm synapse-admin-text-muted">{{ agent.description }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
 {% endblock %}

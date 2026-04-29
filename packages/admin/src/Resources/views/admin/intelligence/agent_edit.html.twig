@@ -1,635 +1,635 @@
 {% extends '@Synapse/admin/layout/base.html.twig' %}
 
 {% block admin_page_title %}
-	{{ is_new ? 'synapse.admin.agent.edit.page_title.new'|trans(domain='synapse_admin') : 'synapse.admin.agent.edit.page_title.edit'|trans({'name': agent.name}, domain='synapse_admin') }}
-	| {{ 'synapse.admin.sidebar.section.intelligence'|trans(domain='synapse_admin') }} | Synapse Administration Synapse
+    {{ is_new ? 'synapse.admin.agent.edit.page_title.new'|trans(domain: 'synapse_admin') : 'synapse.admin.agent.edit.page_title.edit'|trans({name: agent.name}, domain: 'synapse_admin') }}
+    | {{ 'synapse.admin.sidebar.section.intelligence'|trans(domain: 'synapse_admin') }} | Synapse Administration Synapse
 {% endblock %}
 
 {% block admin_breadcrumb %}
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.intelligence'|trans(domain='synapse_admin') }}</a>
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.agents'|trans(domain='synapse_admin') }}</a>
-	<span class="synapse-admin-topbar__breadcrumb-sep">›</span>
-	<span class="synapse-admin-topbar__current">{{ is_new ? 'synapse.admin.common.new'|trans(domain='synapse_admin') : agent.name }}</span>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <a href="#" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.section.intelligence'|trans(domain: 'synapse_admin') }}</a>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-topbar__breadcrumb">{{ 'synapse.admin.sidebar.agents'|trans(domain: 'synapse_admin') }}</a>
+    <span class="synapse-admin-topbar__breadcrumb-sep">›</span>
+    <span class="synapse-admin-topbar__current">{{ is_new ? 'synapse.admin.common.new'|trans(domain: 'synapse_admin') : agent.name }}</span>
 {% endblock %}
 
 {% block admin_content %}
 
-	<div class="synapse-admin-page-header">
-		<div class="synapse-admin-page-header__info">
-			<h1 class="synapse-admin-page-title">
-				<span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
-					<i data-lucide="target"></i>
-				</span>
-				{{ is_new ? 'synapse.admin.agent.edit.title.new'|trans(domain='synapse_admin') : 'synapse.admin.agent.edit.title.edit'|trans({'name': agent.name}, domain='synapse_admin') }}
-			</h1>
-			<p class="synapse-admin-page-subtitle">
-				{{ is_new
-				? 'synapse.admin.agent.edit.subtitle.new'|trans(domain='synapse_admin')
-				: 'synapse.admin.agent.edit.subtitle.edit'|trans(domain='synapse_admin') }}
-			</p>
-		</div>
-		<div class="synapse-admin-page-header__actions">
-			{% if not is_new %}
-				<a href="{{ path('synapse_admin_agent_test_cases', {agentId: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
-					<i data-lucide="test-tubes"></i>
-					{{ 'synapse.admin.agent.edit.action.test_cases'|trans(domain='synapse_admin') }}
-				</a>
-			{% endif %}
-			<a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
-				<i data-lucide="x"></i>
-				{{ 'synapse.admin.common.cancel'|trans(domain='synapse_admin') }}
-			</a>
-			<button type="submit" form="agent-form" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
-				<i data-lucide="save"></i>
-				{{ is_new ? 'synapse.admin.agent.edit.action.create'|trans(domain='synapse_admin') : 'synapse.admin.agent.edit.action.save'|trans(domain='synapse_admin') }}
-			</button>
-		</div>
-	</div>
-
-	{# ── Onglets ───────────────────────────────────────────────────────────── #}
-	<div class="synapse-admin-tabs synapse-admin-mb-lg">
-		<button type="button" data-tab="identite" class="synapse-admin-tab synapse-admin-tab--active">
-			<i data-lucide="user-circle"></i>
-			Identité &amp; Prompt
-		</button>
-		<button type="button" data-tab="capacites" class="synapse-admin-tab">
-			<i data-lucide="wrench"></i>
-			Capacités
-		</button>
-		<button type="button" data-tab="acces" class="synapse-admin-tab">
-			<i data-lucide="shield-check"></i>
-			Accès &amp; Limites
-		</button>
-	</div>
-
-	<form id="agent-form" method="post" action="{{ is_new ? path('synapse_admin_agents_new') : path('synapse_admin_agents_edit', {id: agent.id}) }}">
-
-		<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_edit') }}">
-
-		{# ══ PANEL 1 : Identité & Prompt ═══════════════════════════════════════ #}
-		<div id="tab-panel-identite">
-
-			{# ── Identification ────────────────────────────────────────────────── #}
-			<div class="synapse-admin-card synapse-admin-mb-lg">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
-						<i data-lucide="tag"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.id.title'|trans(domain='synapse_admin') }}</div>
-						<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.id.subtitle'|trans(domain='synapse_admin') }}</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-
-					<div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-md">
-
-						<div class="synapse-admin-form-group">
-							<label class="synapse-admin-label" for="agent-emoji">{{ 'synapse.admin.agent.edit.label.emoji'|trans(domain='synapse_admin') }}</label>
-							<input type="text" id="agent-emoji" name="emoji" value="{{ agent.emoji }}"
-								class="synapse-admin-input" placeholder="🎯" maxlength="10">
-						</div>
-
-						<div class="synapse-admin-form-group" style="grid-column: span 2;">
-							<label class="synapse-admin-label" for="agent-name">
-								{{ 'synapse.admin.agent.edit.label.name'|trans(domain='synapse_admin') }} <span class="synapse-admin-required">*</span>
-							</label>
-							<input type="text" id="agent-name" name="name" value="{{ agent.name }}"
-								class="synapse-admin-input" required placeholder="{{ 'synapse.admin.agent.edit.placeholder.name'|trans(domain='synapse_admin') }}">
-						</div>
-
-					</div>
-
-					<div class="synapse-admin-form-group">
-						<label class="synapse-admin-label" for="agent-key">
-							{{ 'synapse.admin.agent.edit.label.key'|trans(domain='synapse_admin') }} <span class="synapse-admin-required">*</span>
-							{% if agent.isBuiltin %}
-								<span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-ml-sm" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.edit.tooltip.key_locked'|trans(domain='synapse_admin') }}">
-									<i data-lucide="lock"></i>
-									{{ 'synapse.admin.agent.edit.badge.locked'|trans(domain='synapse_admin') }}
-								</span>
-							{% endif %}
-						</label>
-						<input type="text" id="agent-key" name="key" value="{{ agent.key }}"
-							class="synapse-admin-input synapse-admin-font-mono"
-							{{ agent.isBuiltin ? 'readonly' : '' }}
-							required placeholder="ex: support_client"
-							pattern="[a-z0-9_]+" title="{{ 'synapse.admin.agent.edit.pattern_title'|trans(domain='synapse_admin') }}">
-						<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.usage_tip'|trans({'key': agent.key|default('mon_agent')|e}, domain='synapse_admin')|safe_html }}</p>
-					</div>
-
-				</div>
-			</div>
-
-			{# ── Description ───────────────────────────────────────────────────── #}
-			<div class="synapse-admin-card synapse-admin-mb-lg">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
-						<i data-lucide="info"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.description.title'|trans(domain='synapse_admin') }}</div>
-						<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.description.subtitle'|trans(domain='synapse_admin') }}</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-					<div class="synapse-admin-form-group">
-						<label class="synapse-admin-label" for="agent-description">{{ 'synapse.admin.agent.edit.label.description'|trans(domain='synapse_admin') }} <span class="synapse-admin-required">*</span></label>
-						<textarea id="agent-description" name="description" class="synapse-admin-input synapse-admin-textarea" rows="2" required
-							placeholder="{{ 'synapse.admin.agent.edit.placeholder.description'|trans(domain='synapse_admin') }}">{{ agent.description }}</textarea>
-					</div>
-				</div>
-			</div>
-
-			{# ── Prompt système ────────────────────────────────────────────────── #}
-			<div class="synapse-admin-card synapse-admin-mb-lg">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
-						<i data-lucide="file-text"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.prompt.title'|trans(domain='synapse_admin') }}</div>
-						<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.prompt.subtitle'|trans(domain='synapse_admin') }}</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-
-					<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
-						<i data-lucide="info"></i>
-						<span>{{ 'synapse.admin.agent.edit.alert.prompt_tip'|trans(domain='synapse_admin') }}</span>
-					</div>
-
-					<div class="synapse-admin-form-group">
-						<label class="synapse-admin-label" for="agent-system-prompt">{{ 'synapse.admin.agent.edit.label.system_prompt'|trans(domain='synapse_admin') }} <span class="synapse-admin-required">*</span></label>
-						<textarea id="agent-system-prompt" name="system_prompt" class="synapse-admin-input synapse-admin-textarea synapse-admin-font-mono" rows="10" required
-							placeholder="{{ 'synapse.admin.agent.edit.placeholder.prompt'|trans(domain='synapse_admin') }}">{{ agent.systemPrompt }}</textarea>
-					</div>
-
-					<div class="synapse-admin-form-group">
-						<label class="synapse-admin-label" for="agent-version-reason">{{ 'synapse.admin.agent.edit.label.version_reason'|trans(domain='synapse_admin') }}</label>
-						<input id="agent-version-reason" name="version_reason" type="text" class="synapse-admin-input"
-							placeholder="{{ 'synapse.admin.agent.edit.placeholder.version_reason'|trans(domain='synapse_admin') }}">
-						<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.version_reason'|trans(domain='synapse_admin') }}</p>
-					</div>
-
-					{% if not is_new %}
-						<div class="synapse-admin-form-group">
-							<a href="{{ path('synapse_admin_agents_prompt_history', {id: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
-								<i data-lucide="history"></i>
-								{{ 'synapse.admin.agent.edit.action.view_prompt_history'|trans(domain='synapse_admin') }}
-							</a>
-						</div>
-					{% endif %}
-
-				</div>
-			</div>
-
-		</div>{# /tab-panel-identite #}
-
-		{# ══ PANEL 2 : Capacités ═══════════════════════════════════════════════ #}
-		<div id="tab-panel-capacites" hidden>
-
-			{# ── Configuration ──────────────────────────────────────────────────── #}
-			<div class="synapse-admin-card synapse-admin-mb-lg">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
-						<i data-lucide="settings"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.config.title'|trans(domain='synapse_admin') }}</div>
-						<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.config.subtitle'|trans(domain='synapse_admin') }}</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-
-					<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-lg">
-
-						<div class="synapse-admin-form-group">
-							<label class="synapse-admin-label" for="agent-model-preset">
-								{{ 'synapse.admin.agent.edit.label.model_preset'|trans(domain='synapse_admin') }}
-							</label>
-							<select id="agent-model-preset" name="model_preset_id" class="synapse-admin-input">
-								<option value="">— {{ 'synapse.admin.agent.edit.option.default_preset'|trans(domain='synapse_admin') }} —</option>
-								{% for preset in presets %}
-									<option value="{{ preset.id }}" {% if agent.modelPreset and agent.modelPreset.id == preset.id %}selected{% endif %}>
-										{{ preset.name }} ({{ preset.model }})
-									</option>
-								{% endfor %}
-							</select>
-							<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.model_preset'|trans(domain='synapse_admin') }}</p>
-						</div>
-
-						<div class="synapse-admin-form-group">
-							<label class="synapse-admin-label" for="agent-tone">
-								{{ 'synapse.admin.agent.edit.label.tone'|trans(domain='synapse_admin') }}
-							</label>
-							<select id="agent-tone" name="tone_id" class="synapse-admin-input">
-								<option value="">— {{ 'synapse.admin.agent.edit.option.no_tone'|trans(domain='synapse_admin') }} —</option>
-								{% for tone in tones %}
-									<option value="{{ tone.id }}" {% if agent.tone and agent.tone.id == tone.id %}selected{% endif %}>
-										{{ tone.emoji }} {{ tone.name }}
-									</option>
-								{% endfor %}
-							</select>
-							<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.tone'|trans(domain='synapse_admin') }}</p>
-						</div>
-
-					</div>
-
-					{# ── Workflow délégué ────────────────────────────────────────────── #}
-					{% if workflows is defined and workflows is not empty %}
-					<div class="synapse-admin-form-group synapse-admin-mt-md">
-						<label class="synapse-admin-label" for="agent-workflow-key">
-							{{ 'synapse.admin.agent.edit.workflow_key.label'|trans(domain='synapse_admin') }}
-						</label>
-						<select id="agent-workflow-key" name="workflow_key" class="synapse-admin-input">
-							<option value="">— {{ 'synapse.admin.agent.edit.workflow_key.none'|trans(domain='synapse_admin') }} —</option>
-							{% for w in workflows %}
-								<option value="{{ w.workflowKey }}" {% if agent.workflowKey is defined and agent.workflowKey == w.workflowKey %}selected{% endif %}>
-									{{ w.name }} ({{ w.workflowKey }})
-								</option>
-							{% endfor %}
-						</select>
-						<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.workflow_key.help'|trans(domain='synapse_admin') }}</p>
-					</div>
-					{% endif %}
-
-					<div id="agent-capabilities-container" class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center synapse-admin-mt-md" style="flex-wrap:wrap;"></div>
-
-				</div>
-			</div>
-
-			{# ── Outils autorisés ──────────────────────────────────────────────── #}
-			<div class="synapse-admin-card synapse-admin-mb-lg">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
-						<i data-lucide="wrench"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">{{ 'synapse.admin.agent.list.label.tools'|trans(domain='synapse_admin') }}</div>
-						<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.tools.subtitle'|trans(domain='synapse_admin') }}</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-
-					<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
-						<i data-lucide="info"></i>
-						<span>{{ 'synapse.admin.agent.edit.alert.tools_tip'|trans(domain='synapse_admin') }}</span>
-					</div>
-
-					{% if available_tools|default([])|length > 0 %}
-						<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-sm">
-							{% for tool in available_tools %}
-								<label class="synapse-admin-toggle" style="align-items: flex-start;">
-									<input type="checkbox"
-										name="allowed_tools[]"
-										value="{{ tool.name }}"
-										{{ tool.name in (agent.allowedToolNames|default([])) ? 'checked' : '' }}>
-									<span class="synapse-admin-toggle__slider"></span>
-									<span class="synapse-admin-toggle__label">
-										<strong class="synapse-admin-font-mono">{{ tool.name }}</strong><br>
-										<span class="synapse-admin-text-sm synapse-admin-text-muted">
-											{{ tool.description|length > 100 ? tool.description|slice(0, 100) ~ '…' : tool.description }}
-										</span>
-									</span>
-								</label>
-							{% endfor %}
-						</div>
-					{% else %}
-						<p class="synapse-admin-text-muted synapse-admin-text-sm">{{ 'synapse.admin.agent.edit.no_tools'|trans(domain='synapse_admin') }}</p>
-					{% endif %}
-
-				</div>
-			</div>
-
-			{# ── Sources RAG ───────────────────────────────────────────────────── #}
-			<div class="synapse-admin-card synapse-admin-mb-lg">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
-						<i data-lucide="database"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.rag.title'|trans(domain='synapse_admin') }}</div>
-						<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.rag.subtitle'|trans(domain='synapse_admin') }}</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-
-					<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
-						<i data-lucide="info"></i>
-						<span>{{ 'synapse.admin.agent.edit.alert.rag_tip'|trans(domain='synapse_admin') }}</span>
-					</div>
-
-					{% if available_rag_sources|default([])|length > 0 %}
-						<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-sm synapse-admin-mb-md">
-							{% for source in available_rag_sources %}
-								<label class="synapse-admin-toggle" style="align-items: flex-start;">
-									<input type="checkbox"
-										name="allowed_rag_sources[]"
-										value="{{ source.slug }}"
-										{{ source.slug in (agent.allowedRagSources|default([])) ? 'checked' : '' }}>
-									<span class="synapse-admin-toggle__slider"></span>
-									<span class="synapse-admin-toggle__label">
-										<strong>{{ source.name }}</strong><br>
-										<span class="synapse-admin-text-sm synapse-admin-text-muted synapse-admin-font-mono">{{ source.slug }}</span>
-										{% if source.description %}
-											<br><span class="synapse-admin-text-sm synapse-admin-text-muted">{{ source.description|length > 100 ? source.description|slice(0, 100) ~ '…' : source.description }}</span>
-										{% endif %}
-										<br><span class="synapse-admin-text-xs synapse-admin-text-muted">{{ source.documentCount }} chunks</span>
-									</span>
-								</label>
-							{% endfor %}
-						</div>
-
-						<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-md">
-							<div class="synapse-admin-form-group">
-								<label class="synapse-admin-label" for="agent-rag-max-results">{{ 'synapse.admin.agent.edit.label.rag_max_results'|trans(domain='synapse_admin') }}</label>
-								<input type="number" id="agent-rag-max-results" name="rag_max_results" value="{{ agent.ragMaxResults }}"
-									class="synapse-admin-input" min="1" max="20" step="1">
-								<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.rag_max_results'|trans(domain='synapse_admin') }}</p>
-							</div>
-							<div class="synapse-admin-form-group">
-								<label class="synapse-admin-label" for="agent-rag-min-score">{{ 'synapse.admin.agent.edit.label.rag_min_score'|trans(domain='synapse_admin') }}</label>
-								<input type="number" id="agent-rag-min-score" name="rag_min_score" value="{{ agent.ragMinScore }}"
-									class="synapse-admin-input" min="0" max="1" step="0.05">
-								<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.rag_min_score'|trans(domain='synapse_admin') }}</p>
-							</div>
-						</div>
-					{% else %}
-						<p class="synapse-admin-text-muted synapse-admin-text-sm">{{ 'synapse.admin.agent.edit.no_rag_sources'|trans(domain='synapse_admin') }}</p>
-					{% endif %}
-
-				</div>
-			</div>
-
-		</div>{# /tab-panel-capacites #}
-
-		{# ══ PANEL 3 : Accès & Limites (champs du form principal) ══════════════ #}
-		<div id="tab-panel-acces" hidden>
-
-			{# ── Contrôle d'accès ──────────────────────────────────────────────── #}
-			<div class="synapse-admin-card synapse-admin-mb-lg">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--accent">
-						<i data-lucide="shield-check"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.access.title'|trans(domain='synapse_admin') }}</div>
-						<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.access.subtitle'|trans(domain='synapse_admin') }}</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-
-					<div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
-						<i data-lucide="info"></i>
-						<span>{{ 'synapse.admin.agent.edit.alert.access_tip'|trans(domain='synapse_admin')|safe_html }}</span>
-					</div>
-
-					<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-md">
-
-						<div class="synapse-admin-form-group">
-							<div class="synapse-admin-label">
-								{{ 'synapse.admin.agent.edit.label.access_roles'|trans(domain='synapse_admin') }}
-							</div>
-							{% if available_roles|default([])|length > 0 %}
-								<div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs synapse-admin-mb-sm">
-									{% for role in available_roles %}
-										<label class="synapse-admin-toggle" style="align-items: flex-start;">
-											<input type="checkbox"
-												name="access_roles[]"
-												value="{{ role }}"
-												{{ role in (agent.accessControl.roles|default([])) ? 'checked' : '' }}>
-											<span class="synapse-admin-toggle__slider"></span>
-											<span class="synapse-admin-toggle__label">
-												<strong class="synapse-admin-font-mono">{{ role }}</strong>
-											</span>
-										</label>
-									{% endfor %}
-								</div>
-							{% endif %}
-							<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.access_roles'|trans(domain='synapse_admin') }}</p>
-						</div>
-
-						<div class="synapse-admin-form-group">
-							<label class="synapse-admin-label" for="agent-access-users">
-								{{ 'synapse.admin.agent.edit.label.access_users'|trans(domain='synapse_admin') }}
-							</label>
-							<textarea id="agent-access-users" name="access_users" rows="5"
-								class="synapse-admin-input synapse-admin-font-mono"
-								placeholder="{{ 'synapse.admin.agent.edit.placeholder.access_users'|trans(domain='synapse_admin') }}">{% if agent.accessControl and agent.accessControl.userIdentifiers|default([])|length > 0 %}{{ agent.accessControl.userIdentifiers|join('\n') }}{% endif %}</textarea>
-							<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.access_users'|trans(domain='synapse_admin') }}</p>
-						</div>
-
-					</div>
-
-					{% if agent.isPublic %}
-						<div class="synapse-admin-alert synapse-admin-alert--warning synapse-admin-mt-md">
-							<i data-lucide="alert-triangle"></i>
-							<span>{{ 'synapse.admin.agent.edit.alert.access_public'|trans(domain='synapse_admin')|safe_html }}</span>
-						</div>
-					{% endif %}
-
-				</div>
-			</div>
-
-			{# ── Paramètres ────────────────────────────────────────────────────── #}
-			<div class="synapse-admin-card synapse-admin-mb-lg">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
-						<i data-lucide="settings-2"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">{{ 'synapse.admin.sidebar.settings'|trans(domain='synapse_admin') }}</div>
-						<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.settings.subtitle'|trans(domain='synapse_admin') }}</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-
-					<div class="synapse-admin-grid synapse-admin-grid--2">
-
-						<div class="synapse-admin-form-group">
-							<label class="synapse-admin-label" for="agent-sort-order">{{ 'synapse.admin.agent.edit.label.sort_order'|trans(domain='synapse_admin') }}</label>
-							<input type="number" id="agent-sort-order" name="sort_order" value="{{ agent.sortOrder }}"
-								class="synapse-admin-input" min="0" max="999" placeholder="0">
-							<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.sort_order'|trans(domain='synapse_admin') }}</p>
-						</div>
-
-						<div class="synapse-admin-form-group">
-							<div class="synapse-admin-label">{{ 'synapse.admin.agent.edit.label.status'|trans(domain='synapse_admin') }}</div>
-							<label class="synapse-admin-toggle">
-								<input type="checkbox" name="is_active" id="agent-is-active" {{ agent.isActive ? 'checked' : '' }}>
-								<span class="synapse-admin-toggle__slider"></span>
-								<span class="synapse-admin-toggle__label">{{ 'synapse.admin.agent.edit.label.activate'|trans(domain='synapse_admin') }}</span>
-							</label>
-						</div>
-
-						<div class="synapse-admin-form-group">
-							<div class="synapse-admin-label">{{ 'synapse.admin.agent.edit.label.visibility'|trans(domain='synapse_admin') }}</div>
-							<label class="synapse-admin-toggle">
-								<input type="checkbox" name="visible_in_chat" id="agent-visible-in-chat" {{ agent.visibleInChat ? 'checked' : '' }}>
-								<span class="synapse-admin-toggle__slider"></span>
-								<span class="synapse-admin-toggle__label">{{ 'synapse.admin.agent.edit.label.visible_in_chat'|trans(domain='synapse_admin') }}</span>
-							</label>
-							<p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.visible_in_chat'|trans(domain='synapse_admin') }}</p>
-						</div>
-
-					</div>
-
-				</div>
-			</div>
-
-		</div>{# /tab-panel-acces #}
-
-	</form>
-
-	{# ══ PANEL 3 : Limite de dépense (form séparé, hors du form principal) ══════ #}
-	{% if not is_new and (spending_limit is defined) %}
-		<div id="tab-panel-acces-spending" hidden>
-			<div class="synapse-admin-card synapse-admin-mb-lg">
-				<div class="synapse-admin-card__header">
-					<div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
-						<i data-lucide="gauge"></i>
-					</div>
-					<div>
-						<div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.costs.title'|trans(domain='synapse_admin') }}</div>
-						<div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.costs.subtitle'|trans(domain='synapse_admin') }}</div>
-					</div>
-				</div>
-				<div class="synapse-admin-card__body synapse-admin-card__body--compact">
-					<form method="post" action="{{ path('synapse_admin_agents_limit', {id: agent.id}) }}">
-						<input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_limit_' ~ agent.id) }}">
-						<input type="hidden" name="action" value="save">
-
-						<div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-md">
-							<div class="synapse-admin-form-group">
-								<label class="synapse-admin-label" for="limit-amount">{{ 'synapse.admin.agent.edit.label.max_budget'|trans(domain='synapse_admin') }}</label>
-								<input type="text" id="limit-amount" name="amount" class="synapse-admin-input" placeholder="10.00" value="{{ spending_limit.amount ?? '' }}" required>
-							</div>
-							<div class="synapse-admin-form-group">
-								<label class="synapse-admin-label" for="limit-currency">{{ 'synapse.admin.agent.edit.label.currency'|trans(domain='synapse_admin') }}</label>
-								<input type="text" id="limit-currency" name="currency" class="synapse-admin-input" value="{{ spending_limit.currency ?? 'EUR' }}" maxlength="3">
-							</div>
-						</div>
-						<div class="synapse-admin-form-group synapse-admin-mb-md">
-							<label class="synapse-admin-label" for="limit-period">{{ 'synapse.admin.agent.edit.label.time_window'|trans(domain='synapse_admin') }}</label>
-							<select id="limit-period" name="period" class="synapse-admin-input">
-								{% for key, label in periods|default([]) %}
-									<option value="{{ key }}" {{ (spending_limit.period.value ?? '') == key ? 'selected' : '' }}>{{ label }}</option>
-								{% endfor %}
-							</select>
-						</div>
-						<div class="synapse-admin-form-group synapse-admin-mb-md">
-							<label class="synapse-admin-label" for="limit-name">{{ 'synapse.admin.agent.edit.label.limit_label'|trans(domain='synapse_admin') }}</label>
-							<input type="text" id="limit-name" name="name" class="synapse-admin-input" placeholder="{{ 'synapse.admin.agent.edit.placeholder.limit_label'|trans(domain='synapse_admin') }}" value="{{ spending_limit.name ?? '' }}">
-						</div>
-						<div class="synapse-admin-flex synapse-admin-gap-md">
-							<button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
-								<i data-lucide="save"></i>
-								{{ spending_limit ? 'synapse.admin.agent.edit.action.update_limit'|trans(domain='synapse_admin') : 'synapse.admin.agent.edit.action.enable_limit'|trans(domain='synapse_admin') }}
-							</button>
-							{% if spending_limit %}
-								<button type="submit" name="action" value="delete" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-text-danger" formaction="{{ path('synapse_admin_agents_limit', {id: agent.id}) }}" onclick="return confirm('{{ 'synapse.admin.agent.edit.confirm_remove_limit'|trans(domain='synapse_admin')|escape('js') }}');">
-									<i data-lucide="trash-2"></i>
-									{{ 'synapse.admin.common.delete'|trans(domain='synapse_admin') }}
-								</button>
-							{% endif %}
-						</div>
-					</form>
-				</div>
-			</div>
-		</div>
-	{% endif %}
-
-	<script>
-	(function () {
-		var panelMap = {
-			'identite':  ['tab-panel-identite'],
-			'capacites': ['tab-panel-capacites'],
-			'acces':     ['tab-panel-acces', 'tab-panel-acces-spending'],
-		};
-
-		document.querySelectorAll('.synapse-admin-tab[data-tab]').forEach(function (btn) {
-			btn.addEventListener('click', function () {
-				var target = this.dataset.tab;
-
-				// Mettre à jour les onglets actifs
-				document.querySelectorAll('.synapse-admin-tab[data-tab]').forEach(function (t) {
-					t.classList.toggle('synapse-admin-tab--active', t.dataset.tab === target);
-				});
-
-				// Afficher / masquer les panels
-				Object.keys(panelMap).forEach(function (key) {
-					panelMap[key].forEach(function (id) {
-						var el = document.getElementById(id);
-						if (el) { el.hidden = (key !== target); }
-					});
-				});
-
-				// Réinitialiser les icônes Lucide dans les panels révélés
-				if (typeof lucide !== 'undefined') { lucide.createIcons(); }
-			});
-		});
-	})();
-
-	// ── Capacités dynamiques selon preset sélectionné ──
-	(function () {
-		const allCaps = {{ model_capabilities|json_encode|raw }};
-		const presetModels = {
-			{% for preset in presets %}
-			'{{ preset.id }}': '{{ preset.model }}',
-			{% endfor %}
-		};
-		// Preset actif par défaut (fallback quand l'agent n'a pas de preset)
-		const activePresetModel = '{{ presets|filter(p => p.isActive)|first.model ?? '' }}';
-
-		const capsDefs = [
-			{ key: 'supportsTextGeneration', label: 'Text Generation', icon: 'message-square-text', infoOnly: true },
-			{ key: 'supportsEmbedding', label: 'Embedding', icon: 'database', infoOnly: true },
-			{ key: 'supportsImageGeneration', label: 'Image Generation', icon: 'image', infoOnly: true },
-			{ key: 'supportsThinking', label: 'Thinking', icon: 'brain' },
-			{ key: 'supportsFunctionCalling', label: 'Tool Calls', icon: 'wrench' },
-			{ key: 'supportsSafetySettings', label: 'Safety', icon: 'shield' },
-			{ key: 'supportsStreaming', label: 'Streaming', icon: 'activity' },
-			{ key: 'supportsVision', label: 'Vision', icon: 'eye' },
-			{ key: 'supportsParallelToolCalls', label: 'Parallel Tools', icon: 'git-fork', infoOnly: true },
-			{ key: 'supportsResponseSchema', label: 'JSON Mode', icon: 'braces', infoOnly: true },
-		];
-
-		function renderCaps(modelId) {
-			const container = document.getElementById('agent-capabilities-container');
-			if (!container) return;
-			container.innerHTML = '';
-			const caps = allCaps[modelId];
-			if (!caps) {
-				container.innerHTML = '<span class="synapse-admin-text-xs synapse-admin-text-tertiary">Sélectionnez un preset pour voir les capacités du modèle.</span>';
-				return;
-			}
-			for (const {key, label, icon, infoOnly} of capsDefs) {
-				const supported = !!caps[key];
-				if (!supported) continue;
-				const pill = document.createElement('span');
-				pill.className = infoOnly ? 'synapse-admin-badge synapse-admin-badge--info' : 'synapse-admin-badge synapse-admin-badge--success';
-				pill.innerHTML = '<i data-lucide="' + icon + '"></i> ' + label;
-				container.appendChild(pill);
-			}
-			if (typeof lucide !== 'undefined') lucide.createIcons();
-		}
-
-		const select = document.getElementById('agent-model-preset');
-		if (select) {
-			select.addEventListener('change', function () {
-				const presetId = this.value;
-				const modelId = presetId ? presetModels[presetId] : activePresetModel;
-				renderCaps(modelId || '');
-			});
-			// Initial render
-			const initialPresetId = select.value;
-			const initialModel = initialPresetId ? presetModels[initialPresetId] : activePresetModel;
-			renderCaps(initialModel || '');
-		}
-	})();
-	</script>
+    <div class="synapse-admin-page-header">
+        <div class="synapse-admin-page-header__info">
+            <h1 class="synapse-admin-page-title">
+                <span class="synapse-admin-page-title__icon synapse-admin-kpi__icon--primary">
+                    <i data-lucide="target"></i>
+                </span>
+                {{ is_new ? 'synapse.admin.agent.edit.title.new'|trans(domain: 'synapse_admin') : 'synapse.admin.agent.edit.title.edit'|trans({name: agent.name}, domain: 'synapse_admin') }}
+            </h1>
+            <p class="synapse-admin-page-subtitle">
+                {{ is_new
+                ? 'synapse.admin.agent.edit.subtitle.new'|trans(domain: 'synapse_admin')
+                : 'synapse.admin.agent.edit.subtitle.edit'|trans(domain: 'synapse_admin') }}
+            </p>
+        </div>
+        <div class="synapse-admin-page-header__actions">
+            {% if not is_new %}
+                <a href="{{ path('synapse_admin_agent_test_cases', {agentId: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+                    <i data-lucide="test-tubes"></i>
+                    {{ 'synapse.admin.agent.edit.action.test_cases'|trans(domain: 'synapse_admin') }}
+                </a>
+            {% endif %}
+            <a href="{{ path('synapse_admin_agents') }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+                <i data-lucide="x"></i>
+                {{ 'synapse.admin.common.cancel'|trans(domain: 'synapse_admin') }}
+            </a>
+            <button type="submit" form="agent-form" class="synapse-admin-btn synapse-admin-btn--primary synapse-admin-btn--sm">
+                <i data-lucide="save"></i>
+                {{ is_new ? 'synapse.admin.agent.edit.action.create'|trans(domain: 'synapse_admin') : 'synapse.admin.agent.edit.action.save'|trans(domain: 'synapse_admin') }}
+            </button>
+        </div>
+    </div>
+
+    {# ── Onglets ───────────────────────────────────────────────────────────── #}
+    <div class="synapse-admin-tabs synapse-admin-mb-lg">
+        <button type="button" data-tab="identite" class="synapse-admin-tab synapse-admin-tab--active">
+            <i data-lucide="user-circle"></i>
+            Identité &amp; Prompt
+        </button>
+        <button type="button" data-tab="capacites" class="synapse-admin-tab">
+            <i data-lucide="wrench"></i>
+            Capacités
+        </button>
+        <button type="button" data-tab="acces" class="synapse-admin-tab">
+            <i data-lucide="shield-check"></i>
+            Accès &amp; Limites
+        </button>
+    </div>
+
+    <form id="agent-form" method="post" action="{{ is_new ? path('synapse_admin_agents_new') : path('synapse_admin_agents_edit', {id: agent.id}) }}">
+
+        <input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_edit') }}">
+
+        {# ══ PANEL 1 : Identité & Prompt ═══════════════════════════════════════ #}
+        <div id="tab-panel-identite">
+
+            {# ── Identification ────────────────────────────────────────────────── #}
+            <div class="synapse-admin-card synapse-admin-mb-lg">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+                        <i data-lucide="tag"></i>
+                    </div>
+                    <div>
+                        <div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.id.title'|trans(domain: 'synapse_admin') }}</div>
+                        <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.id.subtitle'|trans(domain: 'synapse_admin') }}</div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+                    <div class="synapse-admin-grid synapse-admin-grid--3 synapse-admin-mb-md">
+
+                        <div class="synapse-admin-form-group">
+                            <label class="synapse-admin-label" for="agent-emoji">{{ 'synapse.admin.agent.edit.label.emoji'|trans(domain: 'synapse_admin') }}</label>
+                            <input type="text" id="agent-emoji" name="emoji" value="{{ agent.emoji }}"
+                                class="synapse-admin-input" placeholder="🎯" maxlength="10">
+                        </div>
+
+                        <div class="synapse-admin-form-group" style="grid-column: span 2;">
+                            <label class="synapse-admin-label" for="agent-name">
+                                {{ 'synapse.admin.agent.edit.label.name'|trans(domain: 'synapse_admin') }} <span class="synapse-admin-required">*</span>
+                            </label>
+                            <input type="text" id="agent-name" name="name" value="{{ agent.name }}"
+                                class="synapse-admin-input" required placeholder="{{ 'synapse.admin.agent.edit.placeholder.name'|trans(domain: 'synapse_admin') }}">
+                        </div>
+
+                    </div>
+
+                    <div class="synapse-admin-form-group">
+                        <label class="synapse-admin-label" for="agent-key">
+                            {{ 'synapse.admin.agent.edit.label.key'|trans(domain: 'synapse_admin') }} <span class="synapse-admin-required">*</span>
+                            {% if agent.isBuiltin %}
+                                <span class="synapse-admin-badge synapse-admin-badge--neutral synapse-admin-ml-sm" data-synapse-admin-tooltip="{{ 'synapse.admin.agent.edit.tooltip.key_locked'|trans(domain: 'synapse_admin') }}">
+                                    <i data-lucide="lock"></i>
+                                    {{ 'synapse.admin.agent.edit.badge.locked'|trans(domain: 'synapse_admin') }}
+                                </span>
+                            {% endif %}
+                        </label>
+                        <input type="text" id="agent-key" name="key" value="{{ agent.key }}"
+                            class="synapse-admin-input synapse-admin-font-mono"
+                            {{ agent.isBuiltin ? 'readonly' : '' }}
+                            required placeholder="ex: support_client"
+                            pattern="[a-z0-9_]+" title="{{ 'synapse.admin.agent.edit.pattern_title'|trans(domain: 'synapse_admin') }}">
+                        <p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.usage_tip'|trans({key: agent.key|default('mon_agent')|e}, domain: 'synapse_admin')|safe_html }}</p>
+                    </div>
+
+                </div>
+            </div>
+
+            {# ── Description ───────────────────────────────────────────────────── #}
+            <div class="synapse-admin-card synapse-admin-mb-lg">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+                        <i data-lucide="info"></i>
+                    </div>
+                    <div>
+                        <div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.description.title'|trans(domain: 'synapse_admin') }}</div>
+                        <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.description.subtitle'|trans(domain: 'synapse_admin') }}</div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+                    <div class="synapse-admin-form-group">
+                        <label class="synapse-admin-label" for="agent-description">{{ 'synapse.admin.agent.edit.label.description'|trans(domain: 'synapse_admin') }} <span class="synapse-admin-required">*</span></label>
+                        <textarea id="agent-description" name="description" class="synapse-admin-input synapse-admin-textarea" rows="2" required
+                            placeholder="{{ 'synapse.admin.agent.edit.placeholder.description'|trans(domain: 'synapse_admin') }}">{{ agent.description }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            {# ── Prompt système ────────────────────────────────────────────────── #}
+            <div class="synapse-admin-card synapse-admin-mb-lg">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+                        <i data-lucide="file-text"></i>
+                    </div>
+                    <div>
+                        <div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.prompt.title'|trans(domain: 'synapse_admin') }}</div>
+                        <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.prompt.subtitle'|trans(domain: 'synapse_admin') }}</div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+                    <div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
+                        <i data-lucide="info"></i>
+                        <span>{{ 'synapse.admin.agent.edit.alert.prompt_tip'|trans(domain: 'synapse_admin') }}</span>
+                    </div>
+
+                    <div class="synapse-admin-form-group">
+                        <label class="synapse-admin-label" for="agent-system-prompt">{{ 'synapse.admin.agent.edit.label.system_prompt'|trans(domain: 'synapse_admin') }} <span class="synapse-admin-required">*</span></label>
+                        <textarea id="agent-system-prompt" name="system_prompt" class="synapse-admin-input synapse-admin-textarea synapse-admin-font-mono" rows="10" required
+                            placeholder="{{ 'synapse.admin.agent.edit.placeholder.prompt'|trans(domain: 'synapse_admin') }}">{{ agent.systemPrompt }}</textarea>
+                    </div>
+
+                    <div class="synapse-admin-form-group">
+                        <label class="synapse-admin-label" for="agent-version-reason">{{ 'synapse.admin.agent.edit.label.version_reason'|trans(domain: 'synapse_admin') }}</label>
+                        <input id="agent-version-reason" name="version_reason" type="text" class="synapse-admin-input"
+                            placeholder="{{ 'synapse.admin.agent.edit.placeholder.version_reason'|trans(domain: 'synapse_admin') }}">
+                        <p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.version_reason'|trans(domain: 'synapse_admin') }}</p>
+                    </div>
+
+                    {% if not is_new %}
+                        <div class="synapse-admin-form-group">
+                            <a href="{{ path('synapse_admin_agents_prompt_history', {id: agent.id}) }}" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-btn--sm">
+                                <i data-lucide="history"></i>
+                                {{ 'synapse.admin.agent.edit.action.view_prompt_history'|trans(domain: 'synapse_admin') }}
+                            </a>
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>{# /tab-panel-identite #}
+
+        {# ══ PANEL 2 : Capacités ═══════════════════════════════════════════════ #}
+        <div id="tab-panel-capacites" hidden>
+
+            {# ── Configuration ──────────────────────────────────────────────────── #}
+            <div class="synapse-admin-card synapse-admin-mb-lg">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+                        <i data-lucide="settings"></i>
+                    </div>
+                    <div>
+                        <div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.config.title'|trans(domain: 'synapse_admin') }}</div>
+                        <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.config.subtitle'|trans(domain: 'synapse_admin') }}</div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+                    <div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-lg">
+
+                        <div class="synapse-admin-form-group">
+                            <label class="synapse-admin-label" for="agent-model-preset">
+                                {{ 'synapse.admin.agent.edit.label.model_preset'|trans(domain: 'synapse_admin') }}
+                            </label>
+                            <select id="agent-model-preset" name="model_preset_id" class="synapse-admin-input">
+                                <option value="">— {{ 'synapse.admin.agent.edit.option.default_preset'|trans(domain: 'synapse_admin') }} —</option>
+                                {% for preset in presets %}
+                                    <option value="{{ preset.id }}" {% if agent.modelPreset and agent.modelPreset.id == preset.id %}selected{% endif %}>
+                                        {{ preset.name }} ({{ preset.model }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.model_preset'|trans(domain: 'synapse_admin') }}</p>
+                        </div>
+
+                        <div class="synapse-admin-form-group">
+                            <label class="synapse-admin-label" for="agent-tone">
+                                {{ 'synapse.admin.agent.edit.label.tone'|trans(domain: 'synapse_admin') }}
+                            </label>
+                            <select id="agent-tone" name="tone_id" class="synapse-admin-input">
+                                <option value="">— {{ 'synapse.admin.agent.edit.option.no_tone'|trans(domain: 'synapse_admin') }} —</option>
+                                {% for tone in tones %}
+                                    <option value="{{ tone.id }}" {% if agent.tone and agent.tone.id == tone.id %}selected{% endif %}>
+                                        {{ tone.emoji }} {{ tone.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.tone'|trans(domain: 'synapse_admin') }}</p>
+                        </div>
+
+                    </div>
+
+                    {# ── Workflow délégué ────────────────────────────────────────────── #}
+                    {% if workflows is defined and workflows is not empty %}
+                    <div class="synapse-admin-form-group synapse-admin-mt-md">
+                        <label class="synapse-admin-label" for="agent-workflow-key">
+                            {{ 'synapse.admin.agent.edit.workflow_key.label'|trans(domain: 'synapse_admin') }}
+                        </label>
+                        <select id="agent-workflow-key" name="workflow_key" class="synapse-admin-input">
+                            <option value="">— {{ 'synapse.admin.agent.edit.workflow_key.none'|trans(domain: 'synapse_admin') }} —</option>
+                            {% for w in workflows %}
+                                <option value="{{ w.workflowKey }}" {% if agent.workflowKey is defined and agent.workflowKey == w.workflowKey %}selected{% endif %}>
+                                    {{ w.name }} ({{ w.workflowKey }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.workflow_key.help'|trans(domain: 'synapse_admin') }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div id="agent-capabilities-container" class="synapse-admin-flex synapse-admin-gap-sm synapse-admin-items-center synapse-admin-mt-md" style="flex-wrap:wrap;"></div>
+
+                </div>
+            </div>
+
+            {# ── Outils autorisés ──────────────────────────────────────────────── #}
+            <div class="synapse-admin-card synapse-admin-mb-lg">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+                        <i data-lucide="wrench"></i>
+                    </div>
+                    <div>
+                        <div class="synapse-admin-card__title">{{ 'synapse.admin.agent.list.label.tools'|trans(domain: 'synapse_admin') }}</div>
+                        <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.tools.subtitle'|trans(domain: 'synapse_admin') }}</div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+                    <div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
+                        <i data-lucide="info"></i>
+                        <span>{{ 'synapse.admin.agent.edit.alert.tools_tip'|trans(domain: 'synapse_admin') }}</span>
+                    </div>
+
+                    {% if available_tools|default([])|length > 0 %}
+                        <div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-sm">
+                            {% for tool in available_tools %}
+                                <label class="synapse-admin-toggle" style="align-items: flex-start;">
+                                    <input type="checkbox"
+                                        name="allowed_tools[]"
+                                        value="{{ tool.name }}"
+                                        {{ tool.name in (agent.allowedToolNames|default([])) ? 'checked' : '' }}>
+                                    <span class="synapse-admin-toggle__slider"></span>
+                                    <span class="synapse-admin-toggle__label">
+                                        <strong class="synapse-admin-font-mono">{{ tool.name }}</strong><br>
+                                        <span class="synapse-admin-text-sm synapse-admin-text-muted">
+                                            {{ tool.description|length > 100 ? tool.description|slice(0, 100) ~ '…' : tool.description }}
+                                        </span>
+                                    </span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="synapse-admin-text-muted synapse-admin-text-sm">{{ 'synapse.admin.agent.edit.no_tools'|trans(domain: 'synapse_admin') }}</p>
+                    {% endif %}
+
+                </div>
+            </div>
+
+            {# ── Sources RAG ───────────────────────────────────────────────────── #}
+            <div class="synapse-admin-card synapse-admin-mb-lg">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+                        <i data-lucide="database"></i>
+                    </div>
+                    <div>
+                        <div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.rag.title'|trans(domain: 'synapse_admin') }}</div>
+                        <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.rag.subtitle'|trans(domain: 'synapse_admin') }}</div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+                    <div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
+                        <i data-lucide="info"></i>
+                        <span>{{ 'synapse.admin.agent.edit.alert.rag_tip'|trans(domain: 'synapse_admin') }}</span>
+                    </div>
+
+                    {% if available_rag_sources|default([])|length > 0 %}
+                        <div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-sm synapse-admin-mb-md">
+                            {% for source in available_rag_sources %}
+                                <label class="synapse-admin-toggle" style="align-items: flex-start;">
+                                    <input type="checkbox"
+                                        name="allowed_rag_sources[]"
+                                        value="{{ source.slug }}"
+                                        {{ source.slug in (agent.allowedRagSources|default([])) ? 'checked' : '' }}>
+                                    <span class="synapse-admin-toggle__slider"></span>
+                                    <span class="synapse-admin-toggle__label">
+                                        <strong>{{ source.name }}</strong><br>
+                                        <span class="synapse-admin-text-sm synapse-admin-text-muted synapse-admin-font-mono">{{ source.slug }}</span>
+                                        {% if source.description %}
+                                            <br><span class="synapse-admin-text-sm synapse-admin-text-muted">{{ source.description|length > 100 ? source.description|slice(0, 100) ~ '…' : source.description }}</span>
+                                        {% endif %}
+                                        <br><span class="synapse-admin-text-xs synapse-admin-text-muted">{{ source.documentCount }} chunks</span>
+                                    </span>
+                                </label>
+                            {% endfor %}
+                        </div>
+
+                        <div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-md">
+                            <div class="synapse-admin-form-group">
+                                <label class="synapse-admin-label" for="agent-rag-max-results">{{ 'synapse.admin.agent.edit.label.rag_max_results'|trans(domain: 'synapse_admin') }}</label>
+                                <input type="number" id="agent-rag-max-results" name="rag_max_results" value="{{ agent.ragMaxResults }}"
+                                    class="synapse-admin-input" min="1" max="20" step="1">
+                                <p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.rag_max_results'|trans(domain: 'synapse_admin') }}</p>
+                            </div>
+                            <div class="synapse-admin-form-group">
+                                <label class="synapse-admin-label" for="agent-rag-min-score">{{ 'synapse.admin.agent.edit.label.rag_min_score'|trans(domain: 'synapse_admin') }}</label>
+                                <input type="number" id="agent-rag-min-score" name="rag_min_score" value="{{ agent.ragMinScore }}"
+                                    class="synapse-admin-input" min="0" max="1" step="0.05">
+                                <p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.rag_min_score'|trans(domain: 'synapse_admin') }}</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="synapse-admin-text-muted synapse-admin-text-sm">{{ 'synapse.admin.agent.edit.no_rag_sources'|trans(domain: 'synapse_admin') }}</p>
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>{# /tab-panel-capacites #}
+
+        {# ══ PANEL 3 : Accès & Limites (champs du form principal) ══════════════ #}
+        <div id="tab-panel-acces" hidden>
+
+            {# ── Contrôle d'accès ──────────────────────────────────────────────── #}
+            <div class="synapse-admin-card synapse-admin-mb-lg">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--accent">
+                        <i data-lucide="shield-check"></i>
+                    </div>
+                    <div>
+                        <div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.access.title'|trans(domain: 'synapse_admin') }}</div>
+                        <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.access.subtitle'|trans(domain: 'synapse_admin') }}</div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+                    <div class="synapse-admin-alert synapse-admin-alert--info synapse-admin-mb-md">
+                        <i data-lucide="info"></i>
+                        <span>{{ 'synapse.admin.agent.edit.alert.access_tip'|trans(domain: 'synapse_admin')|safe_html }}</span>
+                    </div>
+
+                    <div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-gap-md">
+
+                        <div class="synapse-admin-form-group">
+                            <div class="synapse-admin-label">
+                                {{ 'synapse.admin.agent.edit.label.access_roles'|trans(domain: 'synapse_admin') }}
+                            </div>
+                            {% if available_roles|default([])|length > 0 %}
+                                <div class="synapse-admin-flex synapse-admin-flex-col synapse-admin-gap-xs synapse-admin-mb-sm">
+                                    {% for role in available_roles %}
+                                        <label class="synapse-admin-toggle" style="align-items: flex-start;">
+                                            <input type="checkbox"
+                                                name="access_roles[]"
+                                                value="{{ role }}"
+                                                {{ role in (agent.accessControl.roles|default([])) ? 'checked' : '' }}>
+                                            <span class="synapse-admin-toggle__slider"></span>
+                                            <span class="synapse-admin-toggle__label">
+                                                <strong class="synapse-admin-font-mono">{{ role }}</strong>
+                                            </span>
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.access_roles'|trans(domain: 'synapse_admin') }}</p>
+                        </div>
+
+                        <div class="synapse-admin-form-group">
+                            <label class="synapse-admin-label" for="agent-access-users">
+                                {{ 'synapse.admin.agent.edit.label.access_users'|trans(domain: 'synapse_admin') }}
+                            </label>
+                            <textarea id="agent-access-users" name="access_users" rows="5"
+                                class="synapse-admin-input synapse-admin-font-mono"
+                                placeholder="{{ 'synapse.admin.agent.edit.placeholder.access_users'|trans(domain: 'synapse_admin') }}">{% if agent.accessControl and agent.accessControl.userIdentifiers|default([])|length > 0 %}{{ agent.accessControl.userIdentifiers|join('\n') }}{% endif %}</textarea>
+                            <p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.access_users'|trans(domain: 'synapse_admin') }}</p>
+                        </div>
+
+                    </div>
+
+                    {% if agent.isPublic %}
+                        <div class="synapse-admin-alert synapse-admin-alert--warning synapse-admin-mt-md">
+                            <i data-lucide="alert-triangle"></i>
+                            <span>{{ 'synapse.admin.agent.edit.alert.access_public'|trans(domain: 'synapse_admin')|safe_html }}</span>
+                        </div>
+                    {% endif %}
+
+                </div>
+            </div>
+
+            {# ── Paramètres ────────────────────────────────────────────────────── #}
+            <div class="synapse-admin-card synapse-admin-mb-lg">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--primary">
+                        <i data-lucide="settings-2"></i>
+                    </div>
+                    <div>
+                        <div class="synapse-admin-card__title">{{ 'synapse.admin.sidebar.settings'|trans(domain: 'synapse_admin') }}</div>
+                        <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.settings.subtitle'|trans(domain: 'synapse_admin') }}</div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+
+                    <div class="synapse-admin-grid synapse-admin-grid--2">
+
+                        <div class="synapse-admin-form-group">
+                            <label class="synapse-admin-label" for="agent-sort-order">{{ 'synapse.admin.agent.edit.label.sort_order'|trans(domain: 'synapse_admin') }}</label>
+                            <input type="number" id="agent-sort-order" name="sort_order" value="{{ agent.sortOrder }}"
+                                class="synapse-admin-input" min="0" max="999" placeholder="0">
+                            <p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.sort_order'|trans(domain: 'synapse_admin') }}</p>
+                        </div>
+
+                        <div class="synapse-admin-form-group">
+                            <div class="synapse-admin-label">{{ 'synapse.admin.agent.edit.label.status'|trans(domain: 'synapse_admin') }}</div>
+                            <label class="synapse-admin-toggle">
+                                <input type="checkbox" name="is_active" id="agent-is-active" {{ agent.isActive ? 'checked' : '' }}>
+                                <span class="synapse-admin-toggle__slider"></span>
+                                <span class="synapse-admin-toggle__label">{{ 'synapse.admin.agent.edit.label.activate'|trans(domain: 'synapse_admin') }}</span>
+                            </label>
+                        </div>
+
+                        <div class="synapse-admin-form-group">
+                            <div class="synapse-admin-label">{{ 'synapse.admin.agent.edit.label.visibility'|trans(domain: 'synapse_admin') }}</div>
+                            <label class="synapse-admin-toggle">
+                                <input type="checkbox" name="visible_in_chat" id="agent-visible-in-chat" {{ agent.visibleInChat ? 'checked' : '' }}>
+                                <span class="synapse-admin-toggle__slider"></span>
+                                <span class="synapse-admin-toggle__label">{{ 'synapse.admin.agent.edit.label.visible_in_chat'|trans(domain: 'synapse_admin') }}</span>
+                            </label>
+                            <p class="synapse-admin-help-text">{{ 'synapse.admin.agent.edit.help.visible_in_chat'|trans(domain: 'synapse_admin') }}</p>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>{# /tab-panel-acces #}
+
+    </form>
+
+    {# ══ PANEL 3 : Limite de dépense (form séparé, hors du form principal) ══════ #}
+    {% if not is_new and (spending_limit is defined) %}
+        <div id="tab-panel-acces-spending" hidden>
+            <div class="synapse-admin-card synapse-admin-mb-lg">
+                <div class="synapse-admin-card__header">
+                    <div class="synapse-admin-card__header-icon synapse-admin-kpi__icon--warning">
+                        <i data-lucide="gauge"></i>
+                    </div>
+                    <div>
+                        <div class="synapse-admin-card__title">{{ 'synapse.admin.agent.edit.section.costs.title'|trans(domain: 'synapse_admin') }}</div>
+                        <div class="synapse-admin-card__subtitle">{{ 'synapse.admin.agent.edit.section.costs.subtitle'|trans(domain: 'synapse_admin') }}</div>
+                    </div>
+                </div>
+                <div class="synapse-admin-card__body synapse-admin-card__body--compact">
+                    <form method="post" action="{{ path('synapse_admin_agents_limit', {id: agent.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('synapse_agent_limit_' ~ agent.id) }}">
+                        <input type="hidden" name="action" value="save">
+
+                        <div class="synapse-admin-grid synapse-admin-grid--2 synapse-admin-mb-md">
+                            <div class="synapse-admin-form-group">
+                                <label class="synapse-admin-label" for="limit-amount">{{ 'synapse.admin.agent.edit.label.max_budget'|trans(domain: 'synapse_admin') }}</label>
+                                <input type="text" id="limit-amount" name="amount" class="synapse-admin-input" placeholder="10.00" value="{{ spending_limit.amount ?? '' }}" required>
+                            </div>
+                            <div class="synapse-admin-form-group">
+                                <label class="synapse-admin-label" for="limit-currency">{{ 'synapse.admin.agent.edit.label.currency'|trans(domain: 'synapse_admin') }}</label>
+                                <input type="text" id="limit-currency" name="currency" class="synapse-admin-input" value="{{ spending_limit.currency ?? 'EUR' }}" maxlength="3">
+                            </div>
+                        </div>
+                        <div class="synapse-admin-form-group synapse-admin-mb-md">
+                            <label class="synapse-admin-label" for="limit-period">{{ 'synapse.admin.agent.edit.label.time_window'|trans(domain: 'synapse_admin') }}</label>
+                            <select id="limit-period" name="period" class="synapse-admin-input">
+                                {% for key, label in periods|default([]) %}
+                                    <option value="{{ key }}" {{ (spending_limit.period.value ?? '') == key ? 'selected' : '' }}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="synapse-admin-form-group synapse-admin-mb-md">
+                            <label class="synapse-admin-label" for="limit-name">{{ 'synapse.admin.agent.edit.label.limit_label'|trans(domain: 'synapse_admin') }}</label>
+                            <input type="text" id="limit-name" name="name" class="synapse-admin-input" placeholder="{{ 'synapse.admin.agent.edit.placeholder.limit_label'|trans(domain: 'synapse_admin') }}" value="{{ spending_limit.name ?? '' }}">
+                        </div>
+                        <div class="synapse-admin-flex synapse-admin-gap-md">
+                            <button type="submit" class="synapse-admin-btn synapse-admin-btn--primary">
+                                <i data-lucide="save"></i>
+                                {{ spending_limit ? 'synapse.admin.agent.edit.action.update_limit'|trans(domain: 'synapse_admin') : 'synapse.admin.agent.edit.action.enable_limit'|trans(domain: 'synapse_admin') }}
+                            </button>
+                            {% if spending_limit %}
+                                <button type="submit" name="action" value="delete" class="synapse-admin-btn synapse-admin-btn--ghost synapse-admin-text-danger" formaction="{{ path('synapse_admin_agents_limit', {id: agent.id}) }}" onclick="return confirm('{{ 'synapse.admin.agent.edit.confirm_remove_limit'|trans(domain: 'synapse_admin')|escape('js') }}');">
+                                    <i data-lucide="trash-2"></i>
+                                    {{ 'synapse.admin.common.delete'|trans(domain: 'synapse_admin') }}
+                                </button>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <script>
+    (function () {
+        var panelMap = {
+            'identite':  ['tab-panel-identite'],
+            'capacites': ['tab-panel-capacites'],
+            'acces':     ['tab-panel-acces', 'tab-panel-acces-spending'],
+        };
+
+        document.querySelectorAll('.synapse-admin-tab[data-tab]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var target = this.dataset.tab;
+
+                // Mettre à jour les onglets actifs
+                document.querySelectorAll('.synapse-admin-tab[data-tab]').forEach(function (t) {
+                    t.classList.toggle('synapse-admin-tab--active', t.dataset.tab === target);
+                });
+
+                // Afficher / masquer les panels
+                Object.keys(panelMap).forEach(function (key) {
+                    panelMap[key].forEach(function (id) {
+                        var el = document.getElementById(id);
+                        if (el) { el.hidden = (key !== target); }
+                    });
+                });
+
+                // Réinitialiser les icônes Lucide dans les panels révélés
+                if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+            });
+        });
+    })();
+
+    // ── Capacités dynamiques selon preset sélectionné ──
+    (function () {
+        const allCaps = {{ model_capabilities|json_encode|raw }};
+        const presetModels = {
+            {% for preset in presets %}
+            '{{ preset.id }}': '{{ preset.model }}',
+            {% endfor %}
+        };
+        // Preset actif par défaut (fallback quand l'agent n'a pas de preset)
+        const activePresetModel = '{{ presets|filter(p => p.isActive)|first.model ?? '' }}';
+
+        const capsDefs = [
+            { key: 'supportsTextGeneration', label: 'Text Generation', icon: 'message-square-text', infoOnly: true },
+            { key: 'supportsEmbedding', label: 'Embedding', icon: 'database', infoOnly: true },
+            { key: 'supportsImageGeneration', label: 'Image Generation', icon: 'image', infoOnly: true },
+            { key: 'supportsThinking', label: 'Thinking', icon: 'brain' },
+            { key: 'supportsFunctionCalling', label: 'Tool Calls', icon: 'wrench' },
+            { key: 'supportsSafetySettings', label: 'Safety', icon: 'shield' },
+            { key: 'supportsStreaming', label: 'Streaming', icon: 'activity' },
+            { key: 'supportsVision', label: 'Vision', icon: 'eye' },
+            { key: 'supportsParallelToolCalls', label: 'Parallel Tools', icon: 'git-fork', infoOnly: true },
+            { key: 'supportsResponseSchema', label: 'JSON Mode', icon: 'braces', infoOnly: true },
+        ];
+
+        function renderCaps(modelId) {
+            const container = document.getElementById('agent-capabilities-container');
+            if (!container) return;
+            container.innerHTML = '';
+            const caps = allCaps[modelId];
+            if (!caps) {
+                container.innerHTML = '<span class="synapse-admin-text-xs synapse-admin-text-tertiary">Sélectionnez un preset pour voir les capacités du modèle.</span>';
+                return;
+            }
+            for (const {key, label, icon, infoOnly} of capsDefs) {
+                const supported = !!caps[key];
+                if (!supported) continue;
+                const pill = document.createElement('span');
+                pill.className = infoOnly ? 'synapse-admin-badge synapse-admin-badge--info' : 'synapse-admin-badge synapse-admin-badge--success';
+                pill.innerHTML = '<i data-lucide="' + icon + '"></i> ' + label;
+                container.appendChild(pill);
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        const select = document.getElementById('agent-model-preset');
+        if (select) {
+            select.addEventListener('change', function () {
+                const presetId = this.value;
+                const modelId = presetId ? presetModels[presetId] : activePresetModel;
+                renderCaps(modelId || '');
+            });
+            // Initial render
+            const initialPresetId = select.value;
+            const initialModel = initialPresetId ? presetModels[initialPresetId] : activePresetModel;
+            renderCaps(initialModel || '');
+        }
+    })();
+    </script>
 
 {% endblock %}
