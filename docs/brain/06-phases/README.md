@@ -6,7 +6,7 @@
 
 | # | Jalon | Statut | Capacité d'association livrée |
 |---|---|---|---|
-| 1 | [Fondations](jalon-1-fondations.md) | à valider | Aucune (infra) |
+| 1 | [Fondations](jalon-1-fondations.md) | ✅ livré 2026-05-12 | Aucune (infra) — démontré par `brain:demo:jalon-1` |
 | 2 | [Ingestion mono-aire](jalon-2-ingestion-mono-aire.md) | squelette | Aucune (encore) |
 | 3 | [Ingestion multi-aires](jalon-3-ingestion-multi-aires.md) | squelette | Convergence mémorielle |
 | 4 | [Retrieval Hebbien simple](jalon-4-retrieval-hebbien.md) | squelette | Retrieval enrichi (spreading activation) |

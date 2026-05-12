@@ -1,7 +1,7 @@
 ---
-statut: en cours
+statut: livré
 ouvert: 2026-05-12
-livré: —
+livré: 2026-05-12
 ---
 
 # Jalon 1 — Fondations
@@ -158,12 +158,62 @@ Pas de validation qualité de synapse à ce stade (rien à mesurer — la synaps
 
 **Tentation à résister** : créer toutes les 7 aires d'un coup parce que "tant qu'à y être". Non. Charte §2.4 : *construire pour 1, abstraire pour N*. Tant qu'on n'a pas extrait quoi que ce soit (jalon 2), créer 7 tables vides est du noise.
 
-## 9. Bilan
+## 9. Bilan (livré 2026-05-12)
 
-*À remplir à la fin du jalon. Format minimal :*
+### Capacité livrée
 
-- **Capacité livrée** : oui/non, démontrée par `bin/console brain:demo:jalon-1`
-- **Coût** : N sessions, X LOC, Y commits, Z migrations
-- **Surprises** : ce qui n'était pas anticipé
-- **ADRs créés pendant le jalon** : liste
-- **Go/no-go jalon 2** : avec justification
+**Oui.** Démontrée par la command `bin/console brain:demo:jalon-1` qui crée
+une MemorySource, un EpisodicNeuron, un SemanticNeuron lié à la même
+source, et une Synapse entre les deux. Tous les artefacts sont persistables
+en base sur une app hôte qui aura appliqué la migration SQL fournie.
+
+Toutes les étapes du tableau §5 ont été exécutées dans l'ordre, avec 1
+commit par étape (15 commits sur la branche `brain` depuis le foundation
+commit méthodologie).
+
+### Coût
+
+- **1 session active**, ~3 heures
+- **~2 350 LOC** ajoutées (entités + repositories + enums + contrat +
+  subscriber + command + tests + migrations + 2 ADRs)
+- **15 commits** : foundation méthodologie + 10 étapes + 4 fixes post-audit
+- **0 migration appliquée par le bundle lui-même** (le bundle est neutre,
+  cf. AGENTS.md), 1 script SQL de référence fourni dans `migrations-brain-v3/jalon-1/`
+- **77 tests Brain** (122 assertions) sur un total de **1011 tests** du bundle. **check.sh complet OK** (CS-Fixer, PHPStan, PHPUnit, YAML, Twig, Deptrac)
+
+### Surprises
+
+- **PHPUnit 12 attributes** (`#[DataProvider]` au lieu de `@dataProvider`)
+  pas pris en compte initialement → 3 erreurs au premier run, fixées en 2 minutes.
+- **Doctrine ORM 3** déprécie `EventSubscriber` → refactor vers
+  `#[AsDoctrineListener]` après audit du code-reviewer. Aurait pu être
+  anticipé en regardant la version installée (3.6.2).
+- **PHPStan strict** sur `json_encode` → ajout de `JSON_THROW_ON_ERROR`
+  pour signature `string` garantie.
+- **L'IDE diagnostique en retard** sur les nouveaux fichiers (autoload
+  cache stale) — bruit visuel sans impact réel sur les tests / phpstan.
+
+### ADRs créés ou validés pendant le jalon
+
+- [ADR-001](../05-decisions/001-prefixe-table-configurable.md) — préfixe SQL configurable (**accepté**)
+- [ADR-002](../05-decisions/002-pas-de-tenant-id-jalon-1.md) — dérogation `tenant_id` (**accepté**)
+
+### Audits post-jalon
+
+- **brain-charter-auditor** : 2 majeurs (vocabulaire métier dans PHPDoc, framing concurrentiel) → corrigés
+- **brain-code-reviewer** : 2 majeurs (Doctrine 3 deprecation, tenant_id manquant) + 2 bloquants légers (index owner_id, JSON→JSONB) → tous corrigés, 1 test fictif rendu réel
+
+### Apprentissages mémorisés pour la suite
+
+- [[feedback-brain-test-db-postgres-vector]] : PostgreSQL + pgvector pour toute BDD de test Brain
+- [[feedback-brain-user-isolation]] : Synapse ne lie jamais 2 neurones de users différents (garde-fou critique dès jalon 3)
+
+### Go / no-go jalon 2
+
+**Go.** Les fondations sont solides : entités stables, contrat MemoryFragment
+posé, subscriber configurable, démo bout en bout fonctionnelle, audits OK.
+Le jalon 2 (ingestion mono-aire avec MemoryExtractor) peut démarrer
+immédiatement sur ces bases.
+
+L'orientation extracteur "1 passe unique" déjà notée dans le plan jalon 2
+sera testée empiriquement à ce moment.

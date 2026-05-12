@@ -60,6 +60,7 @@ bin/console brain:bench:convergence --threshold=0.85
 
 - ADR-XXX : seuil cosine pour considérer 2 embeddings "convergents" — empirique, à mesurer
 - ADR-XXX : convergence détectée auto ou validée par user via UI ? (cf. validation-gated jalon 8)
+- **ADR-XXX (garde-fou critique) : isolation user sur Synapse** — implémentation : assertion code, trigger SQL, ou les deux ? Cas `MemorySource.ownerId = NULL` : se lie uniquement avec NULL, jamais cross avec un user défini. Cf. [[feedback-brain-user-isolation]].
 
 ## 8. Hors-scope
 
