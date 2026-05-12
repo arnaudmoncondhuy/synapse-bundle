@@ -61,8 +61,14 @@ final class BrainIngestTestCommand extends Command
                 'area',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Aire visée (semantic, episodic, encyclopedic)',
+                'Aire visée (semantic, episodic, encyclopedic, procedural). Ignoré si --multi-area est présent.',
                 'semantic',
+            )
+            ->addOption(
+                'multi-area',
+                null,
+                InputOption::VALUE_NONE,
+                'Mode multi-aires (jalon 3) — 1 passe LLM produit des neurones dans toutes les aires actives.',
             )
             ->addOption(
                 'persist',
@@ -91,17 +97,22 @@ final class BrainIngestTestCommand extends Command
             return Command::INVALID;
         }
 
-        $areaRaw = $input->getOption('area');
-        $areaValue = is_string($areaRaw) ? $areaRaw : 'semantic';
-        $area = BrainArea::tryFrom($areaValue);
-        if (null === $area) {
-            $io->error(sprintf(
-                '--area "%s" inconnue. Valeurs valides : %s.',
-                $areaValue,
-                implode(', ', array_map(static fn (BrainArea $a) => $a->value, BrainArea::cases())),
-            ));
+        $multiArea = (bool) $input->getOption('multi-area');
 
-            return Command::INVALID;
+        $area = null;
+        if (!$multiArea) {
+            $areaRaw = $input->getOption('area');
+            $areaValue = is_string($areaRaw) ? $areaRaw : 'semantic';
+            $area = BrainArea::tryFrom($areaValue);
+            if (null === $area) {
+                $io->error(sprintf(
+                    '--area "%s" inconnue. Valeurs valides : %s.',
+                    $areaValue,
+                    implode(', ', array_map(static fn (BrainArea $a) => $a->value, BrainArea::cases())),
+                ));
+
+                return Command::INVALID;
+            }
         }
 
         $source = $this->sourceRepo->findOneByUuid($sourceUuid);
@@ -111,30 +122,62 @@ final class BrainIngestTestCommand extends Command
             return Command::FAILURE;
         }
 
-        $io->title(sprintf('Brain — Ingestion test : aire %s', $area->value));
+        $modeLabel = $multiArea ? 'multi-aires (1 passe LLM)' : sprintf('aire %s', $area->value);
+        $io->title(sprintf('Brain — Ingestion test : %s', $modeLabel));
         $io->writeln(sprintf('Source UUID : %s', $source->getId()->toRfc4122()));
         $io->writeln(sprintf('Provider    : %s', $source->getProvider()));
         $io->writeln(sprintf('Reçue       : %s', $source->getReceivedAt()->format('c')));
         $io->newLine();
 
+        // En multi-aires, on appelle extractAll qui retourne plusieurs
+        // ExtractionResult. En mono-aire, on appelle extract.
         try {
-            $result = $this->memoryExtractor->extract($source, $area);
+            $results = $multiArea
+                ? $this->memoryExtractor->extractAll($source)
+                : [$this->memoryExtractor->extract($source, $area)];
         } catch (ExtractionFailedException $e) {
             $io->error('Extraction échouée : '.$e->getMessage());
 
             return Command::FAILURE;
         }
 
-        $io->section(sprintf('Résultat — %d neurone(s) extrait(s)', $result->count()));
-        $io->writeln($this->renderDebug($result->debug));
+        // Rendu uniforme : un bloc par ExtractionResult
+        $totalNeurons = 0;
+        foreach ($results as $r) {
+            $totalNeurons += $r->count();
+        }
 
-        if ($result->isEmpty()) {
+        $io->section(sprintf(
+            '%d aire(s) extraite(s) — %d neurone(s) au total',
+            count($results),
+            $totalNeurons,
+        ));
+
+        if ([] === $results) {
+            $io->warning('Aucun résultat retourné par l\'extracteur.');
+
+            return Command::SUCCESS;
+        }
+
+        // On affiche le 1er debug global (model, usage) puis chaque aire
+        $io->writeln($this->renderDebug($results[0]->debug));
+        $io->newLine();
+
+        $allNeurons = [];
+        foreach ($results as $r) {
+            $io->section(sprintf('Aire %s — %d neurone(s)', $r->area->value, $r->count()));
+            foreach ($r->neurons as $neuron) {
+                $allNeurons[] = $neuron;
+            }
+        }
+
+        if (0 === $totalNeurons) {
             $io->success('Aucun neurone extrait (sélectivité naturelle).');
 
             return Command::SUCCESS;
         }
 
-        foreach ($result->neurons as $i => $neuron) {
+        foreach ($allNeurons as $i => $neuron) {
             $io->section(sprintf('Neurone #%d', $i + 1));
             $payload = $this->serializer->serialize($neuron);
             $io->writeln(
@@ -146,11 +189,11 @@ final class BrainIngestTestCommand extends Command
         }
 
         if ($input->getOption('persist')) {
-            foreach ($result->neurons as $neuron) {
+            foreach ($allNeurons as $neuron) {
                 $this->em->persist($neuron);
             }
             $this->em->flush();
-            $io->success(sprintf('%d neurone(s) persisté(s) en BDD.', $result->count()));
+            $io->success(sprintf('%d neurone(s) persisté(s) en BDD.', $totalNeurons));
         } else {
             $io->warning('Dry-run : neurones non persistés. Relancer avec --persist pour les sauvegarder.');
         }
