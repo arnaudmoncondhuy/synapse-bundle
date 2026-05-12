@@ -6,6 +6,7 @@ namespace ArnaudMoncondhuy\SynapseCore\Tests\Unit\Brain\Service;
 
 use ArnaudMoncondhuy\SynapseCore\Brain\Exception\ExtractionFailedException;
 use ArnaudMoncondhuy\SynapseCore\Brain\Service\Extractor\ExtractionResult;
+use ArnaudMoncondhuy\SynapseCore\Brain\Service\Extractor\MultiAreaExtractorInterface;
 use ArnaudMoncondhuy\SynapseCore\Brain\Service\Extractor\NeuronExtractorInterface;
 use ArnaudMoncondhuy\SynapseCore\Brain\Service\MemoryExtractor;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\MemorySource;
@@ -161,5 +162,111 @@ class MemoryExtractorTest extends TestCase
         $second = $orchestrator->supportedAreas();
 
         $this->assertSame($first, $second);
+    }
+
+    // ── extractAll (jalon 3) ─────────────────────────────────────────────────
+
+    public function testExtractAllPrefersMultiAreaExtractorWhenInjected(): void
+    {
+        // Le multi-area extractor est utilisé en priorité, les mono-aire
+        // sont ignorés
+        $monoArea = $this->createMock(NeuronExtractorInterface::class);
+        $monoArea->method('supportedAreas')->willReturn([BrainArea::Semantic]);
+        // Le mono-aire ne DOIT PAS être appelé en mode multi-aire
+        $monoArea->expects($this->never())->method('extract');
+
+        $multiArea = $this->createMock(MultiAreaExtractorInterface::class);
+        $multiArea->expects($this->once())
+            ->method('extractAll')
+            ->willReturn([
+                new ExtractionResult(BrainArea::Semantic, [], ['from' => 'multi']),
+                new ExtractionResult(BrainArea::Episodic, [], ['from' => 'multi']),
+            ]);
+
+        $orchestrator = new MemoryExtractor(
+            extractors: [$monoArea],
+            multiAreaExtractor: $multiArea,
+        );
+        $source = new MemorySource('manual', []);
+
+        $results = $orchestrator->extractAll($source);
+
+        $this->assertCount(2, $results);
+        $this->assertSame('multi', $results[0]->debug['from']);
+    }
+
+    public function testExtractAllFallsBackToMonoAreaWhenNoMultiAreaExtractor(): void
+    {
+        // Sans multi-area, fallback séquentiel : un appel par extracteur unique
+        $semantic = $this->createMock(NeuronExtractorInterface::class);
+        $semantic->method('supportedAreas')->willReturn([BrainArea::Semantic]);
+        $semantic->expects($this->once())
+            ->method('extract')
+            ->with($this->anything(), BrainArea::Semantic)
+            ->willReturn(new ExtractionResult(BrainArea::Semantic, [], ['from' => 'semantic']));
+
+        $episodic = $this->createMock(NeuronExtractorInterface::class);
+        $episodic->method('supportedAreas')->willReturn([BrainArea::Episodic]);
+        $episodic->expects($this->once())
+            ->method('extract')
+            ->with($this->anything(), BrainArea::Episodic)
+            ->willReturn(new ExtractionResult(BrainArea::Episodic, [], ['from' => 'episodic']));
+
+        $orchestrator = new MemoryExtractor([$semantic, $episodic]);
+        $source = new MemorySource('manual', []);
+
+        $results = $orchestrator->extractAll($source);
+
+        $this->assertCount(2, $results);
+    }
+
+    public function testExtractAllFallbackSkipsFailingExtractorWithWarning(): void
+    {
+        $semantic = $this->createMock(NeuronExtractorInterface::class);
+        $semantic->method('supportedAreas')->willReturn([BrainArea::Semantic]);
+        $semantic->method('extract')->willReturn(
+            new ExtractionResult(BrainArea::Semantic, []),
+        );
+
+        $broken = $this->createMock(NeuronExtractorInterface::class);
+        $broken->method('supportedAreas')->willReturn([BrainArea::Episodic]);
+        $broken->expects($this->once())
+            ->method('extract')
+            ->willThrowException(
+                new ExtractionFailedException(new MemorySource('m', []), BrainArea::Episodic, 'fail'),
+            );
+
+        $logger = $this->createMock(LoggerInterface::class);
+        // 1 warning du fallback (extractAll) — pas de warning collision car
+        // semantic et broken supportent des aires différentes
+        $logger->expects($this->once())
+            ->method('warning')
+            ->with($this->stringContains('extractAll: extracteur'));
+
+        $orchestrator = new MemoryExtractor([$semantic, $broken], $logger);
+        $source = new MemorySource('manual', []);
+
+        $results = $orchestrator->extractAll($source);
+
+        // Le semantic a réussi → 1 résultat. L'épisodique a échoué → skip
+        $this->assertCount(1, $results);
+        $this->assertSame(BrainArea::Semantic, $results[0]->area);
+    }
+
+    public function testExtractAllFallbackDoesntCallSameExtractorTwice(): void
+    {
+        // Un extracteur qui supporte 2 aires ne doit être appelé qu'1 fois
+        $multi = $this->createMock(NeuronExtractorInterface::class);
+        $multi->method('supportedAreas')->willReturn([BrainArea::Semantic, BrainArea::Episodic]);
+        $multi->expects($this->once())
+            ->method('extract')
+            ->willReturn(new ExtractionResult(BrainArea::Semantic, []));
+
+        $orchestrator = new MemoryExtractor([$multi]);
+        $source = new MemorySource('manual', []);
+
+        $results = $orchestrator->extractAll($source);
+
+        $this->assertCount(1, $results);
     }
 }

@@ -6,6 +6,7 @@ namespace ArnaudMoncondhuy\SynapseCore\Brain\Service;
 
 use ArnaudMoncondhuy\SynapseCore\Brain\Exception\ExtractionFailedException;
 use ArnaudMoncondhuy\SynapseCore\Brain\Service\Extractor\ExtractionResult;
+use ArnaudMoncondhuy\SynapseCore\Brain\Service\Extractor\MultiAreaExtractorInterface;
 use ArnaudMoncondhuy\SynapseCore\Brain\Service\Extractor\NeuronExtractorInterface;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\MemorySource;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
@@ -46,11 +47,14 @@ final class MemoryExtractor
     private array $supportedAreasCache;
 
     /**
-     * @param iterable<NeuronExtractorInterface> $extractors injectés via tag DI
+     * @param iterable<NeuronExtractorInterface> $extractors injectés via tag DI (synapse.brain.neuron_extractor)
+     * @param LoggerInterface $logger pour signaler les collisions (PSR-3)
+     * @param ?MultiAreaExtractorInterface $multiAreaExtractor extracteur "1 passe" optionnel (jalon 3+)
      */
     public function __construct(
         iterable $extractors,
         private readonly LoggerInterface $logger = new NullLogger(),
+        private readonly ?MultiAreaExtractorInterface $multiAreaExtractor = null,
     ) {
         foreach ($extractors as $extractor) {
             foreach ($extractor->supportedAreas() as $area) {
@@ -87,6 +91,67 @@ final class MemoryExtractor
         }
 
         return $extractor->extract($source, $area);
+    }
+
+    /**
+     * Extrait des neurones dans **toutes les aires supportées** en 1 passe
+     * LLM (jalon 3 — mode multi-aires).
+     *
+     * Si un {@see MultiAreaExtractorInterface} est injecté (typiquement
+     * `OnePassMultiAreaExtractor`), il est utilisé directement — 1 appel LLM
+     * unique qui retourne les neurones des 4 aires actives.
+     *
+     * Sinon, fallback séquentiel mono-aire : chaque extracteur mono-aire est
+     * appelé séparément (N appels LLM, plus coûteux). Pratique pour les
+     * setups minimaux ou tests sans le multi-area extractor.
+     *
+     * @throws ExtractionFailedException si l'extracteur multi-aires échoue
+     *
+     * @return list<ExtractionResult>
+     */
+    public function extractAll(MemorySource $source): array
+    {
+        if (null !== $this->multiAreaExtractor) {
+            return $this->multiAreaExtractor->extractAll($source);
+        }
+
+        // Fallback séquentiel mono-aire — un appel par extracteur unique.
+        // Dedupe par identité d'instance (spl_object_id) plutôt que par classe :
+        // si 2 instances de la même classe sont enregistrées sur 2 aires
+        // distinctes, ce sont quand même 2 extracteurs distincts à invoquer.
+        // Si UN extracteur supporte plusieurs aires (instance unique référencée
+        // depuis plusieurs entrées de $extractorsByArea), on l'invoque une fois.
+        $results = [];
+        $alreadyRun = [];
+
+        foreach ($this->extractorsByArea as $extractor) {
+            $key = spl_object_id($extractor);
+            if (isset($alreadyRun[$key])) {
+                continue;
+            }
+            $alreadyRun[$key] = true;
+
+            $area = $extractor->supportedAreas()[0] ?? null;
+            if (null === $area) {
+                continue;
+            }
+
+            try {
+                $results[] = $extractor->extract($source, $area);
+            } catch (ExtractionFailedException $e) {
+                $this->logger->warning(
+                    sprintf(
+                        'MemoryExtractor::extractAll: extracteur %s a échoué sur aire "%s" — skip. %s',
+                        $extractor::class,
+                        $area->value,
+                        $e->getMessage(),
+                    ),
+                );
+                continue;
+            }
+        }
+
+        return $results;
     }
 
     /**
