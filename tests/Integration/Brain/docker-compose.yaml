@@ -1,0 +1,40 @@
+# Brain v3 — BDD test PostgreSQL + pgvector
+#
+# Service isolé pour les tests d'intégration Brain (à partir du jalon 3).
+# Aucune cohabitation avec d'autres bases — port custom 55432 pour éviter
+# les collisions avec une instance Postgres locale (5432) ou weecom.
+#
+# Usage :
+#   docker compose -f tests/Integration/Brain/docker-compose.yaml up -d
+#   # Lance les tests d'intégration
+#   docker compose -f tests/Integration/Brain/docker-compose.yaml down
+#
+# Volume `brain-test-pgdata` éphémère (recréé à chaque `down -v`).
+
+services:
+  brain-test-postgres:
+    image: pgvector/pgvector:pg18
+    container_name: synapse-brain-test-postgres
+    environment:
+      POSTGRES_DB: synapse_brain_test
+      POSTGRES_USER: brain_test
+      POSTGRES_PASSWORD: brain_test
+      # Locale "fr_FR" pour aligner sur la locale du bundle (collation des
+      # index TEXT cohérente avec ce que Doctrine génèrera côté production)
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8"
+    ports:
+      - "55432:5432"
+    volumes:
+      # Postgres 18+ veut le volume sur /var/lib/postgresql (pas /data) —
+      # cf. https://github.com/docker-library/postgres/pull/1259
+      - brain-test-pgdata:/var/lib/postgresql
+      - ./init-pgvector.sql:/docker-entrypoint-initdb.d/00-init-pgvector.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brain_test -d synapse_brain_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  brain-test-pgdata:
+    driver: local
