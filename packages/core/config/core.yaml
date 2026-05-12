@@ -66,6 +66,16 @@ services:
         tags:
             - { name: 'monolog.logger', channel: 'synapse_debug' }
 
+    # ── Brain v3 — TablePrefixSubscriber (ADR-001) ────────────────────────────
+    # Préfixe les tables Brain (brain_*, core_*) au runtime Doctrine pour
+    # permettre cohabitation avec les tables de l'app hôte. Préfixe défaut
+    # 'syn_', configurable via synapse.persistence.table_prefix.
+    ArnaudMoncondhuy\SynapseCore\Brain\Bridge\Doctrine\TablePrefixSubscriber:
+        arguments:
+            $prefix: '%synapse.persistence.table_prefix%'
+        tags:
+            - { name: 'doctrine.event_subscriber' }
+
     # ── Garde-fou #2 : PromptJudge (LLM-as-Judge) ─────────────────────────────
     # Bascule automatique entre NullPromptJudge (par défaut, no-op) et
     # ChatServiceBasedPromptJudge si un preset reviewer est configuré.

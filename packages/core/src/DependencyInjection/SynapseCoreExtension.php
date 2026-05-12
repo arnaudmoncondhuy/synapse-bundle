@@ -120,6 +120,7 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
         // ── Persistence ───────────────────────────────────────────────────────
         $container->setParameter('synapse.persistence.conversation_class', $config['persistence']['conversation_class']);
         $container->setParameter('synapse.persistence.message_class', $config['persistence']['message_class']);
+        $container->setParameter('synapse.persistence.table_prefix', $config['persistence']['table_prefix'] ?? 'syn_');
 
         // ── Encryption ────────────────────────────────────────────────────────
         // Obligatoire depuis le chantier credentials-crypto. La clé DOIT être

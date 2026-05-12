@@ -46,6 +46,11 @@ class Configuration implements ConfigurationInterface
             ->cannotBeEmpty()
             ->info('FQCN de l\'entité SynapseMessage concrète (ex : App\Entity\SynapseMessage)')
             ->end()
+            ->scalarNode('table_prefix')
+            ->defaultValue('syn_')
+            ->cannotBeEmpty()
+            ->info('Préfixe SQL appliqué aux tables Brain v3 (brain_*, core_*). Permet de cohabiter avec les tables de l\'app hôte sans collision. Voir ADR-001.')
+            ->end()
             ->end()
             ->end()
 
