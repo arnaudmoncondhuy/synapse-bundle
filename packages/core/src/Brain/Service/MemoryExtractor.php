@@ -9,6 +9,8 @@ use ArnaudMoncondhuy\SynapseCore\Brain\Service\Extractor\ExtractionResult;
 use ArnaudMoncondhuy\SynapseCore\Brain\Service\Extractor\NeuronExtractorInterface;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\MemorySource;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * Orchestrateur de l'extraction de neurones depuis une `MemorySource`.
@@ -25,6 +27,10 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
  * (autoconfigure NeuronExtractorInterface). MemoryExtractor les indexe par
  * aire supportée au boot.
  *
+ * **Collision** : si plusieurs extracteurs déclarent supporter la même aire,
+ * le dernier enregistré gagne. Un warning est loggé pour signaler la collision
+ * (audit code reviewer jalon 2 point e).
+ *
  * Cf. {@link docs/brain/06-phases/jalon-2-ingestion-mono-aire.md} §4.4.
  */
 final class MemoryExtractor
@@ -35,15 +41,35 @@ final class MemoryExtractor
     private array $extractorsByArea = [];
 
     /**
+     * @var list<BrainArea>
+     */
+    private array $supportedAreasCache;
+
+    /**
      * @param iterable<NeuronExtractorInterface> $extractors injectés via tag DI
      */
-    public function __construct(iterable $extractors)
-    {
+    public function __construct(
+        iterable $extractors,
+        private readonly LoggerInterface $logger = new NullLogger(),
+    ) {
         foreach ($extractors as $extractor) {
             foreach ($extractor->supportedAreas() as $area) {
+                if (isset($this->extractorsByArea[$area->value])) {
+                    $this->logger->warning(
+                        sprintf(
+                            'MemoryExtractor: collision sur l\'aire "%s" — l\'extracteur %s remplace %s. Le dernier enregistré gagne.',
+                            $area->value,
+                            $extractor::class,
+                            $this->extractorsByArea[$area->value]::class,
+                        ),
+                    );
+                }
                 $this->extractorsByArea[$area->value] = $extractor;
             }
         }
+
+        // Cache résolu une fois au boot — la liste est figée après construction
+        $this->supportedAreasCache = $this->resolveSupportedAreas();
     }
 
     /**
@@ -69,6 +95,14 @@ final class MemoryExtractor
      * @return list<BrainArea>
      */
     public function supportedAreas(): array
+    {
+        return $this->supportedAreasCache;
+    }
+
+    /**
+     * @return list<BrainArea>
+     */
+    private function resolveSupportedAreas(): array
     {
         $areas = [];
         foreach (array_keys($this->extractorsByArea) as $value) {

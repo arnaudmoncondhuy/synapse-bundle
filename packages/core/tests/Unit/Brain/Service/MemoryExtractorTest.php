@@ -11,6 +11,7 @@ use ArnaudMoncondhuy\SynapseCore\Brain\Service\MemoryExtractor;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\MemorySource;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class MemoryExtractorTest extends TestCase
 {
@@ -121,5 +122,44 @@ class MemoryExtractorTest extends TestCase
 
         // Le second extracteur a écrasé le premier dans extractorsByArea
         $this->assertSame('second', $result->debug['from']);
+    }
+
+    public function testCollisionTriggersLoggerWarning(): void
+    {
+        $first = $this->stubExtractor([BrainArea::Semantic]);
+        $second = $this->stubExtractor([BrainArea::Semantic]);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('warning')
+            ->with($this->stringContains('collision sur l\'aire "semantic"'));
+
+        new MemoryExtractor([$first, $second], $logger);
+    }
+
+    public function testNoWarningWhenNoCollision(): void
+    {
+        $semantic = $this->stubExtractor([BrainArea::Semantic]);
+        $episodic = $this->stubExtractor([BrainArea::Episodic]);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('warning');
+
+        new MemoryExtractor([$semantic, $episodic], $logger);
+    }
+
+    public function testSupportedAreasIsCached(): void
+    {
+        // Vérifie que les 2 appels successifs retournent le même tableau
+        // (pas reconstruit à chaque fois)
+        $semantic = $this->stubExtractor([BrainArea::Semantic]);
+        $episodic = $this->stubExtractor([BrainArea::Episodic]);
+
+        $orchestrator = new MemoryExtractor([$semantic, $episodic]);
+
+        $first = $orchestrator->supportedAreas();
+        $second = $orchestrator->supportedAreas();
+
+        $this->assertSame($first, $second);
     }
 }
