@@ -8,6 +8,8 @@ use ArnaudMoncondhuy\SynapseCore\Brain\Contract\EmbeddableNeuron;
 use ArnaudMoncondhuy\SynapseCore\Brain\Exception\SynapseUserIsolationViolationException;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\Synapse;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\SynapseRelationType;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\Uid\Uuid;
 
 /**
@@ -21,8 +23,9 @@ use Symfony\Component\Uid\Uuid;
  * **Isolation user** (ADR-006) : les neurones existants doivent être
  * filtrés par owner_id en amont (par le caller qui requête le repository).
  * Si on tente de lier 2 neurones d'owners différents non-null,
- * `Synapse::__construct` throw — on intercepte et on skippe silencieusement
- * (ne devrait pas arriver si le caller fait son travail).
+ * `Synapse::__construct` throw — on intercepte, on **log un warning**
+ * (PSR-3) puis on skippe. C'est un signal "le caller a oublié de filtrer
+ * par owner en amont, c'est un bug d'orchestration".
  *
  * **Pas de fusion** : ce détecteur crée des synapses, pas des merges. La
  * fusion (corroborate() côté SemanticNeuron) sera la responsabilité du
@@ -44,6 +47,11 @@ final readonly class ConvergenceDetector
      * mais non validée.
      */
     public const DEFAULT_COSINE_THRESHOLD = 0.85;
+
+    public function __construct(
+        private LoggerInterface $logger = new NullLogger(),
+    ) {
+    }
 
     /**
      * Détecte les convergences entre le candidat et les neurones existants
@@ -102,21 +110,33 @@ final readonly class ConvergenceDetector
             }
 
             // Tentative de création de synapse — peut throw isolation user
-            // si le caller n'a pas filtré correctement
+            // si le caller n'a pas filtré correctement en amont.
+            //
+            // Note sur le `weight` : on initialise à la valeur cosine plutôt
+            // qu'au défaut 0.1. Sémantique : "deux neurones très similaires
+            // sont initialement très liés" (cohérent Hebb : neurons that
+            // wire together fire together). Le poids sera ensuite modulé
+            // par le service de plasticité au jalon 8.
             try {
                 $synapses[] = new Synapse(
                     source: $candidate,
                     target: $existingNeuron,
                     sourceOwnerId: $candidateOwner,
                     targetOwnerId: $candidateExisting->ownerId,
-                    weight: $similarity, // poids initial = similarité cosine
+                    weight: $similarity,
                     relationType: SynapseRelationType::Corroborates,
                     confidence: $similarity,
                     evidenceCount: 1,
                 );
-            } catch (SynapseUserIsolationViolationException) {
-                // Le caller n'a pas filtré — skip silencieux et continue
-                // (le garde-fou Synapse::__construct a fait son travail)
+            } catch (SynapseUserIsolationViolationException $e) {
+                $this->logger->warning(
+                    sprintf(
+                        'ConvergenceDetector: caller passed cross-user candidate — filter upstream by owner_id! Source owner=%s, target owner=%s. Synapse skipped.',
+                        $candidateOwner?->toRfc4122() ?? 'null',
+                        $candidateExisting->ownerId?->toRfc4122() ?? 'null',
+                    ),
+                    ['exception' => $e],
+                );
                 continue;
             }
         }

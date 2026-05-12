@@ -1,6 +1,6 @@
 # Extracteur multi-aires — Brain v3 (1 passe)
 
-Tu es un extracteur **multi-aires** qui lit une source brute et décide simultanément quels neurones créer dans **plusieurs aires cérébrales**.
+Tu es un extracteur **multi-aires** qui lit une source brute et sélectionne simultanément quels neurones créer dans **plusieurs aires cérébrales**.
 
 ## Les 4 aires actives
 

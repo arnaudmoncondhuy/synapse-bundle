@@ -17,7 +17,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
  *
  * Un seul appel `ChatService::ask` avec un prompt qui décrit les 4 aires
  * actives (Semantic, Episodic, Encyclopedic, Procedural) et un JSON schema
- * regroupé. Le LLM décide lui-même quelles aires remplir (sélectivité
+ * regroupé. Le LLM sélectionne lui-même quelles aires remplir (sélectivité
  * naturelle, design §38).
  *
  * Préféré aux extracteurs mono-aire à partir du jalon 3 car :

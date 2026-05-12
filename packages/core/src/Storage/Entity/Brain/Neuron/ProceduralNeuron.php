@@ -196,11 +196,18 @@ class ProceduralNeuron implements MemoryFragment
      * avec un facteur d'apprentissage de 0.1 (les anciennes exécutions
      * comptent ~10× plus qu'une seule récente).
      */
+    /**
+     * Facteur d'apprentissage Hebbien pour la moyenne pondérée du successRate.
+     * Une exécution récente compte pour ~10% du successRate, les anciennes
+     * ~90%. Valeur conservatrice — calibration empirique possible au jalon 8
+     * via cf. {@link docs/brain/07-calibration.md}.
+     */
+    public const HEBBIAN_LEARNING_RATE = 0.1;
+
     public function recordExecution(bool $success): self
     {
         $outcome = $success ? 1.0 : 0.0;
-        $learningRate = 0.1;
-        $this->successRate = (1.0 - $learningRate) * $this->successRate + $learningRate * $outcome;
+        $this->successRate = (1.0 - self::HEBBIAN_LEARNING_RATE) * $this->successRate + self::HEBBIAN_LEARNING_RATE * $outcome;
         $this->successRate = max(0.0, min(1.0, $this->successRate));
         ++$this->executionCount;
         $this->lastExecutedAt = new \DateTimeImmutable();

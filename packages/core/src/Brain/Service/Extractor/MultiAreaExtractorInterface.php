@@ -13,7 +13,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
  * plusieurs aires en **une seule passe LLM**.
  *
  * Distinct de {@see NeuronExtractorInterface} (mono-aire, jalon 2). Une
- * source brute est analysée par le LLM qui décide lui-même dans quelles
+ * source brute est analysée par le LLM qui sélectionne lui-même dans quelles
  * aires créer des neurones (sélectivité naturelle, design §38).
  *
  * Cette approche est privilégiée à partir du jalon 3 car :

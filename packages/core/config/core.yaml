@@ -76,14 +76,18 @@ services:
         arguments:
             $prefix: '%synapse.persistence.table_prefix%'
 
-    # ── Brain v3 — MemoryExtractor (jalon 2, mono-aire) ──────────────────────
-    # Orchestrateur d'extraction de neurones. Les extracteurs (Semantic,
-    # Episodic, Encyclopedic) sont auto-tagués synapse.brain.neuron_extractor
-    # via registerForAutoconfiguration(NeuronExtractorInterface) dans
+    # ── Brain v3 — MemoryExtractor (jalon 2 mono-aire + jalon 3 multi-aires) ──
+    # Orchestrateur d'extraction de neurones. Les extracteurs mono-aire
+    # (Semantic, Episodic, Encyclopedic) sont auto-tagués
+    # synapse.brain.neuron_extractor via registerForAutoconfiguration dans
     # SynapseCoreExtension.
+    # L'extracteur multi-aires (OnePassMultiAreaExtractor, jalon 3) est
+    # injecté explicitement comme dépendance optionnelle — privilégié au
+    # fallback séquentiel mono-aire en N appels LLM (1 passe unique).
     ArnaudMoncondhuy\SynapseCore\Brain\Service\MemoryExtractor:
         arguments:
             $extractors: !tagged_iterator synapse.brain.neuron_extractor
+            $multiAreaExtractor: '@?ArnaudMoncondhuy\SynapseCore\Brain\Service\Extractor\OnePassMultiAreaExtractor'
 
     # ── Garde-fou #2 : PromptJudge (LLM-as-Judge) ─────────────────────────────
     # Bascule automatique entre NullPromptJudge (par défaut, no-op) et

@@ -120,6 +120,10 @@ class Synapse
     private ?Uuid $targetNeuronOwner;
 
     /**
+     * **À utiliser UNIQUEMENT avec les named arguments** — l'ordre des paramètres
+     * est susceptible d'évoluer entre jalons (par ex. ajout de champs au jalon 5
+     * pour les synapses enrichies, au jalon 6 pour les functional networks).
+     *
      * @throws \ArnaudMoncondhuy\SynapseCore\Brain\Exception\SynapseUserIsolationViolationException
      *                                                                                              si les deux neurones appartiennent à des utilisateurs différents (et tous deux non-null)
      */
