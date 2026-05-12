@@ -6,6 +6,7 @@ namespace ArnaudMoncondhuy\SynapseCore\Command;
 
 use ArnaudMoncondhuy\SynapseCore\Brain\Exception\ExtractionFailedException;
 use ArnaudMoncondhuy\SynapseCore\Brain\Service\MemoryExtractor;
+use ArnaudMoncondhuy\SynapseCore\Brain\Service\MemoryFragmentSerializer;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\Brain\MemorySourceRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -42,6 +43,7 @@ final class BrainIngestTestCommand extends Command
         private readonly MemoryExtractor $memoryExtractor,
         private readonly MemorySourceRepository $sourceRepo,
         private readonly EntityManagerInterface $em,
+        private readonly MemoryFragmentSerializer $serializer,
     ) {
         parent::__construct();
     }
@@ -134,7 +136,7 @@ final class BrainIngestTestCommand extends Command
 
         foreach ($result->neurons as $i => $neuron) {
             $io->section(sprintf('Neurone #%d', $i + 1));
-            $payload = $this->renderNeuronPayload($neuron);
+            $payload = $this->serializer->serialize($neuron);
             $io->writeln(
                 json_encode(
                     $payload,
@@ -165,51 +167,5 @@ final class BrainIngestTestCommand extends Command
             $debug,
             \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR,
         );
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function renderNeuronPayload(object $neuron): array
-    {
-        // Sérialisation minimale agnostique de l'aire — on appelle les getters
-        // public communs et on capture le reste via reflection des propriétés
-        // visibles.
-        $payload = [
-            'class' => $neuron::class,
-        ];
-
-        if (method_exists($neuron, 'getId')) {
-            $id = $neuron->getId();
-            if (is_object($id) && method_exists($id, 'toRfc4122')) {
-                $payload['id'] = $id->toRfc4122();
-            }
-        }
-        if (method_exists($neuron, 'getArea')) {
-            $area = $neuron->getArea();
-            if ($area instanceof BrainArea) {
-                $payload['area'] = $area->value;
-            }
-        }
-        if (method_exists($neuron, 'getSourceUuid')) {
-            $src = $neuron->getSourceUuid();
-            if (is_object($src) && method_exists($src, 'toRfc4122')) {
-                $payload['sourceUuid'] = $src->toRfc4122();
-            }
-        }
-
-        // Champs spécifiques aux 3 aires du jalon 2
-        foreach (['getSubject', 'getPredicate', 'getValue', 'getConfidence', 'getEventSummary', 'getActors', 'getLocation', 'getOccurredAt', 'getDocumentRef', 'getChunkIndex', 'getTotalChunks', 'getChunkContent'] as $getter) {
-            if (method_exists($neuron, $getter)) {
-                $value = $neuron->$getter();
-                if ($value instanceof \DateTimeImmutable) {
-                    $value = $value->format('c');
-                }
-                $key = lcfirst(substr($getter, 3));
-                $payload[$key] = $value;
-            }
-        }
-
-        return $payload;
     }
 }
