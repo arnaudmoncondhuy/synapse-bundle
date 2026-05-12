@@ -1,0 +1,36 @@
+# Architecture Decision Records (ADR)
+
+> Décisions structurantes du chantier Brain v3. Une décision = un fichier numéroté.
+
+## Format
+
+Chaque ADR suit le [template](000-template.md) :
+
+- **Statut** : proposé / accepté / superseded / abandonné
+- **Date** : YYYY-MM-DD
+- **Jalon** : N (jalon de la roadmap où la décision se pose)
+- **Contexte** — pourquoi maintenant
+- **Options considérées** — au moins 2, sinon ce n'est pas une décision
+- **Décision** — option retenue + justification
+- **Conséquences** — code, migrations, tests, docs, ADRs ouverts
+
+## Quand écrire un ADR
+
+Tout choix qui :
+
+- Conditionne du code structurant (modèle de données, contrat public, schéma SQL, point d'extension)
+- S'écarte du design figé (`docs/brain-v3-design.md`)
+- Sera dur à inverser plus tard
+
+Pas pour les choix esthétiques internes (nommage à la marge, ordre des méthodes).
+
+## Index
+
+| # | Titre | Statut | Jalon |
+|---|---|---|---|
+| [000](000-template.md) | Template | — | — |
+| [001](001-prefixe-table-configurable.md) | Préfixe SQL configurable via `synapse.persistence.table_prefix` | proposé | 1 |
+
+## Convention de numérotation
+
+Numérotation **monotone**, attribuée au moment où l'ADR est ouvert. Pas de "trou" comblé a posteriori. Un ADR superseded reste en place avec son numéro, mais son statut indique l'ADR qui le remplace.
