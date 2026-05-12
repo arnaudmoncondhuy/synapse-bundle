@@ -15,16 +15,19 @@ livré: —
 - [x] Étape 1 : docker compose test PostgreSQL + pgvector (`tests/Integration/Brain/`)
 - [x] Étape 2 : ADR-005 (cosine, placeholder calibration) + ADR-006 (isolation user, accepté)
 - [x] Étape 3 : `MultiAreaExtractorInterface` + tests
+- [x] Étape 4 : Resources prompts multi-aire (extract-multi-area.md + schema avec 4 aires)
 - [x] Étape 5 (faite avant 4 — voir note ci-après) : `ProceduralNeuron` + repository + tests + migration SQL jalon-3/001
 - [x] Étape 6 : Garde-fou isolation user dans `Synapse::__construct` + migration SQL jalon-3/002
-- [ ] Étape 4 : Resources prompts multi-aire (extract-multi-area.md + schema avec 4 aires)
-- [ ] Étape 7 : `OnePassMultiAreaExtractor` (hérite `AbstractLlmExtractor` + implémente `MultiAreaExtractorInterface`)
-- [ ] Étape 8 : `ConvergenceDetector` + tests (similarité cosine, garde-fou isolation user, synapse auto)
-- [ ] Étape 9 : `MemoryExtractor::extractAll()` + tests multi-aires
-- [ ] Étape 10 : Annotations en aveugle 15-20 paires sources weecom + fixtures `tests/Brain/Quality/Fixtures/convergence-v1/`
-- [ ] Étape 11 : Outil `brain:bench:convergence` + calibration 3 sets cosine + ADR-005 finalisé chiffré
-- [ ] Étape 12 : `brain:ingest:test --multi-area`
-- [ ] Étape 13 : Audits sous-agents + bilan jalon 3
+- [x] Étape 7 : `OnePassMultiAreaExtractor` (classe standalone, implémente `MultiAreaExtractorInterface`)
+- [x] Étape 8 : `ConvergenceDetector` + tests (similarité cosine, garde-fou isolation user, synapse auto, log warning cross-user)
+- [x] Étape 9 : `MemoryExtractor::extractAll()` + tests multi-aires + DI explicite multi-area extractor
+- [x] Étape 12 : `brain:ingest:test --multi-area`
+- [x] **Audits sous-agents + fixes mineurs** : anti-anthropomorphisation, log warning, HEBBIAN_LEARNING_RATE const, DI explicite OnePassMultiAreaExtractor, PHPDoc named-args-only sur Synapse
+- [ ] **Étape 10** ⏸️ *reportée* : Annotations en aveugle 15-20 paires sources weecom + fixtures `tests/Brain/Quality/Fixtures/convergence-v1/` — nécessite session dédiée avec LLM réel (credentials weecom) + BDD Postgres+pgvector active
+- [ ] **Étape 11** ⏸️ *reportée* : Outil `brain:bench:convergence` + calibration 3 sets cosine + ADR-005 finalisé chiffré — dépend de l'étape 10
+- [ ] **Étape 13** : Bilan jalon 3 final (après livraison étapes 10-11)
+
+**État au 2026-05-13 :** 10/13 étapes livrées (toute la couche code/infra/contrats). Les 3 étapes restantes (10-11-13) constituent la **validation expérimentale qualité** prévue par la charte §2.9. Reportées à une session dédiée car nécessitant LLM réel et travail d'annotation manuelle.
 
 **Note inversion étapes 4/5 :** ProceduralNeuron créé avant le prompt multi-aire pour que celui-ci puisse référencer les 4 aires (Semantic + Episodic + Encyclopedic + Procedural) d'emblée. Pas d'impact fonctionnel.
 
