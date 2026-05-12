@@ -43,6 +43,14 @@ class EncyclopedicNeuron implements MemoryFragment
     #[ORM\Column(type: 'uuid', unique: true)]
     private Uuid $id;
 
+    /**
+     * UUID de la MemorySource dont ce neurone est dérivé.
+     *
+     * On stocke l'UUID (pas une ManyToOne) car :
+     * 1. Pas de cascade ORM côté entité (le couplage est minimal)
+     * 2. Cohérent avec le pattern polymorphe de Synapse
+     * 3. ON DELETE CASCADE géré au niveau SQL via la FK
+     */
     #[ORM\Column(type: 'uuid', name: 'source_uuid')]
     private Uuid $sourceUuid;
 

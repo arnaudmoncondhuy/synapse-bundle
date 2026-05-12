@@ -86,6 +86,7 @@ foreach ($items as $item) {
         'notes' => adaptNote($item),
         'activities' => adaptActivity($item),
         'deals' => adaptDeal($item),
+        default => null,
     };
 
     if (null === $source) {

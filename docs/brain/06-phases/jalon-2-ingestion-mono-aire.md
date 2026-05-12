@@ -10,7 +10,7 @@ livré: —
 
 ## 1. Capacité d'association visée
 
-**Aucune encore** (toujours infra). Mais on franchit un cap qualitatif : on a maintenant un **MemoryExtractor** qui prend une `MemorySource` brute et produit des neurones via appel LLM. Le brain commence à *lire* le monde extérieur.
+**Aucune encore** (toujours infra). Mais on franchit un cap qualitatif : on a maintenant un **MemoryExtractor** qui prend une `MemorySource` brute et produit des neurones via appel LLM. Le bundle dispose désormais d'une boucle d'ingestion qui transforme une source brute en neurones typés par aire.
 
 ## 2. Test de sortie
 

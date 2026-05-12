@@ -81,13 +81,16 @@ final readonly class SemanticExtractor implements NeuronExtractorInterface
             if (!is_numeric($confidence)) {
                 $confidence = 0.5;
             }
+            // Clamp [0, 1] ceinture-et-bretelles : le JSON schema impose
+            // minimum/maximum, mais un LLM qui renvoie 1.5 doit être borné.
+            $confidence = max(0.0, min(1.0, (float) $confidence));
 
             $neurons[] = new SemanticNeuron(
                 firstSource: $source->getId(),
                 subject: $subject,
                 predicate: $predicate,
                 value: $value,
-                confidence: (float) $confidence,
+                confidence: $confidence,
             );
         }
 
@@ -129,6 +132,13 @@ final readonly class SemanticExtractor implements NeuronExtractorInterface
         return $decoded;
     }
 
+    /**
+     * Construit le message LLM = prompt système + payload de la source.
+     *
+     * Pas de `receivedAt` ici (contrairement à EpisodicExtractor) : les faits
+     * sémantiques sont a-temporels par nature, l'horodatage de réception de la
+     * source n'apporte rien à l'extraction subject-predicate-value.
+     */
     private function buildMessage(MemorySource $source, string $prompt): string
     {
         $payload = json_encode($source->getRawPayload(), \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);

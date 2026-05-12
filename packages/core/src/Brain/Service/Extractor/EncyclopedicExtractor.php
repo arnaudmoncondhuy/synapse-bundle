@@ -85,7 +85,7 @@ final readonly class EncyclopedicExtractor implements NeuronExtractorInterface
             $embeddingResult = $this->embeddingService->generateEmbeddings(
                 $chunks,
                 null,
-                'rag_indexation',
+                'brain_encyclopedic',
             );
         } catch (\Throwable $e) {
             throw new ExtractionFailedException($source, $targetArea, 'embedding generation failed: '.$e->getMessage(), $e);
