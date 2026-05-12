@@ -31,6 +31,7 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Index(columns: ['provider'], name: 'idx_brain_memory_source_provider')]
 #[ORM\Index(columns: ['external_id'], name: 'idx_brain_memory_source_external_id')]
 #[ORM\Index(columns: ['received_at'], name: 'idx_brain_memory_source_received_at')]
+#[ORM\Index(columns: ['owner_id'], name: 'idx_brain_memory_source_owner')]
 class MemorySource
 {
     /**
