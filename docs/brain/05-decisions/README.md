@@ -33,6 +33,8 @@ Pas pour les choix esthétiques internes (nommage à la marge, ordre des méthod
 | [002](002-pas-de-tenant-id-jalon-1.md) | Pas de `tenant_id` sur `MemorySource` au jalon 1 | accepté | 1 |
 | [003](003-extracteur-llm-structured-output.md) | Extracteur LLM via structured output (JSON schema) | accepté | 2 |
 | [004](004-prompts-en-resources-files.md) | Prompts d'extracteurs en fichiers Resources, pas en BDD | accepté | 2 |
+| [005](005-seuil-cosine-convergence.md) | Seuil cosine pour la convergence mémorielle | proposé (calibration en cours) | 3 |
+| [006](006-isolation-user-synapses.md) | Garde-fou isolation user sur les synapses | accepté | 3 |
 
 ## Convention de numérotation
 
