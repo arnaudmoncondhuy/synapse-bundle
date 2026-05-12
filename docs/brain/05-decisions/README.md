@@ -29,7 +29,10 @@ Pas pour les choix esthétiques internes (nommage à la marge, ordre des méthod
 | # | Titre | Statut | Jalon |
 |---|---|---|---|
 | [000](000-template.md) | Template | — | — |
-| [001](001-prefixe-table-configurable.md) | Préfixe SQL configurable via `synapse.persistence.table_prefix` | proposé | 1 |
+| [001](001-prefixe-table-configurable.md) | Préfixe SQL configurable via `synapse.persistence.table_prefix` | accepté | 1 |
+| [002](002-pas-de-tenant-id-jalon-1.md) | Pas de `tenant_id` sur `MemorySource` au jalon 1 | accepté | 1 |
+| [003](003-extracteur-llm-structured-output.md) | Extracteur LLM via structured output (JSON schema) | accepté | 2 |
+| [004](004-prompts-en-resources-files.md) | Prompts d'extracteurs en fichiers Resources, pas en BDD | accepté | 2 |
 
 ## Convention de numérotation
 
