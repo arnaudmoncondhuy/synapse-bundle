@@ -1,78 +1,186 @@
 ---
-statut: squelette
+statut: à valider (plan détaillé)
 ouvert: 2026-05-12
 livré: —
 ---
 
 # Jalon 3 — Ingestion multi-aires + convergence
 
-> Squelette. À affiner avant exécution.
+> Plan détaillé préparé après le jalon 2. À valider par le user avant exécution.
 
 ## 1. Capacité d'association visée
 
-**Convergence mémorielle.** Deux sources différentes produisent des neurones similaires dans la même aire (embeddings proches) → détectés et marqués comme corroborants. Cf. design §9.
+**Convergence mémorielle** (design §9). Deux sources différentes produisent des neurones similaires dans la même aire (embeddings proches) → détectés et marqués comme corroborants. Premier jalon où le brain produit des **synapses automatiquement** sur la base d'une mesure objective.
+
+Pré-conditions structurantes pour cette capacité :
+1. Mode **"1 passe unique"** multi-aires opérationnel (décision orientée du jalon 2)
+2. Garde-fou **isolation user** sur les synapses (cf. `feedback-brain-user-isolation`)
+3. Validation expérimentale **obligatoire** (charte §2.9, premier jalon concerné)
 
 ## 2. Test de sortie
 
 ```bash
-# Ingestion d'une source qui active 3+ aires en une passe
-bin/console brain:ingest:test --source-id=<deal_id> --multi-area
-# → produit ≥2 neurones dans ≥2 aires différentes
+# Ingestion d'une source qui active plusieurs aires en une passe
+bin/console brain:ingest:test --source-id=<uuid> --multi-area
+# → produit ≥2 neurones répartis dans ≥2 aires différentes
 
-# Test convergence
-bin/console brain:bench:convergence --threshold=0.85
-# → précision ≥ 0.8 sur fixtures versionnées
+# Bench de convergence sur fixtures versionnées
+bin/console brain:bench:convergence --set=v1-baseline
+# → précision convergence ≥ 0.7, rappel ≥ 0.6 (fixtures annotées)
+
+# Garde-fou isolation user (vérification dédiée)
+bin/console brain:bench:user-isolation
+# → 100% des synapses cross-user sont rejetées ou logguées
 ```
 
 ## 3. Pré-requis
 
-- Jalon 2 livré (extracteurs mono-aire opérationnels)
-- ADRs jalon 2 validés
-- Outils de bench `tools/brain-bench/` opérationnels (cf. méthodologie §validation-qualité)
+- ✅ Jalon 2 livré (extracteurs mono-aire, refacto AbstractLlmExtractor et MemoryFragmentSerializer)
+- ⏳ BDD test PostgreSQL + pgvector (cf. `feedback-brain-test-db-postgres-vector`)
+- ⏳ Premier set de fixtures annotées manuellement dans `tests/Brain/Quality/Fixtures/convergence-v1/`
 
 ## 4. Surface à concevoir
 
-- `Brain\Service\MemoryExtractor::extractAll()` — orchestrateur multi-aires
-- `Brain\Service\ConvergenceDetector` — calcule similarité embeddings entre neurones, marque convergences
-- Synapses auto de type `CORROBORATES` (edge_type=ASSOCIATION) entre neurones convergents
-- 4ème aire ajoutée : `ProceduralNeuron` (workflow détecté dans la source) si présent
+### 4.1 Nouveau contrat multi-aires
+
+```php
+namespace ArnaudMoncondhuy\SynapseCore\Brain\Service\Extractor;
+
+interface MultiAreaExtractorInterface
+{
+    /**
+     * Une seule passe LLM produit des neurones dans plusieurs aires.
+     *
+     * @return list<ExtractionResult>  Un résultat par aire (vide si rien d'extrait pour cette aire)
+     */
+    public function extractAll(MemorySource $source): array;
+}
+```
+
+### 4.2 Implémentation `OnePassMultiAreaExtractor`
+
+Hérite de `AbstractLlmExtractor` mais avec un nouveau prompt et un nouveau schema :
+
+- `Resources/brain/prompts/extract-multi-area.md` : prompt qui décrit les 7 aires + sélectivité naturelle ("vide autorisé par aire")
+- `Resources/brain/prompts/extract-multi-area.schema.json` : objet avec une clé par aire (`facts: [...]`, `episode: ... | null`, `procedural: ... | null`, etc.)
+- `buildNeurons()` parse l'objet retourné et construit les neurones de chaque aire
+
+L'extracteur retourne **plusieurs** `ExtractionResult` (un par aire). MemoryExtractor expose une nouvelle méthode `extractAll(source)` qui appelle le multi-area extractor en priorité.
+
+Les extracteurs mono-aire du jalon 2 restent disponibles pour les apps hôtes qui préfèrent contrôler le routage par aire.
+
+### 4.3 Nouvelle aire activée : `ProceduralNeuron` (ganglions de la base)
+
+Workflow détecté dans la source si présent. Champs : `name`, `triggerPattern` (JSONB), `steps` (JSONB), `conditions`, `successRate`, `executionCount`.
+
+Pas d'embedding (recherche par trigger pattern, pas par similarité).
+
+### 4.4 `Brain\Service\ConvergenceDetector`
+
+```php
+final readonly class ConvergenceDetector
+{
+    /**
+     * Cherche des neurones existants sémantiquement proches du candidat.
+     * Si trouvés, crée des synapses CORROBORATES auto.
+     *
+     * @return list<Synapse>  Synapses créées (peut être vide)
+     */
+    public function detectAndLink(MemoryFragment $candidate, float $cosineThreshold = 0.85): array;
+}
+```
+
+Algorithme (jalon 3 mono-aire) :
+1. Récupère les neurones existants de la **même aire** que `$candidate`
+2. Filtre par **owner_id** (isolation user — cf. §4.6)
+3. Calcule similarité cosine entre embeddings
+4. Pour ceux qui dépassent `$cosineThreshold` → crée une `Synapse` CORROBORATES (edge_type=ASSOCIATION) auto + incrémente `evidenceCount` côté `SemanticNeuron` si même fait
+
+### 4.5 Calibration du seuil cosine (ADR-005)
+
+À mesurer empiriquement (cf. [07-calibration.md](../07-calibration.md)) :
+- 3 sets : `v1-cosine-075`, `v1-cosine-085`, `v1-cosine-095`
+- Métriques : précision, rappel, F1 sur fixtures annotées
+- ADR-005 sera écrit au moment du choix avec les chiffres dans la section "Décision"
+
+### 4.6 Garde-fou isolation user (ADR-006)
+
+**Bloquant** pour la création de Synapse (cf. `feedback-brain-user-isolation`).
+
+Règle d'admissibilité :
+| Source neuron owner | Target neuron owner | Admissible |
+|---|---|---|
+| user X | user X | ✅ |
+| user X | open (null) | ✅ |
+| open (null) | open (null) | ✅ |
+| user X | user Y (X ≠ Y) | ❌ exception |
+
+Implémentation choisie (à confirmer par ADR-006) : **assertion en code** dans `Synapse::__construct` qui throw si les owners diffèrent et sont tous deux non-null. La FK polymorphe rend un trigger SQL plus complexe — l'assertion en code suffit si **toute** création de Synapse passe par le constructeur (à vérifier).
+
+### 4.7 Outil bench `brain:bench:convergence`
+
+```bash
+bin/console brain:bench:convergence --set=v1-baseline --output=report.md
+```
+
+Charge le set (fichier YAML), ingère le corpus de fixtures versionné, exécute la convergence, compare aux annotations manuelles, calcule précision/rappel/F1, produit un rapport markdown.
+
+### 4.8 Fixtures de régression
+
+`tests/Brain/Quality/Fixtures/convergence-v1/` :
+- `corpus.jsonl` : 15-20 MemorySource versionnées (extraites de weecom, anonymisées si besoin)
+- `expected-convergences.json` : annotations manuelles (paires de neurones attendues comme convergentes)
+- `metrics-baseline.json` : seuils minimums (précision, rappel, F1) pour ne pas régresser
 
 ## 5. Étapes d'implémentation
 
-À détailler.
+| # | Étape | Test associé | Commit |
+|---|---|---|---|
+| 1 | Plan détaillé + ADR-005 (placeholder calibration) + ADR-006 (isolation user) | — | `docs(brain): plan jalon 3 + ADR-005/006` |
+| 2 | Contrat `MultiAreaExtractorInterface` + DTO | `MultiAreaExtractorInterfaceTest` | `feat(brain): contrat MultiAreaExtractorInterface` |
+| 3 | Resources prompts multi-aire | — | `feat(brain): prompts extracteur multi-aires` |
+| 4 | `OnePassMultiAreaExtractor` + tests (3 aires actives) | `OnePassMultiAreaExtractorTest` | `feat(brain): OnePassMultiAreaExtractor (1 passe LLM)` |
+| 5 | Entité `ProceduralNeuron` + repository + tests + migration SQL | `ProceduralNeuronTest` | `feat(brain): ProceduralNeuron (ganglions de la base)` |
+| 6 | `Synapse::__construct` : garde-fou isolation user + tests | `SynapseUserIsolationTest` | `feat(brain): garde-fou isolation user sur Synapse` |
+| 7 | `ConvergenceDetector` + tests (similarité cosine pure, mocks BDD) | `ConvergenceDetectorTest` | `feat(brain): ConvergenceDetector (similarité cosine + synapse auto)` |
+| 8 | `MemoryExtractor::extractAll` + tests | `MemoryExtractorMultiAreaTest` | `feat(brain): MemoryExtractor.extractAll dispatch multi-aires` |
+| 9 | Fixtures de qualité + outil `brain:bench:convergence` | smoke test manuel | `feat(brain): fixtures + bench convergence v1` |
+| 10 | Calibration : générer 3 sets, comparer, écrire ADR-005 final | bench rejouable | `feat(brain): calibration cosine v1 (seuil 0.X retenu)` |
+| 11 | Mise à jour `brain:ingest:test --multi-area` | smoke test | `feat(brain): brain:ingest:test --multi-area` |
+| 12 | Audits + bilan | — | `docs(brain): bilan jalon 3` |
 
 ## 6. Tests & dogfooding
 
 ### Tests PHPUnit
-- Tests unitaires extracteurs + ConvergenceDetector
 
-### **Validation qualité synapses (premier jalon concerné — charte §2.9)**
+Tous mocks/stubs comme au jalon 2 (ChatService, repositories Doctrine), pas de BDD réelle pour l'unit testing.
 
-- Échantillon weecom (corpus de dogfooding, charte §2.1) : 15 sources réelles annotées manuellement, choisies pour représenter une variété structurelle — 5 entités contractuelles, 5 contacts, 5 événements/notes. Ces catégories sont du **vocabulaire weecom**, pas des concepts Brain — on s'en sert uniquement pour avoir un échantillon réaliste hétérogène
-- Métriques attendues :
-  - **Taux de convergence** : 2 sources sémantiquement similaires → ≥80% de neurones identifiés comme convergents
-  - **Précision convergence** : ≥0.7 (peu de faux positifs)
-  - **Rappel convergence** : ≥0.6 sur l'échantillon annoté
-- Fixtures de régression : `tests/Brain/Quality/Fixtures/convergence-v1/` versionné
-- Outil dédié : `bin/console brain:bench:convergence`
+### **Validation qualité synapses (charte §2.9 — premier jalon concerné)**
+
+- **Échantillon** : 15-20 sources réelles weecom annotées (cf. §4.8)
+- **Métriques minimales** :
+  - Précision convergence ≥ 0.7
+  - Rappel convergence ≥ 0.6
+  - F1 ≥ 0.65
+- **Régression bloquante** : si F1 baisse vs jalon précédent, c'est bloquant (cf. méthodologie §validation-qualité)
+
+### **Tests d'intégration BDD** (premiers du chantier)
+
+Nouveau : `tests/Integration/Brain/`. Nécessite PostgreSQL + pgvector lancé localement (Docker compose). Marqués `@group integration`. Pas dans `composer test` par défaut, mais dans `composer test:integration` à créer.
 
 ## 7. Décisions ouvertes
 
-- ADR-XXX : seuil cosine pour considérer 2 embeddings "convergents" — empirique, à mesurer
-- ADR-XXX : convergence détectée auto ou validée par user via UI ? (cf. validation-gated jalon 8)
-- **ADR-XXX (garde-fou critique) : isolation user sur Synapse** — implémentation : assertion code, trigger SQL, ou les deux ?
-  Règle d'admissibilité (cf. [[feedback-brain-user-isolation]]) :
-  - (privé X, privé X) → OK
-  - (privé X, open=NULL) → OK (l'open enrichit le privé, couche partagée)
-  - (open, open) → OK
-  - (privé X, privé Y) avec X ≠ Y → **interdit**
+- **ADR-005** : seuil cosine retenu pour la convergence (à calibrer avant ADR finalisé)
+- **ADR-006** : garde-fou isolation user — assertion code uniquement, ou code + trigger SQL ?
+- **ADR-007 (potentiel)** : si la calibration montre que le seuil cosine seul est insuffisant, faut-il ajouter un filtre LLM-as-judge pour la convergence (coûteux mais précis) ? Reporté tant que les chiffres ne le justifient pas.
 
 ## 8. Hors-scope
 
 - Spreading activation (jalon 4)
-- Polarity et relation_type fines (jalon 5)
+- Polarity et relation_type fines au-delà du CORROBORATES auto (jalon 5)
 - Functional networks (jalon 6)
+- Aire Emotional / Sensory / Motor (jalon 7)
 
 ## 9. Bilan
 
-*À remplir à la fin du jalon.*
+*À remplir à la fin du jalon. Sections obligatoires : capacité livrée, coût, surprises, ADRs créés, audits, validation qualité (précision/rappel/F1 mesurés sur fixtures), go/no-go jalon 4.*
