@@ -1,7 +1,7 @@
 ---
-statut: en cours
+statut: livré
 ouvert: 2026-05-12
-livré: —
+livré: 2026-05-12
 ---
 
 # Jalon 2 — Ingestion mono-aire
@@ -159,19 +159,84 @@ Chaque fichier contient : description rôle + format de sortie (JSON schema embe
 
 *Cette section sert de fil de reprise en cas de compactage de contexte.*
 
-- [ ] Étape 1 : plan + ADRs
-- [ ] Étape 2 : EncyclopedicNeuron
-- [ ] Étape 3 : NeuronExtractorInterface + ExtractionResult
-- [ ] Étape 4 : Resources prompts
-- [ ] Étape 5 : SemanticExtractor
-- [ ] Étape 6 : EpisodicExtractor
-- [ ] Étape 7 : EncyclopedicExtractor
-- [ ] Étape 8 : MemoryExtractor
-- [ ] Étape 9 : Command brain:ingest:test
-- [ ] Étape 10 : Migration SQL
-- [ ] Étape 11 : Outil extract-corpus
-- [ ] Étape 12 : Audits + bilan
+- [x] Étape 1 : plan + ADRs (ADR-003 et ADR-004)
+- [x] Étape 2 : EncyclopedicNeuron
+- [x] Étape 3 : NeuronExtractorInterface + ExtractionResult + ExtractionFailedException
+- [x] Étape 4 : Resources prompts
+- [x] Étape 5 : SemanticExtractor
+- [x] Étape 6 : EpisodicExtractor
+- [x] Étape 7 : EncyclopedicExtractor
+- [x] Étape 8 : MemoryExtractor + DI wiring
+- [x] Étape 9 : Command brain:ingest:test
+- [x] Étape 10 : Migration SQL
+- [x] Étape 11 : Outil extract-corpus + validation manuelle sur weecom
+- [x] Étape 12 : Audits + 6 fixes mineurs commités
 
-## 10. Bilan
+## 10. Bilan (livré 2026-05-12)
 
-*À remplir à la fin du jalon. Sections obligatoires : capacité livrée, coût, surprises, ADRs créés, audits, go/no-go jalon 3.*
+### Capacité livrée
+
+**Oui** — le bundle dispose désormais d'une boucle d'ingestion fonctionnelle :
+
+1. Une `MemorySource` brute (provider + payload JSON) est consommée par `MemoryExtractor::extract($source, $area)`
+2. L'extracteur compétent est dispatché (Semantic / Episodic / Encyclopedic)
+3. Pour les 2 premiers, 1 appel LLM avec structured output produit les neurones typés
+4. Pour le 3ème, chunking + embedding produit des chunks vectorisés
+5. Retour normalisé via `ExtractionResult` (neurones + debug pour audit)
+
+L'outil `tools/brain-bench/extract-corpus.php` permet de transformer un corpus réel weecom (lecture seule) en `MemorySource` ingestibles — testé manuellement, 2 notes Pipedrive correctement adaptées.
+
+La command `bin/console brain:ingest:test --source-id=<uuid> --area=semantic` permet le test de sortie end-to-end côté app hôte (avec config LLM réelle).
+
+### Coût
+
+- **1 session active**, ~3h en autonomie nocturne
+- **~3 500 LOC** ajoutées (1 entité + 4 services + 3 DTOs + 4 ressources prompts + 1 command + 1 outil bench + tests + 2 ADRs + plan + migration)
+- **13 commits** : plan/ADRs + 10 étapes + 1 commit fixes audits
+- **34 tests Brain ajoutés** (jalon 2) → **127 tests Brain total** (vs 77 fin jalon 1), **238 assertions**
+- **check.sh complet OK** sur 1011 tests bundle (PHPStan, CS-Fixer, PHPUnit, YAML, Twig, Deptrac)
+
+### Surprises
+
+- **`Doctrine\ORM\Events::loadClassMetadata`** : pas une surprise mais une confirmation — `AsDoctrineListener` du jalon 1 est bien la bonne approche pour la suite (le jalon 2 n'a pas eu besoin d'un autre subscriber Doctrine)
+- **Sélectivité naturelle dans les prompts** : ajouter explicitement *"tu as le droit et le devoir de retourner [] / null si rien d'extractible"* a demandé une formulation soignée. Le test côté qualité (jalon 3) montrera si le LLM respecte effectivement cette consigne
+- **PurposeMap d'EmbeddingUsageListener** : artefact de l'ancienne archi RAG, dû ajouter `'brain_encyclopedic'` au mapping après l'audit. Pas anticipé dans le plan initial
+- **L'IDE diagnostique en retard sur l'autoload** (déjà vu jalon 1) — bruit visuel sans impact réel, PHPStan et PHPUnit donnent l'image fiable
+
+### ADRs créés ou validés pendant le jalon
+
+- [ADR-003](../05-decisions/003-extracteur-llm-structured-output.md) — extracteur LLM via structured output (JSON schema) — **accepté**
+- [ADR-004](../05-decisions/004-prompts-en-resources-files.md) — prompts versionnés dans `Resources/brain/prompts/` — **accepté**
+
+### Audits post-jalon
+
+- **brain-charter-auditor** : 0 bloquant, 0 majeur, 3 mineurs (anthropo "lire", label `rag_indexation` transitoire, convention `webhook_pipedrive_*`)
+- **brain-code-reviewer** : 0 bloquant, 0 majeur, 9 mineurs
+
+**Fixes appliqués dans ce jalon** :
+- Clamp confidence dans [0, 1]
+- `rag_indexation` → `brain_encyclopedic` + mapping accounting
+- `match` default explicit dans extract-corpus
+- Commentaire FK source_uuid sur EncyclopedicNeuron
+- PHPDoc explicite pour `receivedAt` omis dans SemanticExtractor
+- Reformulation "le brain lit" → "le bundle dispose d'une boucle d'ingestion"
+
+**Reportés au début du jalon 3** (à traiter avant l'orchestrateur multi-aires) :
+- Factorisation `AbstractLlmExtractor` (élimine la duplication `loadPrompt`/`loadSchema` entre SemanticExtractor et EpisodicExtractor)
+- Cache `supportedAreas()` dans MemoryExtractor
+- Warning sur collision d'extracteurs (deux extracteurs pour la même aire)
+- Visitor `MemoryFragmentSerializer` (au lieu de la reflection dans BrainIngestTestCommand)
+- Documentation de la convention `webhook_<provider>_<type>` côté adaptateur
+
+### Apprentissages mémorisés pour la suite
+
+Pas de nouvelles mémoires durables créées pendant le jalon 2 — les apprentissages restent dans le bilan et seront convertis en règles si récurrents.
+
+### Go / no-go jalon 3
+
+**Go**, avec deux pré-requis :
+
+1. **Refactor du jalon 2** au début du jalon 3 (les 5 points "reportés" ci-dessus). Sans cette refacto, l'orchestrateur multi-aires "1 passe unique" du jalon 3 va dupliquer du code et complexifier inutilement.
+2. **BDD de test PostgreSQL + pgvector** opérationnelle (cf. mémoire `feedback-brain-test-db-postgres-vector`). Au jalon 3 on commence à mesurer la qualité des synapses → besoin de persistance réelle pour les tests d'intégration.
+
+Le jalon 3 est ambitieux (convergence mémorielle, premier vrai test de qualité). À découper en sous-jalons si l'on dépasse 3 sessions actives sans livraison (règle rétrospective de la méthodologie).
