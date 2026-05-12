@@ -21,6 +21,7 @@ Toutes les tables Brain utilisent le préfixe configurable `synapse.persistence.
 
 - [Jalon 1 — Fondations](jalon-1/) — `brain_memory_source`, `brain_neuron_episodic`, `brain_neuron_semantic`, `brain_synapse`
 - [Jalon 2 — Ingestion mono-aire](jalon-2/) — `brain_neuron_encyclopedic` (cortex temporal)
+- [Jalon 3 — Multi-aires + isolation user](jalon-3/) — `brain_neuron_procedural` (ganglions) + 2 colonnes owner sur `brain_synapse`
 - ...
 
 Cf. [docs/brain/](../docs/brain/) pour le plan complet.

@@ -44,6 +44,8 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Index(columns: ['relation_type'], name: 'idx_brain_synapse_relation_type')]
 #[ORM\Index(columns: ['context_id'], name: 'idx_brain_synapse_context')]
 #[ORM\Index(columns: ['last_activated_at'], name: 'idx_brain_synapse_last_activated')]
+#[ORM\Index(columns: ['source_neuron_owner'], name: 'idx_brain_synapse_source_owner')]
+#[ORM\Index(columns: ['target_neuron_owner'], name: 'idx_brain_synapse_target_owner')]
 class Synapse
 {
     #[ORM\Id]
@@ -101,9 +103,31 @@ class Synapse
     #[ORM\Column(type: Types::STRING, length: 16, name: 'edge_type', enumType: SynapseEdgeType::class)]
     private SynapseEdgeType $edgeType;
 
+    /**
+     * Owner du neurone source (dénormalisé depuis MemorySource.ownerId).
+     *
+     * Stocké directement dans la synapse pour :
+     * 1. Garde-fou isolation user au moment de la création (ADR-006)
+     * 2. Filtrage rapide par owner sans jointure répétée (spreading
+     *    activation jalon 4)
+     *
+     * Nullable : représente une source "open" (sans utilisateur attribué).
+     */
+    #[ORM\Column(type: 'uuid', name: 'source_neuron_owner', nullable: true)]
+    private ?Uuid $sourceNeuronOwner;
+
+    #[ORM\Column(type: 'uuid', name: 'target_neuron_owner', nullable: true)]
+    private ?Uuid $targetNeuronOwner;
+
+    /**
+     * @throws \ArnaudMoncondhuy\SynapseCore\Brain\Exception\SynapseUserIsolationViolationException
+     *                                                                                              si les deux neurones appartiennent à des utilisateurs différents (et tous deux non-null)
+     */
     public function __construct(
         MemoryFragment $source,
         MemoryFragment $target,
+        ?Uuid $sourceOwnerId = null,
+        ?Uuid $targetOwnerId = null,
         float $weight = 0.1,
         SynapsePolarity $polarity = SynapsePolarity::Excitatory,
         SynapseRelationType $relationType = SynapseRelationType::Generic,
@@ -112,11 +136,22 @@ class Synapse
         ?Uuid $contextId = null,
         ?SynapseEdgeType $edgeType = null,
     ) {
+        self::assertUserIsolation(
+            $source->getArea(),
+            $source->getId(),
+            $sourceOwnerId,
+            $target->getArea(),
+            $target->getId(),
+            $targetOwnerId,
+        );
+
         $this->id = Uuid::v7();
         $this->sourceNeuronArea = $source->getArea();
         $this->sourceNeuronId = $source->getId();
+        $this->sourceNeuronOwner = $sourceOwnerId;
         $this->targetNeuronArea = $target->getArea();
         $this->targetNeuronId = $target->getId();
+        $this->targetNeuronOwner = $targetOwnerId;
         $this->weight = $weight;
         $this->polarity = $polarity;
         $this->relationType = $relationType;
@@ -125,6 +160,29 @@ class Synapse
         $this->lastActivatedAt = new \DateTimeImmutable();
         $this->contextId = $contextId;
         $this->edgeType = $edgeType ?? self::inferEdgeType($source->getArea(), $target->getArea());
+    }
+
+    /**
+     * Garde-fou isolation user (ADR-006). Throw si les deux owners sont
+     * non-null et différents. Tous les autres cas sont admissibles.
+     *
+     * @throws \ArnaudMoncondhuy\SynapseCore\Brain\Exception\SynapseUserIsolationViolationException
+     */
+    private static function assertUserIsolation(
+        BrainArea $sourceArea,
+        Uuid $sourceNeuronId,
+        ?Uuid $sourceOwnerId,
+        BrainArea $targetArea,
+        Uuid $targetNeuronId,
+        ?Uuid $targetOwnerId,
+    ): void {
+        if (null === $sourceOwnerId || null === $targetOwnerId) {
+            return; // au moins un est "open" → admissible
+        }
+        if ($sourceOwnerId->equals($targetOwnerId)) {
+            return; // même user → admissible
+        }
+        throw new \ArnaudMoncondhuy\SynapseCore\Brain\Exception\SynapseUserIsolationViolationException($sourceArea, $sourceNeuronId, $sourceOwnerId, $targetArea, $targetNeuronId, $targetOwnerId);
     }
 
     /**
@@ -244,5 +302,15 @@ class Synapse
     public function getEdgeType(): SynapseEdgeType
     {
         return $this->edgeType;
+    }
+
+    public function getSourceNeuronOwner(): ?Uuid
+    {
+        return $this->sourceNeuronOwner;
+    }
+
+    public function getTargetNeuronOwner(): ?Uuid
+    {
+        return $this->targetNeuronOwner;
     }
 }
