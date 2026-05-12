@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\Neuron;
 
-use ArnaudMoncondhuy\SynapseCore\Brain\Contract\MemoryFragment;
+use ArnaudMoncondhuy\SynapseCore\Brain\Contract\EmbeddableNeuron;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\MemorySource;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\Brain\Neuron\EpisodicNeuronRepository;
@@ -31,7 +31,7 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Index(columns: ['source_uuid'], name: 'idx_brain_neuron_episodic_source')]
 #[ORM\Index(columns: ['occurred_at'], name: 'idx_brain_neuron_episodic_occurred_at')]
 #[ORM\Index(columns: ['sequence_id'], name: 'idx_brain_neuron_episodic_sequence')]
-class EpisodicNeuron implements MemoryFragment
+class EpisodicNeuron implements EmbeddableNeuron
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]

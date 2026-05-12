@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\Neuron;
 
-use ArnaudMoncondhuy\SynapseCore\Brain\Contract\MemoryFragment;
+use ArnaudMoncondhuy\SynapseCore\Brain\Contract\EmbeddableNeuron;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\MemorySource;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\Brain\Neuron\EncyclopedicNeuronRepository;
@@ -37,7 +37,7 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Index(columns: ['source_uuid'], name: 'idx_brain_neuron_encyclopedic_source')]
 #[ORM\Index(columns: ['document_ref'], name: 'idx_brain_neuron_encyclopedic_doc_ref')]
 #[ORM\Index(columns: ['source_uuid', 'chunk_index'], name: 'idx_brain_neuron_encyclopedic_source_chunk')]
-class EncyclopedicNeuron implements MemoryFragment
+class EncyclopedicNeuron implements EmbeddableNeuron
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]

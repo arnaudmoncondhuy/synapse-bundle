@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\Neuron;
 
-use ArnaudMoncondhuy\SynapseCore\Brain\Contract\MemoryFragment;
+use ArnaudMoncondhuy\SynapseCore\Brain\Contract\EmbeddableNeuron;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
 use ArnaudMoncondhuy\SynapseCore\Storage\Repository\Brain\Neuron\SemanticNeuronRepository;
 use Doctrine\DBAL\Types\Types;
@@ -32,7 +32,7 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Index(columns: ['subject'], name: 'idx_brain_neuron_semantic_subject')]
 #[ORM\Index(columns: ['predicate'], name: 'idx_brain_neuron_semantic_predicate')]
 #[ORM\Index(columns: ['last_corroborated_at'], name: 'idx_brain_neuron_semantic_corroborated')]
-class SemanticNeuron implements MemoryFragment
+class SemanticNeuron implements EmbeddableNeuron
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
