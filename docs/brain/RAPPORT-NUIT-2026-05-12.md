@@ -13,7 +13,7 @@
 
 ## État du repo
 
-Branche `brain`, **39 commits non poussés** depuis `origin/brain`. Tout est local.
+Branche `brain`, **34 commits non poussés** depuis `origin/brain`. Tout est local.
 
 ```
 git log --oneline brain ^origin/brain
@@ -149,7 +149,7 @@ Décisions attendues :
 | Tests Brain | 77 | 137 | +60 |
 | Assertions Brain | 121 | 267 | +146 |
 | Tests bundle total | 1011 | 1021 | +10 |
-| Commits sur branche brain | 17 | 39 | +22 |
+| Commits sur branche brain | 17 | 34 | +17 |
 | LOC ajoutées (estim.) | ~2350 | ~5800 | +3450 |
 | ADRs acceptés | 2 | 4 | +2 (ADR-003 + ADR-004) |
 | Aires Brain activées | 2 | 3 | +1 (Encyclopedic) |
