@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\Brain\Service\Extractor;
 
-use ArnaudMoncondhuy\SynapseCore\Brain\Exception\ExtractionFailedException;
-use ArnaudMoncondhuy\SynapseCore\Engine\ChatService;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\MemorySource;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\Neuron\SemanticNeuron;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
@@ -18,54 +16,45 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
  * du LLM autorisée par le prompt).
  *
  * Le prompt et le JSON schema sont versionnés dans `Resources/brain/prompts/`
- * (ADR-004).
+ * (ADR-004). Le squelette d'appel LLM est dans {@see AbstractLlmExtractor}.
  *
  * Cf. {@link docs/brain/06-phases/jalon-2-ingestion-mono-aire.md} §4.3.
  */
-final readonly class SemanticExtractor implements NeuronExtractorInterface
+final readonly class SemanticExtractor extends AbstractLlmExtractor
 {
-    private const PROMPT_PATH = __DIR__.'/../../../Resources/brain/prompts/extract-semantic.md';
-    private const SCHEMA_PATH = __DIR__.'/../../../Resources/brain/prompts/extract-semantic.schema.json';
+    protected function promptFileName(): string
+    {
+        return 'extract-semantic';
+    }
 
-    public function __construct(
-        private ChatService $chatService,
-    ) {
+    protected function expectedArea(): BrainArea
+    {
+        return BrainArea::Semantic;
+    }
+
+    protected function chatAction(): string
+    {
+        return 'extract_semantic';
     }
 
     /**
-     * @return list<BrainArea>
+     * Pas de contexte additionnel : les faits sémantiques sont a-temporels,
+     * l'horodatage de réception n'apporte rien à l'extraction.
      */
-    public function supportedAreas(): array
+    protected function buildMessageContext(MemorySource $source): string
     {
-        return [BrainArea::Semantic];
+        return '';
     }
 
-    public function extract(MemorySource $source, BrainArea $targetArea): ExtractionResult
+    protected function buildNeurons(MemorySource $source, array $structured): array
     {
-        if (BrainArea::Semantic !== $targetArea) {
-            throw new ExtractionFailedException($source, $targetArea, sprintf('SemanticExtractor does not support area "%s"', $targetArea->value));
-        }
-
-        $prompt = $this->loadPrompt();
-        $schema = $this->loadSchema();
-        $message = $this->buildMessage($source, $prompt);
-
-        try {
-            $result = $this->chatService->ask($message, [
-                'structured_output' => $schema,
-                'module' => 'brain',
-                'action' => 'extract_semantic',
-            ]);
-        } catch (\Throwable $e) {
-            throw new ExtractionFailedException($source, $targetArea, 'ChatService call failed: '.$e->getMessage(), $e);
-        }
-
-        $structured = $result['structured_output'] ?? null;
-        if (!is_array($structured) || !isset($structured['facts']) || !is_array($structured['facts'])) {
-            throw new ExtractionFailedException($source, $targetArea, 'invalid structured output: missing "facts" array');
+        if (!isset($structured['facts']) || !is_array($structured['facts'])) {
+            throw new \ArnaudMoncondhuy\SynapseCore\Brain\Exception\ExtractionFailedException($source, BrainArea::Semantic, 'invalid structured output: missing "facts" array');
         }
 
         $neurons = [];
+        $rawCount = count($structured['facts']);
+
         foreach ($structured['facts'] as $fact) {
             if (!is_array($fact)) {
                 continue;
@@ -94,55 +83,6 @@ final readonly class SemanticExtractor implements NeuronExtractorInterface
             );
         }
 
-        return new ExtractionResult(
-            area: BrainArea::Semantic,
-            neurons: $neurons,
-            debug: [
-                'model' => $result['model'] ?? 'unknown',
-                'usage' => $result['usage'] ?? [],
-                'extracted_count' => count($neurons),
-                'raw_count' => count($structured['facts']),
-            ],
-        );
-    }
-
-    private function loadPrompt(): string
-    {
-        $contents = @file_get_contents(self::PROMPT_PATH);
-        if (false === $contents) {
-            throw new \RuntimeException(sprintf('SemanticExtractor: unable to read prompt at %s', self::PROMPT_PATH));
-        }
-
-        return $contents;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function loadSchema(): array
-    {
-        $contents = @file_get_contents(self::SCHEMA_PATH);
-        if (false === $contents) {
-            throw new \RuntimeException(sprintf('SemanticExtractor: unable to read schema at %s', self::SCHEMA_PATH));
-        }
-
-        /** @var array<string, mixed> $decoded */
-        $decoded = json_decode($contents, true, flags: \JSON_THROW_ON_ERROR);
-
-        return $decoded;
-    }
-
-    /**
-     * Construit le message LLM = prompt système + payload de la source.
-     *
-     * Pas de `receivedAt` ici (contrairement à EpisodicExtractor) : les faits
-     * sémantiques sont a-temporels par nature, l'horodatage de réception de la
-     * source n'apporte rien à l'extraction subject-predicate-value.
-     */
-    private function buildMessage(MemorySource $source, string $prompt): string
-    {
-        $payload = json_encode($source->getRawPayload(), \JSON_PRETTY_PRINT | \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR);
-
-        return $prompt."\n\n## Source à analyser\n\nProvider : ".$source->getProvider()."\n\nPayload :\n```json\n".$payload."\n```\n";
+        return [$neurons, ['raw_count' => $rawCount]];
     }
 }

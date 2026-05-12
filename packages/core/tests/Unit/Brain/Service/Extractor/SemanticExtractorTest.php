@@ -162,7 +162,7 @@ class SemanticExtractorTest extends TestCase
         }
     }
 
-    public function testThrowsOnMalformedStructuredOutput(): void
+    public function testThrowsWhenStructuredOutputIsAbsent(): void
     {
         $chatService = $this->createStub(ChatService::class);
         $chatService->method('ask')->willReturn([
@@ -175,7 +175,32 @@ class SemanticExtractorTest extends TestCase
             'preset_id' => null,
             'agent_id' => null,
             'generated_attachments' => [],
-            // structured_output absent → format invalide
+            // structured_output absent → l'abstract détecte au plus haut niveau
+        ]);
+
+        $extractor = new SemanticExtractor($chatService);
+        $source = new MemorySource('manual', []);
+
+        $this->expectException(ExtractionFailedException::class);
+        $this->expectExceptionMessageMatches('/missing or non-array structured_output/');
+
+        $extractor->extract($source, BrainArea::Semantic);
+    }
+
+    public function testThrowsWhenStructuredOutputMissesFactsKey(): void
+    {
+        $chatService = $this->createStub(ChatService::class);
+        $chatService->method('ask')->willReturn([
+            'answer' => '',
+            'debug_id' => null,
+            'call_id' => null,
+            'usage' => [],
+            'safety' => [],
+            'model' => 'gemini-test',
+            'preset_id' => null,
+            'agent_id' => null,
+            'generated_attachments' => [],
+            'structured_output' => ['other_key' => 'no facts'],
         ]);
 
         $extractor = new SemanticExtractor($chatService);
