@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore\Tests\Unit\Brain\Bridge;
 
 use ArnaudMoncondhuy\SynapseCore\Brain\Bridge\Doctrine\TablePrefixSubscriber;
+use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\MemorySource;
+use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\Synapse;
+use ArnaudMoncondhuy\SynapseCore\Storage\Entity\SynapseAgent;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
@@ -15,6 +18,13 @@ use PHPUnit\Framework\TestCase;
 class TablePrefixSubscriberTest extends TestCase
 {
     /**
+     * Forge un ClassMetadata Doctrine pour une classe réellement existante
+     * + un nom de table de notre choix. On utilise des classes réelles
+     * (pas des noms en string) pour que les tests soient sensibles aux
+     * renommages et refactorings (audit jalon 1 — point D).
+     *
+     * @param class-string $className
+     *
      * @return array{0: ClassMetadata<object>, 1: LoadClassMetadataEventArgs}
      */
     private function buildMetadata(string $className, string $tableName): array
@@ -42,10 +52,7 @@ class TablePrefixSubscriberTest extends TestCase
 
     public function testPrefixesBrainTable(): void
     {
-        [$metadata, $event] = $this->buildMetadata(
-            'ArnaudMoncondhuy\\SynapseCore\\Storage\\Entity\\Brain\\MemorySource',
-            'brain_memory_source',
-        );
+        [$metadata, $event] = $this->buildMetadata(MemorySource::class, 'brain_memory_source');
 
         $subscriber = new TablePrefixSubscriber('syn_');
         $subscriber->loadClassMetadata($event);
@@ -55,23 +62,22 @@ class TablePrefixSubscriberTest extends TestCase
 
     public function testPrefixesCoreTable(): void
     {
-        [$metadata, $event] = $this->buildMetadata(
-            'ArnaudMoncondhuy\\SynapseCore\\Storage\\Entity\\SynapseAgent',
-            'core_agent',
-        );
+        // Au jalon 1 il n'existe pas encore d'entité Brain v3 préfixée 'core_'
+        // (le renommage des entités legacy synapse_* → core_* est prévu au
+        // jalon 8). On utilise donc une classe SynapseCore existante avec un
+        // tableName forgé en 'core_simulated' pour valider le comportement
+        // du subscriber sur ce préfixe.
+        [$metadata, $event] = $this->buildMetadata(SynapseAgent::class, 'core_simulated');
 
         $subscriber = new TablePrefixSubscriber('syn_');
         $subscriber->loadClassMetadata($event);
 
-        $this->assertSame('syn_core_agent', $metadata->getTableName());
+        $this->assertSame('syn_core_simulated', $metadata->getTableName());
     }
 
     public function testCustomPrefixIsApplied(): void
     {
-        [$metadata, $event] = $this->buildMetadata(
-            'ArnaudMoncondhuy\\SynapseCore\\Storage\\Entity\\Brain\\Synapse',
-            'brain_synapse',
-        );
+        [$metadata, $event] = $this->buildMetadata(Synapse::class, 'brain_synapse');
 
         $subscriber = new TablePrefixSubscriber('acme_');
         $subscriber->loadClassMetadata($event);
@@ -81,25 +87,21 @@ class TablePrefixSubscriberTest extends TestCase
 
     public function testLegacySynapseTableIsNotPrefixed(): void
     {
-        [$metadata, $event] = $this->buildMetadata(
-            'ArnaudMoncondhuy\\SynapseCore\\Storage\\Entity\\SynapseAgent',
-            'synapse_agent',
-        );
+        // SynapseAgent réelle (table actuelle 'synapse_agent') — les tables
+        // legacy sont laissées telles quelles, renommage prévu au jalon 8.
+        [$metadata, $event] = $this->buildMetadata(SynapseAgent::class, 'synapse_agent');
 
         $subscriber = new TablePrefixSubscriber('syn_');
         $subscriber->loadClassMetadata($event);
 
-        // Les tables synapse_* legacy sont laissées telles quelles
-        // (transition douce — renommage prévu au jalon 8)
         $this->assertSame('synapse_agent', $metadata->getTableName());
     }
 
     public function testNonSynapseEntityIsIgnored(): void
     {
-        [$metadata, $event] = $this->buildMetadata(
-            'App\\Entity\\Brain',
-            'brain_custom',
-        );
+        // Classe d'app hôte fictive (string OK ici car on teste justement
+        // l'isolation hors namespace SynapseCore).
+        [$metadata, $event] = $this->buildMetadata(\stdClass::class, 'brain_custom');
 
         $subscriber = new TablePrefixSubscriber('syn_');
         $subscriber->loadClassMetadata($event);
@@ -111,10 +113,7 @@ class TablePrefixSubscriberTest extends TestCase
 
     public function testIdempotenceOnAlreadyPrefixedTable(): void
     {
-        [$metadata, $event] = $this->buildMetadata(
-            'ArnaudMoncondhuy\\SynapseCore\\Storage\\Entity\\Brain\\MemorySource',
-            'syn_brain_memory_source',
-        );
+        [$metadata, $event] = $this->buildMetadata(MemorySource::class, 'syn_brain_memory_source');
 
         $subscriber = new TablePrefixSubscriber('syn_');
         $subscriber->loadClassMetadata($event);
