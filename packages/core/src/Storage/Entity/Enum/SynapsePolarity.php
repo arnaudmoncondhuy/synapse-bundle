@@ -13,8 +13,9 @@ namespace ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum;
  *   Permet de modéliser contradictions et exclusions (ex: "en congé"
  *   inhibe "RDV proposable matin").
  *
- * Brain v3 dépasse ici le modèle Graph RAG / HippoRAG (poids seul) en
- * autorisant des relations négatives sémantiquement signifiantes.
+ * La polarité s'ajoute à la dimension `weight` : on peut avoir des liens
+ * négatifs sémantiquement signifiants (contradiction, exclusion), pas
+ * seulement une force d'activation.
  *
  * Cf. {@link docs/brain-v3-design.md} §6.
  */

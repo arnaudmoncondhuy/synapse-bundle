@@ -44,15 +44,15 @@ class MemorySource
      * Identifiant abstrait du producteur du stimulus.
      *
      * Vocabulaire **agnostique** côté noyau : `manual`, `webhook_generic`,
-     * `rag`, etc. Les valeurs concrètes ("gmail", "calendar", "pipedrive"…)
-     * sont fournies par les apps hôtes via Module/{Domain} — le noyau Brain
-     * ne sait pas ce qu'elles signifient.
+     * `rag`, etc. Les valeurs concrètes sont fournies par les apps hôtes
+     * via Module/{Domain} — le noyau Brain ne sait pas ce qu'elles
+     * signifient.
      */
     #[ORM\Column(type: Types::STRING, length: 50)]
     private string $provider;
 
     /**
-     * Identifiant du stimulus côté provider externe (mailId, eventId, dealId).
+     * Identifiant du stimulus côté provider externe (clé, hash, slug, ...).
      *
      * Nullable car les sources `manual` n'ont pas d'externalId. Indexé pour
      * permettre la déduplication / résolution lors de réceptions répétées.
