@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "description": "Résultat d'extraction sémantique — faits stables subject-predicate-value depuis une source brute.",
+  "required": ["facts"],
+  "properties": {
+    "facts": {
+      "type": "array",
+      "description": "Liste des faits extraits (vide autorisé si la source ne contient rien d'extractible).",
+      "items": {
+        "type": "object",
+        "required": ["subject", "predicate", "value", "confidence"],
+        "properties": {
+          "subject": {
+            "type": "string",
+            "description": "Sujet du fait (entité, concept, identité)."
+          },
+          "predicate": {
+            "type": "string",
+            "description": "Relation ou propriété (générique, pas métier-spécifique)."
+          },
+          "value": {
+            "type": "string",
+            "description": "Valeur ou cible du fait."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Confiance du LLM dans la véracité du fait sur la base de la source."
+          }
+        }
+      }
+    }
+  }
+}

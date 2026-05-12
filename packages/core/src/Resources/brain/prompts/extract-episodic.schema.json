@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "description": "Résultat d'extraction épisodique — événement situé depuis une source brute (ou null si pas d'événement).",
+  "required": ["episode"],
+  "properties": {
+    "episode": {
+      "anyOf": [
+        {
+          "type": "object",
+          "required": ["occurred_at", "event_summary", "actors"],
+          "properties": {
+            "occurred_at": {
+              "type": "string",
+              "description": "Date/heure de l'événement au format ISO 8601 (UTC si possible)."
+            },
+            "event_summary": {
+              "type": "string",
+              "description": "Résumé textuel concis de l'événement (1-3 phrases)."
+            },
+            "actors": {
+              "type": "array",
+              "description": "Acteurs impliqués (chaînes libres).",
+              "items": {
+                "type": "string"
+              }
+            },
+            "location": {
+              "anyOf": [
+                {"type": "string"},
+                {"type": "null"}
+              ],
+              "description": "Lieu, canal, ou identifiant de contexte spatial."
+            }
+          }
+        },
+        {
+          "type": "null",
+          "description": "La source ne décrit pas un événement situé extractible."
+        }
+      ]
+    }
+  }
+}
