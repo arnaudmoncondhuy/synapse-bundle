@@ -1,5 +1,5 @@
 ---
-statut: à valider
+statut: en cours
 ouvert: 2026-05-12
 livré: —
 ---

@@ -52,6 +52,18 @@ bin/console brain:ingest:test --source-id=<deal_id> --area=episodic
 - ADR-XXX : quel modèle LLM pour extraction (Gemini Flash ? OVH ?) — coût vs qualité
 - ADR-XXX : prompt d'extraction versionné dans le code ou en BDD ?
 
+### Décision orientée (pré-tranchée, à confirmer par mesure)
+
+**Stratégie d'appel LLM pour l'extracteur multi-aires : 1 passe unique** (le LLM reçoit la source + prompt décrivant les 7 aires, et retourne `{aire: contenu_extrait}` en sortant lui-même les neurones à créer et leur aire d'affectation).
+
+- **Cohérence avec design §9** : *"Une passe LLM = N neurones créés dans N tables différentes"*
+- **Justification philosophique** : le LLM qui voit la source décide où ranger — analogue biologique du stimulus qui active naturellement les bonnes aires. Pas de pré-classifieur séparé qui déciderait sans contexte.
+- **Risque identifié** : biais de complétion du schema (LLM remplit des aires non-pertinentes par mimétisme). À neutraliser dans le prompt par instruction explicite : *"tu as le droit / le devoir de laisser des aires vides quand la source ne les concerne pas"*. Sélectivité naturelle (design §38) à mesurer en sortie de jalon 3.
+
+**Rappel transversal (design §10) :** le tri pertinence/non-pertinence se fait à l'usage via les synapses (pruning par seuil de poids, décroissance temporelle, renforcement Hebbien par co-activation), pas à l'extraction. Un neurone créé sans être convoqué finit par disparaître naturellement. L'extracteur n'a donc pas à être parfait — le système s'auto-régule à l'usage.
+
+**Variante écartée :** routeur léger + extracteurs spécialisés par aire (2 étapes). Possiblement meilleure qualité par aire, mais perd la vision globale et complexifie pour un gain non démontré. À reconsidérer si la mesure du jalon 3 montre une dérive qualité.
+
 ## 8. Hors-scope
 
 - Multi-aires simultanées (jalon 3)

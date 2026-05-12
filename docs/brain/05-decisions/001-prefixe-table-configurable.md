@@ -8,7 +8,7 @@ jalon: 1
 
 ## Statut
 
-`proposé` — à valider avant attaque du jalon 1.
+`accepté` — validé implicitement par lancement du jalon 1 (2026-05-12).
 
 ## Contexte
 
