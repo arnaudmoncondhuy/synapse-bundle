@@ -1,0 +1,90 @@
+{
+  "type": "object",
+  "description": "Résultat d'extraction multi-aires (1 passe LLM) — neurones répartis sur 4 aires (Semantic, Episodic, Encyclopedic, Procedural).",
+  "required": ["semantic", "episodic", "encyclopedic", "procedural"],
+  "properties": {
+    "semantic": {
+      "type": "object",
+      "description": "Aire sémantique (Néocortex) — faits stables.",
+      "required": ["facts"],
+      "properties": {
+        "facts": {
+          "type": "array",
+          "description": "Liste des faits extraits (vide autorisé).",
+          "items": {
+            "type": "object",
+            "required": ["subject", "predicate", "value", "confidence"],
+            "properties": {
+              "subject": {"type": "string"},
+              "predicate": {"type": "string"},
+              "value": {"type": "string"},
+              "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+            }
+          }
+        }
+      }
+    },
+    "episodic": {
+      "type": "object",
+      "description": "Aire épisodique (Hippocampe) — événement situé.",
+      "required": ["episode"],
+      "properties": {
+        "episode": {
+          "anyOf": [
+            {
+              "type": "object",
+              "required": ["occurred_at", "event_summary", "actors"],
+              "properties": {
+                "occurred_at": {"type": "string"},
+                "event_summary": {"type": "string"},
+                "actors": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "location": {
+                  "anyOf": [{"type": "string"}, {"type": "null"}]
+                }
+              }
+            },
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "encyclopedic": {
+      "type": "object",
+      "description": "Aire encyclopédique (Cortex temporal) — texte chunkable.",
+      "required": ["chunkable_text"],
+      "properties": {
+        "chunkable_text": {
+          "anyOf": [{"type": "string"}, {"type": "null"}]
+        }
+      }
+    },
+    "procedural": {
+      "type": "object",
+      "description": "Aire procédurale (Ganglions) — workflow typé.",
+      "required": ["procedure"],
+      "properties": {
+        "procedure": {
+          "anyOf": [
+            {
+              "type": "object",
+              "required": ["name", "trigger_pattern", "steps"],
+              "properties": {
+                "name": {"type": "string"},
+                "trigger_pattern": {"type": "object"},
+                "steps": {
+                  "type": "array",
+                  "items": {"type": "object"}
+                },
+                "conditions": {"type": "object"}
+              }
+            },
+            {"type": "null"}
+          ]
+        }
+      }
+    }
+  }
+}
