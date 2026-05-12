@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore\Tests\Unit\Brain\Bridge;
 
 use ArnaudMoncondhuy\SynapseCore\Brain\Bridge\Doctrine\TablePrefixSubscriber;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 use Doctrine\ORM\Events;
@@ -28,11 +29,15 @@ class TablePrefixSubscriberTest extends TestCase
         return [$metadata, $event];
     }
 
-    public function testSubscribesToLoadClassMetadata(): void
+    public function testHasAsDoctrineListenerAttributeForLoadClassMetadata(): void
     {
-        $subscriber = new TablePrefixSubscriber('syn_');
+        $reflection = new \ReflectionClass(TablePrefixSubscriber::class);
+        $attributes = $reflection->getAttributes(AsDoctrineListener::class);
 
-        $this->assertContains(Events::loadClassMetadata, $subscriber->getSubscribedEvents());
+        $this->assertCount(1, $attributes, 'TablePrefixSubscriber doit déclarer #[AsDoctrineListener]');
+
+        $attr = $attributes[0]->newInstance();
+        $this->assertSame(Events::loadClassMetadata, $attr->event);
     }
 
     public function testPrefixesBrainTable(): void

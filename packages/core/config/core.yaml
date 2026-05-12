@@ -70,11 +70,11 @@ services:
     # Préfixe les tables Brain (brain_*, core_*) au runtime Doctrine pour
     # permettre cohabitation avec les tables de l'app hôte. Préfixe défaut
     # 'syn_', configurable via synapse.persistence.table_prefix.
+    # Le tag doctrine.event_listener est ajouté automatiquement par
+    # l'attribute #[AsDoctrineListener(event: Events::loadClassMetadata)].
     ArnaudMoncondhuy\SynapseCore\Brain\Bridge\Doctrine\TablePrefixSubscriber:
         arguments:
             $prefix: '%synapse.persistence.table_prefix%'
-        tags:
-            - { name: 'doctrine.event_subscriber' }
 
     # ── Garde-fou #2 : PromptJudge (LLM-as-Judge) ─────────────────────────────
     # Bascule automatique entre NullPromptJudge (par défaut, no-op) et

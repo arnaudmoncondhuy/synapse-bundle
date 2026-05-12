@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\Brain\Bridge\Doctrine;
 
-use Doctrine\Common\EventSubscriber;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\LoadClassMetadataEventArgs;
 use Doctrine\ORM\Events;
 
@@ -16,15 +16,21 @@ use Doctrine\ORM\Events;
  * défaut `syn_`) pour cohabiter avec ses propres tables sans collision.
  *
  * **Sélectivité** : seules les entités appartenant au namespace
- * `ArnaudMoncondhuy\SynapseCore\` ET dont la table déclarée commence par
- * `brain_` ou `core_` sont préfixées. Les anciennes tables `synapse_*`
- * sont laissées telles quelles (transition douce — elles seront renommées
- * en `core_*` au jalon 8).
+ * `ArnaudMoncondhuy\SynapseCore\` (et plus largement `ArnaudMoncondhuy\Synapse*`
+ * — cohérence cross-packages admin/chat/core qui partagent la même base)
+ * ET dont la table déclarée commence par `brain_` ou `core_` sont préfixées.
+ *
+ * Les anciennes tables `synapse_*` sont laissées telles quelles (transition
+ * douce — elles seront renommées en `core_*` au jalon 8).
+ *
+ * Utilise l'attribute `#[AsDoctrineListener]` (Doctrine ORM 3+) plutôt
+ * que l'interface `EventSubscriber` (dépréciée en ORM 3, retrait imminent).
  *
  * Cf. {@link docs/brain/05-decisions/001-prefixe-table-configurable.md}
  * (ADR-001 — accepté).
  */
-final readonly class TablePrefixSubscriber implements EventSubscriber
+#[AsDoctrineListener(event: Events::loadClassMetadata)]
+final readonly class TablePrefixSubscriber
 {
     /**
      * Préfixes de tables qui doivent être préfixés par le subscriber.
@@ -32,20 +38,12 @@ final readonly class TablePrefixSubscriber implements EventSubscriber
     private const PREFIXABLE_TABLE_PREFIXES = ['brain_', 'core_'];
 
     /**
-     * Namespace racine des entités du bundle.
+     * Namespace racine des entités du bundle (couvre core, admin, chat).
      */
     private const SYNAPSE_NAMESPACE = 'ArnaudMoncondhuy\\Synapse';
 
     public function __construct(private string $prefix)
     {
-    }
-
-    /**
-     * @return list<string>
-     */
-    public function getSubscribedEvents(): array
-    {
-        return [Events::loadClassMetadata];
     }
 
     public function loadClassMetadata(LoadClassMetadataEventArgs $args): void
