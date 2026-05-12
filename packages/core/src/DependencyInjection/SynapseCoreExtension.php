@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ArnaudMoncondhuy\SynapseCore\DependencyInjection;
 
+use ArnaudMoncondhuy\SynapseCore\Brain\Service\Extractor\NeuronExtractorInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\AgentInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\AiToolInterface;
 use ArnaudMoncondhuy\SynapseCore\Contract\ContextProviderInterface;
@@ -226,6 +227,9 @@ class SynapseCoreExtension extends Extension implements PrependExtensionInterfac
 
         $container->registerForAutoconfiguration(RagSourceProviderFactoryInterface::class)
             ->addTag('synapse.rag_source_factory');
+
+        $container->registerForAutoconfiguration(NeuronExtractorInterface::class)
+            ->addTag('synapse.brain.neuron_extractor');
 
         // ── Vector Store Configuration ────────────────────────────────────────
         // L'alias est désormais géré dynamiquement par DynamicVectorStore via core.yaml
