@@ -1,12 +1,32 @@
 ---
-statut: à valider (plan détaillé)
+statut: en cours
 ouvert: 2026-05-12
 livré: —
 ---
 
 # Jalon 3 — Ingestion multi-aires + convergence
 
-> Plan détaillé préparé après le jalon 2. À valider par le user avant exécution.
+> Plan validé par le user 2026-05-13. En cours d'exécution.
+
+## Progression (mise à jour pendant l'exécution)
+
+*Fil de reprise en cas de compactage de contexte. Inversions par rapport au plan §5 signalées explicitement.*
+
+- [x] Étape 1 : docker compose test PostgreSQL + pgvector (`tests/Integration/Brain/`)
+- [x] Étape 2 : ADR-005 (cosine, placeholder calibration) + ADR-006 (isolation user, accepté)
+- [x] Étape 3 : `MultiAreaExtractorInterface` + tests
+- [x] Étape 5 (faite avant 4 — voir note ci-après) : `ProceduralNeuron` + repository + tests + migration SQL jalon-3/001
+- [x] Étape 6 : Garde-fou isolation user dans `Synapse::__construct` + migration SQL jalon-3/002
+- [ ] Étape 4 : Resources prompts multi-aire (extract-multi-area.md + schema avec 4 aires)
+- [ ] Étape 7 : `OnePassMultiAreaExtractor` (hérite `AbstractLlmExtractor` + implémente `MultiAreaExtractorInterface`)
+- [ ] Étape 8 : `ConvergenceDetector` + tests (similarité cosine, garde-fou isolation user, synapse auto)
+- [ ] Étape 9 : `MemoryExtractor::extractAll()` + tests multi-aires
+- [ ] Étape 10 : Annotations en aveugle 15-20 paires sources weecom + fixtures `tests/Brain/Quality/Fixtures/convergence-v1/`
+- [ ] Étape 11 : Outil `brain:bench:convergence` + calibration 3 sets cosine + ADR-005 finalisé chiffré
+- [ ] Étape 12 : `brain:ingest:test --multi-area`
+- [ ] Étape 13 : Audits sous-agents + bilan jalon 3
+
+**Note inversion étapes 4/5 :** ProceduralNeuron créé avant le prompt multi-aire pour que celui-ci puisse référencer les 4 aires (Semantic + Episodic + Encyclopedic + Procedural) d'emblée. Pas d'impact fonctionnel.
 
 ## 1. Capacité d'association visée
 
