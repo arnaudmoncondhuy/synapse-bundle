@@ -35,7 +35,7 @@ Pas pour les choix esthétiques internes (nommage à la marge, ordre des méthod
 | [004](004-prompts-en-resources-files.md) | Prompts d'extracteurs en fichiers Resources, pas en BDD | accepté | 2 |
 | [005](005-seuil-cosine-convergence.md) | Seuil cosine pour la convergence mémorielle | **accepté** (0.65 calibré 2026-05-13) | 3 |
 | [006](006-isolation-user-synapses.md) | Garde-fou isolation user sur les synapses | accepté | 3 |
-| [007](007-profondeur-bfs-spreading-activation.md) | Profondeur BFS du spreading activation : 2 sauts par défaut | accepté | 4 |
+| [007](007-profondeur-bfs-spreading-activation.md) | Critère d'arrêt spreading activation : score cumulé + hard cap | accepté (amendé) | 4 |
 | [008](008-formule-score-spreading-activation.md) | Formule de score : linéaire avec decay exponentiel (0.7) | accepté | 4 |
 
 ## Convention de numérotation
