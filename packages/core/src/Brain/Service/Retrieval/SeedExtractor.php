@@ -35,7 +35,7 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Repository\Brain\Neuron\SemanticNeuronR
  *
  * Cf. {@link docs/brain/06-phases/jalon-4-retrieval-hebbien.md} §4.2.
  */
-final readonly class SeedExtractor
+final readonly class SeedExtractor implements SeedExtractorInterface
 {
     /**
      * Seuil cosine minimum pour qu'un neurone soit candidat seed.

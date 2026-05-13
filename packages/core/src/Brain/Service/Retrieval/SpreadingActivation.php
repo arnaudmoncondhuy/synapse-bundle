@@ -76,7 +76,7 @@ use Symfony\Component\Uid\Uuid;
  * Pas forcément celui de score max. Au jalon 5+, remplacement possible par
  * une vraie traversée pondérée si la qualité l'exige.
  */
-final readonly class SpreadingActivation
+final readonly class SpreadingActivation implements SpreadingActivationInterface
 {
     /**
      * Hard cap profondeur. Réduit de 5 à 3 après revue de littérature

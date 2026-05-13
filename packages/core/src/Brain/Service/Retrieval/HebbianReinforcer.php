@@ -23,7 +23,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  *
  * Cf. {@link docs/brain/06-phases/jalon-4-retrieval-hebbien.md} §4.5.
  */
-final readonly class HebbianReinforcer
+final readonly class HebbianReinforcer implements HebbianReinforcerInterface
 {
     /**
      * Taux d'apprentissage par défaut (delta).
@@ -75,9 +75,9 @@ final readonly class HebbianReinforcer
      * Renforce toutes les synapses d'une liste — utile pour appliquer après
      * un retrieval (toutes les synapses traversées sont co-activées).
      *
-     * @param list<Synapse> $synapses
+     * @param iterable<Synapse> $synapses
      */
-    public function reinforceAll(array $synapses, string $cause = 'hebbian_co_activation'): void
+    public function reinforceAll(iterable $synapses, string $cause = 'hebbian_co_activation'): void
     {
         foreach ($synapses as $synapse) {
             $this->reinforce($synapse, $cause);
