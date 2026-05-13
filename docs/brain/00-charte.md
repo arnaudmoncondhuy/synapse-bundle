@@ -81,6 +81,35 @@ Les hyper-paramètres du brain (seuils cosine, taux de decay, formules de score,
 
 Le set retenu fait l'objet d'un ADR qui justifie chiffré contre les variantes. Méthodologie complète : [07-calibration.md](07-calibration.md).
 
+### 2.11 Revue systématique par sub-agents avant chaque commit Brain v3
+
+Le user est seul sur le projet. Mes erreurs ne seront pas rattrapées par un reviewer humain. Pour combler ce manque, **chaque commit qui touche `src/Brain/` ou `docs/brain/`** doit passer par une revue automatisée via sub-agents dédiés.
+
+**Pool de 6 agents complémentaires** (`.claude/agents/`) :
+
+| Agent | Scope |
+|---|---|
+| `brain-charter-auditor` | Conformité charte (agnosticisme, anthropomorphisation, ADRs manquants) |
+| `brain-code-reviewer` | Qualité PHP/Doctrine/tests/event-driven |
+| `brain-adr-conformance` | Code respecte chaque ADR + design figé |
+| `brain-bundle-pattern-auditor` | Utilisation correcte des services pivots du bundle (ChatService, EmbeddingService, EmbeddingUsageListener::PURPOSE_MAP) |
+| `brain-isolation-paranoid` | Sécurité user isolation (ADR-006) |
+| `brain-algorithm-and-edge-cases` | Correctness algos + edge cases tests |
+
+**Workflow** :
+
+1. **Pré-commit local** : `composer cs-fix && composer phpstan && phpunit`
+2. **Audit en parallèle** : lancer les 4 agents systématiques (`charter`, `code`, `adr`, `bundle-pattern`)
+3. **Audits conditionnels** :
+   - Si `Synapse` / retrieval / ingestion touché → ajouter `isolation-paranoid`
+   - Si algorithme nouveau/modifié → ajouter `algorithm-and-edge-cases`
+4. **Interpréter** : `bloquant` = on fixe avant commit, `majeur` = à corriger avant fin de jalon, `mineur` = noté
+5. **Commit** : mentionner dans le message les agents qui ont passé
+
+**Anti-pattern** : sauter les agents "parce que c'est un petit changement" — c'est exactement comme ça qu'on a laissé passer le bug `brain_retrieval` non mappé dans `EmbeddingUsageListener::PURPOSE_MAP` au jalon 4.
+
+Workflow détaillé : [reference-brain-subagents-workflow](memory/reference_brain_subagents_workflow.md).
+
 ## 3. Ce qu'on ne fait pas
 
 - Pas de roadmap multi-jalons fusionnée en un seul commit/PR (cf. mémoire `feedback_big_chantiers_on_branch`)
