@@ -33,6 +33,23 @@ livré: —
 - Tests : 213 Brain tests OK, PHPStan 0 erreur, CS clean
 - **Reprise** : continuer avec étape 5 (SpreadingActivation) — algorithme dans le plan §4.3, hard cap 5 sauts, decay 0.7^depth (ADR-008), arrêt si score < query.minScore
 
+### ⚠️ Avant de coder SpreadingActivation — RELIRE OBLIGATOIREMENT
+
+User a explicitement rappelé (2026-05-13) : *"la lecture fournie dans brain-v3-design.md peut peut-être éviter des erreurs que d'autres ont faites."* — le design figé contient des subtilités issues de la littérature (HeLa-Mem, Kairos, HippoRAG 2) qu'on risque de manquer si on code "à l'instinct".
+
+**Sections à relire avant de coder SpreadingActivation** :
+- `docs/brain-v3-design.md` §8 (Dynamique des synapses) — Hebbien classique, decay, consolidation, validation-gated
+- `docs/brain-v3-design.md` §10 (Interaction LLM) — 4 modes de naissance des synapses (A=Hebbien implicite, B=LLM explicite, C=règle métier, D=extraction), spreading activation déterministe sans LLM
+- Réfs §5 du design : *neurons that fire together wire together*, Kairos validation-gated, Tulving sémantique vs épisodique
+- Charte §2.5 (« Comprendre avant d'intégrer ») : lire HeLa-Mem + Kairos OU au moins relire ce que le design en a tiré, AVANT de coder
+
+**Pièges anticipés à éviter** :
+1. Spreading activation ≠ retrieval vector. Le retrieval pur cosine est la **baseline**, pas la solution
+2. Hebbien implicite doit être *gratuit* sur chaque retrieval (mode A design §10) — c'est ce que HebbianReinforcer fait après le retrieval
+3. Le contexte LLM consomme **passivement** le retrieval (mode passif §10) — ne pas confondre avec un LLM qui modifie la mémoire pendant
+4. Functional networks (mode contextuel) sont **hors-scope jalon 4** (jalon 6) — ne pas pré-câbler ici
+5. Confidence ≠ weight (design §6) — Synapse porte les 2, le score les multiplie séparément
+
 ## 1. Capacité d'association visée
 
 **Retrieval enrichi par spreading activation.** À partir d'une requête en langage naturel :
