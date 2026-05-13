@@ -17,8 +17,8 @@ class RetrievalQueryTest extends TestCase
         $this->assertSame('problème ordinateur', $q->text);
         $this->assertNull($q->ownerId);
         $this->assertSame(10, $q->topN);
-        // ADR-007 amendé : maxDepth=5 (sécurité), critère principal = minScore
-        $this->assertSame(5, $q->maxDepth);
+        // ADR-008 amendé passe 2 : maxDepth=3 (convergence revue de littérature 2026)
+        $this->assertSame(3, $q->maxDepth);
         $this->assertSame(0.1, $q->minScore);
     }
 

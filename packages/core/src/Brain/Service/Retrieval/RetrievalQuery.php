@@ -28,8 +28,9 @@ final readonly class RetrievalQuery
      * @param ?Uuid $ownerId owner de l'utilisateur appelant (null = couche open)
      * @param int $topN nombre max de résultats à retourner (default 10)
      * @param int $maxDepth borne supérieure de profondeur BFS — **sécurité**, pas critère
-     *                      métier (default 5, plafonné par SpreadingActivation::HARD_MAX_DEPTH).
-     *                      Cf. ADR-007 amendé.
+     *                      métier (default 3, plafonné par SpreadingActivation::HARD_MAX_DEPTH).
+     *                      Cf. ADR-007 amendé + revue littérature (convergence EcphoryRAG/SA-RAG/
+     *                      SCG-MEM : gain nul au-delà de 3 hops).
      * @param float $minScore **critère d'arrêt principal** : tout neurone touché avec score
      *                        cumulé < minScore n'est pas inclus dans le résultat ET ne propage
      *                        plus loin. Default 0.1 (en dessous = bruit). Cf. ADR-007 amendé.
@@ -38,7 +39,7 @@ final readonly class RetrievalQuery
         public string $text,
         public ?Uuid $ownerId = null,
         public int $topN = 10,
-        public int $maxDepth = 5,
+        public int $maxDepth = 3,
         public float $minScore = 0.1,
     ) {
         if ('' === trim($this->text)) {

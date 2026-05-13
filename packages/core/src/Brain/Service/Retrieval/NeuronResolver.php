@@ -27,7 +27,7 @@ use Symfony\Component\Uid\Uuid;
  *
  * Cf. {@link docs/brain/06-phases/jalon-4-retrieval-hebbien.md} §4.6.
  */
-final readonly class NeuronResolver
+final readonly class NeuronResolver implements NeuronResolverInterface
 {
     public function __construct(
         private SemanticNeuronRepository $semanticRepo,

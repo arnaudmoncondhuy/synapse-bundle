@@ -14,11 +14,12 @@ livré: —
 
 - [x] Étape 1 : plan détaillé (ce document) + ADR-007 (amendé score cumulé) + ADR-008 (decay exponentiel) + **ADR-009** (saturation soft + events anti-emballement) ajouté en cours
 - [x] Étape 2 : DTOs `RetrievalQuery` + `RetrievalResult` + `ScoredNeuron` + 14 tests
-- [x] Étape 3 : `NeuronResolver` (dispatch par aire) — créé, en attente de commit
-- [x] Étape 4 : `SeedExtractor` (embedding query + lookup similarité Vertex) — créé, en attente de commit
+- [x] Étape 3 : `NeuronResolver` (dispatch par aire) + extraction `NeuronResolverInterface` pour mockabilité
+- [x] Étape 4 : `SeedExtractor` (embedding query + lookup similarité Vertex)
 - [x] Étape 7 (faite avant 5-6) : `SynapseReinforcedEvent` + `HebbianReinforcer` + 9 tests — **saturation soft validée** par ADR-009
-- [ ] Étape 5 : `SpreadingActivation` — BFS bornée par **score cumulé** (pas profondeur fixe, cf. ADR-007 amendé), hard cap 5 sauts
-- [ ] Étape 6 : `MemoryRetriever` (orchestrateur SeedExtractor + SpreadingActivation + HebbianReinforcer)
+- [x] **Étape 4.5 — Revue de littérature approfondie** : 5 papers (passe 1) puis 3 agents en parallèle sur 11 papers 2024-26 + 6 frameworks OSS + fondations Hebbien classiques. Cf. ADR-008 amendement passe 2 et `04-references.md` enrichi.
+- [x] Étape 5 : `SpreadingActivation` v2 avec **hub factor mem0**, **`HARD_MAX_DEPTH` 5→3**, recency à valider, isolation user, fan-out cap, +17 tests
+- [ ] Étape 6 : `MemoryRetriever` (orchestrateur SeedExtractor + SpreadingActivation + HebbianReinforcer + re-rank final embedding)
 - [ ] Étape 8 : Command `brain:query` (test sortie CLI)
 - [ ] Étape 9 : `BrainContextSubscriber` (ENRICH pipeline)
 - [ ] Étape 10 : Fixtures `retrieval-v1/`
@@ -29,9 +30,11 @@ livré: —
 - ADR-007 amendé en étape 2 sur proposition user (score cumulé > profondeur fixe)
 - ADR-009 ajouté en étape 7 sur question user (anti-emballement → saturation soft + events)
 - Étape 7 (HebbianReinforcer) traitée avant 5-6 car indépendante du SpreadingActivation et nécessaire pour MemoryRetriever
+- **Étape 4.5 (revue littérature)** déclenchée par question user *"tu as lu les travaux que d'autres personnes ont faits ?"* — j'ai dû reconnaître que non. Passe 1 = 5 papers (HippoRAG2, A-MEM, HeLa-Mem, Generative Agents, SSGM), passe 2 = 11 papers 2024-26 + 6 frameworks OSS lecture de code + fondations Hebbien classiques (Hebb, Oja, BCM, Hopfield, Collins & Loftus, ACT-R, STDP, Ebbinghaus).
+- Insights actionnables intégrés dans `SpreadingActivation` v2 : (1) `HARD_MAX_DEPTH` réduit 5→3 (convergence cross-source), (2) **`hubFactor = 1/(1 + 0.001·(degree-1)²)`** ajouté au scoring (formule mem0, contre Static Graph Fallacy CatRAG), (3) recency `0.995^days` conservée mais marquée "à valider empiriquement" car aucun framework OSS ne le fait, (4) polarity inhibitory confirmée différée jalon 5+, (5) re-rank final contre embedding query différé à `MemoryRetriever` (étape 6).
 - Mémoires user ajoutées : `feedback_brain_event_driven_synapse_mutations`, `project_brain_v3_deep_test_in_weecom`, `feedback_brain_complexity_mit_level`, `project_brain_v3_corpus_could_exceed_weecom`
-- Tests : 213 Brain tests OK, PHPStan 0 erreur, CS clean
-- **Reprise** : continuer avec étape 5 (SpreadingActivation) — algorithme dans le plan §4.3, hard cap 5 sauts, decay 0.7^depth (ADR-008), arrêt si score < query.minScore
+- Tests : 230 Brain tests OK (484 assertions), PHPStan + CS à vérifier dans le commit
+- **Reprise** : continuer avec étape 6 (`MemoryRetriever` orchestrateur) — doit inclure le re-rank final contre embedding query (insight EcphoryRAG)
 
 ### ⚠️ Avant de coder SpreadingActivation — RELIRE OBLIGATOIREMENT
 
