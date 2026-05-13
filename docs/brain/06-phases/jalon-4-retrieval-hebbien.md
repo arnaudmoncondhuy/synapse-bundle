@@ -12,18 +12,26 @@ livré: —
 
 *Fil de reprise en cas de compactage de contexte.*
 
-- [ ] Étape 1 : plan détaillé (ce document) + ADRs 007 (BFS depth) + 008 (formule score)
-- [ ] Étape 2 : `RetrievalQuery` DTO (input du retriever : texte requête, owner, options)
-- [ ] Étape 3 : `RetrievalResult` DTO (output : neurones triés + scores + debug)
-- [ ] Étape 4 : `SeedExtractor` — convertit un texte requête → seeds neurones via embedding similarity + lookup direct
-- [ ] Étape 5 : `SpreadingActivation` — BFS bornée sur synapses depuis seeds, calcule score combiné
-- [ ] Étape 6 : `MemoryRetriever` (orchestrateur) — coordonne SeedExtractor + SpreadingActivation
-- [ ] Étape 7 : `HebbianReinforcer` — renforce les poids des synapses co-activées dans une requête
-- [ ] Étape 8 : Command `brain:query` (test de sortie en mode CLI)
-- [ ] Étape 9 : `BrainContextSubscriber` — injecte le retrieval dans la phase ENRICH du PromptPipeline (remplace MemoryContextSubscriber + RagContextSubscriber)
-- [ ] Étape 10 : Fixtures `retrieval-v1/` (10 requêtes annotées sur corpus weecom existant)
-- [ ] Étape 11 : Outil `brain:bench:retrieval` (baseline vector vs hebbian)
-- [ ] Étape 12 : Audits sous-agents + fixes + bilan
+- [x] Étape 1 : plan détaillé (ce document) + ADR-007 (amendé score cumulé) + ADR-008 (decay exponentiel) + **ADR-009** (saturation soft + events anti-emballement) ajouté en cours
+- [x] Étape 2 : DTOs `RetrievalQuery` + `RetrievalResult` + `ScoredNeuron` + 14 tests
+- [x] Étape 3 : `NeuronResolver` (dispatch par aire) — créé, en attente de commit
+- [x] Étape 4 : `SeedExtractor` (embedding query + lookup similarité Vertex) — créé, en attente de commit
+- [x] Étape 7 (faite avant 5-6) : `SynapseReinforcedEvent` + `HebbianReinforcer` + 9 tests — **saturation soft validée** par ADR-009
+- [ ] Étape 5 : `SpreadingActivation` — BFS bornée par **score cumulé** (pas profondeur fixe, cf. ADR-007 amendé), hard cap 5 sauts
+- [ ] Étape 6 : `MemoryRetriever` (orchestrateur SeedExtractor + SpreadingActivation + HebbianReinforcer)
+- [ ] Étape 8 : Command `brain:query` (test sortie CLI)
+- [ ] Étape 9 : `BrainContextSubscriber` (ENRICH pipeline)
+- [ ] Étape 10 : Fixtures `retrieval-v1/`
+- [ ] Étape 11 : Outil `brain:bench:retrieval`
+- [ ] Étape 12 : Audits + bilan
+
+**Notes de progression (anti-compactage)** :
+- ADR-007 amendé en étape 2 sur proposition user (score cumulé > profondeur fixe)
+- ADR-009 ajouté en étape 7 sur question user (anti-emballement → saturation soft + events)
+- Étape 7 (HebbianReinforcer) traitée avant 5-6 car indépendante du SpreadingActivation et nécessaire pour MemoryRetriever
+- Mémoires user ajoutées : `feedback_brain_event_driven_synapse_mutations`, `project_brain_v3_deep_test_in_weecom`, `feedback_brain_complexity_mit_level`, `project_brain_v3_corpus_could_exceed_weecom`
+- Tests : 213 Brain tests OK, PHPStan 0 erreur, CS clean
+- **Reprise** : continuer avec étape 5 (SpreadingActivation) — algorithme dans le plan §4.3, hard cap 5 sauts, decay 0.7^depth (ADR-008), arrêt si score < query.minScore
 
 ## 1. Capacité d'association visée
 
