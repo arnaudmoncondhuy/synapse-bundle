@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "annotator": "claude-opus-4-7",
+    "annotated_at": "2026-05-13",
+    "method": "annotation_en_aveugle_avant_lancement_bench",
+    "discipline": "Annotations posées SANS avoir lancé ConvergenceDetector ni mesuré cosine sur le corpus. Anti-biais juge-et-partie (charte §2.9). Sera signé en commit avant le run.",
+    "corpus_ref": "corpus.json (20 notes weecom)",
+    "annotation_scope": "subset (15 paires annotées sur C(20,2)=190 paires possibles — les paires non-annotées ne pèsent pas dans la métrique)"
+  },
+  "expected_convergent": [
+    {
+      "pair": ["src-002", "src-003"],
+      "rationale": "Tous deux portent sur un nouvel ordinateur du client (problème + synchronisation)"
+    },
+    {
+      "pair": ["src-002", "src-005"],
+      "rationale": "Problème ordinateur, sujet quasi-identique"
+    },
+    {
+      "pair": ["src-003", "src-005"],
+      "rationale": "Sujets ordinateur"
+    },
+    {
+      "pair": ["src-010", "src-014"],
+      "rationale": "Imprimante (facturation + RDV)"
+    },
+    {
+      "pair": ["src-010", "src-018"],
+      "rationale": "Facturation imprimante"
+    },
+    {
+      "pair": ["src-014", "src-018"],
+      "rationale": "Imprimante (RDV + installation)"
+    },
+    {
+      "pair": ["src-011", "src-012"],
+      "rationale": "Facturations services informatiques (diagnostique / mise en services)"
+    },
+    {
+      "pair": ["src-015", "src-019"],
+      "rationale": "Facturations avec taux horaire + trajet — pattern très similaire"
+    },
+    {
+      "pair": ["src-016", "src-020"],
+      "rationale": "Facturations 0,5h chèque + trajet — quasi-identiques structurellement"
+    }
+  ],
+  "expected_non_convergent": [
+    {
+      "pair": ["src-001", "src-004"],
+      "rationale": "Matériel mairie vs thermostat Nest — sujets totalement différents"
+    },
+    {
+      "pair": ["src-001", "src-013"],
+      "rationale": "Matériel commandé (livraison) vs batterie commandée — sujets différents"
+    },
+    {
+      "pair": ["src-004", "src-006"],
+      "rationale": "Thermostat vs vacances"
+    },
+    {
+      "pair": ["src-006", "src-013"],
+      "rationale": "Vacances vs batterie"
+    },
+    {
+      "pair": ["src-007", "src-014"],
+      "rationale": "Devis mise en service vs imprimante"
+    },
+    {
+      "pair": ["src-013", "src-014"],
+      "rationale": "Batterie vs imprimante"
+    }
+  ]
+}
