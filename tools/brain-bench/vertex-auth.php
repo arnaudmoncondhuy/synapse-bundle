@@ -25,17 +25,17 @@ final class VertexAuth
     public function __construct(string $serviceAccountJsonPath)
     {
         if (!is_file($serviceAccountJsonPath)) {
-            throw new \RuntimeException("Service account JSON introuvable : {$serviceAccountJsonPath}");
+            throw new RuntimeException("Service account JSON introuvable : {$serviceAccountJsonPath}");
         }
         $raw = file_get_contents($serviceAccountJsonPath);
         if (false === $raw) {
-            throw new \RuntimeException("Lecture impossible : {$serviceAccountJsonPath}");
+            throw new RuntimeException("Lecture impossible : {$serviceAccountJsonPath}");
         }
         $creds = json_decode($raw, true, flags: JSON_THROW_ON_ERROR);
         if (!is_array($creds)) {
-            throw new \RuntimeException("JSON invalide : {$serviceAccountJsonPath}");
+            throw new RuntimeException("JSON invalide : {$serviceAccountJsonPath}");
         }
-        /** @var array<string, mixed> $creds */
+        /* @var array<string, mixed> $creds */
         $this->credentials = $creds;
     }
 
@@ -49,7 +49,7 @@ final class VertexAuth
 
         $ch = curl_init(self::TOKEN_URL);
         if (false === $ch) {
-            throw new \RuntimeException('curl_init failed');
+            throw new RuntimeException('curl_init failed');
         }
 
         curl_setopt_array($ch, [
@@ -67,12 +67,12 @@ final class VertexAuth
         curl_close($ch);
 
         if (!is_string($response) || 200 !== $code) {
-            throw new \RuntimeException("OAuth2 token endpoint failed (HTTP {$code}) : " . (is_string($response) ? $response : 'no body'));
+            throw new RuntimeException("OAuth2 token endpoint failed (HTTP {$code}) : ".(is_string($response) ? $response : 'no body'));
         }
 
         $data = json_decode($response, true, flags: JSON_THROW_ON_ERROR);
         if (!is_array($data) || !isset($data['access_token'])) {
-            throw new \RuntimeException('Invalid token response');
+            throw new RuntimeException('Invalid token response');
         }
 
         $this->cachedToken = (string) $data['access_token'];
@@ -105,7 +105,7 @@ final class VertexAuth
 
         $h64 = self::b64url((string) json_encode($header, JSON_THROW_ON_ERROR));
         $p64 = self::b64url((string) json_encode($payload, JSON_THROW_ON_ERROR));
-        $signatureInput = $h64 . '.' . $p64;
+        $signatureInput = $h64.'.'.$p64;
 
         $signature = '';
         $ok = openssl_sign(
@@ -115,10 +115,10 @@ final class VertexAuth
             OPENSSL_ALGO_SHA256,
         );
         if (!$ok) {
-            throw new \RuntimeException('JWT signature failed');
+            throw new RuntimeException('JWT signature failed');
         }
 
-        return $signatureInput . '.' . self::b64url($signature);
+        return $signatureInput.'.'.self::b64url($signature);
     }
 
     private static function b64url(string $data): string

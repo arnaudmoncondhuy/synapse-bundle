@@ -8,7 +8,7 @@
 |---|---|---|---|
 | 1 | [Fondations](jalon-1-fondations.md) | ✅ livré 2026-05-12 | Aucune (infra) — démontré par `brain:demo:jalon-1` |
 | 2 | [Ingestion mono-aire](jalon-2-ingestion-mono-aire.md) | ✅ livré 2026-05-12 | Aucune (infra) — boucle d'ingestion `MemoryExtractor` opérationnelle |
-| 3 | [Ingestion multi-aires](jalon-3-ingestion-multi-aires.md) | squelette | Convergence mémorielle |
+| 3 | [Ingestion multi-aires](jalon-3-ingestion-multi-aires.md) | ✅ livré 2026-05-13 | Convergence mémorielle calibrée (cosine 0.65, F1=1.000) |
 | 4 | [Retrieval Hebbien simple](jalon-4-retrieval-hebbien.md) | squelette | Retrieval enrichi (spreading activation) |
 | 5 | [Synapses enrichies](jalon-5-synapses-enrichies.md) | squelette | Contradictions / nuances + raisonnement typé |
 | 6 | [Functional networks](jalon-6-functional-networks.md) | squelette | Modes contextuels |

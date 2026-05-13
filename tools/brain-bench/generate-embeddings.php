@@ -24,7 +24,7 @@ declare(strict_types=1);
  * supporte le français correctement).
  */
 
-require_once __DIR__ . '/vertex-auth.php';
+require_once __DIR__.'/vertex-auth.php';
 
 $options = getopt('', [
     'corpus:',
@@ -61,7 +61,7 @@ fwrite(STDERR, "→ Étape 1/3 : extraction du corpus weecom ({$type}, limit={$l
 // Lance extract-corpus.php en sous-processus
 $extractCmd = sprintf(
     'php %s --path=%s --type=%s --limit=%d',
-    escapeshellarg(__DIR__ . '/extract-corpus.php'),
+    escapeshellarg(__DIR__.'/extract-corpus.php'),
     escapeshellarg($corpus),
     escapeshellarg($type),
     $limit,
@@ -84,7 +84,7 @@ foreach (explode("\n", trim($extractedJsonl)) as $line) {
     if (!is_array($decoded)) {
         continue;
     }
-    /** @var array{provider: string, external_id: ?string, raw_payload: array<string, mixed>} $decoded */
+    /* @var array{provider: string, external_id: ?string, raw_payload: array<string, mixed>} $decoded */
     $sources[] = $decoded;
 }
 
@@ -128,14 +128,14 @@ for ($i = 0; $i < count($sources); $i += $batchSize) {
 
     $ch = curl_init($embeddingUrl);
     if (false === $ch) {
-        throw new \RuntimeException('curl_init failed');
+        throw new RuntimeException('curl_init failed');
     }
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST => true,
         CURLOPT_POSTFIELDS => $body,
         CURLOPT_HTTPHEADER => [
-            'Authorization: Bearer ' . $token,
+            'Authorization: Bearer '.$token,
             'Content-Type: application/json',
         ],
         CURLOPT_TIMEOUT => 60,
@@ -146,13 +146,13 @@ for ($i = 0; $i < count($sources); $i += $batchSize) {
     curl_close($ch);
 
     if (200 !== $code || !is_string($response)) {
-        fwrite(STDERR, "Erreur Vertex AI (HTTP {$code}) sur le batch #" . (int) ($i / $batchSize + 1) . " : " . (string) $response . "\n");
+        fwrite(STDERR, "Erreur Vertex AI (HTTP {$code}) sur le batch #".(int) ($i / $batchSize + 1).' : '.(string) $response."\n");
         exit(1);
     }
 
     $data = json_decode($response, true, flags: JSON_THROW_ON_ERROR);
     if (!is_array($data) || !isset($data['predictions']) || !is_array($data['predictions'])) {
-        fwrite(STDERR, "Format réponse Vertex inattendu : " . substr((string) $response, 0, 200) . "\n");
+        fwrite(STDERR, 'Format réponse Vertex inattendu : '.substr((string) $response, 0, 200)."\n");
         exit(1);
     }
 
@@ -195,7 +195,7 @@ $payload = [
         'embedding_model' => $model,
         'embedding_location' => $location,
         'embedding_project' => $projectId,
-        'generated_at' => (new \DateTimeImmutable())->format('c'),
+        'generated_at' => (new DateTimeImmutable())->format('c'),
         'count' => count($fixtures),
     ],
     'sources' => $fixtures,
@@ -203,5 +203,5 @@ $payload = [
 
 file_put_contents($outputFile, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
 
-fwrite(STDERR, "  → écrit dans {$outputFile} (" . count($fixtures) . " sources avec embeddings)\n");
+fwrite(STDERR, "  → écrit dans {$outputFile} (".count($fixtures)." sources avec embeddings)\n");
 fwrite(STDERR, "✅ Done.\n");

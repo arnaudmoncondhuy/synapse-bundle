@@ -1,7 +1,7 @@
 ---
-statut: en cours
+statut: livré
 ouvert: 2026-05-12
-livré: —
+livré: 2026-05-13
 ---
 
 # Jalon 3 — Ingestion multi-aires + convergence
@@ -23,11 +23,9 @@ livré: —
 - [x] Étape 9 : `MemoryExtractor::extractAll()` + tests multi-aires + DI explicite multi-area extractor
 - [x] Étape 12 : `brain:ingest:test --multi-area`
 - [x] **Audits sous-agents + fixes mineurs** : anti-anthropomorphisation, log warning, HEBBIAN_LEARNING_RATE const, DI explicite OnePassMultiAreaExtractor, PHPDoc named-args-only sur Synapse
-- [ ] **Étape 10** ⏸️ *reportée* : Annotations en aveugle 15-20 paires sources weecom + fixtures `tests/Brain/Quality/Fixtures/convergence-v1/` — nécessite session dédiée avec LLM réel (credentials weecom) + BDD Postgres+pgvector active
-- [ ] **Étape 11** ⏸️ *reportée* : Outil `brain:bench:convergence` + calibration 3 sets cosine + ADR-005 finalisé chiffré — dépend de l'étape 10
-- [ ] **Étape 13** : Bilan jalon 3 final (après livraison étapes 10-11)
-
-**État au 2026-05-13 :** 10/13 étapes livrées (toute la couche code/infra/contrats). Les 3 étapes restantes (10-11-13) constituent la **validation expérimentale qualité** prévue par la charte §2.9. Reportées à une session dédiée car nécessitant LLM réel et travail d'annotation manuelle.
+- [x] **Étape 10** : Corpus weecom 20 notes + embeddings Vertex AI + annotations en aveugle signées (commit séparé avant bench)
+- [x] **Étape 11** : Bench convergence + calibration 6 seuils cosine → **0.65 retenu** (F1=1.000) + ADR-005 finalisé chiffré
+- [x] **Étape 13** : Bilan jalon 3 (ce document)
 
 **Note inversion étapes 4/5 :** ProceduralNeuron créé avant le prompt multi-aire pour que celui-ci puisse référencer les 4 aires (Semantic + Episodic + Encyclopedic + Procedural) d'emblée. Pas d'impact fonctionnel.
 
@@ -204,6 +202,85 @@ Nouveau : `tests/Integration/Brain/`. Nécessite PostgreSQL + pgvector lancé lo
 - Functional networks (jalon 6)
 - Aire Emotional / Sensory / Motor (jalon 7)
 
-## 9. Bilan
+## 9. Bilan (livré 2026-05-13)
 
-*À remplir à la fin du jalon. Sections obligatoires : capacité livrée, coût, surprises, ADRs créés, audits, validation qualité (précision/rappel/F1 mesurés sur fixtures), go/no-go jalon 4.*
+### Capacité livrée
+
+**Oui — convergence mémorielle opérationnelle et calibrée.** Le brain produit désormais des **synapses CORROBORATES automatiquement** sur la base d'une mesure objective de similarité cosine entre embeddings.
+
+Démontré sur corpus réel weecom :
+- 20 notes Pipedrive embedées via Vertex AI (`text-multilingual-embedding-002`)
+- 15 paires annotées en aveugle (signées par commit séparé `30817d2` avant le bench)
+- Seuil cosine **0.65** retenu après comparaison de 6 sets : F1 = 1.000
+
+### Coût
+
+- **2 sessions actives** : session nocturne (10/13 étapes code/infra) + session matin (étapes 10-11-13)
+- **~6 700 LOC** ajoutées (entités, services, contrats, prompts, command, tests, outils bench, fixtures, ADRs, plan)
+- **24 commits** : du plan détaillé au bilan
+- **190 tests Brain** (390 assertions, +53 tests vs jalon 2) — check.sh OK (PHPStan, CS, YAML, Twig, Deptrac)
+- **Tokens LLM consommés** : ~20 sources × 1 batch embedding = ~5 appels API Vertex AI (très peu, embedding bon marché)
+
+### Surprises
+
+- **Le placeholder 0.85 (a priori) était catastrophique** : rappel 33% (F1=0.5). La calibration empirique a sauvé une régression silencieuse. **Confirmation forte de la charte §2.10** : régler à l'œil = se mentir
+- **text-multilingual-embedding-002** produit des similarités plus basses que les modèles fr-only. Distribution observée : convergent min 0.664, non-convergent max 0.609. La marge franche (0.055) facilite le calibrage
+- **PHPUnit createMock peut produire la même classe pour 2 instances** → bug initial dans `MemoryExtractor::extractAll` (dedupe par classe). Fix par `spl_object_id` (identité d'instance). À noter pour les futurs services à dispatch
+- **Inversion étapes 4/5** : ProceduralNeuron créé avant le prompt multi-aire pour que celui-ci couvre 4 aires d'emblée. Pas dans le plan initial, mais cohérent
+
+### ADRs créés ou validés pendant le jalon
+
+- [ADR-005](../05-decisions/005-seuil-cosine-convergence.md) — seuil cosine 0.65 calibré empiriquement (**accepté chiffré**)
+- [ADR-006](../05-decisions/006-isolation-user-synapses.md) — garde-fou isolation user (Synapse::__construct, assertion code) (**accepté**)
+
+### Audits post-jalon (10/13 étapes)
+
+- **brain-charter-auditor** : 0 bloquant, 0 majeur, 1 mineur (verbe "décide" appliqué au LLM → corrigé en "sélectionne")
+- **brain-code-reviewer** : 0 bloquant, 0 majeur, 6 mineurs — tous fixés :
+  - Log warning au lieu de skip silencieux dans ConvergenceDetector (cross-user)
+  - `HEBBIAN_LEARNING_RATE` constante (vs magic number)
+  - DI explicite OnePassMultiAreaExtractor dans core.yaml
+  - PHPDoc `weight = similarity` justifié
+  - PHPDoc `Synapse::__construct` "named-args only"
+  - Reporté : factorisation `AbstractLlmExtractor` (duplication minime acceptée)
+
+### Validation qualité (charte §2.9) — **première mesure du chantier**
+
+**Métriques sur fixtures convergence-v1** :
+
+| Seuil | TP | FP | FN | TN | Précision | Rappel | F1 |
+|-------|----|----|----|----|-----------|--------|----|
+| **0.65** | **9** | **0** | **0** | **6** | **1.000** | **1.000** | **1.000** |
+| 0.70 | 7 | 0 | 2 | 6 | 1.000 | 0.778 | 0.875 |
+| 0.85 | 3 | 0 | 6 | 6 | 1.000 | 0.333 | 0.500 |
+
+**Métriques atteintes vs plan** :
+- Précision attendue ≥ 0.7 → **1.000** ✅
+- Rappel attendu ≥ 0.6 → **1.000** ✅
+- F1 attendu ≥ 0.65 → **1.000** ✅
+
+**Limites assumées** (cf. ADR-005 §"Limites assumées") :
+- F1=1.0 sur 15 paires annotées est probablement optimiste. Échantillon élargi prévu jalon 4
+- Un seul annotateur (moi). Pas d'inter-annotator agreement. À corriger jalon 4+
+- Annotation sur un seul type de source (notes). Recalibration prévue si on traite massivement deals/activities
+- Modèle multilingual lâche → seuil 0.65 spécifique. Recalibration obligatoire si on change de modèle
+
+### Apprentissages mémorisés pour la suite
+
+Pas de nouvelle mémoire durable créée — les apprentissages restent dans cet ADR et ce bilan. Les mémoires existantes (`feedback-brain-quality-testing-mandatory`, `feedback-brain-synapse-calibration`, `feedback-brain-llm-access`, `feedback-brain-user-isolation`) ont été toutes activement appliquées et **vérifiées correctement**.
+
+### Go / no-go jalon 4
+
+**Go.** Le jalon 3 livre :
+1. La capacité de **convergence mémorielle** chiffrée, calibrée sur corpus réel
+2. Le **garde-fou isolation user** (ADR-006 accepté, testé)
+3. La **mécanique multi-aires** (OnePassMultiAreaExtractor + 4ème aire ganglions)
+4. La **discipline de validation expérimentale** désormais ancrée (corpus + annotations + bench rejouable)
+
+Pré-requis pour le jalon 4 (spreading activation) :
+- ✅ Synapses opérationnelles et avec owner pour filtrage
+- ✅ Repository SynapseRepository avec findOutgoing/findIncoming/findAllRelated
+- ⚠️ BDD test pas encore utilisée en intégration (corpus.json en mémoire suffisait pour la calibration). Au jalon 4, le spreading activation nécessitera une BDD réelle pour mesurer la perf.
+- ⚠️ Corpus de fixtures plus large attendu (50+ sources) pour valider le retrieval Hebbien
+
+Le jalon 4 (retrieval Hebbien simple) peut démarrer dès validation user.

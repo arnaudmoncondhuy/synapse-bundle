@@ -42,11 +42,15 @@ final readonly class ConvergenceDetector
     /**
      * Seuil cosine par défaut.
      *
-     * **Placeholder** (ADR-005) : à calibrer empiriquement à l'étape 10
-     * du jalon 3 sur fixtures annotées. Valeur 0.85 raisonnable a priori
-     * mais non validée.
+     * Calibré empiriquement le 2026-05-13 (ADR-005, accepté). Valeur 0.65
+     * retenue pour le modèle `text-multilingual-embedding-002` (Vertex AI,
+     * 768 dim). F1=1.000 sur le corpus convergence-v1 (20 notes weecom,
+     * 15 paires annotées en aveugle).
+     *
+     * **À recalibrer** si on change le modèle d'embedding — la valeur ne
+     * vaut que pour text-multilingual-embedding-002.
      */
-    public const DEFAULT_COSINE_THRESHOLD = 0.85;
+    public const DEFAULT_COSINE_THRESHOLD = 0.65;
 
     public function __construct(
         private LoggerInterface $logger = new NullLogger(),
