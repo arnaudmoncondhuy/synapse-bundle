@@ -37,6 +37,7 @@ Pas pour les choix esthétiques internes (nommage à la marge, ordre des méthod
 | [006](006-isolation-user-synapses.md) | Garde-fou isolation user sur les synapses | accepté | 3 |
 | [007](007-profondeur-bfs-spreading-activation.md) | Critère d'arrêt spreading activation : score cumulé + hard cap | accepté (amendé) | 4 |
 | [008](008-formule-score-spreading-activation.md) | Formule de score : linéaire avec decay exponentiel (0.7) | accepté | 4 |
+| [009](009-saturation-soft-anti-emballement-synapses.md) | Saturation soft + pattern events anti-emballement synapses | accepté | 4 |
 
 ## Convention de numérotation
 
