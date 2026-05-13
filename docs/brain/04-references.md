@@ -71,6 +71,57 @@ Ce qu'on retient :
 | **Memory for Autonomous LLM Agents** (survey) | [2603.07670](https://arxiv.org/abs/2603.07670) | Survey récent qui cadre le champ. Point d'entrée bibliographique. |
 | **Governing Evolving Memory in LLM Agents (SSGM)** | [2603.11768](https://arxiv.org/abs/2603.11768) | Risques et gouvernance de la mémoire évolutive. **Critique** pour ne pas tomber dans une approche Hebbienne naïve. |
 
+## Papers 2024-2026 directement pertinents pour le retrieval graphique (passe 2)
+
+Revus en 2026-05-13 par revue ciblée (3 agents en parallèle). Cf. ADR-008 passe 2.
+
+| Référence | Arxiv | Apport pour Brain v3 |
+|---|---|---|
+| **SA-RAG** — *Spreading Activation RAG* | [2512.15922](https://arxiv.org/abs/2512.15922) | **Notre approche ré-actualisée 2026.** Paramètres : depth 3-4, threshold τₐ=0.5, seeds k=3-10. MuSiQue 67-87% (avec CoT). Référence directe pour calibration. |
+| **CatRAG** — critique du PPR statique | [2602.01965](https://arxiv.org/abs/2602.01965) | "Static Graph Fallacy" : transition matrix fixée ignore le query context, random walks dérivent vers les hubs. Source de notre **`hubFactor`** explicite (cf. ADR-008 passe 2). |
+| **EcphoryRAG** | [2510.08958](https://arxiv.org/abs/2510.08958) | **Depth=2 optimal documenté** (plateau au-delà). EM 0.722 HotpotQA. Validation de la réduction `HARD_MAX_DEPTH` 5→3. |
+| **LiCoMemory** — CogniGraph | [2511.01448](https://arxiv.org/abs/2511.01448) | Graph hiérarchique léger + reranking. **LongMemEval 73.8% acc / 76.6% recall**. Cible métrique pour bench retrieval. |
+| **HippoRAG (v1)** | [2405.14831](https://arxiv.org/abs/2405.14831) | Référence Personalized PageRank. Damping=0.5 (vs 0.85 web PageRank). |
+| **PathRAG** | [2502.14902](https://arxiv.org/abs/2502.14902) | Flow-based pruning. Alternative au BFS pour gros graphes. À considérer jalon 5+. |
+| **Mem0 / Mem0g** | [2504.19413](https://arxiv.org/abs/2504.19413) | Production reference. LoCoMo +5-11% vs baselines, latence p95 −91%. |
+| **GraphRAG (Microsoft)** | [2404.16130](https://arxiv.org/abs/2404.16130) | Community detection multi-niveaux. Coût ~331k tokens/query Global — **contre-exemple** (trop cher pour Brain conversationnel). |
+| **LightRAG** | [2410.05779](https://arxiv.org/abs/2410.05779) | Dual-level keywords (low + high). Pattern de seed extraction enrichi à considérer jalon 5+. |
+| **GraphReader (Tencent)** | [2406.14550](https://arxiv.org/abs/2406.14550) | Agent LLM qui navigue le graphe via read_node/read_neighbor. Pattern alternatif au BFS, **hors-scope Brain** (Brain reste déterministe). |
+| **MemGPT** | [2310.08560](https://arxiv.org/abs/2310.08560) | Tiered memory + function calling OS-like. Référence pour l'expose éventuelle de tools `brain:*` (jalon 7+). |
+| **End-to-End Memory Networks** | [1503.08895](https://arxiv.org/abs/1503.08895) | Référence historique du multi-hop différentiable. Confirme empiriquement la saturation à 3-4 hops. |
+| **Memory Layers at Scale (Meta)** | [2412.09764](https://arxiv.org/abs/2412.09764) | Product-key memories à 1B+ params. Pas notre approche mais utile pour scale. |
+| **When to use Graphs in RAG** (benchmark ICLR 2026) | [2506.05690](https://arxiv.org/abs/2506.05690) | Cadre d'évaluation pour décider quand un retrieval graphique aide vs vector simple. |
+| **Memory in the age of AI agents** (survey 2025) | [2512.13564](https://arxiv.org/abs/2512.13564) | Taxonomie 3-lens (forms × functions × dynamics). |
+| **Graph agent memory survey** | [2602.05665](https://arxiv.org/abs/2602.05665) | Taxonomie graph-memory spécifique. |
+| **MemoryAgentBench (ICLR 2026)** | (benchmark) | 4 compétences cognitives : retention, update, retrieval, conflict resolution. Cible bench standard. |
+
+## Fondations classiques (passe 2)
+
+Revus pour ne pas réinventer mal des choses déjà étudiées en 1949-2020.
+
+| Référence | Lien | Apport |
+|---|---|---|
+| **Hebb (1949)** original | [Wikipedia](https://en.wikipedia.org/wiki/Hebbian_theory) | Δw = η·x·y. Instabilité prouvée sans saturation. Notre `w + δ(1-w)` y répond. |
+| **Règle d'Oja (1982)** | [Wikipedia](https://en.wikipedia.org/wiki/Oja%27s_rule) | Saturation par compétition (norme=1). **≠ notre saturation per-edge.** Assumé. |
+| **BCM (1982)** Bienenstock-Cooper-Munro | [Wikipedia](https://en.wikipedia.org/wiki/BCM_theory) | Seuil de modification glissant + LTP/LTD. Mécanisme d'**affaiblissement actif** manquant chez nous — critique jalon 5+ (consolidation). |
+| **Hopfield (1982)** | [Wikipedia](https://en.wikipedia.org/wiki/Hopfield_network) | Capacité critique 0.138N. Notre graphe n'est pas un Hopfield (pas d'attracteurs) mais avertissement à connaître pour N grand. |
+| **Collins & Loftus (1975)** spreading activation | [Anderson 1983 PDF](http://act-r.psy.cmu.edu/wordpress/wp-content/uploads/2012/12/66SATh.JRA.JVL.1983.pdf) | Origine du spreading activation. Decay par hop typique 0.5-0.8. Notre 0.7 dans la zone. |
+| **ACT-R (Anderson 1983)** | [Anderson Unit 5](http://act-r.psy.cmu.edu/wordpress/wp-content/themes/ACT-R/tutorials/unit5.htm) | Latency factor F ≈ 0.63, decay power-law t^-0.5 (pas exponentiel). Notre exponentiel est défendable mais pas l'orthodoxie ACT-R. |
+| **STDP (Bi & Poo 1998)** | [Scholarpedia](http://www.scholarpedia.org/article/Spike-timing_dependent_plasticity) | Asymétrie LTP/LTD à la milliseconde. **Secondaire** pour mémoire sémantique LLM. |
+| **Ebbinghaus forgetting curve** | [PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC4492928/) | Power law vs exponentiel débat ouvert (Wixted 2007). Notre 0.995/jour défendable pour système avec réactivation. |
+| **Preferential attachment** (rich-get-richer) | [Wikipedia](https://en.wikipedia.org/wiki/Preferential_attachment) | Phénomène universel des graphes. À surveiller : notre saturation plafonne UN poids, pas le DEGRÉ d'un neurone. |
+
+## Frameworks OSS analysés (lecture de code, passe 2)
+
+| Framework | URL | Retrieval réel (code lu) |
+|---|---|---|
+| **mem0** | [github.com/mem0ai/mem0](https://github.com/mem0ai/mem0) | Single-hop vector + BM25 hybrid. **Anti-hub : `1/(1 + 0.001·(degree-1)²)`** — formule reprise par Brain v3. |
+| **Letta** (ex-MemGPT) | [github.com/letta-ai/letta](https://github.com/letta-ai/letta) | Single-hop vector + BM25 fusionnés via RRF (k=60). **Pas de graphe.** |
+| **Cognee** | [github.com/topoteretes/cognee](https://github.com/topoteretes/cognee) | Graph triplet retrieval + k-hop neighborhood optionnel. Pas d'anti-hub. |
+| **A-MEM** | [github.com/agiresearch/A-mem](https://github.com/agiresearch/A-mem) | Vector + 1-hop link traversal (top-k voisins). Pas d'anti-hub. **Intelligence à l'écriture, pas à la lecture.** |
+| **HippoRAG** | [github.com/OSU-NLP-Group/HippoRAG](https://github.com/OSU-NLP-Group/HippoRAG) | Personalized PageRank, damping=0.5. Anti-hub par division par fréquence de mention. |
+| **LightRAG** | [github.com/HKUDS/LightRAG](https://github.com/HKUDS/LightRAG) | Single-hop dual-level keywords + edges triés par (degré DESC, poids DESC). **Inverse anti-hub** : priorité aux hubs. |
+
 ## Méthode d'utilisation des références
 
 Conformément à la charte §2.5 ("Comprendre avant d'intégrer") :
