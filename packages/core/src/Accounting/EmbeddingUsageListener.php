@@ -21,6 +21,7 @@ use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
  *  memory_indexation    | memory       | indexation
  *  memory_search        | conversation | memory_search
  *  brain_encyclopedic   | brain        | encyclopedic_indexation
+ *  brain_retrieval      | brain        | retrieval_embedding
  */
 #[AsEventListener(event: SynapseEmbeddingCompletedEvent::NAME)]
 final class EmbeddingUsageListener
@@ -31,6 +32,7 @@ final class EmbeddingUsageListener
         'memory_indexation' => ['module' => 'memory',        'action' => 'indexation'],
         'memory_search' => ['module' => 'conversation',  'action' => 'memory_search'],
         'brain_encyclopedic' => ['module' => 'brain',         'action' => 'encyclopedic_indexation'],
+        'brain_retrieval' => ['module' => 'brain',         'action' => 'retrieval_embedding'],
     ];
 
     public function __construct(
