@@ -167,11 +167,9 @@ class EncyclopedicNeuron implements EmbeddableNeuron
     /**
      * @param list<float> $embedding
      */
-    public function setEmbedding(array $embedding): self
+    public function setEmbedding(array $embedding): void
     {
         $this->embedding = $embedding;
-
-        return $this;
     }
 
     /**

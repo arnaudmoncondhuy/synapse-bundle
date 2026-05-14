@@ -22,4 +22,9 @@ interface EmbeddableNeuron extends MemoryFragment
      * @return list<float>
      */
     public function getEmbedding(): array;
+
+    /**
+     * @param list<float> $embedding
+     */
+    public function setEmbedding(array $embedding): void;
 }

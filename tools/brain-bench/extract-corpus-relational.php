@@ -40,7 +40,7 @@ $path = $options['path'];
 /** @var string $dealIdsStr */
 $dealIdsStr = $options['deal-ids'];
 $dealIds = array_map('intval', explode(',', $dealIdsStr));
-/** @var string|false $previewPath */
+/** @var false|string $previewPath */
 $previewPath = $options['preview'] ?? false;
 
 if (!is_dir($path)) {
@@ -156,7 +156,7 @@ foreach ($emitted as $src) {
     fwrite(STDOUT, json_encode($src, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)."\n");
 }
 
-fwrite(STDERR, "Émis : ".count($emitted)." sources cross-type pour ".count($dealIds)." deals\n");
+fwrite(STDERR, 'Émis : '.count($emitted).' sources cross-type pour '.count($dealIds)." deals\n");
 
 // Stats détaillées
 $stats = ['deal' => 0, 'note' => 0, 'activity' => 0, 'person' => 0, 'organization' => 0];
@@ -179,9 +179,9 @@ foreach ($stats as $type => $count) {
 
 if (false !== $previewPath && is_string($previewPath)) {
     $header = "# Bench retrieval-v1 — preview corpus relationnel\n\n";
-    $header .= "Généré le ".date('Y-m-d H:i:s')." par `extract-corpus-relational.php`.\n\n";
-    $header .= "**Deal IDs ciblés** : ".implode(', ', $dealIds)."\n\n";
-    $header .= "**Total** : ".count($emitted)." sources (".implode(', ', array_map(fn ($k, $v) => "{$v} {$k}", array_keys($stats), $stats)).").\n\n";
+    $header .= 'Généré le '.date('Y-m-d H:i:s')." par `extract-corpus-relational.php`.\n\n";
+    $header .= '**Deal IDs ciblés** : '.implode(', ', $dealIds)."\n\n";
+    $header .= '**Total** : '.count($emitted).' sources ('.implode(', ', array_map(fn ($k, $v) => "{$v} {$k}", array_keys($stats), $stats)).").\n\n";
     $header .= "Pour validation par user : vérifier que chaque deal est représentatif et que la mémoire est fraîche.\n\n";
     $header .= "---\n\n";
 
@@ -421,13 +421,13 @@ function adaptOrganization(array $org): array
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * @param array<string, mixed>       $deal
- * @param array<string, mixed>|null  $person
- * @param array<string, mixed>|null  $org
+ * @param array<string, mixed> $deal
+ * @param array<string, mixed>|null $person
+ * @param array<string, mixed>|null $org
  * @param array<int, array<string, mixed>> $dealNotes
  * @param array<int, array<string, mixed>> $dealActivities
- * @param list<string>               $noteExts
- * @param list<string>               $activityExts
+ * @param list<string> $noteExts
+ * @param list<string> $activityExts
  */
 function buildPreviewBlock(
     int $dealId,
@@ -444,9 +444,9 @@ function buildPreviewBlock(
 ): string {
     $out = "## Deal #{$dealId} — {$deal['title']}\n\n";
     $out .= "- **external_id** : `{$dealExt}`\n";
-    $out .= "- **Date création** : ".($deal['add_time'] ?? '?')."\n";
-    $out .= "- **Statut** : ".($deal['status'] ?? '?').($deal['won_time'] ? " (won {$deal['won_time']})" : '')."\n";
-    $out .= "- **Valeur** : ".($deal['value'] ?? 0)."€\n";
+    $out .= '- **Date création** : '.($deal['add_time'] ?? '?')."\n";
+    $out .= '- **Statut** : '.($deal['status'] ?? '?').($deal['won_time'] ? " (won {$deal['won_time']})" : '')."\n";
+    $out .= '- **Valeur** : '.($deal['value'] ?? 0)."€\n";
 
     if (null !== $person) {
         $out .= "- **Client** : {$person['name']} (`{$personExt}`)\n";

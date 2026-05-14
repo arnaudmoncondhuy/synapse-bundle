@@ -60,7 +60,7 @@ $queries = json_decode((string) file_get_contents($queriesPath), true, flags: \J
 
 // Build markdown
 $out = "# Queries retrieval-v1 — fichier de validation\n\n";
-$out .= "Généré le ".date('Y-m-d H:i:s')." par `build-queries-preview.php`.\n\n";
+$out .= 'Généré le '.date('Y-m-d H:i:s')." par `build-queries-preview.php`.\n\n";
 $out .= "Pour chaque query, on liste les sources attendues **avec leur texte** pour faciliter la validation manuelle.\n\n";
 $out .= "---\n\n";
 
@@ -75,8 +75,8 @@ foreach ($queries['queries'] as $q) {
 
     $out .= "## {$q['id']} — \"{$q['text']}\"\n\n";
     $out .= "**Type** : {$typeBadge} — **Difficulté** : ".($q['difficulty'] ?? 'n/a')."\n\n";
-    $out .= "**Rationale** : ".($q['rationale'] ?? '—')."\n\n";
-    $out .= "**Sources attendues** (".count($q['expected_sources']).") :\n\n";
+    $out .= '**Rationale** : '.($q['rationale'] ?? '—')."\n\n";
+    $out .= '**Sources attendues** ('.count($q['expected_sources']).") :\n\n";
 
     foreach ($q['expected_sources'] as $extId) {
         $src = $corpus[$extId] ?? null;
