@@ -83,6 +83,7 @@ final class BrainJalon1DemoCommand extends Command
         $this->em->persist($semantic);
 
         // 4. Synapse entre les deux neurones (l'épisode corrobore le fait)
+        // Note : sourceOwnerId/targetOwnerId omis (defaults null/null = open/open) — intentionnel pour la démo jalon 1
         $synapse = new Synapse(
             source: $episodic,
             target: $semantic,

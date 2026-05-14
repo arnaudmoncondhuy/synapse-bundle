@@ -127,7 +127,7 @@ class SpreadingActivationTest extends TestCase
 
         $this->assertCount(1, $result);
         $this->assertSame($seed, $result[0]->neuron);
-        // Score = arrivingScore × hubFactor(0) = 0.9 × 1.0 = 0.9
+        // Score = arrivingScore × hubFactor(outDegree=0) = 0.9 × 1.0 = 0.9
         $this->assertEqualsWithDelta(0.9, $result[0]->score, 0.0001);
         $this->assertSame(0, $result[0]->depth);
     }

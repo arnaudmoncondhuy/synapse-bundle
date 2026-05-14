@@ -13,14 +13,15 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
  * plusieurs aires en **une seule passe LLM**.
  *
  * Distinct de {@see NeuronExtractorInterface} (mono-aire, jalon 2). Une
- * source brute est analysée par le LLM qui sélectionne lui-même dans quelles
- * aires créer des neurones (sélectivité naturelle, design §38).
+ * source brute est traitée en un appel LLM dont la sortie indique dans
+ * quelles aires des neurones ont été produits (sélectivité naturelle,
+ * design §38).
  *
  * Cette approche est privilégiée à partir du jalon 3 car :
- * - Vision globale du LLM (une source → décision unifiée par aire)
+ * - Traitement unifié en une passe LLM (vs N passes mono-aire)
  * - 1 appel LLM au lieu de N (économie de tokens)
- * - Analogue biologique : un stimulus active simultanément les aires
- *   pertinentes, pas une cascade séquentielle
+ * - Un stimulus active simultanément les aires pertinentes (cohérence
+ *   avec la modélisation multi-aires, vs une cascade séquentielle)
  *
  * Les extracteurs mono-aire du jalon 2 restent disponibles pour les apps
  * hôtes qui veulent contrôler finement le routage.

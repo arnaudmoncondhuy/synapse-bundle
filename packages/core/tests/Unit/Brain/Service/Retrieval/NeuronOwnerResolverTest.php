@@ -54,8 +54,11 @@ class NeuronOwnerResolverTest extends TestCase
         $this->assertNull($resolver->resolve($neuron));
     }
 
-    public function testResolveReturnsNullForMissingSource(): void
+    public function testResolveReturnsOrphanSentinelForMissingSource(): void
     {
+        // Audit brain-isolation-paranoid 2026-05-14 : si MemorySource introuvable
+        // (data corrompue, source supprimée), resolve() doit retourner une sentinelle
+        // non-admissible (fail-closed), pas null (fail-open qui exposait le neurone).
         $repo = $this->createMock(MemorySourceRepository::class);
         $repo->method('find')->willReturn(null);
 
@@ -68,7 +71,40 @@ class NeuronOwnerResolverTest extends TestCase
             value: 'Y',
         );
 
-        $this->assertNull($resolver->resolve($neuron));
+        $orphan = $resolver->resolve($neuron);
+        $this->assertNotNull($orphan, 'Neurone orphelin doit retourner sentinelle, pas null');
+
+        // La sentinelle ne doit matcher AUCUN user réel
+        $alice = Uuid::v7();
+        $bob = Uuid::v7();
+        $this->assertFalse($resolver->isAdmissibleForOwner($orphan, $alice));
+        $this->assertFalse($resolver->isAdmissibleForOwner($orphan, $bob));
+        $this->assertFalse($resolver->isAdmissibleForOwner($orphan, null));
+    }
+
+    public function testCorruptedSourceDoesNotLeakCrossUser(): void
+    {
+        // Scénario E2E du fail-closed : un neurone privé Bob dont la source est
+        // supprimée ne doit pas devenir visible pour Alice.
+        $repo = $this->createMock(MemorySourceRepository::class);
+        $repo->method('find')->willReturn(null);
+
+        $resolver = new NeuronOwnerResolver($repo);
+
+        $bobOrphanNeuron = new SemanticNeuron(
+            firstSource: Uuid::v7(),
+            subject: 'orphaned',
+            predicate: 'is',
+            value: 'leak',
+        );
+
+        $owner = $resolver->resolve($bobOrphanNeuron);
+
+        $alice = Uuid::v7();
+        $this->assertFalse(
+            $resolver->isAdmissibleForOwner($owner, $alice),
+            'Neurone orphelin ne doit JAMAIS être admissible pour un user nommé',
+        );
     }
 
     public function testCacheAvoidsRepeatedRepoLookups(): void

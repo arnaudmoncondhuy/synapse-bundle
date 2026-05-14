@@ -47,15 +47,30 @@ final class NeuronOwnerResolver implements NeuronOwnerResolverInterface
     /**
      * Retourne l'ownerId d'un neurone (résolu via sa MemorySource d'origine).
      *
-     * - `null` = neurone "open" (source sans ownerId, ou source avec ownerId null)
-     * - `Uuid` = neurone privé d'un user
-     * - throw si le neurone n'a pas de sourceUuid (cas anormal, neurone orphelin)
+     * Sémantique de la valeur de retour :
+     * - `null` = neurone "open" légitime : soit le neurone n'a pas de
+     *   sourceUuid (procédural manuel), soit sa MemorySource existe avec
+     *   `ownerId === null`. Admissible pour tout queryOwner.
+     * - `Uuid` = neurone privé d'un user. Admissible uniquement pour
+     *   ce user (ou si la source est partagée explicitement à l'avenir).
+     *
+     * **Cas particulier : MemorySource introuvable** (neurone orphelin).
+     * On retourne `self::ORPHAN_OWNER` (Uuid sentinelle non-zéro) plutôt
+     * que `null`. Raison : fail-closed contre le scénario où une source
+     * privée a été supprimée sans purger ses neurones — l'audit
+     * `brain-isolation-paranoid` 2026-05-14 a montré que retourner `null`
+     * (open) dans ce cas exposait les neurones orphelins à tout queryOwner.
+     *
+     * La sentinelle ne matche aucun user réel (Uuid::v4 statique généré
+     * une fois), donc `isAdmissibleForOwner(ORPHAN_OWNER, $anyOwner)`
+     * retourne toujours `false`. Les neurones orphelins sont silencieusement
+     * exclus du retrieval.
      */
     public function resolve(MemoryFragment $neuron): ?Uuid
     {
         $sourceUuid = $neuron->getSourceUuid();
         if (null === $sourceUuid) {
-            // Neurone sans source (manuel, procédural écrit à la main). Open par défaut.
+            // Neurone sans source (procédural manuel). Open par défaut — pas un cas d'orphelinage.
             return null;
         }
 
@@ -63,20 +78,38 @@ final class NeuronOwnerResolver implements NeuronOwnerResolverInterface
         if (\array_key_exists($key, $this->cache)) {
             $cached = $this->cache[$key];
 
-            return false === $cached ? null : $cached;
+            return false === $cached ? self::orphanOwner() : $cached;
         }
 
         $source = $this->sourceRepository->find($sourceUuid);
         if (null === $source) {
             $this->cache[$key] = false;
 
-            return null;
+            // Fail-closed : neurone orphelin → sentinelle non-admissible
+            return self::orphanOwner();
         }
 
         $ownerId = $source->getOwnerId();
         $this->cache[$key] = $ownerId;
 
         return $ownerId;
+    }
+
+    /**
+     * Sentinelle Uuid pour les neurones orphelins (MemorySource supprimée).
+     *
+     * Cache statique : généré une fois au premier appel, partagé par toutes
+     * les instances. Volontairement un Uuid v4 plutôt que v7 pour qu'il ne
+     * puisse pas être confondu avec un user réel généré chronologiquement.
+     */
+    private static function orphanOwner(): Uuid
+    {
+        static $sentinel = null;
+        if (null === $sentinel) {
+            $sentinel = Uuid::v4();
+        }
+
+        return $sentinel;
     }
 
     /**

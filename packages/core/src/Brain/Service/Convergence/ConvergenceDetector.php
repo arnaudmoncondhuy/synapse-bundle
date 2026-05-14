@@ -72,7 +72,7 @@ final readonly class ConvergenceDetector
      *                                             déjà filtrés par
      *                                             compatibilité owner
      * @param float $threshold seuil cosine
-     *                         (défaut: 0.85)
+     *                         (défaut: 0.65 — `DEFAULT_COSINE_THRESHOLD` calibré ADR-005)
      *
      * @return list<Synapse> synapses CORROBORATES créées (non persistées)
      */
