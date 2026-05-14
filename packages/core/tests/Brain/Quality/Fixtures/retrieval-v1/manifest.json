@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "purpose": "Corpus relationnel pour bench retrieval-v1 (jalon 4 étape 11)",
+    "generated_by": "tools/brain-bench/extract-corpus-relational.php",
+    "anonymisation": "Les noms/contacts clients restent dans le dump pipedrive local — non versionnés dans ce repo. Le manifest contient uniquement les IDs deal qui permettent de regénérer le corpus.",
+    "regenerate_cmd": "php tools/brain-bench/extract-corpus-relational.php --path=$PIPEDRIVE_DUMP --deal-ids=1157,1153,1147,1162,1156 --preview=/tmp/preview.md > /tmp/corpus.jsonl"
+  },
+  "deal_ids": [1157, 1153, 1147, 1162, 1156],
+  "filters": {
+    "ringover_noise": "Activities dont subject ~ /^Appel (manqué|sortant|entrant)/ sont filtrées (option B validée user 2026-05-14). Réintégrées au jalon 8+ pour stress-test."
+  },
+  "expected_sources_count": {
+    "deal": 5,
+    "note": 3,
+    "activity": 5,
+    "person": 5,
+    "organization": 1,
+    "total": 19
+  },
+  "deals_summary": [
+    {
+      "external_id": "pipedrive-deal-1157",
+      "subject": "Michel Rimbault - Pbl Imprimante",
+      "status": "open",
+      "added": "2025-10-02"
+    },
+    {
+      "external_id": "pipedrive-deal-1153",
+      "subject": "Natacha Bodin - Ecran Bleu",
+      "status": "won",
+      "added": "2025-09-29"
+    },
+    {
+      "external_id": "pipedrive-deal-1147",
+      "subject": "Jacky Dantan - Problème de téléphone fixe",
+      "status": "won",
+      "added": "2025-08-06"
+    },
+    {
+      "external_id": "pipedrive-deal-1162",
+      "subject": "Franck Richard - Check NAS + Workspace (org ANELAC)",
+      "status": "open",
+      "added": "2025-11-28"
+    },
+    {
+      "external_id": "pipedrive-deal-1156",
+      "subject": "Huguette Coiffier - Achat tablette + téléphone",
+      "status": "lost",
+      "added": "2025-10-01"
+    }
+  ]
+}

@@ -4,115 +4,148 @@
     "annotated_at": "2026-05-14",
     "method": "annotation_en_aveugle_avant_lancement_bench",
     "discipline": "Annotations posées AVANT toute exécution du retrieval. Anti-biais juge-et-partie (charte §2.9). À valider par user avant calibration.",
-    "corpus_ref": "convergence-v1/corpus.json (20 sources pipedrive, déjà ingérées au jalon 3)",
-    "annotation_scope": "Binary relevance au niveau source. Un neurone retourné par MemoryRetriever est compté pertinent ssi sa MemorySource est dans `expected_sources`. Sources NON listées = non-pertinentes.",
-    "metric_target": "F1@10 doit dépasser baseline cosine pur. Recall@5 ≥ 0.6, Precision@5 ≥ 0.7 (cf. plan jalon 4)."
+    "corpus_ref": "manifest.json (5 deals Pipedrive récents avec leur contexte cross-type : notes + activities + persons + 1 org)",
+    "annotation_scope": "Binary relevance au niveau MemorySource. Un neurone retourné par MemoryRetriever est compté pertinent ssi sa source.external_id est dans `expected_sources`.",
+    "filters_applied": "Activities Ringover (Appel manqué/sortant/entrant) filtrées au build du corpus (option B user)",
+    "query_types": {
+      "factual": "Recherche d'un fait spécifique → 1-2 sources",
+      "relational": "Recherche via liens métier (deal↔note, person↔org, deal↔activity) → 3+ sources d'aires distinctes — c'est CE QUI TESTE Brain v3 vs cosine pur",
+      "ambiguous": "Plusieurs candidats sémantiquement proches → mesure la précision du re-rank"
+    },
+    "metric_target": "F1@10 doit dépasser baseline cosine pur. Pour les queries relationnelles, recall@10 ≥ 0.8 attendu (le multi-hop doit remonter le contexte)."
   },
   "queries": [
     {
       "id": "q-01",
-      "text": "problème ordinateur",
-      "expected_sources": ["src-002", "src-003", "src-005"],
-      "difficulty": "easy",
-      "rationale": "Mots-clés directs présents dans 3 sources distinctes (ordinateur + problème)"
+      "text": "client avec problème d'imprimante",
+      "type": "relational",
+      "expected_sources": [
+        "pipedrive-deal-1157",
+        "pipedrive-person-272",
+        "pipedrive-activity-5706",
+        "pipedrive-note-876"
+      ],
+      "rationale": "Deal Michel Rimbault Pbl Imprimante + sa person + son activity homonyme + sa note (achat portable). Test du spread depuis le sujet vers tout le contexte du deal."
     },
     {
       "id": "q-02",
-      "text": "facturation imprimante",
-      "expected_sources": ["src-010", "src-018"],
-      "difficulty": "easy",
-      "rationale": "Mention explicite des deux termes dans 2 sources"
+      "text": "écran bleu Windows",
+      "type": "relational",
+      "expected_sources": [
+        "pipedrive-deal-1153",
+        "pipedrive-person-1226",
+        "pipedrive-activity-5692"
+      ],
+      "rationale": "Deal Natacha Bodin Ecran Bleu + sa person + son activity. Test propagation"
     },
     {
       "id": "q-03",
-      "text": "installation d'une imprimante chez un client",
-      "expected_sources": ["src-012", "src-014", "src-018"],
-      "difficulty": "medium",
-      "rationale": "src-012 mentionne 'connexion imprimante en wifi' (≈ installation), src-014 prise de RDV, src-018 installation explicite. Demande raisonnement de proximité sémantique."
+      "text": "panne téléphone fixe",
+      "type": "relational",
+      "expected_sources": [
+        "pipedrive-deal-1147",
+        "pipedrive-person-434",
+        "pipedrive-activity-5624"
+      ],
+      "rationale": "Deal Jacky Dantan + person + activity homonyme"
     },
     {
       "id": "q-04",
-      "text": "diagnostic et réparation PC",
-      "expected_sources": ["src-008", "src-011", "src-015", "src-017"],
-      "difficulty": "medium",
-      "rationale": "src-008 mise en service + contrôle, src-011 diagnostic PC portable, src-015 optimisation ordinateur, src-017 remplacement SSD + batterie"
+      "text": "NAS Synology entreprise",
+      "type": "relational",
+      "expected_sources": [
+        "pipedrive-deal-1162",
+        "pipedrive-note-877",
+        "pipedrive-person-68",
+        "pipedrive-organization-12",
+        "pipedrive-activity-5807",
+        "pipedrive-activity-5805"
+      ],
+      "rationale": "Deal Franck Richard NAS+Workspace + note client depuis 2018 + person + ANELAC + 2 activities (étude + reprise contact). 6 sources — query la plus riche relationnellement, test ultime du spread multi-aires."
     },
     {
       "id": "q-05",
-      "text": "batterie d'ordinateur",
-      "expected_sources": ["src-013", "src-017"],
-      "difficulty": "easy",
-      "rationale": "src-013 'batterie commandée', src-017 'batterie compatible ASUS'"
+      "text": "achat tablette Samsung Galaxy",
+      "type": "relational",
+      "expected_sources": [
+        "pipedrive-deal-1156",
+        "pipedrive-note-872",
+        "pipedrive-person-2195"
+      ],
+      "rationale": "Deal Huguette Coiffier (lost) + note Samsung Galaxy Tab + person"
     },
     {
       "id": "q-06",
-      "text": "devis client en attente",
-      "expected_sources": ["src-007", "src-009"],
-      "difficulty": "easy",
-      "rationale": "src-007 devis mise en services, src-009 attente retour devis"
+      "text": "tout sur Michel Rimbault",
+      "type": "relational",
+      "expected_sources": [
+        "pipedrive-person-272",
+        "pipedrive-deal-1157",
+        "pipedrive-activity-5706",
+        "pipedrive-note-876"
+      ],
+      "rationale": "Query par nom de person → doit remonter le deal + activity + note via les liens Transduction Composes. Test du sens 'person → deals/activities/notes'"
     },
     {
       "id": "q-07",
-      "text": "thermostat connecté",
-      "expected_sources": ["src-004"],
-      "difficulty": "easy",
-      "rationale": "Source unique sur le thermostat Nest"
+      "text": "l'organisation ANELAC",
+      "type": "relational",
+      "expected_sources": [
+        "pipedrive-organization-12",
+        "pipedrive-person-68",
+        "pipedrive-deal-1162",
+        "pipedrive-note-877"
+      ],
+      "rationale": "Query org → doit remonter person Franck Richard + deal + note. Test du sens 'org → personnes → deals'"
     },
     {
       "id": "q-08",
-      "text": "client en vacances pas joignable",
-      "expected_sources": ["src-006"],
-      "difficulty": "easy",
-      "rationale": "Source unique 'en attente de retour de vacances'"
+      "text": "ordinateur portable à acheter",
+      "type": "factual",
+      "expected_sources": [
+        "pipedrive-note-876"
+      ],
+      "rationale": "Note simple, query directe sur son contenu. Test que les notes individuelles sont retrouvables."
     },
     {
       "id": "q-09",
-      "text": "logiciel comptable Ciel",
-      "expected_sources": ["src-008"],
-      "difficulty": "medium",
-      "rationale": "src-008 mentionne 'Installation de Ciel Serveur'. Query demande de comprendre que Ciel est un logiciel comptable."
+      "text": "client perdu deal abandonné",
+      "type": "factual",
+      "expected_sources": [
+        "pipedrive-deal-1156"
+      ],
+      "rationale": "Seul deal avec status=lost. Difficile : le statut n'est pas dans le texte du deal lui-même (juste 'Statut: lost' générique). Test la sensibilité du moteur aux métadonnées."
     },
     {
       "id": "q-10",
-      "text": "téléphone fixe installation",
-      "expected_sources": ["src-019"],
-      "difficulty": "easy",
-      "rationale": "Source unique 'Installation téléphone fixe + formation'"
+      "text": "reprise de contact client ancien",
+      "type": "factual",
+      "expected_sources": [
+        "pipedrive-activity-5805",
+        "pipedrive-note-877"
+      ],
+      "rationale": "Activity 'Reprise de contact' + note 'Client depuis 2018, viens de reprendre contact'. Test croisé activity-note."
     },
     {
       "id": "q-11",
-      "text": "paiement par chèque",
-      "expected_sources": ["src-015", "src-016", "src-017", "src-020"],
-      "difficulty": "medium",
-      "rationale": "4 facturations mentionnent 'Chèque' comme moyen de paiement"
+      "text": "appel téléphonique avec un client",
+      "type": "ambiguous",
+      "expected_sources": [
+        "pipedrive-deal-1147",
+        "pipedrive-activity-5624",
+        "pipedrive-person-434"
+      ],
+      "rationale": "Le deal 1147 'Pb téléphone fixe' est le plus thématiquement pertinent. Mais d'autres clients ont aussi été appelés (filtrés via Ringover noise). Test ambigu : recall ≤ precision attendu."
     },
     {
       "id": "q-12",
-      "text": "mise en service PC",
-      "expected_sources": ["src-008", "src-012"],
-      "difficulty": "easy",
-      "rationale": "src-008 'Mise en service et contrôle de PC', src-012 'Mise en services PC'"
-    },
-    {
-      "id": "q-13",
-      "text": "remplacement SSD disque dur",
-      "expected_sources": ["src-017"],
-      "difficulty": "medium",
-      "rationale": "src-017 mention 'SSD 480 - 75€'. Query nécessite équivalence SSD ↔ disque dur"
-    },
-    {
-      "id": "q-14",
-      "text": "appel téléphonique de février",
-      "expected_sources": ["src-003", "src-004"],
-      "difficulty": "medium",
-      "rationale": "src-003 'Appel du 12 février', src-004 'Appel du 8 février + RDV téléphonique'"
-    },
-    {
-      "id": "q-15",
-      "text": "matériel commandé pour la mairie",
-      "expected_sources": ["src-001"],
-      "difficulty": "easy",
-      "rationale": "Source unique avec mots-clés directs"
+      "text": "deals fermés gagnés récemment",
+      "type": "factual",
+      "expected_sources": [
+        "pipedrive-deal-1153",
+        "pipedrive-deal-1147"
+      ],
+      "rationale": "Les 2 deals 'won' du corpus (Natacha Bodin Ecran Bleu, Jacky Dantan Téléphone). Test que le statut 'won' est exploitable."
     }
   ]
 }
