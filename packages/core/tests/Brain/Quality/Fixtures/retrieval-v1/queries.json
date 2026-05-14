@@ -1,0 +1,118 @@
+{
+  "meta": {
+    "annotator": "claude-opus-4-7",
+    "annotated_at": "2026-05-14",
+    "method": "annotation_en_aveugle_avant_lancement_bench",
+    "discipline": "Annotations posées AVANT toute exécution du retrieval. Anti-biais juge-et-partie (charte §2.9). À valider par user avant calibration.",
+    "corpus_ref": "convergence-v1/corpus.json (20 sources pipedrive, déjà ingérées au jalon 3)",
+    "annotation_scope": "Binary relevance au niveau source. Un neurone retourné par MemoryRetriever est compté pertinent ssi sa MemorySource est dans `expected_sources`. Sources NON listées = non-pertinentes.",
+    "metric_target": "F1@10 doit dépasser baseline cosine pur. Recall@5 ≥ 0.6, Precision@5 ≥ 0.7 (cf. plan jalon 4)."
+  },
+  "queries": [
+    {
+      "id": "q-01",
+      "text": "problème ordinateur",
+      "expected_sources": ["src-002", "src-003", "src-005"],
+      "difficulty": "easy",
+      "rationale": "Mots-clés directs présents dans 3 sources distinctes (ordinateur + problème)"
+    },
+    {
+      "id": "q-02",
+      "text": "facturation imprimante",
+      "expected_sources": ["src-010", "src-018"],
+      "difficulty": "easy",
+      "rationale": "Mention explicite des deux termes dans 2 sources"
+    },
+    {
+      "id": "q-03",
+      "text": "installation d'une imprimante chez un client",
+      "expected_sources": ["src-012", "src-014", "src-018"],
+      "difficulty": "medium",
+      "rationale": "src-012 mentionne 'connexion imprimante en wifi' (≈ installation), src-014 prise de RDV, src-018 installation explicite. Demande raisonnement de proximité sémantique."
+    },
+    {
+      "id": "q-04",
+      "text": "diagnostic et réparation PC",
+      "expected_sources": ["src-008", "src-011", "src-015", "src-017"],
+      "difficulty": "medium",
+      "rationale": "src-008 mise en service + contrôle, src-011 diagnostic PC portable, src-015 optimisation ordinateur, src-017 remplacement SSD + batterie"
+    },
+    {
+      "id": "q-05",
+      "text": "batterie d'ordinateur",
+      "expected_sources": ["src-013", "src-017"],
+      "difficulty": "easy",
+      "rationale": "src-013 'batterie commandée', src-017 'batterie compatible ASUS'"
+    },
+    {
+      "id": "q-06",
+      "text": "devis client en attente",
+      "expected_sources": ["src-007", "src-009"],
+      "difficulty": "easy",
+      "rationale": "src-007 devis mise en services, src-009 attente retour devis"
+    },
+    {
+      "id": "q-07",
+      "text": "thermostat connecté",
+      "expected_sources": ["src-004"],
+      "difficulty": "easy",
+      "rationale": "Source unique sur le thermostat Nest"
+    },
+    {
+      "id": "q-08",
+      "text": "client en vacances pas joignable",
+      "expected_sources": ["src-006"],
+      "difficulty": "easy",
+      "rationale": "Source unique 'en attente de retour de vacances'"
+    },
+    {
+      "id": "q-09",
+      "text": "logiciel comptable Ciel",
+      "expected_sources": ["src-008"],
+      "difficulty": "medium",
+      "rationale": "src-008 mentionne 'Installation de Ciel Serveur'. Query demande de comprendre que Ciel est un logiciel comptable."
+    },
+    {
+      "id": "q-10",
+      "text": "téléphone fixe installation",
+      "expected_sources": ["src-019"],
+      "difficulty": "easy",
+      "rationale": "Source unique 'Installation téléphone fixe + formation'"
+    },
+    {
+      "id": "q-11",
+      "text": "paiement par chèque",
+      "expected_sources": ["src-015", "src-016", "src-017", "src-020"],
+      "difficulty": "medium",
+      "rationale": "4 facturations mentionnent 'Chèque' comme moyen de paiement"
+    },
+    {
+      "id": "q-12",
+      "text": "mise en service PC",
+      "expected_sources": ["src-008", "src-012"],
+      "difficulty": "easy",
+      "rationale": "src-008 'Mise en service et contrôle de PC', src-012 'Mise en services PC'"
+    },
+    {
+      "id": "q-13",
+      "text": "remplacement SSD disque dur",
+      "expected_sources": ["src-017"],
+      "difficulty": "medium",
+      "rationale": "src-017 mention 'SSD 480 - 75€'. Query nécessite équivalence SSD ↔ disque dur"
+    },
+    {
+      "id": "q-14",
+      "text": "appel téléphonique de février",
+      "expected_sources": ["src-003", "src-004"],
+      "difficulty": "medium",
+      "rationale": "src-003 'Appel du 12 février', src-004 'Appel du 8 février + RDV téléphonique'"
+    },
+    {
+      "id": "q-15",
+      "text": "matériel commandé pour la mairie",
+      "expected_sources": ["src-001"],
+      "difficulty": "easy",
+      "rationale": "Source unique avec mots-clés directs"
+    }
+  ]
+}
