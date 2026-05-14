@@ -35,7 +35,7 @@ final class NeuronOwnerResolver implements NeuronOwnerResolverInterface
      * `false` représente "MemorySource introuvable" (distinct de `null` qui
      * signifie "MemorySource trouvée mais ownerId null = open").
      *
-     * @var array<string, Uuid|false|null>
+     * @var array<string, false|Uuid|null>
      */
     private array $cache = [];
 

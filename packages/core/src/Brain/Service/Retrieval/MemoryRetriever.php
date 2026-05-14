@@ -33,7 +33,7 @@ use Psr\Log\NullLogger;
  *
  * Cf. {@link docs/brain/06-phases/jalon-4-retrieval-hebbien.md} §4.4.
  */
-final readonly class MemoryRetriever
+final readonly class MemoryRetriever implements MemoryRetrieverInterface
 {
     /**
      * Coefficient du score path vs cosine d'arrivée dans le re-rank final :

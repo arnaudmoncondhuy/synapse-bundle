@@ -17,17 +17,17 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\BrainArea;
  *
  * Un seul appel `ChatService::ask` avec un prompt qui décrit les 4 aires
  * actives (Semantic, Episodic, Encyclopedic, Procedural) et un JSON schema
- * regroupé. Le LLM sélectionne lui-même quelles aires remplir (sélectivité
- * naturelle, design §38).
+ * regroupé. La sortie LLM peut remplir 0..N aires selon le contenu de la
+ * source (sélectivité naturelle, design §38).
  *
  * Préféré aux extracteurs mono-aire à partir du jalon 3 car :
- * - Vision globale (le LLM voit la source en entier et choisit)
+ * - Source traitée en une passe (vs N passes mono-aire)
  * - 1 appel au lieu de N (économie tokens)
- * - Analogue biologique : un stimulus active simultanément les aires
- *   pertinentes
+ * - Un stimulus active simultanément les aires pertinentes (cohérence
+ *   avec la modélisation multi-aires)
  *
- * **Note sur l'aire Encyclopedic** : le LLM produit `chunkable_text` (texte
- * à chunker). On ne crée PAS de chunks ici — c'est le rôle du
+ * **Note sur l'aire Encyclopedic** : la sortie LLM produit `chunkable_text`
+ * (texte à chunker). On ne crée PAS de chunks ici — c'est le rôle du
  * `EncyclopedicExtractor` (jalon 2). Pour produire des EncyclopedicNeuron
  * effectifs depuis le texte renvoyé, le caller (MemoryExtractor) doit
  * router vers l'EncyclopedicExtractor en seconde passe.
