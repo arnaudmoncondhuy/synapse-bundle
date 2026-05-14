@@ -28,10 +28,15 @@ use ArnaudMoncondhuy\SynapseCore\Storage\Repository\Brain\Neuron\SemanticNeuronR
  * le volume le justifiera. Pour le jalon 4 (corpus <1000 neurones), c'est
  * acceptable.
  *
- * **Note isolation user** : le filtrage par owner n'est pas appliqué au
- * niveau seeds (pour l'instant). Le `SpreadingActivation` filtre via les
- * synapses qui portent `source_neuron_owner`/`target_neuron_owner`
- * (ADR-006). Au jalon 5+, on ajoutera un filtrage SQL côté repositories.
+ * **Isolation user** (ADR-006) : le filtrage par owner est appliqué au
+ * niveau seeds via `NeuronOwnerResolver`. Sans ce filtre, un neurone d'un
+ * autre user dont l'embedding match la query serait remonté comme seed
+ * (fuite confirmée par audit `brain-isolation-paranoid` 2026-05-13,
+ * scénario B).
+ *
+ * Performance : 1 lookup MemorySource par neurone candidat (mémoïsé dans
+ * NeuronOwnerResolver). Acceptable jalon 4 (corpus <1000). À migrer en
+ * filtrage SQL au jalon 5+ via `findCandidatesForOwner`.
  *
  * Cf. {@link docs/brain/06-phases/jalon-4-retrieval-hebbien.md} §4.2.
  */
@@ -54,6 +59,7 @@ final readonly class SeedExtractor implements SeedExtractorInterface
         private SemanticNeuronRepository $semanticRepo,
         private EpisodicNeuronRepository $episodicRepo,
         private EncyclopedicNeuronRepository $encyclopedicRepo,
+        private NeuronOwnerResolverInterface $ownerResolver,
         private float $seedThreshold = self::DEFAULT_SEED_THRESHOLD,
         private int $maxSeeds = self::DEFAULT_MAX_SEEDS,
     ) {
@@ -92,11 +98,16 @@ final readonly class SeedExtractor implements SeedExtractorInterface
             return [];
         }
 
-        // 3. Calcule similarité, filtre par seuil
+        // 3. Calcule similarité, filtre par seuil ET par owner (ADR-006)
         $scored = [];
         foreach ($candidates as $neuron) {
             $embedding = $neuron->getEmbedding();
             if ([] === $embedding) {
+                continue;
+            }
+            // Filtre owner — fix audit `brain-isolation-paranoid` 2026-05-13
+            $neuronOwner = $this->ownerResolver->resolve($neuron);
+            if (!$this->ownerResolver->isAdmissibleForOwner($neuronOwner, $query->ownerId)) {
                 continue;
             }
             $score = CosineSimilarity::compute($queryEmbedding, $embedding);

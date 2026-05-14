@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ArnaudMoncondhuy\SynapseCore\Tests\Unit\Brain\Service\Retrieval;
 
 use ArnaudMoncondhuy\SynapseCore\Brain\Contract\MemoryFragment;
+use ArnaudMoncondhuy\SynapseCore\Brain\Service\Retrieval\NeuronOwnerResolverInterface;
 use ArnaudMoncondhuy\SynapseCore\Brain\Service\Retrieval\NeuronResolverInterface;
 use ArnaudMoncondhuy\SynapseCore\Brain\Service\Retrieval\RetrievalQuery;
 use ArnaudMoncondhuy\SynapseCore\Brain\Service\Retrieval\ScoredNeuron;
@@ -69,12 +70,44 @@ class SpreadingActivationTest extends TestCase
         );
     }
 
+    /**
+     * Construit un NeuronOwnerResolverInterface mock — admissif par défaut
+     * (resolve = null = open, isAdmissibleForOwner = true). Utilisé par
+     * la majorité des tests qui ne testent pas l'isolation user.
+     */
+    private function permissiveOwnerResolver(): NeuronOwnerResolverInterface
+    {
+        $resolver = $this->createStub(NeuronOwnerResolverInterface::class);
+        $resolver->method('resolve')->willReturn(null);
+        $resolver->method('isAdmissibleForOwner')->willReturn(true);
+
+        return $resolver;
+    }
+
+    /**
+     * Construit un SpreadingActivation avec defaults sains. Owner resolver
+     * permissif sauf si fourni.
+     */
+    private function buildSA(
+        \PHPUnit\Framework\MockObject\Stub|\PHPUnit\Framework\MockObject\MockObject $synapseRepo,
+        \PHPUnit\Framework\MockObject\Stub|\PHPUnit\Framework\MockObject\MockObject $neuronResolver,
+        ?NeuronOwnerResolverInterface $ownerResolver = null,
+        ?\Psr\Clock\ClockInterface $clock = null,
+    ): SpreadingActivation {
+        return new SpreadingActivation(
+            synapseRepository: $synapseRepo,
+            neuronResolver: $neuronResolver,
+            ownerResolver: $ownerResolver ?? $this->permissiveOwnerResolver(),
+            clock: $clock,
+        );
+    }
+
     public function testReturnsEmptyForEmptySeeds(): void
     {
         $synapseRepo = $this->createStub(SynapseRepository::class);
         $resolver = $this->createStub(NeuronResolverInterface::class);
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $sa = $this->buildSA($synapseRepo, $resolver);
 
         $result = $sa->spread([], new RetrievalQuery('q'));
 
@@ -88,7 +121,7 @@ class SpreadingActivationTest extends TestCase
         $synapseRepo->method('findOutgoing')->willReturn([]);
         $resolver = $this->createStub(NeuronResolverInterface::class);
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $sa = $this->buildSA($synapseRepo, $resolver);
 
         $result = $sa->spread([$this->buildSeed($seed, 0.9)], new RetrievalQuery('q'));
 
@@ -114,7 +147,7 @@ class SpreadingActivationTest extends TestCase
         $resolver->method('resolve')->willReturn($neighbor);
 
         $clock = new MockClock();
-        $sa = new SpreadingActivation($synapseRepo, $resolver, clock: $clock);
+        $sa = $this->buildSA($synapseRepo, $resolver, clock: $clock);
 
         $result = $sa->spread([$this->buildSeed($seed, 1.0)], new RetrievalQuery('q'));
 
@@ -143,7 +176,7 @@ class SpreadingActivationTest extends TestCase
         $resolver = $this->createMock(NeuronResolverInterface::class);
         $resolver->method('resolve')->willReturn($weak);
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $sa = $this->buildSA($synapseRepo, $resolver);
 
         $result = $sa->spread([$this->buildSeed($seed, 1.0)], new RetrievalQuery('q'));
 
@@ -189,7 +222,7 @@ class SpreadingActivationTest extends TestCase
             };
         });
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $sa = $this->buildSA($synapseRepo, $resolver);
 
         // Force maxDepth très grand pour qu'on teste vraiment le HARD_MAX_DEPTH
         $query = new RetrievalQuery('q', maxDepth: 99, topN: 100, minScore: 0.0);
@@ -243,7 +276,7 @@ class SpreadingActivationTest extends TestCase
             return null;
         });
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $sa = $this->buildSA($synapseRepo, $resolver);
 
         $result = $sa->spread([$this->buildSeed($seed, 1.0)], new RetrievalQuery('q', minScore: 0.0));
 
@@ -284,7 +317,7 @@ class SpreadingActivationTest extends TestCase
 
         // Clock à maintenant
         $clock = new MockClock();
-        $sa = new SpreadingActivation($synapseRepo, $resolver, clock: $clock);
+        $sa = $this->buildSA($synapseRepo, $resolver, clock: $clock);
 
         $result = $sa->spread([$this->buildSeed($seed, 1.0)], new RetrievalQuery('q', minScore: 0.0));
 
@@ -335,7 +368,7 @@ class SpreadingActivationTest extends TestCase
             return null;
         });
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $sa = $this->buildSA($synapseRepo, $resolver);
 
         $result = $sa->spread([$this->buildSeed($seed, 1.0)], new RetrievalQuery('q', topN: 50, minScore: 0.0));
 
@@ -343,9 +376,34 @@ class SpreadingActivationTest extends TestCase
         $this->assertLessThanOrEqual(21, count($result));
     }
 
+    /**
+     * Helper : owner resolver qui résout par neurone selon une map fournie.
+     * Default null (open) si neurone absent de la map.
+     *
+     * @param array<string, ?Uuid> $ownerByNeuronId clé = uuid neurone, valeur = owner (null = open)
+     */
+    private function ownerResolverFor(array $ownerByNeuronId): NeuronOwnerResolverInterface
+    {
+        $resolver = $this->createMock(NeuronOwnerResolverInterface::class);
+        $resolver->method('resolve')->willReturnCallback(static function (MemoryFragment $n) use ($ownerByNeuronId) {
+            return $ownerByNeuronId[$n->getId()->toRfc4122()] ?? null;
+        });
+        $resolver->method('isAdmissibleForOwner')->willReturnCallback(static function (?Uuid $neuronOwner, ?Uuid $queryOwner): bool {
+            if (null === $queryOwner) {
+                return null === $neuronOwner;
+            }
+
+            return null === $neuronOwner || $neuronOwner->equals($queryOwner);
+        });
+
+        return $resolver;
+    }
+
     public function testIsolationUserStrict(): void
     {
         // Synapse Bob → Bob ne doit pas être traversée par Alice
+        // ET le seed lui-même (qui est un neurone de Bob) ne doit PAS apparaître pour Alice
+        // (fix audit brain-isolation-paranoid 2026-05-13 — anciennement la fuite était actée comme acceptable)
         $alice = Uuid::v7();
         $bob = Uuid::v7();
 
@@ -361,16 +419,20 @@ class SpreadingActivationTest extends TestCase
         $resolver = $this->createMock(NeuronResolverInterface::class);
         $resolver->method('resolve')->willReturn($neighbor);
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $ownerResolver = $this->ownerResolverFor([
+            $seed->getId()->toRfc4122() => $bob,
+            $neighbor->getId()->toRfc4122() => $bob,
+        ]);
+
+        $sa = $this->buildSA($synapseRepo, $resolver, ownerResolver: $ownerResolver);
 
         $result = $sa->spread(
             [$this->buildSeed($seed, 1.0)],
             new RetrievalQuery('q', ownerId: $alice, minScore: 0.0),
         );
 
-        // Alice voit le seed (qu'elle a passé) mais ne peut pas traverser la synapse Bob→Bob
-        $this->assertCount(1, $result);
-        $this->assertSame($seed, $result[0]->neuron);
+        // Alice ne voit RIEN de Bob (ni le seed ni le neighbor)
+        $this->assertCount(0, $result);
     }
 
     public function testIsolationOpenAllowed(): void
@@ -390,7 +452,12 @@ class SpreadingActivationTest extends TestCase
         $resolver = $this->createMock(NeuronResolverInterface::class);
         $resolver->method('resolve')->willReturn($openNeighbor);
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $ownerResolver = $this->ownerResolverFor([
+            $seed->getId()->toRfc4122() => $alice,
+            $openNeighbor->getId()->toRfc4122() => null,
+        ]);
+
+        $sa = $this->buildSA($synapseRepo, $resolver, ownerResolver: $ownerResolver);
 
         $result = $sa->spread(
             [$this->buildSeed($seed, 1.0)],
@@ -402,7 +469,7 @@ class SpreadingActivationTest extends TestCase
 
     public function testIsolationOpenQueryStrict(): void
     {
-        // Query anonyme (ownerId null) → uniquement synapses 100% open
+        // Query anonyme (ownerId null) → ni le seed Alice ni le neurone Alice ne sont visibles
         $alice = Uuid::v7();
 
         $seed = $this->buildSemantic('seed', $alice);
@@ -417,16 +484,101 @@ class SpreadingActivationTest extends TestCase
         $resolver = $this->createMock(NeuronResolverInterface::class);
         $resolver->method('resolve')->willReturn($neighbor);
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $ownerResolver = $this->ownerResolverFor([
+            $seed->getId()->toRfc4122() => $alice,
+            $neighbor->getId()->toRfc4122() => $alice,
+        ]);
+
+        $sa = $this->buildSA($synapseRepo, $resolver, ownerResolver: $ownerResolver);
 
         $result = $sa->spread(
             [$this->buildSeed($seed, 1.0)],
             new RetrievalQuery('q', ownerId: null, minScore: 0.0),
         );
 
-        // Query anonyme ne traverse pas une synapse Alice→Alice
-        $this->assertCount(1, $result);
-        $this->assertSame($seed, $result[0]->neuron);
+        // Query anonyme ne voit pas un neurone Alice (même seed)
+        $this->assertCount(0, $result);
+    }
+
+    public function testSeedFromOtherUserNotReturned(): void
+    {
+        // Scénario B (audit brain-isolation-paranoid 2026-05-13) :
+        // Bob a un neurone dont l'embedding match la query d'Alice.
+        // Le seed est ce neurone Bob. Alice ne doit RIEN voir.
+        $alice = Uuid::v7();
+        $bob = Uuid::v7();
+
+        $bobNeuron = $this->buildSemantic('bob_neuron', $bob);
+
+        $synapseRepo = $this->createMock(SynapseRepository::class);
+        $synapseRepo->method('findOutgoing')->willReturn([]);
+
+        $resolver = $this->createStub(NeuronResolverInterface::class);
+
+        $ownerResolver = $this->ownerResolverFor([
+            $bobNeuron->getId()->toRfc4122() => $bob,
+        ]);
+
+        $sa = $this->buildSA($synapseRepo, $resolver, ownerResolver: $ownerResolver);
+
+        $result = $sa->spread(
+            [$this->buildSeed($bobNeuron, 0.95)],
+            new RetrievalQuery('q', ownerId: $alice, minScore: 0.0),
+        );
+
+        $this->assertCount(0, $result);
+    }
+
+    public function testMultiHopThroughOpenDoesNotLeak(): void
+    {
+        // Scénario C (audit brain-isolation-paranoid + insight SSGM 2603.11768) :
+        // Alice query → seed = neurone open A → A→B (open→open) → B→C (open→Bob)
+        // Alice doit voir A et B mais PAS C (Bob).
+        $alice = Uuid::v7();
+        $bob = Uuid::v7();
+
+        $a = $this->buildSemantic('A');         // open
+        $b = $this->buildSemantic('B');         // open
+        $c = $this->buildSemantic('C', $bob);   // Bob
+
+        $synAB = $this->buildSynapse($a, $b, weight: 1.0, confidence: 1.0);
+        $synBC = $this->buildSynapse($b, $c, sourceOwner: null, targetOwner: $bob, weight: 1.0, confidence: 1.0);
+
+        $synapseRepo = $this->createMock(SynapseRepository::class);
+        $synapseRepo->method('findOutgoing')->willReturnCallback(static function (MemoryFragment $n) use ($a, $b, $synAB, $synBC) {
+            return match (true) {
+                $n === $a => [$synAB],
+                $n === $b => [$synBC],
+                default => [],
+            };
+        });
+
+        $resolver = $this->createMock(NeuronResolverInterface::class);
+        $resolver->method('resolve')->willReturnCallback(static function (BrainArea $area, Uuid $id) use ($b, $c) {
+            return match ($id->toRfc4122()) {
+                $b->getId()->toRfc4122() => $b,
+                $c->getId()->toRfc4122() => $c,
+                default => null,
+            };
+        });
+
+        $ownerResolver = $this->ownerResolverFor([
+            $a->getId()->toRfc4122() => null,
+            $b->getId()->toRfc4122() => null,
+            $c->getId()->toRfc4122() => $bob,
+        ]);
+
+        $sa = $this->buildSA($synapseRepo, $resolver, ownerResolver: $ownerResolver);
+
+        $result = $sa->spread(
+            [$this->buildSeed($a, 1.0)],
+            new RetrievalQuery('q', ownerId: $alice, minScore: 0.0),
+        );
+
+        $reached = array_map(fn (ScoredNeuron $s) => $s->neuron, $result);
+        $this->assertContains($a, $reached);
+        $this->assertContains($b, $reached);
+        $this->assertNotContains($c, $reached, 'Alice ne doit pas voir le neurone C qui appartient à Bob');
     }
 
     public function testCycleDoesNotInfiniteLoop(): void
@@ -456,7 +608,7 @@ class SpreadingActivationTest extends TestCase
             };
         });
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $sa = $this->buildSA($synapseRepo, $resolver);
 
         $result = $sa->spread([$this->buildSeed($a, 1.0)], new RetrievalQuery('q', minScore: 0.0));
 
@@ -494,7 +646,7 @@ class SpreadingActivationTest extends TestCase
             return null;
         });
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $sa = $this->buildSA($synapseRepo, $resolver);
 
         $result = $sa->spread([$this->buildSeed($seed, 1.0)], new RetrievalQuery('q', topN: 3, minScore: 0.0));
 
@@ -524,7 +676,7 @@ class SpreadingActivationTest extends TestCase
             };
         });
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $sa = $this->buildSA($synapseRepo, $resolver);
 
         $result = $sa->spread([$this->buildSeed($seed, 1.0)], new RetrievalQuery('q', minScore: 0.0));
 
@@ -548,7 +700,7 @@ class SpreadingActivationTest extends TestCase
         $resolver = $this->createMock(NeuronResolverInterface::class);
         $resolver->method('resolve')->willReturn(null);
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $sa = $this->buildSA($synapseRepo, $resolver);
 
         $result = $sa->spread([$this->buildSeed($seed, 1.0)], new RetrievalQuery('q', minScore: 0.0));
 
@@ -566,7 +718,7 @@ class SpreadingActivationTest extends TestCase
         $synapseRepo->method('findOutgoing')->willReturn([]);
         $resolver = $this->createStub(NeuronResolverInterface::class);
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $sa = $this->buildSA($synapseRepo, $resolver);
 
         $result = $sa->spread(
             [
@@ -598,7 +750,7 @@ class SpreadingActivationTest extends TestCase
         $resolver = $this->createMock(NeuronResolverInterface::class);
         $resolver->method('resolve')->willReturn($episodic);
 
-        $sa = new SpreadingActivation($synapseRepo, $resolver);
+        $sa = $this->buildSA($synapseRepo, $resolver);
 
         $result = $sa->spread([$this->buildSeed($semantic, 1.0)], new RetrievalQuery('q', minScore: 0.0));
 

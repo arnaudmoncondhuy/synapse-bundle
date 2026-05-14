@@ -121,6 +121,7 @@ final readonly class SpreadingActivation implements SpreadingActivationInterface
     public function __construct(
         private SynapseRepository $synapseRepository,
         private NeuronResolverInterface $neuronResolver,
+        private NeuronOwnerResolverInterface $ownerResolver,
         private LoggerInterface $logger = new NullLogger(),
         ?ClockInterface $clock = null,
     ) {
@@ -166,6 +167,20 @@ final readonly class SpreadingActivation implements SpreadingActivationInterface
             $neuronKey = $current->getArea()->value.':'.$current->getId()->toRfc4122();
 
             if (isset($visited[$neuronKey])) {
+                continue;
+            }
+
+            // Défense en profondeur (ADR-006) : si un seed mal filtré ou un target résolu
+            // appartient à un autre user, on skip — même si la synapse parente a été
+            // marquée admissible. Fix audit `brain-isolation-paranoid` 2026-05-13.
+            $currentOwner = $this->ownerResolver->resolve($current);
+            if (!$this->ownerResolver->isAdmissibleForOwner($currentOwner, $query->ownerId)) {
+                $this->logger->debug('SpreadingActivation: neuron owner not admissible, skipping', [
+                    'neuronArea' => $current->getArea()->value,
+                    'neuronId' => $current->getId()->toRfc4122(),
+                    'neuronOwner' => $currentOwner?->toRfc4122(),
+                    'queryOwner' => $query->ownerId?->toRfc4122(),
+                ]);
                 continue;
             }
 
