@@ -29,8 +29,8 @@ final readonly class HebbianReinforcer implements HebbianReinforcerInterface
      * Taux d'apprentissage par défaut (delta).
      *
      * Conservatif : à δ=0.05, après 20 renforcements w(0.5) ≈ 0.82, après 50
-     * w ≈ 0.96. À recalibrer empiriquement (bench retrieval ou test profondeur
-     * weecom).
+     * w ≈ 0.96. À recalibrer empiriquement (bench retrieval ou test
+     * profondeur sur corpus réel).
      */
     public const DEFAULT_DELTA = 0.05;
 

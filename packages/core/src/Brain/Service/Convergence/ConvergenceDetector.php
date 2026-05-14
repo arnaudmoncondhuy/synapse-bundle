@@ -44,8 +44,8 @@ final readonly class ConvergenceDetector
      *
      * Calibré empiriquement le 2026-05-13 (ADR-005, accepté). Valeur 0.65
      * retenue pour le modèle `text-multilingual-embedding-002` (Vertex AI,
-     * 768 dim). F1=1.000 sur le corpus convergence-v1 (20 notes weecom,
-     * 15 paires annotées en aveugle).
+     * 768 dim). F1=1.000 sur le corpus convergence-v1 (20 notes, 15 paires
+     * annotées en aveugle).
      *
      * **À recalibrer** si on change le modèle d'embedding — la valeur ne
      * vaut que pour text-multilingual-embedding-002.

@@ -44,7 +44,7 @@ final readonly class MemoryRetriever implements MemoryRetrieverInterface
      *
      * `0.6` privilégie légèrement le BFS (structurel) tout en laissant 40%
      * de poids au cosine d'arrivée (sémantique). À calibrer empiriquement
-     * sur weecom (étape 11).
+     * sur le corpus de test (étape 11 bench, cf. ADR-010).
      */
     public const RERANK_PATH_WEIGHT = 0.6;
 
