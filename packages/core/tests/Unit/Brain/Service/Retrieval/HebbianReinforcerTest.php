@@ -140,6 +140,59 @@ class HebbianReinforcerTest extends TestCase
         $reinforcer->reinforceAll($synapses);
     }
 
+    public function testSkipsTransductionSynapse(): void
+    {
+        // ADR-012 : les synapses Transduction (câblage fixe métier) ne sont JAMAIS renforcées.
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->expects($this->never())->method('dispatch');
+
+        $reinforcer = new HebbianReinforcer($dispatcher, delta: 0.1);
+
+        $semantic = new SemanticNeuron(Uuid::v7(), 'X', 'is', 'Y');
+        $episodic = new EpisodicNeuron(new MemorySource('manual', []), new \DateTimeImmutable(), 'évt');
+
+        // Création explicite avec edgeType = Transduction (lien structurel métier note→deal)
+        $synapse = new Synapse(
+            source: $semantic,
+            target: $episodic,
+            weight: 1.0,
+            edgeType: \ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\SynapseEdgeType::Transduction,
+        );
+
+        $initialWeight = $synapse->getWeight();
+        $initialEvidence = $synapse->getEvidenceCount();
+
+        $reinforcer->reinforce($synapse);
+
+        // Poids et evidenceCount strictement inchangés (câblage fixe)
+        $this->assertSame($initialWeight, $synapse->getWeight());
+        $this->assertSame($initialEvidence, $synapse->getEvidenceCount());
+    }
+
+    public function testSkipsTransductionEvenWithLowWeight(): void
+    {
+        // Même les synapses Transduction avec weight bas ne sont pas renforcées :
+        // le poids initial reflète la vérité métier, pas un historique d'activation.
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $dispatcher->expects($this->never())->method('dispatch');
+
+        $reinforcer = new HebbianReinforcer($dispatcher);
+
+        $semantic = new SemanticNeuron(Uuid::v7(), 'X', 'is', 'Y');
+        $episodic = new EpisodicNeuron(new MemorySource('manual', []), new \DateTimeImmutable(), 'évt');
+
+        $synapse = new Synapse(
+            source: $semantic,
+            target: $episodic,
+            weight: 0.3,
+            edgeType: \ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\SynapseEdgeType::Transduction,
+        );
+
+        $reinforcer->reinforce($synapse);
+
+        $this->assertSame(0.3, $synapse->getWeight());
+    }
+
     public function testGrowthCurveMatchesADR009Numbers(): void
     {
         $dispatcher = $this->createStub(EventDispatcherInterface::class);

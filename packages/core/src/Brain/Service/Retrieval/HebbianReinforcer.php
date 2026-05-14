@@ -6,6 +6,7 @@ namespace ArnaudMoncondhuy\SynapseCore\Brain\Service\Retrieval;
 
 use ArnaudMoncondhuy\SynapseCore\Brain\Event\SynapseReinforcedEvent;
 use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Brain\Synapse;
+use ArnaudMoncondhuy\SynapseCore\Storage\Entity\Enum\SynapseEdgeType;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -46,9 +47,19 @@ final readonly class HebbianReinforcer implements HebbianReinforcerInterface
      *
      * Idempotent au sens "appel répété fait avancer asymptotiquement" — pas
      * d'effet runtime si oldWeight déjà à 1.0 (delta × 0 = 0).
+     *
+     * **Skip Transduction** (ADR-012) : les synapses `edgeType=Transduction`
+     * représentent un câblage fixe (provenance, lien structurel métier
+     * note→deal, etc.). Elles ne sont jamais renforcées ni affaiblies —
+     * leur poids reflète la vérité métier, pas un historique d'activations.
      */
     public function reinforce(Synapse $synapse, string $cause = 'hebbian_co_activation'): void
     {
+        // Skip silencieux pour les synapses transduction (câblage fixe ADR-012)
+        if (SynapseEdgeType::Transduction === $synapse->getEdgeType()) {
+            return;
+        }
+
         $oldWeight = $synapse->getWeight();
         $newWeight = $oldWeight + $this->delta * (1.0 - $oldWeight);
         $newWeight = max(0.0, min(1.0, $newWeight));
