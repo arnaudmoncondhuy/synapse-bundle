@@ -58,7 +58,13 @@ abstract readonly class AbstractLlmExtractor implements NeuronExtractorInterface
 
         try {
             $result = $this->chatService->ask($message, [
-                'structured_output' => $schema,
+                'response_format' => [
+                    'type' => 'json_schema',
+                    'json_schema' => [
+                        'name' => 'brain_'.$this->chatAction(),
+                        'schema' => $schema,
+                    ],
+                ],
                 'module' => 'brain',
                 'action' => $this->chatAction(),
             ]);

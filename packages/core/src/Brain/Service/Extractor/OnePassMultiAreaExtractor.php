@@ -65,7 +65,13 @@ final readonly class OnePassMultiAreaExtractor implements MultiAreaExtractorInte
 
         try {
             $result = $this->chatService->ask($message, [
-                'structured_output' => $schema,
+                'response_format' => [
+                    'type' => 'json_schema',
+                    'json_schema' => [
+                        'name' => 'brain_multi_area_extract',
+                        'schema' => $schema,
+                    ],
+                ],
                 'module' => 'brain',
                 'action' => 'extract_multi_area',
             ]);
