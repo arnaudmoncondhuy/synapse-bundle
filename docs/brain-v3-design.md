@@ -10,7 +10,7 @@
 ## Table des matières
 
 1. [Vision et métaphore](#1-vision-et-métaphore)
-2. [Position vs marché actuel](#2-position-vs-marché-actuel)
+2. [Écueils observés à éviter](#2-écueils-observés-à-éviter)
 3. [Convention de nommage SQL](#3-convention-de-nommage-sql)
 4. [Les 7 aires cérébrales — schémas spécialisés](#4-les-7-aires-cérébrales--schémas-spécialisés)
 5. [Système nerveux périphérique (webhooks I/O)](#5-système-nerveux-périphérique-webhooks-io)
@@ -41,25 +41,33 @@ Le **Brain** (modèle de mémoire) est un organe greffé dans un corps applicati
 
 ---
 
-## 2. Position vs marché actuel
+## 2. Écueils observés à éviter
 
-Marché agent memory : 6,27 Md$ en 2026, projection 28,45 Md$ en 2030. Références : Mem0, Letta (ex-MemGPT), Zep, Cognee (OSS), HippoRAG 2 (Stanford), HeLa-Mem (académique 2026), Kairos (académique 2026).
+Plusieurs systèmes de mémoire d'agent ont déjà été construits (Mem0, Letta, Zep, Cognee, HippoRAG 2, HeLa-Mem, Kairos — cf. `docs/brain/04-references.md` pour les liens). L'objectif de cette section n'est pas de les concurrencer ni de copier leurs solutions, mais de **lister les limitations qu'ils ont rencontrées** pour ne pas les répéter dans Brain v3.
 
-| Dimension | Mem0 | Letta | Zep | Cognee | HippoRAG 2 | HeLa-Mem | Kairos | **Brain v3** |
-|---|---|---|---|---|---|---|---|---|
-| Modèle mémoire | Vector + units | 3 tiers OS-like | KG temporel | KG OSS | KG + PageRank | Dynamic graph | KG adaptatif | **7 aires + cross-aires** |
-| Plasticité Hebbienne | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ | ✓ | **✓** |
-| Polarité (exc/inh) | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | **✓** |
-| Types relations sémantiques | ✗ | ✗ | Partiel | ✓ | Implicite | ✗ | ✗ | **9 types explicites** |
-| Confidence ≠ poids | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | Implicite | **✓** |
-| Sources multi-aires | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | **✓ (UUID unique)** |
-| Functional networks | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | **✓** |
-| Validation-gated learning | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ | **✓** |
-| I/O distincte (sensoriel/moteur) | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | **✓** |
-| Decay par aire | ✗ | ✗ | Validity window | ✗ | ✗ | Homogène | Homogène | **Configurable par aire** |
-| Auditabilité visible | Limitée | Limitée | Partielle | Moyenne | Moyenne | Académique | Académique | **Totale (UI graphe)** |
+### Écueils identifiés (ne pas refaire)
 
-**6 dimensions où Brain v3 est seul :** polarité, 9 types relations sémantiques, sources multi-aires UUID unique, functional networks contextuels, I/O distincte sensoriel/moteur, vertical TPE non-tech.
+- **Un seul poids par edge** (HippoRAG 2 le reconnaît comme limite explicite) : impossible de modéliser à la fois la *force* d'activation et la *fiabilité* de l'information, ni les contradictions entre faits. → Brain v3 sépare `weight`, `confidence`, `polarity`, `relationType`, `evidenceCount` en 5 dimensions distinctes (cf. §6).
+
+- **Decay homogène toutes-aires** (HeLa-Mem) : applique le même taux d'oubli aux faits stables et aux événements ponctuels — soit on perd les souvenirs récents, soit on garde du bruit éternel. → Brain v3 expose un decay configurable par aire (§8).
+
+- **Pas de polarité** (tous) : un fait corroboré et un fait contredit comptent pareil. → Brain v3 introduit `polarity = excitatory / inhibitory` pour les contradictions auditables.
+
+- **Mémoire homogène monolithique** (Mem0, Letta) : tous les souvenirs dans le même bac, scoring uniforme. → Brain v3 spécialise par aire (épisodique/sémantique/encyclopédique/procédural/émotionnel/sensoriel/moteur), 7 schémas distincts.
+
+- **Validation absente sur consolidation** (Mem0, Cognee) : tout ce qui passe l'extraction est consolidé, y compris les hallucinations LLM. → Brain v3 reprend le pattern *validation-gated* de Kairos (jalon 6+).
+
+- **Auditabilité limitée** (la plupart) : difficile pour un user d'inspecter pourquoi tel souvenir a remonté. → Brain v3 expose une UI graphe + trace explicite des chemins de retrieval (jalon 7).
+
+- **PPR sur arêtes signées instable** (HippoRAG 2 ne tente pas, et la littérature le confirme) : pas de propagation d'inhibition fiable sur Personalized PageRank. → Brain v3 ignore la polarité au retrieval jalon 4 (cf. ADR-008 amendé), et ne la réintroduira qu'avec validation empirique au jalon 5+.
+
+- **Topology-induced leakage** (SSGM 2603.11768) : les chemins indirects à travers un graphe partagé peuvent fuir des données entre frontières utilisateurs. → Brain v3 filtre owner à 3 niveaux (synapse, seed, dequeue) — cf. ADR-006 + audit `brain-isolation-paranoid`.
+
+### Inspirations techniques (à digérer, pas à copier)
+
+Les références citées plus haut sont étudiées dans `docs/brain/04-references.md`. La règle (charte §2.5) est de **lire avant d'intégrer** — chaque emprunt à une de ces sources fait l'objet d'un ADR qui justifie l'adoption ou l'écart.
+
+Brain v3 n'est pas une réponse à un marché. C'est un système qui essaie d'**associer des idées**. Si certaines briques ressemblent à des composants existants ailleurs, c'est parce qu'on a appris d'eux — pas parce qu'on les concurrence.
 
 ---
 

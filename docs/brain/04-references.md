@@ -5,7 +5,7 @@
 
 ## Statut de vérification
 
-Toutes les références ci-dessous ont été **vérifiées** : URL/arxiv ID confirmés, titre exact, auteurs. Les références issues du tableau §2 du design doc ont été passées au crible (notamment les références Hebbiennes critiques : HeLa-Mem et Kairos). Aucune hallucination détectée.
+Toutes les références ci-dessous ont été **vérifiées** : URL/arxiv ID confirmés, titre exact, auteurs. Les références citées dans §2 du design doc (écueils observés à éviter) ont été passées au crible (notamment les références Hebbiennes critiques : HeLa-Mem et Kairos). Aucune hallucination détectée.
 
 Date de vérification : 2026-05-12.
 
@@ -135,7 +135,7 @@ Conformément à la charte §2.5 ("Comprendre avant d'intégrer") :
 
 Domaines où la littérature ne nous couvre pas bien :
 
-- **Polarity excitatory/inhibitory pour LLM memory** — aucune référence dédiée trouvée. C'est une contribution propre à Brain v3 (cf. tableau §2 du design)
+- **Polarity excitatory/inhibitory pour LLM memory** — aucune référence dédiée trouvée. C'est un terrain non couvert qu'on explore (cf. design §2 « écueils observés à éviter », bullet polarité).
 - **Functional networks contextuels** — pas de paper dédié. À documenter dans un ADR au jalon 6
 - **I/O distincte sensoriel/moteur** — pattern original. À documenter au jalon 7
 - **UI graphe de mémoire auditable** — pratique observée chez Zep (KG visualization), pas dans la littérature académique
